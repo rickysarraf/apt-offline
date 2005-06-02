@@ -1,0 +1,83 @@
+pypt-offline -- An Offline Package Manager
+(C) 2005 Ritesh Raj Sarraf <rrs@researchut.com>
+
+
+
+# INTRODUCTION
+
+So you've decided to give this small piece of work a try.
+Good ! Let's get it done faster.
+pypt-offline is an offline package management tool written
+in the Python Programming Language. This program, as of now,
+is intended for people using Debian (And Debian based)
+systems.
+
+
+########################################################################
+# FOR THE IMPATIENT
+
+ Just follow the following instructions.
+
+ On your home machine (Machine with no/dial-up connection)
+# apt-get update
+# apt-get -qq --print-uris upgrade > uris
+
+ Copy the uris file on to a floppy/CDRW/USB Stick and take
+it to the machine with a high-speed internet connection.
+
+ Run the "pypt-offline" program.
+(I hope you'll answer the questions asked correctly.
+If not, you're a moron)
+
+ Get the downloaded packages back to the home machine.
+and execute the following command:
+# apt-get -o dir::cache::archives="/path/to/downloaded/packages" upgrade
+
+########################################################################
+
+
+
+# DETAILED DESCRIPTION OF THE PROGRAM
+
+# PROBLEMATIC SITUATION
+
+You have a Debian machine (Laptop/Desktop) at home with
+"NO" or dial-up connection only. Still you want to use the
+simplicity of "apt-get" to keep your system up-to-date.
+
+You do have a machine with high-speed internet connection
+at your friend's place running Microsoft Windows or any other
+version of *nix/Linux
+[Note: As of this release, Windows support isn't included.
+It's in my TODO list.]
+
+The solution is to fetch all the packages required on your
+home machine using your friend's "high-speed" machine.
+That is where pypt-offline comes into play.
+
+
+# HOW DOES IT WORK
+
+The program relies heavily on the output provided provided
+by the following set of commands:
+# apt-get update
+(This updates the packages database of our OS)
+# apt-get -qq --print-uris upgrade > uris
+(This command creates the main file required by pypt-offline
+to work)
+
+Once the uris file is created, pypt-offline, on the other
+high-speed machine, at your friend's place, downloads the required
+packages for the machine with no high-speed internet connection
+at home.
+
+Once the packages are downloaded, you can take the downloaded
+packages back to the home machine and upgrade it using the following
+command:
+
+# cp /some/path/*.deb /tmp
+# apt-get -o dir::cache::archives="/tmp/" upgrade
+
+[Note: If you use "apt-listbugs" to track the status of the packages
+to be installed, you'll be needed to connect to the net so that
+"apt-listbugs" could download the latest BUG STATUS.]
