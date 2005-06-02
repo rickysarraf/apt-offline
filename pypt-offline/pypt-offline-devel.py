@@ -102,6 +102,9 @@ def errfunc(errno):
 def warn(exception_warn):
     sys.stderr.write(exception_warn)
 
+#FIXME:
+# This was one of the worst implementions I had thought of
+# I'm happy I got rid of this. :-)
 def decode_exceptions(X):
     # I need to find out a better way to implement this.
     if number_of_variables(X) is 2:
