@@ -3,7 +3,7 @@
 # version devel
 
 ############################################################################
-#    Copyright (C) 2005 by Ritesh Raj Sarraf                               #
+#    Copyright (C) Ritesh Raj Sarraf                                       #
 #    rrs@researchut.com                                                    #
 #                                                                          #
 #    This program is free software; you can redistribute it and#or modify  #
@@ -66,7 +66,9 @@ def download_from_web(sUrl, sFile, sSourceDir):
     #print file," downloaded from the net\n"
     return bFound
 
-#TODO:
+#TODO: walk_tree_copy_debs
+# This might require simplification and optimization.
+# But for now it's doing the job.
 # Need to find a better algorithm, maybe os.walk()                    
 def walk_tree_copy_debs(sRepository, sFile, sSourceDir):
     """The core algorithm is here for the whole program to function'\n'
@@ -102,7 +104,7 @@ def errfunc(errno):
 def warn(exception_warn):
     sys.stderr.write(exception_warn)
 
-#FIXME:
+#FIXME: Exception Handling
 # This was one of the worst implementions I had thought of
 # I'm happy I got rid of this. :-)
 def decode_exceptions(X):
@@ -149,6 +151,11 @@ if __name__ == "__main__":
         reldate = "03/10/2005"
         copyright = "(C) 2005 Ritesh Raj Sarraf <rrs@researchut.com>"
     
+        #FIXME: Option Parsing
+        # There's a flaw with either optparse or I'm not well understood with it
+        # Presently you need to provide all the arguments to it to work.
+        # No less, no more. This needs to be converted to getopt sometime.
+        
         #parser = OptionParser()
         #parser = optparse.OptionParser()
         parser = optparse.OptionParser(usage="%prog [-d] [-s] [-u]", version="%prog " + version)
@@ -180,7 +187,7 @@ if __name__ == "__main__":
         for each_single_item in lRawData:
             lSplitData = each_single_item.split(' ') # Split on the basis of ' ' i.e. space
 
-            # We initialize the variables "url" and "file" here.
+            # We initialize the variables "sUrl" and "sFile" here.
             # We also strip the single quote character "'" to get the real data
             sUrl = string.rstrip(string.lstrip(''.join(lSplitData[0]), chars="'"), chars="'")
             sFile = string.rstrip(string.lstrip(''.join(lSplitData[1]), chars="'"), chars="'")
