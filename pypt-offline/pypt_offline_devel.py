@@ -64,8 +64,11 @@ def download_from_web(sUrl, sFile, sSourceDir):
         pass
     
     except IOError, (errno, strerror):
-        print strerror
-        errfunc(errno, strerror)
+    #except IOError, errno:
+        #decode_exceptions(X)
+        print errno, strerror
+        #print errno
+        errfunc(errno)
         
     #os.environ['FILE_DOWNLOAD'] = url
     #os.system('wget $FILE_DOWNLOAD') # In this case you require a valid .wgetrc file
@@ -104,33 +107,12 @@ def walk_tree_copy_debs(sRepository, sFile, sSourceDir):
         
         
 #def errfunc(error_number, error_code, error_string):
-
 def errfunc(errno, errormsg):
-    """We use errfunc to handler errors.
-    There are some error codes (-3 and 13 as of now)
-    which are temporary codes, they happen when there
-    is a temporary resolution failure, for example.
-    For such situations, we can't abort because the
-    uri file might have other hosts also, which might
-    be well accessible.
-    This function does the job of behaving accordingly
-    as per the error codes."""
-    
     if errno == -3 or errno == 13:
-        #TODO: Find out what these error codes are for
-        # and better document them the next time you find it out.
         pass
     elif errno == 407 or errno == 2:
-        # These, I believe are from OSError/IOError exception.
-        # I'll document it as soon as I confirm it.
         print errormsg
         sys.exit(errno)
-    elif errno == 504:
-        # On gateway timeouts we can keep trying out becuase
-        # one apt source.list might have different hosts.
-        print errormsg
-        print "Will still try with other package uris"
-        pass
     else:
         print "Aiee! I didn't understand the errorcode ", errno
         sys.exit(errno)
@@ -179,10 +161,6 @@ def report(blockcount, bytesdownloaded, totalbytes):
 #            self.error("%s option not supplied" % x)
 # Let's first open the RAW_URIS file and read it all.
 def starter(uri, path, cache, type):
-    """uri - The uri data whill will contain the information
-    path - The path (if any) where the download needs to be done
-    cache - The cache (if any) where we should check before downloading from the net
-    type - type is basically used to identify wether it's a update download or upgrade download"""
     
     if type == 1: # Oh! We're only downloading the update package list database
         
