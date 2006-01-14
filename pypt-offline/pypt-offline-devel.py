@@ -22,7 +22,7 @@
 #    59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ############################################################################
 
-import os, shutil, string, urllib, sys, optparse, urllib2
+import os, shutil, string, urllib, sys, optparse, urllib2, progress 
 
 def download_from_web(sUrl, sFile, sSourceDir):
     """Download the required file from the web
@@ -34,11 +34,15 @@ def download_from_web(sUrl, sFile, sSourceDir):
     
     try:
         os.chdir(sSourceDir)
-        temp = urllib2.urlopen(sUrl)
-        data = open(sFile,'wb')
-        data.write(temp.read())
-        data.close()
-        temp.close()
+        
+        #NOTE: Obsoleting this in favor of implementing a progress bar
+        #temp = urllib2.urlopen(sUrl)
+        #data = open(sFile,'wb')
+        #data.write(temp.read())
+        #data.close()
+        #temp.close()
+        
+        urllib.urlretrieve(sUrl, sFile, reporthook=progress.myReportHook)
         bFound = True
         #shutil.move(temp, sFile)
         #(temp, dStatus) = urllib.urlretrieve(url,file,reporthook=report)
@@ -125,9 +129,16 @@ def errfunc(errno, errormsg):
         # I'll document it as soon as I confirm it.
         print errormsg
         sys.exit(errno)
-    elif errno == 504:
+    elif errno == 504 or errno == 404:
+        #TODO: Counter which will inform that some packages weren't fetched.
+        # A counter needs to be implemented which will at the end inform the list of sources which 
+        # failed to be downloaded with the above codes.
+        
+        # 504 is for gateway timeout
         # On gateway timeouts we can keep trying out becuase
         # one apt source.list might have different hosts.
+        # 404 is for URL error. Page not found.
+        # THere can be instances where one source is changed but the rest are working.
         print errormsg
         print "Will still try with other package uris"
         pass
