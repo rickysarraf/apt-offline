@@ -55,7 +55,7 @@ def myReportHook(count, blockSize, totalSize):
     #print count * (blockSize/1024) , "kb of " , (totalSize/1024) , "kb downloaded.\n"
 prog = ""
 sFile = "new.rpm"
-sUrl = "http://localhost/new.rpm"
+sUrl = "http://ftp.debian.org/debian/dists/unstable/main/binary-i386/Packages.bz2"
 urllib.urlretrieve(sUrl, sFile, reporthook=myReportHook)    
 print "\n\n"
 #temp = urllib2.urlopen(sUrl)
