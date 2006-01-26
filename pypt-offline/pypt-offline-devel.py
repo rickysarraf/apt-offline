@@ -22,7 +22,7 @@
 #    59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ############################################################################
 
-import os, shutil, string, urllib, sys, optparse, urllib2, progress 
+import os, shutil, string, urllib, sys, progressbar, optparse, urllib2
 
 def download_from_web(sUrl, sFile, sSourceDir):
     """Download the required file from the web
@@ -30,50 +30,50 @@ def download_from_web(sUrl, sFile, sSourceDir):
        may be in future, we could reuse this function"""
     bFound = False
         #errfunc(temp_decode(X))
-    print "\n", sFile," not available. Downloading from " + sUrl + "!"
+    #print "\n", sFile," not available. Downloading from " + sUrl + "!"
     
     try:
         os.chdir(sSourceDir)
+        block_size = 4096
+        i = 0
+        counter = 0
+        temp = urllib2.urlopen(sUrl)
+        headers = temp.info()
+        size = int(headers['Content-Length'])
+        data = open(sFile,'wb')
+        while i < size:
+            data.write (temp.read(block_size))
+            i += block_size
+            counter += 1
+            progressbar.myReportHook(counter, block_size, size)
+        print "\n"
+        data.close()
+        temp.close()
         
-        #NOTE: Obsoleting this in favor of implementing a progress bar
-        #temp = urllib2.urlopen(sUrl)
-        #data = open(sFile,'wb')
-        #data.write(temp.read())
-        #data.close()
-        #temp.close()
-        
-        urllib.urlretrieve(sUrl, sFile, reporthook=progress.myReportHook)
+        #urllib.urlretrieve(sUrl, sFile, reporthook=progressbar.myReportHook)
         bFound = True
-        #shutil.move(temp, sFile)
-        #(temp, dStatus) = urllib.urlretrieve(url,file,reporthook=report)
-        #print "dStatus reports "+ str(dStatus)
-    #except IOError, (errno, strerror, fileattr):
-        #if hasattr(X, 'Not Found'):
-            #print "Got 404\n"
-        #errfunc(X)
-        #print "Failed\n"
+        
     except OSError, (errno, strerror):
         print sSourceDir
         errfunc(errno, strerror)
         
     except urllib2.HTTPError, errstring:
-        #if hasattr(errstring, '404'):
-            #print "I got 404 page"
-        #print errstring
         errfunc(errstring.code, errstring.msg)
         
     except urllib2.URLError, errstring:
-        #print errstring
-        errfunc(0, errstring.msg)
-        pass
+        #We pass error code "1" here becuase URLError
+        # doesn't pass any error code.
+        # URLErrors shouldn't be ignored, hence program termination
+        if errstring.reason.args[0] == 10060:
+            errfunc(errstring.reason.args[0], errstring.reason)
+            
+        #errfunc(1, errstring.reason)
+        #pass
     
     except IOError, (errno, strerror):
         print strerror
         errfunc(errno, strerror)
         
-    #os.environ['FILE_DOWNLOAD'] = url
-    #os.system('wget $FILE_DOWNLOAD') # In this case you require a valid .wgetrc file
-    #print file," downloaded from the net\n"
     return bFound
 
 #TODO: walk_tree_copy_debs
@@ -96,15 +96,17 @@ def walk_tree_copy_debs(sRepository, sFile, sSourceDir):
                 path = os.path.join(sRepository, name)
                 if os.path.isdir(path):
                     walk_tree_copy_debs(path, sFile, sSourceDir)
+                    #walk_tree_copy_debs(path, sFile)
                 elif name.endswith('.deb') or name.endswith('.rpm'):
                     if name == sFile:
-                        shutil.copy(path, sSourceDir)
+                        #shutil.copy(path, sSourceDir)
+                        shutil.copy(name, sSourceDir)
                         bFound = True
                         break    
             return bFound
     except OSError, (errno, strerror):
         print errno, strerror
-        errfunc(errno)
+        errfunc(errno, strerror)
         
         
 #def errfunc(error_number, error_code, error_string):
@@ -129,7 +131,7 @@ def errfunc(errno, errormsg):
         # I'll document it as soon as I confirm it.
         print errormsg
         sys.exit(errno)
-    elif errno == 504 or errno == 404:
+    elif errno == 504 or errno == 404 or errno == 10060:
         #TODO: Counter which will inform that some packages weren't fetched.
         # A counter needs to be implemented which will at the end inform the list of sources which 
         # failed to be downloaded with the above codes.
@@ -139,37 +141,22 @@ def errfunc(errno, errormsg):
         # one apt source.list might have different hosts.
         # 404 is for URL error. Page not found.
         # THere can be instances where one source is changed but the rest are working.
-        print errormsg
+        # 10060 is for Operation Time out. There can be multiple reasons for this timeout
+        # Primarily if the host is down or a slow network or abruption, hence not the whole execution should be aborted
+        print "\n", errno, errormsg
         print "Will still try with other package uris"
         pass
+    elif errno == 1:
+        # We'll pass error code 1 where ever we want to gracefully exit
+        print errormsg
+        print "Explicit program termination ", errno
+        sys.exit(errno)
     else:
-        print "Aiee! I didn't understand the errorcode ", errno
+        print "Aieee! I don't understand this errorcode ", errno
         sys.exit(errno)
     
 def warn(exception_warn):
     sys.stderr.write(exception_warn)
-
-#FIXME: Exception Handling
-# This was one of the worst implementions I had thought of
-# I'm happy I got rid of this. :-)
-def decode_exceptions(X):
-    # I need to find out a better way to implement this.
-    if number_of_variables(X) is 2:
-        (errcode, errstring) = X
-        return errcode, errstring
-    elif number_of_variables(X) is 3:
-        (errno, temperr) = X
-        (errcode, errstring) = temperr
-        del temperr
-        return errno, errcode, errstring
-    else:
-        return str(X)
-
-def number_of_variables(X):
-    counter = 0
-    for variables in X:
-        counter += 1
-    return counter
 
 def report(blockcount, bytesdownloaded, totalbytes):
     # This isn't implemented yet.
@@ -178,24 +165,17 @@ def report(blockcount, bytesdownloaded, totalbytes):
     sys.stdout.write("\rDownloading ... (%r of %r)" % (blockcount, bytesdownloaded,totalbytes,))
     sys.stdout.flush()
 
-#class OptionParser(optparse.OptionParser):
-#    
-#    def check_required(self, opt1, opt2, opt3):
-#        for x in opt1, opt2, opt3:
-#            #option = self.get_option(opt)
-#            option = self.get_option(x)
-#        
-#        # Assumes the options's default is set to 'None'
-#        if getattr(self.values, option.dest) is None:
-#            self.error("%s option not supplied" % x)
-# Let's first open the RAW_URIS file and read it all.
-def starter(uri, path, cache, type):
+def starter(uri, path, cache, type = 0):
     """uri - The uri data whill will contain the information
     path - The path (if any) where the download needs to be done
     cache - The cache (if any) where we should check before downloading from the net
     type - type is basically used to identify wether it's a update download or upgrade download"""
     
-    if type == 1: # Oh! We're only downloading the update package list database
+    if type == 1:
+        #XXX: Oh! We're only downloading the update package list database
+        # Package Update database changes almost daily in Debian.
+        # This is at least true for Sid. Hence it doesn't make sense to copy
+        # update packages' database from a cache.
         
         if path is None:
             if os.access("pypt-downloads", os.W_OK) is True:
@@ -220,51 +200,51 @@ def starter(uri, path, cache, type):
             sUrl = string.rstrip(string.lstrip(''.join(lSplitData[0]), chars="'"), chars="'")
             sFile = string.rstrip(string.lstrip(''.join(lSplitData[1]), chars="'"), chars="'")
             
-            #NOTE: We don't check for local cache because checking the sRepository for update packages
-            # would be stupidity.
+            print "\nDownloading " + sFile + " from " + sUrl + "!"
             bStatus = download_from_web(sUrl, sFile, sSourceDir)
             if bStatus == True:
                  print sFile + " successfully downloaded from " + sUrl + "\n."
             else:
                  print sFile + " not downloaded from " + sUrl + ".\n"
     #sSourceDir = path
-    if path is None:
-        if os.access("pypt-downloads", os.W_OK) is True:
-            sSourceDir = "pypt-downloads"
-        else:
-            os.mkdir("pypt-downloads")
-            sSourceDir = "pypt-downloads"
-    else:
-        sSourceDir = path
-            
-    if cache is None:
-        sRepository = os.curdir
-    else:
-        sRepository = cache
-        
-    try:
-        lRawData = open(uri, 'r').readlines()
-    except IOError, (errno, strerror):
-        print errno, strerror
-        errfunc(errno)
-    
-    for each_single_item in lRawData:
-        lSplitData = each_single_item.split(' ') # Split on the basis of ' ' i.e. space
-
-        # We initialize the variables "sUrl" and "sFile" here.
-        # We also strip the single quote character "'" to get the real data
-        sUrl = string.rstrip(string.lstrip(''.join(lSplitData[0]), chars="'"), chars="'")
-        sFile = string.rstrip(string.lstrip(''.join(lSplitData[1]), chars="'"), chars="'")
-        bStatus = walk_tree_copy_debs(sRepository, sFile, sSourceDir)
-        if bStatus == True:
-            print sFile + " sccessfully copied from local cache " + sRepository + ".\n"
-        else:
-            bStatus = download_from_web(sUrl, sFile, sSourceDir)
-            if bStatus == True:
-                 print sFile + " successfully downloaded from " + sUrl + "\n."
+    if type  == 2:
+        if path is None:
+            if os.access("pypt-downloads", os.W_OK) is True:
+                sSourceDir = os.path.abspath("pypt-downloads")
             else:
-                 print sFile + " not downloaded from " + sUrl + "and NA in local cache - " + sRepository + ".\n"
-           
+                os.mkdir("pypt-downloads")
+                sSourceDir = os.path.abspath("pypt-downloads")
+        else:
+            sSourceDir = path
+                
+        if cache is None:
+            sRepository = os.path.abspath(os.curdir)
+        else:
+            sRepository = cache
+            
+        try:
+            lRawData = open(uri, 'r').readlines()
+        except IOError, (errno, strerror):
+            print errno, strerror
+            errfunc(errno)
+        
+        for each_single_item in lRawData:
+            lSplitData = each_single_item.split(' ') # Split on the basis of ' ' i.e. space
+    
+            # We initialize the variables "sUrl" and "sFile" here.
+            # We also strip the single quote character "'" to get the real data
+            sUrl = string.rstrip(string.lstrip(''.join(lSplitData[0]), chars="'"), chars="'")
+            sFile = string.rstrip(string.lstrip(''.join(lSplitData[1]), chars="'"), chars="'")
+            bStatus = walk_tree_copy_debs(sRepository, sFile, sSourceDir)
+            if bStatus == True:
+                print sFile + " sccessfully copied from local cache " + sRepository + ".\n"
+            else:
+                bStatus = download_from_web(sUrl, sFile, sSourceDir)
+                if bStatus == True:
+                     print sFile + " successfully downloaded from " + sUrl + "\n."
+                else:
+                     print sFile + " not downloaded from " + sUrl + "and NA in local cache - " + sRepository + ".\n"
+               
 if __name__ == "__main__":
     
     try:
@@ -381,11 +361,7 @@ if __name__ == "__main__":
             # Implement below similar code for updation
             print "Fetching uris which update apt's package database\n"
             
-            # This function will take two arguments. uris file and download type
-            # If the uris file is an update database it shouldn't do filetype (.deb/.rpm)
-            # checking.
             # Since we're in fetch_update, the download_type will be non-deb/rpm data
-            #foo(sRawUris, download_type)
             # 1 is for update packages 
             # 2 is for upgrade packages
             download_type = 1
@@ -394,6 +370,15 @@ if __name__ == "__main__":
             #if sRawUris is None:
             #    if os.access("pypt-offline-update.dat", os.R_OK) is True:
             #        sRawUris = "pypt-offline-update.dat"
+            
+        if options.fetch_upgrade:
+            print "Fetching packages which need upgradation\n"
+            
+            # Since we're in fetch_update, the download_type will be non-deb/rpm data
+            # 1 is for update packages 
+            # 2 is for upgrade packages
+            download_type = 2
+            starter(options.fetch_upgrade, options.download_dir, options.cache_dir, download_type)
             
     
     except KeyboardInterrupt:
