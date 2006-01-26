@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-
-import time, urllib2, urllib
-
 class progressBar:
     def __init__(self, minValue = 0, maxValue = 10, totalWidth=12):
         self.progBar = "[]"   # This holds the progress bar string
@@ -44,20 +40,21 @@ class progressBar:
 def myReportHook(count, blockSize, totalSize):
     import sys
     global prog
+    prog = ""
 
     if prog == "":
-	    prog = progressBar(0,totalSize,50)
+        prog = progressBar(0,totalSize,50)
     #print count, blockSize, totalSize
     #prog = progressBar(0, totalSize, 77)
     prog.updateAmount(count*blockSize)
     sys.stdout.write (str(prog))
     sys.stdout.write ("\r")
     #print count * (blockSize/1024) , "kb of " , (totalSize/1024) , "kb downloaded.\n"
-prog = ""
-sFile = "new.rpm"
-sUrl = "http://ftp.debian.org/debian/dists/unstable/main/binary-i386/Packages.bz2"
-urllib.urlretrieve(sUrl, sFile, reporthook=myReportHook)    
-print "\n\n"
+#prog = ""
+#sFile = "new.rpm"
+#sUrl = "http://ftp.debian.org/debian/dists/unstable/main/binary-i386/Packages.bz2"
+#$urllib.urlretrieve(sUrl, sFile, reporthook=myReportHook)    
+#print "\n\n"
 #temp = urllib2.urlopen(sUrl)
 #lastval = int(temp.headers['Content-Length'])
 #prog = progressBar(0, lastval, 77)
