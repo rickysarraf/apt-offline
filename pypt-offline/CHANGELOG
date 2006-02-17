@@ -1,3 +1,6 @@
+Version ?? -- XX/XX/XXXX
+	* Broke pypt-offlie.py into pypt_core.py and pypt-offline.py for modularity.
+	
 Version 0.5beta -- 03/10/2005
 	* Did more code cleanup
 	* Changed the algorithm to check in local cache
