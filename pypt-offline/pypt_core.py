@@ -1,12 +1,17 @@
 import os, shutil, string, urllib, sys, progressbar, optparse, urllib2
 
-"""This is the main core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff"""
+"""
+This is the main core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff
+"""
+
 import shutil
 
 def download_from_web(sUrl, sFile, sSourceDir):
-    """Download the required file from the web
-       The arguments are passed everytime to the function so that,
-       may be in future, we could reuse this function"""
+    """
+    Download the required file from the web
+    The arguments are passed everytime to the function so that,
+    may be in future, we could reuse this function
+    """
        
     try:
         os.chdir(sSourceDir)
@@ -58,8 +63,10 @@ def download_from_web(sUrl, sFile, sSourceDir):
 # But for now it's doing the job.
 # Need to find a better algorithm, maybe os.walk()                    
 def walk_tree_copy_debs(sRepository, sFile, sSourceDir):
-    """This function checks for a package to see if its already downloaded
-    It can search directories with depths."""
+    """
+    This function checks for a package to see if its already downloaded
+    It can search directories with depths.
+    """
     #The core algorithm is here for the whole program to function'\n'
     #It recursively searches a tree/subtree of folders for package files'\n'
     #like the directory structure of "apt-proxy". If files are found (.deb || .rpm)'\n'
@@ -119,7 +126,8 @@ def compress():
 
 
 def errfunc(errno, errormsg):
-    """We use errfunc to handler errors.
+    """
+    We use errfunc to handler errors.
     There are some error codes (-3 and 13 as of now)
     which are temporary codes, they happen when there
     is a temporary resolution failure, for example.
@@ -127,7 +135,8 @@ def errfunc(errno, errormsg):
     uri file might have other hosts also, which might
     be well accessible.
     This function does the job of behaving accordingly
-    as per the error codes."""
+    as per the error codes.
+    """
     
     if errno == -3 or errno == 13:
         #TODO: Find out what these error codes are for
@@ -174,10 +183,12 @@ def report(blockcount, bytesdownloaded, totalbytes):
     sys.stdout.flush()
 
 def starter(uri, path, cache, type = 0):
-    """uri - The uri data whill will contain the information
+    """
+    uri - The uri data whill will contain the information
     path - The path (if any) where the download needs to be done
     cache - The cache (if any) where we should check before downloading from the net
-    type - type is basically used to identify wether it's a update download or upgrade download"""
+    type - type is basically used to identify wether it's a update download or upgrade download
+    """
     
     if type == 1:
         #XXX: Oh! We're only downloading the update package list database
