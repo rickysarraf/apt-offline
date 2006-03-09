@@ -48,13 +48,14 @@ def download_from_web(sUrl, sFile, sSourceDir):
         # URLErrors shouldn't be ignored, hence program termination
         if errstring.reason.args[0] == 10060:
             errfunc(errstring.reason.args[0], errstring.reason)
-            
         #errfunc(1, errstring.reason)
         #pass
     
-    except IOError, (errno, strerror):
-        sys.strerr.write("%s\n" % (strerror))
-        errfunc(errno, strerror)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+            sys.strerr.write("%s\n" % (e.reason))
+        if hasattr(e, 'code') and hasattr(e, 'reason'):
+            errfunc(e.code, e.reason)
         
     #return bFound
 

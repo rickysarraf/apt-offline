@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # pypt-offline.py
 # version devel
-# Release: Release_0_6_Alpha1
+# Release: Release_0_6_Alpha2
 
 ############################################################################
 #    Copyright (C) Ritesh Raj Sarraf                                       #
@@ -29,7 +29,7 @@ import os, sys, optparse, pypt_core
 if __name__ == "__main__":
     
     try:
-        version = "0.6.Alpha1"
+        version = "0.6.Alpha2"
         reldate = "09/03/2006"
         copyright = "(C) 2005 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
     
