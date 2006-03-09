@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # pypt-offline.py
 # version devel
-# Release: svn_tagging_test
+# Release: Release_0_6_Alpha1
 
 ############################################################################
 #    Copyright (C) Ritesh Raj Sarraf                                       #
@@ -29,8 +29,8 @@ import os, sys, optparse, pypt_core
 if __name__ == "__main__":
     
     try:
-        version = "0.6b"
-        reldate = "03/10/2005"
+        version = "0.6.Alpha1"
+        reldate = "09/03/2006"
         copyright = "(C) 2005 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
     
         #FIXME: Option Parsing
