@@ -172,16 +172,6 @@ def errfunc(errno, errormsg):
         sys.stderr.write("Aieee! I don't understand this errorcode\n" % (errno))
         sys.exit(errno)
     
-def warn(exception_warn):
-    sys.stderr.write(exception_warn)
-
-def report(blockcount, bytesdownloaded, totalbytes):
-    # This isn't implemented yet.
-    # When implemented this would give a progress bar.        
-    sys.stdout.write("\rDownloading %r from %r ... (%r of %r)" % (blockcount, bytesdownloaded, totalbytes,))
-    sys.stdout.write("\rDownloading ... (%r of %r)" % (blockcount, bytesdownloaded,totalbytes,))
-    sys.stdout.flush()
-
 def starter(uri, path, cache, type = 0):
     """
     uri - The uri data whill will contain the information
