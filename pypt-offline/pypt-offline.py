@@ -71,7 +71,7 @@ if __name__ == "__main__":
         #parser.set_defaults(upgrade_type="upgrade")
         parser.add_option("","--fetch-upgrade", dest="fetch_upgrade", help="Fetch the list of uris which are needed for apt's databases _upgradation_. This command must be executed on the WITHNET machine", action="store", type="string", metavar="pypt-offline-upgrade.dat")
         #parser.set_defaults(fetch_upgrade="pypt-offline-upgrade.dat")
-        parser.add_option("","--install-upgrade", dest="install_upgrade", help="Install the fetched packages to the  NONET machine and _upgrade_ the packages on the NONET machine. This command must be executed on the NONET machine", action="store", type="string", metavar="pypt-offline-update-fetched.zip")
+        parser.add_option("","--install-upgrade", dest="install_upgrade", help="Install the fetched packages to the  NONET machine and _upgrade_ the packages on the NONET machine. This command must be executed on the NONET machine", action="store", type="string", metavar="pypt-offline-upgrade-fetched.zip")
         #parser.set_defaults(install_ugprade="pypt-offline-update-fetched.zip")
         (options, args) = parser.parse_args()
         #parser.check_required("-d", "-s", "-u")
@@ -110,7 +110,7 @@ if __name__ == "__main__":
             if not (options.set_upgrade and options.upgrade_type):
                 parser.error("Options --set-upgrade and --upgrade-type are mutually inclusive\n")
             else:
-                if os.getuid() != 0:
+                if os.geteuid() != 0:
                     parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                 
                 if sys.platform == "linux2" or sys.platform == "gnu0" or sys.platform == "gnukfreebsd5":
@@ -149,6 +149,12 @@ if __name__ == "__main__":
             # 2 is for upgrade packages
             download_type = 2
             pypt_core.starter(options.fetch_upgrade, options.download_dir, options.cache_dir, download_type)
+            sys.exit(0)
+            
+        if options.install_update:
+            if os.geteuid() != 0:
+                sys.stderr.write("\nYou need superuser privileges to execute this option\n")
+                sys.exit(1)
     
     except KeyboardInterrupt:
         sys.stderr.write("\nReceived immediate EXIT signal. Exiting!\n")
