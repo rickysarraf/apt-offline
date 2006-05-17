@@ -32,6 +32,8 @@ if __name__ == "__main__":
         version = "0.6.Alpha2"
         reldate = "09/03/2006"
         copyright = "(C) 2005 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
+        
+        supported_platforms = ["linux2", "gnu0", "gnukfreebsd5"]
     
         #FIXME: Option Parsing
         # There's a flaw with either optparse or I'm not well understood with it
@@ -47,7 +49,9 @@ if __name__ == "__main__":
         #parser.set_defaults(cache_dir=".")
         #parser.set_defaults(cache_dir=".")
         parser.add_option("-u","--uris", dest="uris_file", help="Full path of the uris file which contains the main database of files to be downloaded",action="store", type="string")
-        
+        parser.add_option("-z","--zip", dest="zip_it", help="Zip the downloaded files to a single zip file", action="store_true")
+        parser.add_option("--zip-update-file", dest="zip_update_file", help="Default zip file for downloaded (update) data", action="store", type="string", metavar="pypt-offline-update.zip", default="pypt-offline-update.zip")
+        parser.add_option("--zip-upgrade-file", dest="zip_upgrade_file", help="Default zip file for downloaded (upgrade) data", action="store", type="string", metavar="pypt-offline-upgrade.zip", default="pypt-offline-upgrade.zip")
         #TODO: Add updation
         # The new plan is to make pypt-offline do the updation and upgradation from within its own interface instead of expecting
         # the user to do the dirty part. We'll add options which'll take care of it.
@@ -63,7 +67,7 @@ if __name__ == "__main__":
         #parser.set_defaults(set_update="pypt-offline-update.dat")
         parser.add_option("","--fetch-update", dest="fetch_update", help="Fetch the list of uris which are needed for apt's databases _updation_. This command must be executed on the WITHNET machine", action="store", type="string", metavar="pypt-offline-update.dat")
         #parser.set_defaults(fetch_update="pypt-offline-update.dat")
-        parser.add_option("","--install-update", dest="install_update", help="Install the fetched database files to the  NONET machine and _update_ the apt database on the NONET machine. This command must be executed on the NONET machine", action="store", type="string", metavar="pypt-offline-update-fetched.zip")
+        parser.add_option("","--install-update", dest="install_update", help="Install the fetched database files to the  NONET machine and _update_ the apt database on the NONET machine. This command must be executed on the NONET machine", action="store", type="string", metavar="pypt-offline-update.zip")
         #parser.set_defaults(install_update="pypt-offline-update-fetched.zip")
         parser.add_option("","--set-upgrade", dest="set_upgrade", help="Extract the list of uris which need to be fetched for _upgradation_", action="store", type="string", metavar="pypt-offline-upgrade.dat")
         #parser.set_defaults(set_upgrade="pypt-offline-upgrade.dat")
@@ -71,7 +75,7 @@ if __name__ == "__main__":
         #parser.set_defaults(upgrade_type="upgrade")
         parser.add_option("","--fetch-upgrade", dest="fetch_upgrade", help="Fetch the list of uris which are needed for apt's databases _upgradation_. This command must be executed on the WITHNET machine", action="store", type="string", metavar="pypt-offline-upgrade.dat")
         #parser.set_defaults(fetch_upgrade="pypt-offline-upgrade.dat")
-        parser.add_option("","--install-upgrade", dest="install_upgrade", help="Install the fetched packages to the  NONET machine and _upgrade_ the packages on the NONET machine. This command must be executed on the NONET machine", action="store", type="string", metavar="pypt-offline-upgrade-fetched.zip")
+        parser.add_option("","--install-upgrade", dest="install_upgrade", help="Install the fetched packages to the  NONET machine and _upgrade_ the packages on the NONET machine. This command must be executed on the NONET machine", action="store", type="string", metavar="pypt-offline-upgrade.zip")
         #parser.set_defaults(install_ugprade="pypt-offline-update-fetched.zip")
         (options, args) = parser.parse_args()
         #parser.check_required("-d", "-s", "-u")
@@ -89,15 +93,20 @@ if __name__ == "__main__":
         #    if os.access("pypt-offline-update.dat", os.R_OK) is True:
         #        sRawUris = "pypt-offline-update.dat"
         
-            
+#        if options.zip_it:
+#            zip_it = options.zip_it
+#            zip_update_file = options.zip_update_file
+#            zip_upgrade_file = options.zip_upgrade_file
+#            
         sys.stdout.write("pypt-offline %s\n" % (version))
         sys.stdout.write("Copyright %s\n" % (copyright))
         
         if options.set_update:
-            if os.getuid() != 0:
+            if os.geteuid() != 0:
                 parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                 
-            if sys.platform == "linux2" or sys.platform == "gnu0" or sys.platform == "gnukfreebsd5":
+            #if sys.platform == "linux2" or sys.platform == "gnu0" or sys.platform == "gnukfreebsd5":
+            if sys.platform in supported_platforms:
                 sys.stdout.write("Generating database of files that are needed for an update.\n")
                 os.chdir(options.set_update)
                 os.system('/usr/bin/apt-get -qq --print-uris update > pypt-offline-update.dat')
@@ -115,6 +124,7 @@ if __name__ == "__main__":
                 
                 if sys.platform == "linux2" or sys.platform == "gnu0" or sys.platform == "gnukfreebsd5":
                     os.chdir(options.set_upgrade)
+                    # TODO: Use a more Pythonic way for it
                     if options.upgrade_type == "upgrade":
                         sys.stdout.write("Generating database of files that are needed for an upgrade.\n")
                         os.system('/usr/bin/apt-get -qq --print-uris upgrade > pypt-offline-upgrade.data')
@@ -139,7 +149,7 @@ if __name__ == "__main__":
             # 1 is for update packages 
             # 2 is for upgrade packages
             download_type = 1
-            pypt_core.starter(options.fetch_update, options.download_dir, options.cache_dir, download_type)
+            pypt_core.starter(options.fetch_update, options.download_dir, options.cache_dir, download_type, options.zip_it, options.zip_update_file, zip_upgrade_file)
             
         if options.fetch_upgrade:
             sys.stdout.write("\nFetching packages which need upgradation\n\n")
@@ -148,7 +158,7 @@ if __name__ == "__main__":
             # 1 is for update packages 
             # 2 is for upgrade packages
             download_type = 2
-            pypt_core.starter(options.fetch_upgrade, options.download_dir, options.cache_dir, download_type)
+            pypt_core.starter(options.fetch_upgrade, options.download_dir, options.cache_dir, download_type, options.zip_it, options.zip_update_file, zip_upgrade_file)
             sys.exit(0)
             
         if options.install_update:
