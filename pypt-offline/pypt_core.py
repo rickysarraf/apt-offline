@@ -4,21 +4,19 @@ import os, shutil, string, urllib, sys, progressbar, optparse, urllib2, zipfile
 This is the main core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff
 """
 
-def zip_the_file(file, path):
+def zip_the_file(zip_file, file):
     """
     Condenses all the files into one single file for easy transfer
     """
     
     try:
-        file = zipfile.ZipFile(file, 'wb')
+        file = zipfile.ZipFile(zip_file, "w")
     except:
         #TODO Handle the exceptions
         sys.stderr.write("\nAieee! Some error exception in creating a zip file\n" % (file))
         
-    for filename in path:
-         file.write(filename, os.path.basename(filename))
-            
-    sys.stdout.write("Done creating the zip archive %s" % (file))
+    #zip_file.write(filename, os.path.basename(filename))
+    file.write(file, os.path.basename(zip_file))
     file.close()
     
 def unzip_the_file(file, path):
@@ -27,18 +25,18 @@ def unzip_the_file(file, path):
     """
     
     try:
-        file = zipfile.ZipFile(file, 'rb')
+        zip_file = zipfile.ZipFile(file, 'rb')
     except:
         #TODO Handle the exceptions
         sys.stderr.write("\nAieee! Some error exception in reading the zip file %s\n" % (file))
         
-    for filename in file.namelist():
-        data = file.read()
+    for filename in zip_file.namelist():
+        data = zip_file.read()
         
-    file.close()
+    zip_file.close()
     
 
-def download_from_web(sUrl, sFile, sSourceDir):
+def download_from_web(sUrl, sFile, sSourceDir, zip_it, zip_file):
     """
     Download the required file from the web
     The arguments are passed everytime to the function so that,
@@ -46,14 +44,16 @@ def download_from_web(sUrl, sFile, sSourceDir):
     """
        
     try:
-        os.chdir(sSourceDir)
         block_size = 4096
         i = 0
         counter = 0
+        
+        os.chdir(sSourceDir)
         temp = urllib2.urlopen(sUrl)
         headers = temp.info()
         size = int(headers['Content-Length'])
         data = open(sFile,'wb')
+        
         sys.stdout.write("Downloading %s\n" % (sFile))
         while i < size:
             data.write (temp.read(block_size))
@@ -63,6 +63,11 @@ def download_from_web(sUrl, sFile, sSourceDir):
         print "\n"
         data.close()
         temp.close()
+        
+        # We'll zip the downloaded files if the user wants it
+        if zip_it:
+            # Zip the downloaded file
+            zip_the_file(zip_file, sFile)
         
         sys.stdout.write("%s successfully downloaded from %s\n\n" % (sFile, sUrl))
         return True
@@ -142,7 +147,6 @@ def files(root):
         for file in files: 
             yield path, file 
 
-
 def copy_first_match(repository, filename, dest_dir): # aka walk_tree_copy() 
     for path, file in files(repository): 
         if file == filename: 
@@ -202,7 +206,7 @@ def errfunc(errno, errormsg):
         sys.stderr.write("Aieee! I don't understand this errorcode\n" % (errno))
         sys.exit(errno)
     
-def starter(uri, path, cache, type = 0):
+def starter(uri, path, cache, type = 0, zip_it, zip_update_file, zip_upgrade_file):
     """
     uri - The uri data whill will contain the information
     path - The path (if any) where the download needs to be done
@@ -221,7 +225,8 @@ def starter(uri, path, cache, type = 0):
                 sSourceDir = os.path.abspath("pypt-downloads")
             else:
                 try:
-                    os.mkdir("pypt-downloads", 0077)
+                    os.umask(0002)
+                    os.mkdir("pypt-downloads")
                     sSourceDir = os.path.abspath("pypt-downloads")
                 except:
                     sys.stderr.write("Aieeee! I couldn't create a directory")
@@ -234,6 +239,9 @@ def starter(uri, path, cache, type = 0):
         except IOError, (errno, strerror):
             sys.stderr.write("%s %s\n" % (errno, strerror))
             errfunc(errno)
+            
+        #if options.zip_it:
+        #    zip_update_file = options.zip_update_file
         
         for each_single_item in lRawData:
             lSplitData = each_single_item.split(' ') # Split on the basis of ' ' i.e. space
@@ -243,21 +251,21 @@ def starter(uri, path, cache, type = 0):
             sUrl = string.rstrip(string.lstrip(''.join(lSplitData[0]), chars="'"), chars="'")
             sFile = string.rstrip(string.lstrip(''.join(lSplitData[1]), chars="'"), chars="'")
             
-            sys.stdout.write("Downloading %s from %s!\n") % (sFile, sUrl)
-            bStatus = download_from_web(sUrl, sFile, sSourceDir)
-            if bStatus != True:
-                 sys.stdout.write("%s not downloaded from %s\n" % (sFile, sUrl))
+            sys.stdout.write("Downloading %s from %s!\n" % (sFile, sUrl))
+            #bStatus = download_from_web(sUrl, sFile, sSourceDir)
+            #if bStatus != True:
+            #     sys.stdout.write("%s not downloaded from %s\n" % (sFile, sUrl))
+            if download_from_web(sUrl, sFile, sSourceDir, zip_it, zip_update_file) != True:
+                sys.stdout.write("%s not downloaded from %s\n" % (sFile, sUrl))
                  
-        # Okay! Now everything is downloaded. Let's zip them to a single file.
-        zip_the_file("pypt-offline-update-fetched.zip", sSourceDir)
-                 
-    if type  == 2:
+    if type == 2:
         if path is None:
             if os.access("pypt-downloads", os.W_OK) is True:
                 sSourceDir = os.path.abspath("pypt-downloads")
             else:
                 try:
-                    os.mkdir("pypt-downloads", 0077)
+                    os.umask(0002)
+                    os.mkdir("pypt-downloads")
                     sSourceDir = os.path.abspath("pypt-downloads")
                 except:
                     sys.stderr.write("Aieeee! I couldn't create a directory")
@@ -284,10 +292,14 @@ def starter(uri, path, cache, type = 0):
             sFile = string.rstrip(string.lstrip(''.join(lSplitData[1]), chars="'"), chars="'")
             #bFound = False
             #bStatus = walk_tree_copy_debs(sRepository, sFile, sSourceDir)
-            bStatus = copy_first_match(sRepository, sFile, sSourceDir)
-            if bStatus == False:
-                bStatus = download_from_web(sUrl, sFile, sSourceDir)
-                if bStatus != True:
+            #bStatus = copy_first_match(sRepository, sFile, sSourceDir)
+            #if bStatus == False:
+            #    bStatus = download_from_web(sUrl, sFile, sSourceDir)
+            #    if bStatus != True:
+            #         sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
+                     
+            if copy_first_match(sRepository, sFile, sSourceDir) == False:
+                if download_from_web(sUrl, sFile, sSourceDir) != True:
                      sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
                      
         zip_the_file("pypt-offline-upgrade-fetched.zip", sSourceDir) 
