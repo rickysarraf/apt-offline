@@ -36,7 +36,7 @@ def unzip_the_file(file, path):
     zip_file.close()
     
 
-def download_from_web(sUrl, sFile, sSourceDir, zip_it, zip_file):
+def download_from_web(sUrl, sFile, sSourceDir):
     """
     Download the required file from the web
     The arguments are passed everytime to the function so that,
@@ -63,11 +63,6 @@ def download_from_web(sUrl, sFile, sSourceDir, zip_it, zip_file):
         print "\n"
         data.close()
         temp.close()
-        
-        # We'll zip the downloaded files if the user wants it
-        if zip_it:
-            # Zip the downloaded file
-            zip_the_file(zip_file, sFile)
         
         sys.stdout.write("%s successfully downloaded from %s\n\n" % (sFile, sUrl))
         return True
@@ -206,7 +201,7 @@ def errfunc(errno, errormsg):
         sys.stderr.write("Aieee! I don't understand this errorcode\n" % (errno))
         sys.exit(errno)
     
-def starter(uri, path, cache, type = 0, zip_it, zip_update_file, zip_upgrade_file):
+def starter(uri, path, cache, type = 0):
     """
     uri - The uri data whill will contain the information
     path - The path (if any) where the download needs to be done

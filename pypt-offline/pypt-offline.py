@@ -149,7 +149,7 @@ if __name__ == "__main__":
             # 1 is for update packages 
             # 2 is for upgrade packages
             download_type = 1
-            pypt_core.starter(options.fetch_update, options.download_dir, options.cache_dir, download_type, options.zip_it, options.zip_update_file, zip_upgrade_file)
+            pypt_core.starter(options.fetch_update, options.download_dir, options.cache_dir, download_type)
             
         if options.fetch_upgrade:
             sys.stdout.write("\nFetching packages which need upgradation\n\n")
@@ -158,7 +158,7 @@ if __name__ == "__main__":
             # 1 is for update packages 
             # 2 is for upgrade packages
             download_type = 2
-            pypt_core.starter(options.fetch_upgrade, options.download_dir, options.cache_dir, download_type, options.zip_it, options.zip_update_file, zip_upgrade_file)
+            pypt_core.starter(options.fetch_upgrade, options.download_dir, options.cache_dir, download_type)
             sys.exit(0)
             
         if options.install_update:
