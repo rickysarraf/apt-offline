@@ -4,20 +4,26 @@ import os, shutil, string, urllib, sys, progressbar, optparse, urllib2, zipfile
 This is the main core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff
 """
 
-def zip_the_file(zip_file, file):
+def zip_the_file(zip_file_name, files_to_compress, sSourceDir):
     """
     Condenses all the files into one single file for easy transfer
     """
+    try:
+        os.chdir(sSourceDir)
+    except:
+        # TODO
+        # Handle this exception
+        pass
     
     try:
-        file = zipfile.ZipFile(zip_file, "w")
+        filename = zipfile.ZipFile(zip_file_name, "a")
     except:
         #TODO Handle the exceptions
         sys.stderr.write("\nAieee! Some error exception in creating a zip file\n" % (file))
         
     #zip_file.write(filename, os.path.basename(filename))
-    file.write(file, os.path.basename(zip_file))
-    file.close()
+    filename.write(files_to_compress, files_to_compress, zipfile.ZIP_DEFLATED)
+    filename.close()
     
 def unzip_the_file(file, path):
     """
@@ -201,7 +207,7 @@ def errfunc(errno, errormsg):
         sys.stderr.write("Aieee! I don't understand this errorcode\n" % (errno))
         sys.exit(errno)
     
-def starter(uri, path, cache, type = 0):
+def starter(uri, path, cache, zip_bool, zip_type_file, type = 0):
     """
     uri - The uri data whill will contain the information
     path - The path (if any) where the download needs to be done
@@ -250,8 +256,11 @@ def starter(uri, path, cache, type = 0):
             #bStatus = download_from_web(sUrl, sFile, sSourceDir)
             #if bStatus != True:
             #     sys.stdout.write("%s not downloaded from %s\n" % (sFile, sUrl))
-            if download_from_web(sUrl, sFile, sSourceDir, zip_it, zip_update_file) != True:
+            if download_from_web(sUrl, sFile, sSourceDir) != True:
                 sys.stdout.write("%s not downloaded from %s\n" % (sFile, sUrl))
+            else:
+                if zip_bool:
+                    zip_the_file(zip_type_file, sFile, sSourceDir)
                  
     if type == 2:
         if path is None:
@@ -296,5 +305,13 @@ def starter(uri, path, cache, type = 0):
             if copy_first_match(sRepository, sFile, sSourceDir) == False:
                 if download_from_web(sUrl, sFile, sSourceDir) != True:
                      sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
+                else:
+                    if zip_bool:
+                        zip_the_file(zip_type_file, sFile, sSourceDir)
+            elif True:
+                if zip_bool:
+                    zip_the_file(zip_type_file, sFile, sSourceDir)
+                        
+                         
                      
         zip_the_file("pypt-offline-upgrade-fetched.zip", sSourceDir) 
