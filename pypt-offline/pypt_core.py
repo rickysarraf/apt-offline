@@ -1,7 +1,7 @@
-import os, shutil, string, urllib, sys, progressbar, optparse, urllib2, zipfile
+import os, shutil, string, sys, progressbar, urllib2, zipfile, pypt_md5_check, pypt_variables
 
 """
-This is the main core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff
+This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff
 """
 
 def zip_the_file(zip_file_name, files_to_compress, sSourceDir):
@@ -11,14 +11,13 @@ def zip_the_file(zip_file_name, files_to_compress, sSourceDir):
     try:
         os.chdir(sSourceDir)
     except:
-        # TODO
-        # Handle this exception
+        #TODO: Handle this exception
         pass
     
     try:
         filename = zipfile.ZipFile(zip_file_name, "a")
     except:
-        #TODO Handle the exceptions
+        #TODO Handle the exception
         sys.stderr.write("\nAieee! Some error exception in creating a zip file\n" % (file))
         
     #zip_file.write(filename, os.path.basename(filename))
@@ -33,7 +32,7 @@ def unzip_the_file(file, path):
     try:
         zip_file = zipfile.ZipFile(file, 'rb')
     except:
-        #TODO Handle the exceptions
+        #TODO: Handle the exceptions
         sys.stderr.write("\nAieee! Some error exception in reading the zip file %s\n" % (file))
         
     for filename in zip_file.namelist():
@@ -42,7 +41,7 @@ def unzip_the_file(file, path):
     zip_file.close()
     
 
-def download_from_web(sUrl, sFile, sSourceDir):
+def download_from_web(sUrl, sFile, sSourceDir, checksum):
     """
     Download the required file from the web
     The arguments are passed everytime to the function so that,
@@ -70,9 +69,17 @@ def download_from_web(sUrl, sFile, sSourceDir):
         data.close()
         temp.close()
         
+        #INFO: Do an md5 checksum
+        if pypt_variables.options.disable_md5check == True:
+            pass
+        else:
+            if pypt_md5_check.md5_check(sFile, checksum, sSourceDir) != True:
+                os.remove(sFile)
+                sys.stderr.write("%s checksum mismatch. File removed\n" % (sFile))
         sys.stdout.write("%s successfully downloaded from %s\n\n" % (sFile, sUrl))
         return True
         
+    #FIXME: Find out optimal fix for this exception handling
     except OSError, (errno, strerror):
         sys.stderr.write ("%s\n" %(sSourceDir))
         errfunc(errno, strerror)
@@ -91,13 +98,14 @@ def download_from_web(sUrl, sFile, sSourceDir):
     
     except IOError, e:
         if hasattr(e, 'reason'):
-            sys.strerr.write("%s\n" % (e.reason))
+            sys.stderr.write("%s\n" % (e.reason))
         if hasattr(e, 'code') and hasattr(e, 'reason'):
             errfunc(e.code, e.reason)
         
     #return bFound
 
 #TODO: walk_tree_copy_debs
+
 # This might require simplification and optimization.
 # But for now it's doing the job.
 # Need to find a better algorithm, maybe os.walk()                    
@@ -148,16 +156,40 @@ def files(root):
         for file in files: 
             yield path, file 
 
-def copy_first_match(repository, filename, dest_dir): # aka walk_tree_copy() 
+def copy_first_match(repository, filename, dest_dir, checksum): # aka walk_tree_copy() 
     for path, file in files(repository): 
-        if file == filename: 
-            try:
-                shutil.copy(os.path.join(path, file), dest_dir)
-                sys.stdout.write("%s copied from local cache %s.\n" % (file, repository))
-            except shutil.Error:
-                sys.stdout.write("%s is available in %s. Skipping Copy!\n\n" % (file, dest_dir))
-            return True 
+        if file == filename:
+            #INFO: md5check is compulsory here
+            # There's no point in checking for the disable-md5 option because
+            # copying a damaged file is of no use
+            if pypt_md5_check.md5_check(file, checksum, path) == True:
+               try:
+                  shutil.copy(os.path.join(path, file), dest_dir)
+                  sys.stdout.write("%s copied from local cache %s.\n" % (file, repository))
+               except shutil.Error:
+                  sys.stdout.write("%s is available in %s. Skipping Copy!\n\n" % (file, dest_dir))
+               return True
     return False 
+
+def stripper(item):
+    
+    #INFO: This is obsolete
+    #lSplitData = each_single_item.split(' ') # Split on the basis of ' ' i.e. space
+    # We initialize the variables "sUrl" and "sFile" here.
+    # We also strip the single quote character "'" to get the real data
+    #sUrl = string.rstrip(string.lstrip(''.join(lSplitData[0]), chars="'"), chars="'")
+    #sFile = string.rstrip(string.lstrip(''.join(lSplitData[1]), chars="'"), chars="'")
+            
+    item = item.split(' ')
+    url = string.rstrip(string.lstrip(''.join(item[0]), chars="'"), chars="'")
+    file = string.rstrip(string.lstrip(''.join(item[1]), chars="'"), chars="'")
+    size = string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'")
+    #INFO: md5 ends up having '\n' with it.
+    # That needs to be stripped too.
+    md5_text = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
+    md5_text = string.rstrip(md5_text, chars = "\n")
+    
+    return url, file, size, md5_text
 
 
 def errfunc(errno, errormsg):
@@ -216,7 +248,7 @@ def starter(uri, path, cache, zip_bool, zip_type_file, type = 0):
     """
     
     if type == 1:
-        #XXX: Oh! We're only downloading the update package list database
+        #INFO: Oh! We're only downloading the update package list database
         # Package Update database changes almost daily in Debian.
         # This is at least true for Sid. Hence it doesn't make sense to copy
         # update packages' database from a cache.
@@ -245,12 +277,7 @@ def starter(uri, path, cache, zip_bool, zip_type_file, type = 0):
         #    zip_update_file = options.zip_update_file
         
         for each_single_item in lRawData:
-            lSplitData = each_single_item.split(' ') # Split on the basis of ' ' i.e. space
-    
-            # We initialize the variables "sUrl" and "sFile" here.
-            # We also strip the single quote character "'" to get the real data
-            sUrl = string.rstrip(string.lstrip(''.join(lSplitData[0]), chars="'"), chars="'")
-            sFile = string.rstrip(string.lstrip(''.join(lSplitData[1]), chars="'"), chars="'")
+            (sUrl, sFile, download_size, checksum) = stripper(each_single_item)
             
             sys.stdout.write("Downloading %s from %s!\n" % (sFile, sUrl))
             #bStatus = download_from_web(sUrl, sFile, sSourceDir)
@@ -288,22 +315,10 @@ def starter(uri, path, cache, zip_bool, zip_type_file, type = 0):
             errfunc(errno)
         
         for each_single_item in lRawData:
-            lSplitData = each_single_item.split(' ') # Split on the basis of ' ' i.e. space
-    
-            # We initialize the variables "sUrl" and "sFile" here.
-            # We also strip the single quote character "'" to get the real data
-            sUrl = string.rstrip(string.lstrip(''.join(lSplitData[0]), chars="'"), chars="'")
-            sFile = string.rstrip(string.lstrip(''.join(lSplitData[1]), chars="'"), chars="'")
-            #bFound = False
-            #bStatus = walk_tree_copy_debs(sRepository, sFile, sSourceDir)
-            #bStatus = copy_first_match(sRepository, sFile, sSourceDir)
-            #if bStatus == False:
-            #    bStatus = download_from_web(sUrl, sFile, sSourceDir)
-            #    if bStatus != True:
-            #         sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
+            (sUrl, sFile, download_size, checksum) = stripper(each_single_item)
                      
-            if copy_first_match(sRepository, sFile, sSourceDir) == False:
-                if download_from_web(sUrl, sFile, sSourceDir) != True:
+            if copy_first_match(sRepository, sFile, sSourceDir, checksum) == False:
+                if download_from_web(sUrl, sFile, sSourceDir, checksum) != True:
                      sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
                 else:
                     if zip_bool:
@@ -312,6 +327,4 @@ def starter(uri, path, cache, zip_bool, zip_type_file, type = 0):
                 if zip_bool:
                     zip_the_file(zip_type_file, sFile, sSourceDir)
                         
-                         
-                     
-        zip_the_file("pypt-offline-upgrade-fetched.zip", sSourceDir) 
+        #zip_the_file("pypt-offline-upgrade-fetched.zip", sSourceDir) 
