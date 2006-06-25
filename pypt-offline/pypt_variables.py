@@ -6,7 +6,12 @@ try:
    copyright = "(C) 2005 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
         
    supported_platforms = ["linux2", "gnu0", "gnukfreebsd5"]
-    
+   apt_update_target_path = '/var/lib/'
+   apt_package_target_path = '/var/cache/apt/archives/'
+   # Dummy paths for now.
+   apt_update_target_path = 'C:\\temp'
+   apt_package_target_path = 'C:\\temp'
+   
    #FIXME: Option Parsing
    # There's a flaw with either optparse or I'm not well understood with it
    # Presently you need to provide all the arguments to it to work.
@@ -14,7 +19,7 @@ try:
    #FIXME: Another fixme
    #parser = OptionParser()
    #parser = optparse.OptionParser()
-   parser = optparse.OptionParser(usage="%prog [OPTION1, OPTION2, ...]", version="%prog " + version)
+   parser = optparse.OptionParser(usage="%prog [OPTION1, OPTION2, ...]", version="%prog " + version + "\n" + copyright)
    parser.add_option("-d","--download-dir", dest="download_dir", help="Root directory path to save the downloaded files", action="store", type="string", metavar="pypt-downloads")
    #parser.set_defaults(download_dir="pypt-downloads")
    parser.add_option("-s","--cache-dir", dest="cache_dir", help="Root directory path where the pre-downloaded files will be searched. If not, give a period '.'",action="store", type="string", metavar=".")
@@ -116,12 +121,12 @@ try:
       #TODO: Updation
       # Implement below similar code for updation
       sys.stdout.write("\nFetching uris which update apt's package database\n\n")
-            
+      
+      options.disable_md5check = True
       # Since we're in fetch_update, the download_type will be non-deb/rpm data
       # 1 is for update packages 
       # 2 is for upgrade packages
-      download_type = 1
-      pypt_core.starter(options.fetch_update, options.download_dir, options.cache_dir, options.zip_it, options.zip_update_file, download_type)
+      pypt_core.fetcher(options.fetch_update, options.download_dir, options.cache_dir, options.zip_it, options.zip_update_file, 1)
             
    if options.fetch_upgrade:
       sys.stdout.write("\nFetching packages which need upgradation\n\n")
@@ -129,15 +134,25 @@ try:
       # Since we're in fetch_update, the download_type will be non-deb/rpm data
       # 1 is for update packages 
       # 2 is for upgrade packages
-      download_type = 2
-      pypt_core.starter(options.fetch_upgrade, options.download_dir, options.cache_dir, options.zip_it, options.zip_upgrade_file, download_type)
+      pypt_core.fetcher(options.fetch_upgrade, options.download_dir, options.cache_dir, options.zip_it, options.zip_upgrade_file, 2)
       sys.exit(0)
             
    if options.install_update:
-       if os.geteuid() != 0:
-           sys.stderr.write("\nYou need superuser privileges to execute this option\n")
-           sys.exit(1)
-        
+       #if os.geteuid() != 0:
+       #    sys.stderr.write("\nYou need superuser privileges to execute this option\n")
+       #    sys.exit(1)
+       if os.path.isfile(options.install_update) is True:
+           # Okay! We're a file. It should be a zip file
+           pass
+       elif os.path.isdir(options.install_update) is True:
+           # We're a directory
+           pypt_core.syncer(options.install_update, apt_update_target_path, 2)
+       else:
+           sys.sterr.write("Aieee! %s is unsupported format\n" % (options.install_update))
+       #pypt_core.syncer(options.install_update, apt_update_target_path, 1)
+       #if pypt_core.unzip_the_file(options.install_update, apt_update_target_path) == False:
+           
+           
 except KeyboardInterrupt:
    sys.stderr.write("\nReceived immediate EXIT signal. Exiting!\n")
    sys.exit(1)
