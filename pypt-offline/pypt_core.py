@@ -1,13 +1,19 @@
-import os, shutil, string, sys, progressbar, urllib2, zipfile, pypt_md5_check, pypt_variables
+import os, shutil, string, sys, progressbar, urllib2, pypt_md5_check, pypt_variables
 
 """
 This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff
 """
 
-def zip_the_file(zip_file_name, files_to_compress, sSourceDir):
+def compress_the_file(zip_file_name, files_to_compress, sSourceDir):
     """
     Condenses all the files into one single file for easy transfer
     """
+    
+    try:
+        import zipfile, bzip2, gzip
+    except ImportError:
+        sys.stderr.write("Aieeee! module not found.\n")
+        
     try:
         os.chdir(sSourceDir)
     except:
@@ -24,22 +30,39 @@ def zip_the_file(zip_file_name, files_to_compress, sSourceDir):
     filename.write(files_to_compress, files_to_compress, zipfile.ZIP_DEFLATED)
     filename.close()
     
-def unzip_the_file(file, path):
+def decompress_the_file(file, path):
     """
     Extracts all the files from a single condensed archive file
     """
     
-    try:
-        zip_file = zipfile.ZipFile(file, 'rb')
-    except:
-        #TODO: Handle the exceptions
-        sys.stderr.write("\nAieee! Some error exception in reading the zip file %s\n" % (file))
-        
-    for filename in zip_file.namelist():
-        data = zip_file.read()
-        
-    zip_file.close()
+    archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
     
+    try:
+        import pypt_magic
+    except ImportError:
+        sys.stderr.write("Aieeee! module not found.\n")
+        
+    if pypt_magic.file(file) == "application/x-bzip2":
+        pass
+    elif pypt_magic.file(file) == "application/gzip":
+        pass
+    elif pypt_magic.file(file) == "application/zip":
+        try:
+            zip_file = zipfile.ZipFile(file, 'rb')
+        except:
+            #TODO: Handle the exceptions
+            sys.stderr.write("\nAieee! Some error exception in reading the zip file %s\n" % (file))
+            return False
+            
+        for filename in zip_file.namelist():
+            data = zip_file.read()
+            
+        zip_file.close()
+    else:
+        sys.stderr.write("Aieeee! %s is unknown archive.\n" % (file))
+        return False
+        
+    return True
 
 def download_from_web(sUrl, sFile, sSourceDir, checksum):
     """
@@ -239,7 +262,7 @@ def errfunc(errno, errormsg):
         sys.stderr.write("Aieee! I don't understand this errorcode\n" % (errno))
         sys.exit(errno)
     
-def starter(uri, path, cache, zip_bool, zip_type_file, type = 0):
+def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
     """
     uri - The uri data whill will contain the information
     path - The path (if any) where the download needs to be done
@@ -283,7 +306,7 @@ def starter(uri, path, cache, zip_bool, zip_type_file, type = 0):
             #bStatus = download_from_web(sUrl, sFile, sSourceDir)
             #if bStatus != True:
             #     sys.stdout.write("%s not downloaded from %s\n" % (sFile, sUrl))
-            if download_from_web(sUrl, sFile, sSourceDir) != True:
+            if download_from_web(sUrl, sFile, sSourceDir, None) != True:
                 sys.stdout.write("%s not downloaded from %s\n" % (sFile, sUrl))
             else:
                 if zip_bool:
@@ -322,9 +345,16 @@ def starter(uri, path, cache, zip_bool, zip_type_file, type = 0):
                      sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
                 else:
                     if zip_bool:
-                        zip_the_file(zip_type_file, sFile, sSourceDir)
+                        compress_the_file(zip_type_file, sFile, sSourceDir)
             elif True:
                 if zip_bool:
-                    zip_the_file(zip_type_file, sFile, sSourceDir)
+                    compress_the_file(zip_type_file, sFile, sSourceDir)
                         
         #zip_the_file("pypt-offline-upgrade-fetched.zip", sSourceDir) 
+        
+def syncer(install_file_path, target_path, type=None):
+    if type == 1:
+        pass
+    elif type == 2:
+        for x in os.listdir(install_file_path):
+            decompress_the_file(os.path.join(install_file_path, x), target_path)
