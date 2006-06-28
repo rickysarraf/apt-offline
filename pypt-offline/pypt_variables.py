@@ -148,7 +148,7 @@ try:
            # We're a directory
            pypt_core.syncer(options.install_update, apt_update_target_path, 2)
        else:
-           sys.sterr.write("Aieee! %s is unsupported format\n" % (options.install_update))
+           sys.strerr.write("Aieee! %s is unsupported format\n" % (options.install_update))
        #pypt_core.syncer(options.install_update, apt_update_target_path, 1)
        #if pypt_core.unzip_the_file(options.install_update, apt_update_target_path) == False:
            

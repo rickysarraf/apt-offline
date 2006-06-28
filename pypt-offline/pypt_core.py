@@ -30,21 +30,32 @@ def compress_the_file(zip_file_name, files_to_compress, sSourceDir):
     filename.write(files_to_compress, files_to_compress, zipfile.ZIP_DEFLATED)
     filename.close()
     
-def decompress_the_file(file, path):
-    """
-    Extracts all the files from a single condensed archive file
-    """
+def decompress_the_file(file, path, filename, archive_type):
+    '''Extracts all the files from a single condensed archive file'''
     
-    archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
     
-    try:
-        import pypt_magic
-    except ImportError:
-        sys.stderr.write("Aieeee! module not found.\n")
-        
-    if pypt_magic.file(file) == "application/x-bzip2":
-        pass
-    elif pypt_magic.file(file) == "application/gzip":
+    if archive_type is 1:
+        try:
+            import bz2
+        except ImportError:
+            sys.stderr.write("Aieeee! Module bz2 is not available.\n")
+        try:
+            fh = bz2.BZ2File(file, 'r')
+        except:
+            sys.stderr.write("Couldn't open file %s for reading.\n" % (file))
+        try:
+            os.chdir(path)
+        except:
+            sys.stderr.write("Couldn't chdir() to %s.\n" % (path_))
+        try:
+            wr_fh = open (filename, 'wb')
+        except:
+            sys.stderr.write("Couldn't open file %s at path %s for writing.\n" % (filename, path))
+        wr_fh.write(fh.read())
+        wr_fh.close()
+        fh.close()
+        sys.stdout.write("%s file synced\n" % (filename))
+    elif archive_type is 2:
         pass
     elif pypt_magic.file(file) == "application/zip":
         try:
@@ -99,7 +110,7 @@ def download_from_web(sUrl, sFile, sSourceDir, checksum):
             if pypt_md5_check.md5_check(sFile, checksum, sSourceDir) != True:
                 os.remove(sFile)
                 sys.stderr.write("%s checksum mismatch. File removed\n" % (sFile))
-        sys.stdout.write("%s successfully downloaded from %s\n\n" % (sFile, sUrl))
+        #sys.stdout.write("%s successfully downloaded from %s\n\n" % (sFile, sUrl))
         return True
         
     #FIXME: Find out optimal fix for this exception handling
@@ -302,12 +313,11 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
         for each_single_item in lRawData:
             (sUrl, sFile, download_size, checksum) = stripper(each_single_item)
             
-            sys.stdout.write("Downloading %s from %s!\n" % (sFile, sUrl))
             #bStatus = download_from_web(sUrl, sFile, sSourceDir)
             #if bStatus != True:
             #     sys.stdout.write("%s not downloaded from %s\n" % (sFile, sUrl))
             if download_from_web(sUrl, sFile, sSourceDir, None) != True:
-                sys.stdout.write("%s not downloaded from %s\n" % (sFile, sUrl))
+                sys.stderr.write("%s not downloaded from %s\n" % (sFile, sUrl))
             else:
                 if zip_bool:
                     zip_the_file(zip_type_file, sFile, sSourceDir)
@@ -356,5 +366,25 @@ def syncer(install_file_path, target_path, type=None):
     if type == 1:
         pass
     elif type == 2:
-        for x in os.listdir(install_file_path):
-            decompress_the_file(os.path.join(install_file_path, x), target_path)
+        for eachfile in os.listdir(install_file_path):
+            
+            archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
+            archive_type = None
+            try:
+                import pypt_magic
+            except ImportError:
+                sys.stderr.write("Aieeee! module not found.\n")
+                
+            if pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/x-bzip2":
+                decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 1)
+            elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/gzip":
+                decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 2)
+            elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/zip":
+                decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 3)
+            elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "PGP armored data":
+                shutil.copy(os.path.join(install_file_path, eachfile), target_path)
+                sys.stdout.write("%s file synced.\n" % (eachfile))
+            else:
+                sys.stderr.write("Aieeee! I don't understand filetype %s\n" % (eachfile))
+                
+        
