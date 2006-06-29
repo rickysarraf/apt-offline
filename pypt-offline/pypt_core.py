@@ -10,7 +10,7 @@ def compress_the_file(zip_file_name, files_to_compress, sSourceDir):
     """
     
     try:
-        import zipfile, bzip2, gzip
+        import zipfile
     except ImportError:
         sys.stderr.write("Aieeee! module not found.\n")
         
@@ -24,7 +24,8 @@ def compress_the_file(zip_file_name, files_to_compress, sSourceDir):
         filename = zipfile.ZipFile(zip_file_name, "a")
     except:
         #TODO Handle the exception
-        sys.stderr.write("\nAieee! Some error exception in creating a zip file\n" % (file))
+        sys.stderr.write("\nAieee! Some error exception in creating zip file %s\n" % (zip_file_name))
+        sys.exit(1)
         
     #zip_file.write(filename, os.path.basename(filename))
     filename.write(files_to_compress, files_to_compress, zipfile.ZIP_DEFLATED)
@@ -320,7 +321,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
                 sys.stderr.write("%s not downloaded from %s\n" % (sFile, sUrl))
             else:
                 if zip_bool:
-                    zip_the_file(zip_type_file, sFile, sSourceDir)
+                    compress_the_file(zip_type_file, sFile, sSourceDir)
                  
     if type == 2:
         if path is None:
