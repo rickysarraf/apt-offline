@@ -1,13 +1,9 @@
 import os, shutil, string, sys, progressbar, urllib2, pypt_md5_check, pypt_variables
 
-"""
-This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff
-"""
+'''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
 def compress_the_file(zip_file_name, files_to_compress, sSourceDir):
-    """
-    Condenses all the files into one single file for easy transfer
-    """
+    '''Condenses all the files into one single file for easy transfer'''
     
     try:
         import zipfile
@@ -22,6 +18,10 @@ def compress_the_file(zip_file_name, files_to_compress, sSourceDir):
     
     try:
         filename = zipfile.ZipFile(zip_file_name, "a")
+    except IOError:
+        #INFO By design zipfile throws an IOError exception when you open
+        # in "append" mode and the file is not present.
+        filename = zipfile.ZipFile(zip_file_name, "w")
     except:
         #TODO Handle the exception
         sys.stderr.write("\nAieee! Some error exception in creating zip file %s\n" % (zip_file_name))
@@ -58,7 +58,7 @@ def decompress_the_file(file, path, filename, archive_type):
         sys.stdout.write("%s file synced\n" % (filename))
     elif archive_type is 2:
         pass
-    elif pypt_magic.file(file) == "application/zip":
+    elif archive_type is 3:
         try:
             zip_file = zipfile.ZipFile(file, 'rb')
         except:
@@ -77,11 +77,11 @@ def decompress_the_file(file, path, filename, archive_type):
     return True
 
 def download_from_web(sUrl, sFile, sSourceDir, checksum):
-    """
+    '''
     Download the required file from the web
     The arguments are passed everytime to the function so that,
     may be in future, we could reuse this function
-    """
+    '''
        
     try:
         block_size = 4096
@@ -145,10 +145,10 @@ def download_from_web(sUrl, sFile, sSourceDir, checksum):
 # But for now it's doing the job.
 # Need to find a better algorithm, maybe os.walk()                    
 def walk_tree_copy_debs(sRepository, sFile, sSourceDir):
-    """
+    '''
     This function checks for a package to see if its already downloaded
     It can search directories with depths.
-    """
+    '''
     #The core algorithm is here for the whole program to function'\n'
     #It recursively searches a tree/subtree of folders for package files'\n'
     #like the directory structure of "apt-proxy". If files are found (.deb || .rpm)'\n'
@@ -192,6 +192,8 @@ def files(root):
             yield path, file 
 
 def copy_first_match(repository, filename, dest_dir, checksum): # aka walk_tree_copy() 
+    '''Walks into "reposiotry" looking for "filename".
+    If found, copies it to "dest_dir" but first verifies their md5 "checksum".'''
     for path, file in files(repository): 
         if file == filename:
             #INFO: md5check is compulsory here
@@ -207,6 +209,13 @@ def copy_first_match(repository, filename, dest_dir, checksum): # aka walk_tree_
     return False 
 
 def stripper(item):
+    '''Strips extra characters from "item".
+    Breaks "item" into:
+    url - The URL
+    file - The actual package file
+    size - The file size
+    md5_text - The md5 checksum test
+    and returns them.'''
     
     #INFO: This is obsolete
     #lSplitData = each_single_item.split(' ') # Split on the basis of ' ' i.e. space
@@ -228,7 +237,7 @@ def stripper(item):
 
 
 def errfunc(errno, errormsg):
-    """
+    '''
     We use errfunc to handler errors.
     There are some error codes (-3 and 13 as of now)
     which are temporary codes, they happen when there
@@ -238,7 +247,7 @@ def errfunc(errno, errormsg):
     be well accessible.
     This function does the job of behaving accordingly
     as per the error codes.
-    """
+    '''
     
     if errno == -3 or errno == 13:
         #TODO: Find out what these error codes are for
@@ -275,12 +284,12 @@ def errfunc(errno, errormsg):
         sys.exit(errno)
     
 def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
-    """
+    '''
     uri - The uri data whill will contain the information
     path - The path (if any) where the download needs to be done
     cache - The cache (if any) where we should check before downloading from the net
     type - type is basically used to identify wether it's a update download or upgrade download
-    """
+    '''
     
     if type == 1:
         #INFO: Oh! We're only downloading the update package list database
@@ -364,6 +373,10 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
         #zip_the_file("pypt-offline-upgrade-fetched.zip", sSourceDir) 
         
 def syncer(install_file_path, target_path, type=None):
+    '''Syncer does the work of syncing the downloaded files.
+    It syncs "install_file_path" which could be a valid file path
+    or a zip archive to "target_path'''
+    
     if type == 1:
         pass
     elif type == 2:

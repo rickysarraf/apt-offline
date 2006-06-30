@@ -1,5 +1,8 @@
 import os, sys, optparse, pypt_core
 
+"""Contains most of the variables that are required by the application to run.
+Also does command-line option parsing and variable validation."""
+
 try:
    version = "0.6.Alpha2"
    reldate = "09/03/2006"
