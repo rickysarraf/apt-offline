@@ -44,7 +44,9 @@ try:
    # --set-upgrade - This will extract the list of uris which need to be fetched for _upgradation_. This command must be executed on the NONET machine.
    # --fetch-upgrade - This will fetch the list of uris which need for apt's databases _upgradation_. This command must be executed on the WITHNET machine.
    # --install-upgrade - This will install the fetched database files to the  NONET machine and _upgrade_ the packages. This command must be executed on the NONET machine.
-   parser.add_option("","--set-update", dest="set_update", help="Extract the list of uris which need to be fetched for _updation_", action="store", type="string", metavar="pypt-offline-update.dat")
+   #parser.add_option("", "--set-install", dest="set_install", help="Extract the list of uris which need to be fetched for installation of the given package and its dependencies", action="store", type="string", nargs=10, metavar="package_name")
+   parser.add_option("", "--set-install", dest="set_install", help="Extract the list of uris which need to be fetched for installation of the given package and its dependencies", action="store_true", metavar="package_names")
+   parser.add_option("","--set-update", dest="set_update", help="Extract the list of uris which need to be fetched for updation", action="store", type="string", metavar="pypt-offline-update.dat")
    #parser.set_defaults(set_update="pypt-offline-update.dat")
    parser.add_option("","--fetch-update", dest="fetch_update", help="Fetch the list of uris which are needed for apt's databases _updation_. This command must be executed on the WITHNET machine", action="store", type="string", metavar="pypt-offline-update.dat")
    #parser.set_defaults(fetch_update="pypt-offline-update.dat")
@@ -82,14 +84,15 @@ try:
    sys.stdout.write("Copyright %s\n" % (copyright))
         
    if options.set_update:
-        if os.geteuid() != 0:
-            parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
-                
         #if sys.platform == "linux2" or sys.platform == "gnu0" or sys.platform == "gnukfreebsd5":
         if sys.platform in supported_platforms:
-            sys.stdout.write("Generating database of files that are needed for an update.\n")
-            os.chdir(options.set_update)
-            os.system('/usr/bin/apt-get -qq --print-uris update > pypt-offline-update.dat')
+            if os.geteuid() != 0:
+                parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
+                    
+            else:
+                sys.stdout.write("Generating database of files that are needed for an update.\n")
+                os.chdir(options.set_update)
+                os.system('/usr/bin/apt-get -qq --print-uris update > pypt-offline-update.dat')
         else:
             parser.error("This argument is supported only on Unix like systems with apt installed\n")
             #TODO: Implement --set-update using _maybe_ apt
@@ -98,12 +101,11 @@ try:
    if options.set_upgrade or options.upgrade_type:
        if not (options.set_upgrade and options.upgrade_type):
            parser.error("Options --set-upgrade and --upgrade-type are mutually inclusive\n")
-       else:
+                
+       if sys.platform in supported_platforms:
+           #os.chdir(options.set_upgrade)
            if os.geteuid() != 0:
                parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
-                
-       if sys.platform == "linux2" or sys.platform == "gnu0" or sys.platform == "gnukfreebsd5":
-           os.chdir(options.set_upgrade)
            #TODO: Use a more Pythonic way for it
            if options.upgrade_type == "upgrade":
                sys.stdout.write("Generating database of files that are needed for an upgrade.\n")
@@ -120,6 +122,20 @@ try:
           parser.error("This argument is supported only on Unix like systems with apt installed\n")
           sys.exit(0)
             
+   if options.set_install:
+       if sys.paltform in supported_platforms:
+           if os.geteuid() != 0:
+               parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
+           sys.stdout.write("Generating database of the package and its dependencies.\n")
+           os.environ['__pypt_set_install'] = ''
+           for x in args:
+               os.environ['__pypt_set_install'] += x + ' '
+           #FIXME: Find a more Pythonic implementation
+           os.system('/usr/bin/apt-get -qq --print-uris install $__pypt_set_install > pypt-offline-install.dat')
+       else:
+          parser.error("This argument is supported only on Unix like systems with apt installed\n")
+          sys.exit(0)
+           
    if options.fetch_update:
       #TODO: Updation
       # Implement below similar code for updation
@@ -146,7 +162,7 @@ try:
        #    sys.exit(1)
        if os.path.isfile(options.install_update) is True:
            # Okay! We're a file. It should be a zip file
-           pass
+           pypt_core.syncer(options.install_update, apt_update_target_path, 1)
        elif os.path.isdir(options.install_update) is True:
            # We're a directory
            pypt_core.syncer(options.install_update, apt_update_target_path, 2)

@@ -52,7 +52,11 @@ def decompress_the_file(file, path, filename, archive_type):
             wr_fh = open (filename, 'wb')
         except:
             sys.stderr.write("Couldn't open file %s at path %s for writing.\n" % (filename, path))
-        wr_fh.write(fh.read())
+        try:
+            wr_fh.write(fh.read())
+        except EOFError, e:
+            sys.stderr.write("Bad file %s\n%s" % (file, e))
+            pass
         wr_fh.close()
         fh.close()
         sys.stdout.write("%s file synced\n" % (filename))
@@ -331,6 +335,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
             else:
                 if zip_bool:
                     compress_the_file(zip_type_file, sFile, sSourceDir)
+                    os.remove(sFile) # Remove it because we don't need the file once it is zipped.
                  
     if type == 2:
         if path is None:
@@ -378,7 +383,32 @@ def syncer(install_file_path, target_path, type=None):
     or a zip archive to "target_path'''
     
     if type == 1:
-        pass
+        try:
+            import zipfile
+        except ImportError:
+            sys.stderr.write("Aieeee! Module zipfile not found.\n")
+            sys.exit(1)
+            
+        file = zipfile.ZipFile(install_file_path, "r")
+        for filename in file.namelist():
+            try:
+                import pypt_magic
+            except ImportError:
+                sys.stderr.write("Aieeee! Module pypt_magic not found.\n")
+                sys.exit(1)
+            data = open(filename, "wb")
+            data.write(file.read(filename))
+            data.close()
+            #data = file.read(filename)
+            if pypt_magic.file(filename) == "application/x-bzip2":
+                decompress_the_file(os.path.abspath(filename), target_path, filename, 1)
+            elif pypt_magic.file(filename) == "PGP armored data":
+                try:
+                    shutil.copy(filename, target_path)
+                    sys.stdout.write("%s file synced.\n" % (filename))
+                except shutil.Error:
+                    sys.stderr.write("%s is already present.\n" % (filename))
+                
     elif type == 2:
         for eachfile in os.listdir(install_file_path):
             
