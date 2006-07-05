@@ -14,7 +14,7 @@ def compress_the_file(zip_file_name, files_to_compress, sSourceDir):
         os.chdir(sSourceDir)
     except:
         #TODO: Handle this exception
-        pass
+        sys.stderr.write("Aieeee! I got a fatal exception that I don't understand.\nPlease debug.\n")
     
     try:
         filename = zipfile.ZipFile(zip_file_name, "a")
@@ -27,7 +27,6 @@ def compress_the_file(zip_file_name, files_to_compress, sSourceDir):
         sys.stderr.write("\nAieee! Some error exception in creating zip file %s\n" % (zip_file_name))
         sys.exit(1)
         
-    #zip_file.write(filename, os.path.basename(filename))
     filename.write(files_to_compress, files_to_compress, zipfile.ZIP_DEFLATED)
     filename.close()
     
@@ -40,26 +39,27 @@ def decompress_the_file(file, path, filename, archive_type):
             import bz2
         except ImportError:
             sys.stderr.write("Aieeee! Module bz2 is not available.\n")
+            
         try:
             fh = bz2.BZ2File(file, 'r')
         except:
             sys.stderr.write("Couldn't open file %s for reading.\n" % (file))
+            
         try:
-            os.chdir(path)
-        except:
-            sys.stderr.write("Couldn't chdir() to %s.\n" % (path_))
-        try:
-            wr_fh = open (filename, 'wb')
+            wr_fh = open (os.path.join(path, filename), 'wb')
         except:
             sys.stderr.write("Couldn't open file %s at path %s for writing.\n" % (filename, path))
+            
         try:
             wr_fh.write(fh.read())
         except EOFError, e:
             sys.stderr.write("Bad file %s\n%s" % (file, e))
             pass
+        
         wr_fh.close()
         fh.close()
         sys.stdout.write("%s file synced\n" % (filename))
+        
     elif archive_type is 2:
         pass
     elif archive_type is 3:
@@ -141,10 +141,7 @@ def download_from_web(sUrl, sFile, sSourceDir, checksum):
         if hasattr(e, 'code') and hasattr(e, 'reason'):
             errfunc(e.code, e.reason)
         
-    #return bFound
-
-#TODO: walk_tree_copy_debs
-
+#TODO: walk_tree_copy_debs - DEPRECATED
 # This might require simplification and optimization.
 # But for now it's doing the job.
 # Need to find a better algorithm, maybe os.walk()                    
@@ -195,7 +192,7 @@ def files(root):
         for file in files: 
             yield path, file 
 
-def copy_first_match(repository, filename, dest_dir, checksum): # aka walk_tree_copy() 
+def copy_first_match(repository, filename, dest_dir, checksum): # aka new_walk_tree_copy() 
     '''Walks into "reposiotry" looking for "filename".
     If found, copies it to "dest_dir" but first verifies their md5 "checksum".'''
     for path, file in files(repository): 
@@ -396,11 +393,24 @@ def syncer(install_file_path, target_path, type=None):
             except ImportError:
                 sys.stderr.write("Aieeee! Module pypt_magic not found.\n")
                 sys.exit(1)
+                
             data = open(filename, "wb")
             data.write(file.read(filename))
             data.close()
+            
+            #FIXME: Fix this tempfile feature
+            # Access to the temporary file is not being allowed
+            # It's throwing a Permission denied exception
+            #try:
+            #    import tempfile
+            #except ImportError:
+            #    sys.stderr.write("Aieeee! Module pypt_magic not found.\n")
+            #    sys.exit(1)
+            #data = tempfile.NamedTemporaryFile('wb', -1, '', '', os.curdir)
+            #data.write(file.read(filename))
             #data = file.read(filename)
-            if pypt_magic.file(filename) == "application/x-bzip2":
+            
+            if pypt_magic.file(os.path.abspath(filename)) == "application/x-bzip2":
                 decompress_the_file(os.path.abspath(filename), target_path, filename, 1)
             elif pypt_magic.file(filename) == "PGP armored data":
                 try:
@@ -408,6 +418,7 @@ def syncer(install_file_path, target_path, type=None):
                     sys.stdout.write("%s file synced.\n" % (filename))
                 except shutil.Error:
                     sys.stderr.write("%s is already present.\n" % (filename))
+            os.unlink(filename)
                 
     elif type == 2:
         for eachfile in os.listdir(install_file_path):
@@ -431,4 +442,3 @@ def syncer(install_file_path, target_path, type=None):
             else:
                 sys.stderr.write("Aieeee! I don't understand filetype %s\n" % (eachfile))
                 
-        
