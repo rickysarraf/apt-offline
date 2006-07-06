@@ -157,6 +157,7 @@ try:
       sys.exit(0)
             
    if options.install_update:
+       #TODO: Uncomment these lines as they are right now only so that I can do testing on Windows machines too
        #if os.geteuid() != 0:
        #    sys.stderr.write("\nYou need superuser privileges to execute this option\n")
        #    sys.exit(1)
@@ -167,11 +168,24 @@ try:
            # We're a directory
            pypt_core.syncer(options.install_update, apt_update_target_path, 2)
        else:
-           sys.strerr.write("Aieee! %s is unsupported format\n" % (options.install_update))
+           sys.stderr.write("Aieee! %s is unsupported format\n" % (options.install_update))
+       sys.exit(0)
        #pypt_core.syncer(options.install_update, apt_update_target_path, 1)
        #if pypt_core.unzip_the_file(options.install_update, apt_update_target_path) == False:
-           
-           
+       
+   if options.install_upgrade:
+       #TODO: Uncomment these lines as they are right now only so that I can do testing on Windows machines too
+       #if os.geteuid() != 0:
+       #    sys.stderr.write("\nYou need superuser privileges to execute this option\n")
+       #    sys.exit(1)
+       if os.path.isfile(options.install_upgrade) is True:
+           pypt_core.syncer(options.install_upgrade, apt_package_target_path, 1)
+       elif os.path.isdir(options.install_upgrade) is True:
+           pypt_core.syncer(options.install_upgrade, apt_package_target_path, 2)
+       else:
+           sys.stderr.write("Aieee! %s is unsupported format\n" % (options.install_upgrade))
+       sys.exit(0)
+       
 except KeyboardInterrupt:
    sys.stderr.write("\nReceived immediate EXIT signal. Exiting!\n")
    sys.exit(1)

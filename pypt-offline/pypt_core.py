@@ -368,9 +368,11 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
                 else:
                     if zip_bool:
                         compress_the_file(zip_type_file, sFile, sSourceDir)
+                        os.unlink(sFile)
             elif True:
                 if zip_bool:
                     compress_the_file(zip_type_file, sFile, sSourceDir)
+                    os.unlink(sFile)
                         
         #zip_the_file("pypt-offline-upgrade-fetched.zip", sSourceDir) 
         
@@ -418,6 +420,12 @@ def syncer(install_file_path, target_path, type=None):
                     sys.stdout.write("%s file synced.\n" % (filename))
                 except shutil.Error:
                     sys.stderr.write("%s is already present.\n" % (filename))
+            elif pypt_magic.file(filename) == "application/x-dpkg":
+                try:
+                    shutil.copy(filename, target_path)
+                    sys.stdout.write("%s file synced.\n" % (filename))
+                except shutil.Error:
+                    sys.stderr.write("%s is already present.\n" % (filename))
             os.unlink(filename)
                 
     elif type == 2:
@@ -437,8 +445,17 @@ def syncer(install_file_path, target_path, type=None):
             elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/zip":
                 decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 3)
             elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "PGP armored data":
-                shutil.copy(os.path.join(install_file_path, eachfile), target_path)
-                sys.stdout.write("%s file synced.\n" % (eachfile))
+                try:
+                    shutil.copy(os.path.join(install_file_path, eachfile), target_path)
+                    sys.stdout.write("%s file synced.\n" % (eachfile))
+                except shutil.Error:
+                    sys.stderr.write("%s is already present.\n" % (filename))
+            elif pypt_magic.file(filename) == "application/x-dpkg":
+                try:
+                    shutil.copy(filename, target_path)
+                    sys.stdout.write("%s file synced.\n" % (filename))
+                except shutil.Error:
+                    sys.stderr.write("%s is already present.\n" % (filename))
             else:
                 sys.stderr.write("Aieeee! I don't understand filetype %s\n" % (eachfile))
                 
