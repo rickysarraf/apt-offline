@@ -1,4 +1,4 @@
-import os, shutil, string, sys, progressbar, urllib2, pypt_md5_check, pypt_variables
+import os, shutil, string, sys, pypt_progressbar, urllib2, pypt_md5_check, pypt_variables
 
 '''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
@@ -103,7 +103,7 @@ def download_from_web(sUrl, sFile, sSourceDir, checksum):
             data.write (temp.read(block_size))
             i += block_size
             counter += 1
-            progressbar.myReportHook(counter, block_size, size)
+            pypt_progressbar.myReportHook(counter, block_size, size)
         print "\n"
         data.close()
         temp.close()
