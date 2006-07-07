@@ -124,6 +124,7 @@ def download_from_web(sUrl, sFile, sSourceDir, checksum):
         errfunc(errno, strerror)
         
     except urllib2.HTTPError, errstring:
+        sys.stderr.write("%s\n" % (sFile))
         errfunc(errstring.code, errstring.msg)
         
     except urllib2.URLError, errstring:
@@ -272,8 +273,8 @@ def errfunc(errno, errormsg):
         # THere can be instances where one source is changed but the rest are working.
         # 10060 is for Operation Time out. There can be multiple reasons for this timeout
         # Primarily if the host is down or a slow network or abruption, hence not the whole execution should be aborted
-        sys.stderr.write("%s %s\n" % (errno, errormsg))
-        sys.stderr.write("Will still try with other package uris\n")
+        sys.stderr.write("%s - %s\n\n" % (errno, errormsg))
+        #sys.stderr.write(" Will still try with other package uris\n\n")
         pass
     elif errno == 1:
         # We'll pass error code 1 where ever we want to gracefully exit
@@ -312,6 +313,10 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
         else:
                 sSourceDir = path
         
+        if os.path.exists(os.path.join(sSourceDir, zip_type_file)):
+            sys.stderr.write("%s already present.\nRemove it first.\n" % (zip_type_file))
+            sys.exit(1)
+            
         try:
             lRawData = open(uri, 'r').readlines()
         except IOError, (errno, strerror):
@@ -328,7 +333,11 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
             #if bStatus != True:
             #     sys.stdout.write("%s not downloaded from %s\n" % (sFile, sUrl))
             if download_from_web(sUrl, sFile, sSourceDir, None) != True:
-                sys.stderr.write("%s not downloaded from %s\n" % (sFile, sUrl))
+                #sys.stderr.write("%s not downloaded from %s\n" % (sFile, sUrl))
+                #sys.stderr.write("%s failed\n\n" % (sFile))
+                #TODO: Add an errlist[] which'll keep track of all the failed url
+                pypt_variables.errlist.append(sFile)
+                pass
             else:
                 if zip_bool:
                     compress_the_file(zip_type_file, sFile, sSourceDir)
@@ -347,6 +356,10 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
                     sys.stderr.write("Aieeee! I couldn't create a directory")
         else:
             sSourceDir = path
+            
+        if os.path.exists(os.path.join(sSourceDir, zip_type_file)):
+            sys.stderr.write("%s already present.\nRemove it first.\n" % (zip_type_file))
+            sys.exit(1)
                 
         if cache is None:
             sRepository = os.path.abspath(os.curdir)
@@ -364,8 +377,15 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
                      
             if copy_first_match(sRepository, sFile, sSourceDir, checksum) == False:
                 if download_from_web(sUrl, sFile, sSourceDir, checksum) != True:
-                     sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
+                     #sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
+                     pypt_variables.errlist.append(sFile)
                 else:
+                    if os.path.exists(os.path.join(sRepository, sFile)):
+                        #INFO: The file is already there.
+                        pass
+                    else:
+                        shutil.copy(sFile, sRepository)
+                            
                     if zip_bool:
                         compress_the_file(zip_type_file, sFile, sSourceDir)
                         os.unlink(sFile)
@@ -374,6 +394,8 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
                     compress_the_file(zip_type_file, sFile, sSourceDir)
                     os.unlink(sFile)
                         
+    for error in pypt_variables.errlist:
+        sys.stderr.write("%s failed.\n" % (error))
         #zip_the_file("pypt-offline-upgrade-fetched.zip", sSourceDir) 
         
 def syncer(install_file_path, target_path, type=None):
