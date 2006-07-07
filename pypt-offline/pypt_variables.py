@@ -4,16 +4,17 @@ import os, sys, optparse, pypt_core
 Also does command-line option parsing and variable validation."""
 
 try:
-   version = "0.6.Alpha2"
-   reldate = "09/03/2006"
+   version = "0.6.Beta"
+   reldate = "07/07/2006"
    copyright = "(C) 2005 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
         
+   errlist = []
    supported_platforms = ["linux2", "gnu0", "gnukfreebsd5"]
-   apt_update_target_path = '/var/lib/'
+   apt_update_target_path = '/var/lib/apt/lists/'
    apt_package_target_path = '/var/cache/apt/archives/'
-   # Dummy paths for now.
-   apt_update_target_path = 'C:\\temp'
-   apt_package_target_path = 'C:\\temp'
+   # Dummy paths while testing on Windows
+   #apt_update_target_path = 'C:\\temp'
+   #apt_package_target_path = 'C:\\temp'
    
    #FIXME: Option Parsing
    # There's a flaw with either optparse or I'm not well understood with it
@@ -95,7 +96,6 @@ try:
                 os.system('/usr/bin/apt-get -qq --print-uris update > pypt-offline-update.dat')
         else:
             parser.error("This argument is supported only on Unix like systems with apt installed\n")
-            #TODO: Implement --set-update using _maybe_ apt
         sys.exit(0)
 
    if options.set_upgrade or options.upgrade_type:
@@ -103,7 +103,6 @@ try:
            parser.error("Options --set-upgrade and --upgrade-type are mutually inclusive\n")
                 
        if sys.platform in supported_platforms:
-           #os.chdir(options.set_upgrade)
            if os.geteuid() != 0:
                parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
            #TODO: Use a more Pythonic way for it
@@ -137,8 +136,6 @@ try:
           sys.exit(0)
            
    if options.fetch_update:
-      #TODO: Updation
-      # Implement below similar code for updation
       sys.stdout.write("\nFetching uris which update apt's package database\n\n")
       
       options.disable_md5check = True
@@ -157,10 +154,10 @@ try:
       sys.exit(0)
             
    if options.install_update:
-       #TODO: Uncomment these lines as they are right now only so that I can do testing on Windows machines too
-       #if os.geteuid() != 0:
-       #    sys.stderr.write("\nYou need superuser privileges to execute this option\n")
-       #    sys.exit(1)
+       #TODO: Comment these lines to do testing on Windows machines too
+       if os.geteuid() != 0:
+           sys.stderr.write("\nYou need superuser privileges to execute this option\n")
+           sys.exit(1)
        if os.path.isfile(options.install_update) is True:
            # Okay! We're a file. It should be a zip file
            pypt_core.syncer(options.install_update, apt_update_target_path, 1)
@@ -174,10 +171,10 @@ try:
        #if pypt_core.unzip_the_file(options.install_update, apt_update_target_path) == False:
        
    if options.install_upgrade:
-       #TODO: Uncomment these lines as they are right now only so that I can do testing on Windows machines too
-       #if os.geteuid() != 0:
-       #    sys.stderr.write("\nYou need superuser privileges to execute this option\n")
-       #    sys.exit(1)
+       #TODO: Comment these lines to do testing on Windows machines too
+       if os.geteuid() != 0:
+           sys.stderr.write("\nYou need superuser privileges to execute this option\n")
+           sys.exit(1)
        if os.path.isfile(options.install_upgrade) is True:
            pypt_core.syncer(options.install_upgrade, apt_package_target_path, 1)
        elif os.path.isdir(options.install_upgrade) is True:
