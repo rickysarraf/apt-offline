@@ -46,7 +46,8 @@ try:
    # --fetch-upgrade - This will fetch the list of uris which need for apt's databases _upgradation_. This command must be executed on the WITHNET machine.
    # --install-upgrade - This will install the fetched database files to the  NONET machine and _upgrade_ the packages. This command must be executed on the NONET machine.
    #parser.add_option("", "--set-install", dest="set_install", help="Extract the list of uris which need to be fetched for installation of the given package and its dependencies", action="store", type="string", nargs=10, metavar="package_name")
-   parser.add_option("", "--set-install", dest="set_install", help="Extract the list of uris which need to be fetched for installation of the given package and its dependencies", action="store_true", metavar="package_names")
+   parser.add_option("", "--set-install", dest="set_install", help="Extract the list of uris which need to be fetched for installation of the given package and its dependencies", action="store", metavar="pypt-offline-install.dat")
+   parser.add_option("", "--set-install-packages", dest="set_install_packages", help="Name of the packages which need to be fetched", action="store_true", metavar="package_names")
    parser.add_option("","--set-update", dest="set_update", help="Extract the list of uris which need to be fetched for updation", action="store", type="string", metavar="pypt-offline-update.dat")
    #parser.set_defaults(set_update="pypt-offline-update.dat")
    parser.add_option("","--fetch-update", dest="fetch_update", help="Fetch the list of uris which are needed for apt's databases _updation_. This command must be executed on the WITHNET machine", action="store", type="string", metavar="pypt-offline-update.dat")
@@ -92,8 +93,9 @@ try:
                     
             else:
                 sys.stdout.write("Generating database of files that are needed for an update.\n")
-                os.chdir(options.set_update)
-                os.system('/usr/bin/apt-get -qq --print-uris update > pypt-offline-update.dat')
+                os.environ['__pypt_set_update'] = options.set_update
+                if os.system('/usr/bin/apt-get -qq --print-uris update > $__pypt_set_update') != 0:
+                    sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
         else:
             parser.error("This argument is supported only on Unix like systems with apt installed\n")
         sys.exit(0)
@@ -104,33 +106,45 @@ try:
                 
        if sys.platform in supported_platforms:
            if os.geteuid() != 0:
-               parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
+              parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
            #TODO: Use a more Pythonic way for it
            if options.upgrade_type == "upgrade":
-               sys.stdout.write("Generating database of files that are needed for an upgrade.\n")
-               os.system('/usr/bin/apt-get -qq --print-uris upgrade > pypt-offline-upgrade.data')
+              sys.stdout.write("Generating database of files that are needed for an upgrade.\n")
+              os.environ['__pypt_set_upgrade'] = options.set_upgrade
+              if os.system('/usr/bin/apt-get -qq --print-uris upgrade > $__pypt_set_upgrade') != 0:
+                  sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
            elif options.upgrade_type == "dist-upgrade":
-              sys.stdout.write("Generating database of files that are needed for an upgrade.\n")
-              os.system('/usr/bin/apt-get -qq --print-uris dist-upgrade > pypt-offline-upgrade.data')
+              sys.stdout.write("Generating database of files that are needed for a dist-upgrade.\n")
+              os.environ['__pypt_set_upgrade'] = options.set_upgrade
+              if os.system('/usr/bin/apt-get -qq --print-uris dist-upgrade > $__pypt_set_upgrade') != 0:
+                  sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
            elif options.upgrade_type == "dselect-upgrade":
-              sys.stdout.write("Generating database of files that are needed for an upgrade.\n")
-              os.system('/usr/bin/apt-get -qq --print-uris dselect-upgrade > pypt-offline-upgrade.data')
+              sys.stdout.write("Generating database of files that are needed for a dselect-upgrade.\n")
+              os.environ['__pypt_set_upgrade'] = options.set_upgrade
+              if os.system('/usr/bin/apt-get -qq --print-uris dselect-upgrade > $__pypt_set_upgrade') != 0:
+                  sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
            else:
               parser.error("Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n")
        else:
           parser.error("This argument is supported only on Unix like systems with apt installed\n")
           sys.exit(0)
             
-   if options.set_install:
-       if sys.paltform in supported_platforms:
+   if options.set_install_packages or options.set_install:
+       if not (options.set_install_packages and options.set_install):
+           parser.error("Options --set-install and --set-install-package are mutually inclusive\n")
+           
+       if sys.platform in supported_platforms:
            if os.geteuid() != 0:
                parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
+               
            sys.stdout.write("Generating database of the package and its dependencies.\n")
-           os.environ['__pypt_set_install'] = ''
+           os.environ['__pypt_set_install'] = options.set_install
+           os.environ['__pypt_set_install_packages'] = ''
            for x in args:
-               os.environ['__pypt_set_install'] += x + ' '
+               os.environ['__pypt_set_install_packages'] += x + ' '
            #FIXME: Find a more Pythonic implementation
-           os.system('/usr/bin/apt-get -qq --print-uris install $__pypt_set_install > pypt-offline-install.dat')
+           if os.system('/usr/bin/apt-get -qq --print-uris install $__pypt_set_install_packages > $__pypt_set_install') != 0:
+               sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
        else:
           parser.error("This argument is supported only on Unix like systems with apt installed\n")
           sys.exit(0)
