@@ -1,4 +1,0 @@
-Version 0.5b -- 03/27/2005
-	* Executing pypt-offline without any argument causes an exception
-	* Loose Microsoft Windows support (I've not done thorough check on Windows machines. Please let me know of any bugs)
-	* urllib.urlretrieve doesn't raise an exception even if the target url is broken
