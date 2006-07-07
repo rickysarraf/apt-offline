@@ -4,7 +4,7 @@
 * Usage of a .pypt-offlinerc config file
 * Download status indicator <done>
 * Proxy Authentication
-* Implement a function which will keep track of the failed uris and print them at last. It'll keep the uri and it's failure reason as a dictionary 
+* Implement a function which will keep track of the failed uris and print them at last. It'll keep the uri and it's failure reason as a dictionary <done>
 * Implement Threads - When we implement threads multiple files will be downloaded at the same time.
   At that point, say we execute with 5 threads, the progressbar for all 5 threads should be displayed together.
 * Implement Curses and GUI interfaces. For these UIs it will be interactive. For all the options, only one will be selectable and once that option
