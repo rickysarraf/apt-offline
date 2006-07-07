@@ -1,0 +1,15 @@
+Version ?? -- XX/XX/XXXX
+	* Broke pypt-offlie.py into pypt_core.py and pypt-offline.py for modularity.
+	
+Version 0.5beta -- 03/10/2005
+	* Did more code cleanup
+	* Changed the algorithm to check in local cache
+	* Now supports checking in recursive folders for packages (Like apt-proxy's folder structure)
+
+Version 0.4beta -- 02/20/2005
+	* Did some code cleanup
+	* Added support for Windows -- Now we are usable on Microsoft Windows os's also
+	* Remove dependency on "wget". Now using native python library to fetch urls.
+
+Version 0.3alpha -- 01/17/2005
+	* Initial Release
