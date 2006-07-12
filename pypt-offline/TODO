@@ -9,3 +9,5 @@
   At that point, say we execute with 5 threads, the progressbar for all 5 threads should be displayed together.
 * Implement Curses and GUI interfaces. For these UIs it will be interactive. For all the options, only one will be selectable and once that option
   is selected the others will be deactivated. That's design, only one option allowed a time. :-)
+* Use Python's logging module to better handle messages, warnings and errors
+* Implement apt's newly added feature (> 0.6.4) of Package Diff
