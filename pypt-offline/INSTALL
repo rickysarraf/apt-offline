@@ -1,7 +1,8 @@
 ##  Under Linux
 
-chmod 755 pypt-offline
-Copy the file "pypt-offline" to your PATH directory.
+chmod 755 pypt-offline[.py]
+Execute the command with the proper options
+./pypt-offline [OPTIONS]
 
 
 ## Under Microsoft Windows
@@ -9,4 +10,4 @@ Copy the file "pypt-offline" to your PATH directory.
 # Execute the file using the python interpreter
 # Assuming python.exe is in your path
 
-C:\> python pypt-offline
+C:\> python pypt-offline [OPTIONS]
