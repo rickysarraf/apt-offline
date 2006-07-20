@@ -309,9 +309,9 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
                     sSourceDir = os.path.abspath("pypt-downloads")
                 except:
                     sys.stderr.write("Aieeee! I couldn't create a directory")
-                    errfunc(1)
+                    errfunc(1, '')
         else:
-                sSourceDir = path
+                sSourceDir = os.path.abspath(path)
         
         if os.path.exists(os.path.join(sSourceDir, zip_type_file)):
             sys.stderr.write("%s already present.\nRemove it first.\n" % (zip_type_file))
@@ -321,7 +321,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
             lRawData = open(uri, 'r').readlines()
         except IOError, (errno, strerror):
             sys.stderr.write("%s %s\n" % (errno, strerror))
-            errfunc(errno)
+            errfunc(errno, '')
             
         #if options.zip_it:
         #    zip_update_file = options.zip_update_file
@@ -355,7 +355,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
                 except:
                     sys.stderr.write("Aieeee! I couldn't create a directory")
         else:
-            sSourceDir = path
+            sSourceDir = os.path.abspath(path)
             
         if os.path.exists(os.path.join(sSourceDir, zip_type_file)):
             sys.stderr.write("%s already present.\nRemove it first.\n" % (zip_type_file))
@@ -364,13 +364,13 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
         if cache is None:
             sRepository = os.path.abspath(os.curdir)
         else:
-            sRepository = cache
+            sRepository = os.path.abspath(cache)
             
         try:
             lRawData = open(uri, 'r').readlines()
         except IOError, (errno, strerror):
             sys.stderr.write("%s %s\n" %(errno, strerror))
-            errfunc(errno)
+            errfunc(errno, '')
         
         for each_single_item in lRawData:
             (sUrl, sFile, download_size, checksum) = stripper(each_single_item)
