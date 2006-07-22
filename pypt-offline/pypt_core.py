@@ -1,4 +1,4 @@
-import os, shutil, string, sys, pypt_progressbar, urllib2, pypt_md5_check, pypt_variables
+import os, shutil, string, sys, urllib2, pypt_progressbar, pypt_md5_check, pypt_variables, pypt_logger
 
 '''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
@@ -481,3 +481,137 @@ def syncer(install_file_path, target_path, type=None):
             else:
                 sys.stderr.write("Aieeee! I don't understand filetype %s\n" % (eachfile))
                 
+def main():
+    # Okay!! We got all the options and arguments.
+    # Now let's begin....
+    
+    try:
+        # The log implementation
+        log = pypt_logger.log() # Instantiate the class
+        log.msg("foo")
+        log.verbose("bar")
+        
+        sys.stdout.write("pypt-offline %s\n" % (pypt_variables.version))
+        sys.stdout.write("Copyright %s\n" % (pypt_variables.copyright))
+        
+        if pypt_variables.options.set_update:
+            if sys.platform in pypt_variables.supported_platforms:
+                if os.geteuid() != 0:
+                    parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
+                else:
+                    sys.stdout.write("Generating database of files that are needed for an update.\n")
+                    os.environ['__pypt_set_update'] = pypt_variables.options.set_update
+                    if os.system('/usr/bin/apt-get -qq --print-uris update > $__pypt_set_update') != 0:
+                        sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
+            else:
+                 parser.error("This argument is supported only on Unix like systems with apt installed\n")
+            sys.exit(0)
+     
+        if pypt_variables.options.set_upgrade or pypt_variables.options.upgrade_type:
+            if not (pypt_variables.options.set_upgrade and pypt_variables.options.upgrade_type):
+                parser.error("Options --set-upgrade and --upgrade-type are mutually inclusive\n")
+                     
+            if sys.platform in pypt_variables.supported_platforms:
+                if os.geteuid() != 0:
+                    parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
+                #TODO: Use a more Pythonic way for it
+                if pypt_variables.options.upgrade_type == "upgrade":
+                    sys.stdout.write("Generating database of files that are needed for an upgrade.\n")
+                    os.environ['__pypt_set_upgrade'] = pypt_variables.options.set_upgrade
+                    if os.system('/usr/bin/apt-get -qq --print-uris upgrade > $__pypt_set_upgrade') != 0:
+                        sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
+                elif pypt_variables.options.upgrade_type == "dist-upgrade":
+                    sys.stdout.write("Generating database of files that are needed for a dist-upgrade.\n")
+                    os.environ['__pypt_set_upgrade'] = pypt_variables.options.set_upgrade
+                    if os.system('/usr/bin/apt-get -qq --print-uris dist-upgrade > $__pypt_set_upgrade') != 0:
+                        sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
+                elif pypt_variables.options.upgrade_type == "dselect-upgrade":
+                    sys.stdout.write("Generating database of files that are needed for a dselect-upgrade.\n")
+                    os.environ['__pypt_set_upgrade'] = pypt_variables.options.set_upgrade
+                    if os.system('/usr/bin/apt-get -qq --print-uris dselect-upgrade > $__pypt_set_upgrade') != 0:
+                        sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
+                else:
+                    parser.error("Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n")
+            else:
+                parser.error("This argument is supported only on Unix like systems with apt installed\n")
+                sys.exit(0)
+                 
+        if pypt_variables.options.set_install_packages or pypt_variables.options.set_install:
+            if not (pypt_variables.options.set_install_packages and pypt_variables.options.set_install):
+                parser.error("Options --set-install and --set-install-package are mutually inclusive\n")
+                
+            if sys.platform in pypt_variables.supported_platforms:
+                if os.geteuid() != 0:
+                    parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
+                    
+                sys.stdout.write("Generating database of the package and its dependencies.\n")
+                os.environ['__pypt_set_install'] = pypt_variables.options.set_install
+                os.environ['__pypt_set_install_packages'] = ''
+                
+                #INFO: This is improper way of getting the args, the name of the packages.
+                # But since optparse doesn't have the implementation in place at the moment, we're using it.
+                # Once fixed, this will be changed.
+                # For details look at the parser.add_option line above.
+                for x in pypt_variables.args:
+                    os.environ['__pypt_set_install_packages'] += x + ' '
+                    
+                #FIXME: Find a more Pythonic implementation
+                if os.system('/usr/bin/apt-get -qq --print-uris install $__pypt_set_install_packages > $__pypt_set_install') != 0:
+                    sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
+            else:
+                parser.error("This argument is supported only on Unix like systems with apt installed\n")
+                sys.exit(0)
+               
+        if pypt_variables.options.fetch_update:
+            sys.stdout.write("\nFetching uris which update apt's package database\n\n")
+           
+            pypt_variables.options.disable_md5check = True
+            # Since we're in fetch_update, the download_type will be non-deb/rpm data
+            # 1 is for update packages 
+            # 2 is for upgrade packages
+            fetcher(pypt_variables.options.fetch_update, pypt_variables.options.download_dir, pypt_variables.options.cache_dir, pypt_variables.options.zip_it, pypt_variables.options.zip_update_file, 1)
+                 
+        if pypt_variables.options.fetch_upgrade:
+            sys.stdout.write("\nFetching packages which need upgradation\n\n")
+                 
+            # Since we're in fetch_update, the download_type will be non-deb/rpm data
+            # 1 is for update packages 
+            # 2 is for upgrade packages
+            fetcher(pypt_variables.options.fetch_upgrade, pypt_variables.options.download_dir, pypt_variables.options.cache_dir, pypt_variables.options.zip_it, pypt_variables.options.zip_upgrade_file, 2)
+            sys.exit(0)
+                 
+        if pypt_variables.options.install_update:
+            #INFO: Comment these lines to do testing on Windows machines too
+            if os.geteuid() != 0:
+                sys.stderr.write("\nYou need superuser privileges to execute this option\n")
+                sys.exit(1)
+                
+            if os.path.isfile(pypt_variables.options.install_update) is True:
+                # Okay! We're a file. It should be a zip file
+                syncer(pypt_variables.options.install_update, pypt_variables.apt_update_target_path, 1)
+            elif os.path.isdir(pypt_variables.options.install_update) is True:
+                # We're a directory
+                syncer(pypt_variables.options.install_update, pypt_variables.apt_update_target_path, 2)
+            else:
+                sys.stderr.write("Aieee! %s is unsupported format\n" % (pypt_variables.options.install_update))
+            sys.exit(0)
+            
+        if pypt_variables.options.install_upgrade:
+            #INFO: Comment these lines to do testing on Windows machines too
+            if os.geteuid() != 0:
+                sys.stderr.write("\nYou need superuser privileges to execute this option\n")
+                sys.exit(1)
+            if os.path.isfile(pypt_variables.options.install_upgrade) is True:
+                syncer(pypt_variables.options.install_upgrade, apt_package_target_path, 1)
+            elif os.path.isdir(pypt_variables.options.install_upgrade) is True:
+                syncer(pypt_variables.options.install_upgrade, pypt_variables.apt_package_target_path, 2)
+            else:
+                sys.stderr.write("Aieee! %s is unsupported format\n" % (pypt_variables.options.install_upgrade))
+            sys.exit(0)
+            
+    except KeyboardInterrupt:
+        sys.stderr.write("\nInterrupted by user. Exiting!\n")
+        sys.exit(1)        
+            
+if __name__ == "__main__":
+    main()
