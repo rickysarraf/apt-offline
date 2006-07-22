@@ -45,17 +45,38 @@
 import sys, pypt_variables
 
 class log:
+    '''A OOP implementation for logging.
+    warnings is to tackle the warning option
+    verbose is to tackle the verbose option
+    debug is to tackle the debug option
     
-    def __init__(self):
-        if pypt_variables.options.warnings is True:
+    You should pass these options, taking it from optparse/getopt,
+    during instantiation'''
+    
+    def __init__(self, warnings, verbose, debug):
+        
+        if warnings is True:
             self.WARN = True
         else: self.WARN = False
-        if pypt_variables.options.verbose is True:
+        
+        if verbose is True:
             self.VERBOSE = True
         else: self.VERBOSE = False
-        if pypt_variables.options.debug is True:
+        
+        if debug is True:
             self.DEBUG = True
         else: self.DEBUG = False
+        
+#    def __init__(self):
+#        if pypt_variables.options.warnings is True:
+#            self.WARN = True
+#        else: self.WARN = False
+#        if pypt_variables.options.verbose is True:
+#            self.VERBOSE = True
+#        else: self.VERBOSE = False
+#        if pypt_variables.options.debug is True:
+#            self.DEBUG = True
+#        else: self.DEBUG = False
     
     def msg(self, msg):
         sys.stdout.write(msg)
