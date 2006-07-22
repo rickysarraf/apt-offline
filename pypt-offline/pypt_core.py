@@ -487,9 +487,10 @@ def main():
     
     try:
         # The log implementation
-        log = pypt_logger.log() # Instantiate the class
+        log = pypt_logger.log(pypt_variables.options.warnings, pypt_variables.options.verbose, pypt_variables.options.debug) # Instantiate the class
         log.msg("foo")
         log.verbose("bar")
+        log.err("error")
         
         sys.stdout.write("pypt-offline %s\n" % (pypt_variables.version))
         sys.stdout.write("Copyright %s\n" % (pypt_variables.copyright))
