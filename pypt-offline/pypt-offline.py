@@ -26,4 +26,5 @@
 
 
 if __name__ == "__main__":
-    import pypt_variables
+    import pypt_core
+    pypt_core.main()
