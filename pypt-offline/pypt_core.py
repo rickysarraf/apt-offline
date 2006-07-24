@@ -61,7 +61,31 @@ def decompress_the_file(file, path, filename, archive_type):
         log.msg("%s file synced\n" % (filename))
         
     elif archive_type is 2:
-        pass
+        try:
+            import gzip
+        except ImportError:
+            log.err("Aieee! Module gzip is not available.\n")
+            
+        try:
+            fh = gzip.GzipFile(file, 'r')
+        except:
+            log.err("Couldn't open file %s for reading.\n" % (file))
+            
+        try:
+            wr_fh = open(os.path.join(path,filename), 'wb')
+        except:
+            log.err("Couldn't open file %s at path %s for writing.\n" % (filename, path))
+        
+        try:
+            wr_fh.write(fh.read())
+        except EOFError, e:
+            log.err("Bad file %s\n%s" % (file, e))
+            pass
+        
+        wr_fh.close()
+        fh.close()
+        log.msg("%s file synced\n" % (filename))
+        
     elif archive_type is 3:
         try:
             zip_file = zipfile.ZipFile(file, 'rb')
@@ -285,15 +309,15 @@ def errfunc(errno, errormsg):
         log.err("Aieee! I don't understand this errorcode\n" % (errno))
         sys.exit(errno)
     
-def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
+def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
     '''
     uri - The uri data whill will contain the information
     path - The path (if any) where the download needs to be done
     cache - The cache (if any) where we should check before downloading from the net
-    type - type is basically used to identify wether it's a update download or upgrade download
+    arg_type - arg_type is basically used to identify wether it's a update download or upgrade download
     '''
     
-    if type == 1:
+    if arg_type == 1:
         #INFO: Oh! We're only downloading the update package list database
         # Package Update database changes almost daily in Debian.
         # This is at least true for Sid. Hence it doesn't make sense to copy
@@ -340,7 +364,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
                     compress_the_file(zip_type_file, sFile, sSourceDir)
                     os.remove(sFile) # Remove it because we don't need the file once it is zipped.
                  
-    if type == 2:
+    if arg_type == 2:
         if path is None:
             if os.access("pypt-downloads", os.W_OK) is True:
                 sSourceDir = os.path.abspath("pypt-downloads")
@@ -402,25 +426,26 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
         log.err("%s failed.\n" % (error))
         #zip_the_file("pypt-offline-upgrade-fetched.zip", sSourceDir) 
         
-def syncer(install_file_path, target_path, type=None):
+def syncer(install_file_path, target_path, arg_type=None):
     '''Syncer does the work of syncing the downloaded files.
     It syncs "install_file_path" which could be a valid file path
     or a zip archive to "target_path'''
     
-    if type == 1:
+    if arg_type == 1:
         try:
             import zipfile
         except ImportError:
             log.err("Aieeee! Module zipfile not found.\n")
             sys.exit(1)
             
+        try:
+            import pypt_magic
+        except ImportError:
+            log.err("Aieeee! Module pypt_magic not found.\n")
+            sys.exit(1)
+            
         file = zipfile.ZipFile(install_file_path, "r")
         for filename in file.namelist():
-            try:
-                import pypt_magic
-            except ImportError:
-                log.err("Aieeee! Module pypt_magic not found.\n")
-                sys.exit(1)
                 
             data = open(filename, "wb")
             data.write(file.read(filename))
@@ -440,6 +465,8 @@ def syncer(install_file_path, target_path, type=None):
             
             if pypt_magic.file(os.path.abspath(filename)) == "application/x-bzip2":
                 decompress_the_file(os.path.abspath(filename), target_path, filename, 1)
+            elif pypt_magic.file(os.path.abspath(filename)) == "application/x-gzip":
+                decompress_the_file(os.path.abspath(filename), target_path, filename, 2)
             elif pypt_magic.file(filename) == "PGP armored data":
                 try:
                     shutil.copy(filename, target_path)
@@ -454,7 +481,7 @@ def syncer(install_file_path, target_path, type=None):
                     log.err("%s is already present.\n" % (filename))
             os.unlink(filename)
                 
-    elif type == 2:
+    elif arg_type == 2:
         for eachfile in os.listdir(install_file_path):
             
             archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
@@ -492,8 +519,8 @@ def main():
     try:
         # The log implementation
         # Instantiate the class
-        log = pypt_logger.log(pypt_variables.options.warnings, pypt_variables.options.verbose, pypt_variables.options.debug)
         global log
+        log = pypt_logger.log(pypt_variables.options.warnings, pypt_variables.options.verbose, pypt_variables.options.debug)
         
         log.msg("pypt-offline %s\n" % (pypt_variables.version))
         log.msg("Copyright %s\n" % (pypt_variables.copyright))
