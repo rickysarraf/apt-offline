@@ -8,13 +8,13 @@ def compress_the_file(zip_file_name, files_to_compress, sSourceDir):
     try:
         import zipfile
     except ImportError:
-        sys.stderr.write("Aieeee! module not found.\n")
+        log.err("Aieee!! Module not found.\n")
         
     try:
         os.chdir(sSourceDir)
     except:
         #TODO: Handle this exception
-        sys.stderr.write("Aieeee! I got a fatal exception that I don't understand.\nPlease debug.\n")
+        log.err("Aieeee! I got a fatal exception that I don't understand.\nPlease debug.\n")
     
     try:
         filename = zipfile.ZipFile(zip_file_name, "a")
@@ -24,7 +24,7 @@ def compress_the_file(zip_file_name, files_to_compress, sSourceDir):
         filename = zipfile.ZipFile(zip_file_name, "w")
     except:
         #TODO Handle the exception
-        sys.stderr.write("\nAieee! Some error exception in creating zip file %s\n" % (zip_file_name))
+        log.err("\nAieee! Some error exception in creating zip file %s\n" % (zip_file_name))
         sys.exit(1)
         
     filename.write(files_to_compress, files_to_compress, zipfile.ZIP_DEFLATED)
@@ -38,27 +38,27 @@ def decompress_the_file(file, path, filename, archive_type):
         try:
             import bz2
         except ImportError:
-            sys.stderr.write("Aieeee! Module bz2 is not available.\n")
+            log.err("Aieeee! Module bz2 is not available.\n")
             
         try:
             fh = bz2.BZ2File(file, 'r')
         except:
-            sys.stderr.write("Couldn't open file %s for reading.\n" % (file))
+            log.err("Couldn't open file %s for reading.\n" % (file))
             
         try:
             wr_fh = open (os.path.join(path, filename), 'wb')
         except:
-            sys.stderr.write("Couldn't open file %s at path %s for writing.\n" % (filename, path))
+            log.err("Couldn't open file %s at path %s for writing.\n" % (filename, path))
             
         try:
             wr_fh.write(fh.read())
         except EOFError, e:
-            sys.stderr.write("Bad file %s\n%s" % (file, e))
+            log.err("Bad file %s\n%s" % (file, e))
             pass
         
         wr_fh.close()
         fh.close()
-        sys.stdout.write("%s file synced\n" % (filename))
+        log.msg("%s file synced\n" % (filename))
         
     elif archive_type is 2:
         pass
@@ -67,7 +67,7 @@ def decompress_the_file(file, path, filename, archive_type):
             zip_file = zipfile.ZipFile(file, 'rb')
         except:
             #TODO: Handle the exceptions
-            sys.stderr.write("\nAieee! Some error exception in reading the zip file %s\n" % (file))
+            log.err("\nAieee! Some error exception in reading the zip file %s\n" % (file))
             return False
             
         for filename in zip_file.namelist():
@@ -75,7 +75,7 @@ def decompress_the_file(file, path, filename, archive_type):
             
         zip_file.close()
     else:
-        sys.stderr.write("Aieeee! %s is unknown archive.\n" % (file))
+        log.err("Aieeee! %s is unknown archive.\n" % (file))
         return False
         
     return True
@@ -98,7 +98,7 @@ def download_from_web(sUrl, sFile, sSourceDir, checksum):
         size = int(headers['Content-Length'])
         data = open(sFile,'wb')
         
-        sys.stdout.write("Downloading %s\n" % (sFile))
+        log.msg("Downloading %s\n" % (sFile))
         while i < size:
             data.write (temp.read(block_size))
             i += block_size
@@ -114,7 +114,7 @@ def download_from_web(sUrl, sFile, sSourceDir, checksum):
         else:
             if pypt_md5_check.md5_check(sFile, checksum, sSourceDir) != True:
                 os.remove(sFile)
-                sys.stderr.write("%s checksum mismatch. File removed\n" % (sFile))
+                log.err("%s checksum mismatch. File removed\n" % (sFile))
         #sys.stdout.write("%s successfully downloaded from %s\n\n" % (sFile, sUrl))
         return True
         
@@ -138,7 +138,7 @@ def download_from_web(sUrl, sFile, sSourceDir, checksum):
     
     except IOError, e:
         if hasattr(e, 'reason'):
-            sys.stderr.write("%s\n" % (e.reason))
+            log.err("%s\n" % (e.reason))
         if hasattr(e, 'code') and hasattr(e, 'reason'):
             errfunc(e.code, e.reason)
         
@@ -174,7 +174,7 @@ def walk_tree_copy_debs(sRepository, sFile, sSourceDir):
                         except IOError, (errno, errstring):
                             errfunc(errno, errstring)
                         except shutil.Error:
-                            sys.stdout.write("%s is available in %s. Skipping Copy!\n" % (name, sSourceDir))
+                            log.msg("%s is available in %s. Skipping Copy!\n" % (name, sSourceDir))
                         bFound = True
                         break
                         
@@ -184,7 +184,7 @@ def walk_tree_copy_debs(sRepository, sFile, sSourceDir):
             #return bFound
                     #return False
     except OSError, (errno, strerror):
-        sys.stderr.write("%s %s\n" % (errno, strerror))
+        log.err("%s %s\n" % (errno, strerror))
         errfunc(errno, strerror)
         
         
@@ -202,12 +202,12 @@ def copy_first_match(repository, filename, dest_dir, checksum): # aka new_walk_t
             # There's no point in checking for the disable-md5 option because
             # copying a damaged file is of no use
             if pypt_md5_check.md5_check(file, checksum, path) == True:
-               try:
-                  shutil.copy(os.path.join(path, file), dest_dir)
-                  sys.stdout.write("%s copied from local cache %s.\n" % (file, repository))
-               except shutil.Error:
-                  sys.stdout.write("%s is available in %s. Skipping Copy!\n\n" % (file, dest_dir))
-               return True
+                try:
+                    shutil.copy(os.path.join(path, file), dest_dir)
+                    log.msg("%s copied from local cache %s.\n" % (file, repository))
+                except shutil.Error:
+                    log.msg("%s is available in %s. Skipping Copy!\n\n" % (file, dest_dir))
+                return True
     return False 
 
 def stripper(item):
@@ -259,7 +259,7 @@ def errfunc(errno, errormsg):
     elif errno == 407 or errno == 2:
         # These, I believe are from OSError/IOError exception.
         # I'll document it as soon as I confirm it.
-        sys.stderr.write("%s\n" % (errormsg))
+        log.err("%s\n" % (errormsg))
         sys.exit(errno)
     elif errno == 504 or errno == 404 or errno == 10060:
         #TODO: Counter which will inform that some packages weren't fetched.
@@ -273,16 +273,16 @@ def errfunc(errno, errormsg):
         # THere can be instances where one source is changed but the rest are working.
         # 10060 is for Operation Time out. There can be multiple reasons for this timeout
         # Primarily if the host is down or a slow network or abruption, hence not the whole execution should be aborted
-        sys.stderr.write("%s - %s\n\n" % (errno, errormsg))
+        log.err("%s - %s\n\n" % (errno, errormsg))
         #sys.stderr.write(" Will still try with other package uris\n\n")
         pass
     elif errno == 1:
         # We'll pass error code 1 where ever we want to gracefully exit
-        sys.stderr.write(errormsg)
-        sys.stderr.write("Explicit program termination %s\n" % (errno))
+        log.err(errormsg)
+        log.err("Explicit program termination %s\n" % (errno))
         sys.exit(errno)
     else:
-        sys.stderr.write("Aieee! I don't understand this errorcode\n" % (errno))
+        log.err("Aieee! I don't understand this errorcode\n" % (errno))
         sys.exit(errno)
     
 def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
@@ -308,19 +308,19 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
                     os.mkdir("pypt-downloads")
                     sSourceDir = os.path.abspath("pypt-downloads")
                 except:
-                    sys.stderr.write("Aieeee! I couldn't create a directory")
+                    log.err("Aieeee! I couldn't create a directory")
                     errfunc(1, '')
         else:
                 sSourceDir = os.path.abspath(path)
         
         if os.path.exists(os.path.join(sSourceDir, zip_type_file)):
-            sys.stderr.write("%s already present.\nRemove it first.\n" % (zip_type_file))
+            log.err("%s already present.\nRemove it first.\n" % (zip_type_file))
             sys.exit(1)
             
         try:
             lRawData = open(uri, 'r').readlines()
         except IOError, (errno, strerror):
-            sys.stderr.write("%s %s\n" % (errno, strerror))
+            log.err("%s %s\n" % (errno, strerror))
             errfunc(errno, '')
             
         #if options.zip_it:
@@ -329,13 +329,10 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
         for each_single_item in lRawData:
             (sUrl, sFile, download_size, checksum) = stripper(each_single_item)
             
-            #bStatus = download_from_web(sUrl, sFile, sSourceDir)
-            #if bStatus != True:
-            #     sys.stdout.write("%s not downloaded from %s\n" % (sFile, sUrl))
             if download_from_web(sUrl, sFile, sSourceDir, None) != True:
                 #sys.stderr.write("%s not downloaded from %s\n" % (sFile, sUrl))
                 #sys.stderr.write("%s failed\n\n" % (sFile))
-                #TODO: Add an errlist[] which'll keep track of all the failed url
+                #TODO: Add an errlist[] which'll keep track of all the failed url - Done
                 pypt_variables.errlist.append(sFile)
                 pass
             else:
@@ -353,49 +350,56 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, type = 0):
                     os.mkdir("pypt-downloads")
                     sSourceDir = os.path.abspath("pypt-downloads")
                 except:
-                    sys.stderr.write("Aieeee! I couldn't create a directory")
+                    log.err("Aieeee! I couldn't create a directory")
         else:
             sSourceDir = os.path.abspath(path)
             
         if os.path.exists(os.path.join(sSourceDir, zip_type_file)):
-            sys.stderr.write("%s already present.\nRemove it first.\n" % (zip_type_file))
+            log.err("%s already present.\nRemove it first.\n" % (zip_type_file))
             sys.exit(1)
                 
-        if cache is None:
-            sRepository = os.path.abspath(os.curdir)
-        else:
-            sRepository = os.path.abspath(cache)
+        if cache is not None:
+            cache = os.path.abspath(cache)
             
         try:
             lRawData = open(uri, 'r').readlines()
         except IOError, (errno, strerror):
-            sys.stderr.write("%s %s\n" %(errno, strerror))
+            log.err("%s %s\n" %(errno, strerror))
             errfunc(errno, '')
         
         for each_single_item in lRawData:
             (sUrl, sFile, download_size, checksum) = stripper(each_single_item)
-                     
-            if copy_first_match(sRepository, sFile, sSourceDir, checksum) == False:
+            
+            if cache is None:
                 if download_from_web(sUrl, sFile, sSourceDir, checksum) != True:
-                     #sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
-                     pypt_variables.errlist.append(sFile)
-                else:
-                    if os.path.exists(os.path.join(sRepository, sFile)):
-                        #INFO: The file is already there.
-                        pass
-                    else:
-                        shutil.copy(sFile, sRepository)
-                            
+                    #sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
+                    pypt_variables.errlist.append(sFile)
                     if zip_bool:
                         compress_the_file(zip_type_file, sFile, sSourceDir)
                         os.unlink(sFile)
-            elif True:
-                if zip_bool:
-                    compress_the_file(zip_type_file, sFile, sSourceDir)
-                    os.unlink(sFile)
+                        
+            else:
+                if copy_first_match(cache, sFile, sSourceDir, checksum) == False:
+                    if download_from_web(sUrl, sFile, sSourceDir, checksum) != True:
+                         #sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
+                         pypt_variables.errlist.append(sFile)
+                    else:
+                        if os.path.exists(os.path.join(cache, sFile)):
+                            #INFO: The file is already there.
+                            pass
+                        else:
+                            shutil.copy(sFile, cache)
+                                
+                        if zip_bool:
+                            compress_the_file(zip_type_file, sFile, sSourceDir)
+                            os.unlink(sFile)
+                elif True:
+                    if zip_bool:
+                        compress_the_file(zip_type_file, sFile, sSourceDir)
+                        os.unlink(sFile)
                         
     for error in pypt_variables.errlist:
-        sys.stderr.write("%s failed.\n" % (error))
+        log.err("%s failed.\n" % (error))
         #zip_the_file("pypt-offline-upgrade-fetched.zip", sSourceDir) 
         
 def syncer(install_file_path, target_path, type=None):
@@ -407,7 +411,7 @@ def syncer(install_file_path, target_path, type=None):
         try:
             import zipfile
         except ImportError:
-            sys.stderr.write("Aieeee! Module zipfile not found.\n")
+            log.err("Aieeee! Module zipfile not found.\n")
             sys.exit(1)
             
         file = zipfile.ZipFile(install_file_path, "r")
@@ -415,7 +419,7 @@ def syncer(install_file_path, target_path, type=None):
             try:
                 import pypt_magic
             except ImportError:
-                sys.stderr.write("Aieeee! Module pypt_magic not found.\n")
+                log.err("Aieeee! Module pypt_magic not found.\n")
                 sys.exit(1)
                 
             data = open(filename, "wb")
@@ -439,15 +443,15 @@ def syncer(install_file_path, target_path, type=None):
             elif pypt_magic.file(filename) == "PGP armored data":
                 try:
                     shutil.copy(filename, target_path)
-                    sys.stdout.write("%s file synced.\n" % (filename))
+                    log.msg("%s file synced.\n" % (filename))
                 except shutil.Error:
-                    sys.stderr.write("%s is already present.\n" % (filename))
+                    log.err("%s is already present.\n" % (filename))
             elif pypt_magic.file(filename) == "application/x-dpkg":
                 try:
                     shutil.copy(filename, target_path)
-                    sys.stdout.write("%s file synced.\n" % (filename))
+                    log.msg("%s file synced.\n" % (filename))
                 except shutil.Error:
-                    sys.stderr.write("%s is already present.\n" % (filename))
+                    log.err("%s is already present.\n" % (filename))
             os.unlink(filename)
                 
     elif type == 2:
@@ -458,7 +462,7 @@ def syncer(install_file_path, target_path, type=None):
             try:
                 import pypt_magic
             except ImportError:
-                sys.stderr.write("Aieeee! module not found.\n")
+                log.err("Aieeee! module not found.\n")
                 
             if pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/x-bzip2":
                 decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 1)
@@ -469,17 +473,17 @@ def syncer(install_file_path, target_path, type=None):
             elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "PGP armored data":
                 try:
                     shutil.copy(os.path.join(install_file_path, eachfile), target_path)
-                    sys.stdout.write("%s file synced.\n" % (eachfile))
+                    log.msg("%s file synced.\n" % (eachfile))
                 except shutil.Error:
-                    sys.stderr.write("%s is already present.\n" % (filename))
+                    log.err("%s is already present.\n" % (filename))
             elif pypt_magic.file(filename) == "application/x-dpkg":
                 try:
                     shutil.copy(filename, target_path)
-                    sys.stdout.write("%s file synced.\n" % (filename))
+                    log.msg("%s file synced.\n" % (filename))
                 except shutil.Error:
-                    sys.stderr.write("%s is already present.\n" % (filename))
+                    log.err("%s is already present.\n" % (filename))
             else:
-                sys.stderr.write("Aieeee! I don't understand filetype %s\n" % (eachfile))
+                log.err("Aieeee! I don't understand filetype %s\n" % (eachfile))
                 
 def main():
     # Okay!! We got all the options and arguments.
@@ -487,23 +491,22 @@ def main():
     
     try:
         # The log implementation
-        log = pypt_logger.log(pypt_variables.options.warnings, pypt_variables.options.verbose, pypt_variables.options.debug) # Instantiate the class
-        log.msg("foo")
-        log.verbose("bar")
-        log.err("error")
+        # Instantiate the class
+        log = pypt_logger.log(pypt_variables.options.warnings, pypt_variables.options.verbose, pypt_variables.options.debug)
+        global log
         
-        sys.stdout.write("pypt-offline %s\n" % (pypt_variables.version))
-        sys.stdout.write("Copyright %s\n" % (pypt_variables.copyright))
+        log.msg("pypt-offline %s\n" % (pypt_variables.version))
+        log.msg("Copyright %s\n" % (pypt_variables.copyright))
         
         if pypt_variables.options.set_update:
             if sys.platform in pypt_variables.supported_platforms:
                 if os.geteuid() != 0:
                     parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                 else:
-                    sys.stdout.write("Generating database of files that are needed for an update.\n")
+                    log.msg("Generating database of files that are needed for an update.\n")
                     os.environ['__pypt_set_update'] = pypt_variables.options.set_update
                     if os.system('/usr/bin/apt-get -qq --print-uris update > $__pypt_set_update') != 0:
-                        sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
+                        log.err("FATAL: Something is wrong with the apt system.\n")
             else:
                  parser.error("This argument is supported only on Unix like systems with apt installed\n")
             sys.exit(0)
@@ -517,20 +520,20 @@ def main():
                     parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                 #TODO: Use a more Pythonic way for it
                 if pypt_variables.options.upgrade_type == "upgrade":
-                    sys.stdout.write("Generating database of files that are needed for an upgrade.\n")
+                    log.msg("Generating database of files that are needed for an upgrade.\n")
                     os.environ['__pypt_set_upgrade'] = pypt_variables.options.set_upgrade
                     if os.system('/usr/bin/apt-get -qq --print-uris upgrade > $__pypt_set_upgrade') != 0:
-                        sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
+                        log.err("FATAL: Something is wrong with the apt system.\n")
                 elif pypt_variables.options.upgrade_type == "dist-upgrade":
-                    sys.stdout.write("Generating database of files that are needed for a dist-upgrade.\n")
+                    log.msg("Generating database of files that are needed for a dist-upgrade.\n")
                     os.environ['__pypt_set_upgrade'] = pypt_variables.options.set_upgrade
                     if os.system('/usr/bin/apt-get -qq --print-uris dist-upgrade > $__pypt_set_upgrade') != 0:
-                        sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
+                        log.err("FATAL: Something is wrong with the apt system.\n")
                 elif pypt_variables.options.upgrade_type == "dselect-upgrade":
-                    sys.stdout.write("Generating database of files that are needed for a dselect-upgrade.\n")
+                    log.msg("Generating database of files that are needed for a dselect-upgrade.\n")
                     os.environ['__pypt_set_upgrade'] = pypt_variables.options.set_upgrade
                     if os.system('/usr/bin/apt-get -qq --print-uris dselect-upgrade > $__pypt_set_upgrade') != 0:
-                        sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
+                        log.err("FATAL: Something is wrong with the apt system.\n")
                 else:
                     parser.error("Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n")
             else:
@@ -545,7 +548,7 @@ def main():
                 if os.geteuid() != 0:
                     parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                     
-                sys.stdout.write("Generating database of the package and its dependencies.\n")
+                log.msg("Generating database of the package and its dependencies.\n")
                 os.environ['__pypt_set_install'] = pypt_variables.options.set_install
                 os.environ['__pypt_set_install_packages'] = ''
                 
@@ -558,13 +561,13 @@ def main():
                     
                 #FIXME: Find a more Pythonic implementation
                 if os.system('/usr/bin/apt-get -qq --print-uris install $__pypt_set_install_packages > $__pypt_set_install') != 0:
-                    sys.stderr.write("FATAL: Something is wrong with the apt system.\n")
+                    log.err("FATAL: Something is wrong with the apt system.\n")
             else:
                 parser.error("This argument is supported only on Unix like systems with apt installed\n")
                 sys.exit(0)
                
         if pypt_variables.options.fetch_update:
-            sys.stdout.write("\nFetching uris which update apt's package database\n\n")
+            log.msg("\nFetching uris which update apt's package database\n\n")
            
             pypt_variables.options.disable_md5check = True
             # Since we're in fetch_update, the download_type will be non-deb/rpm data
@@ -573,7 +576,7 @@ def main():
             fetcher(pypt_variables.options.fetch_update, pypt_variables.options.download_dir, pypt_variables.options.cache_dir, pypt_variables.options.zip_it, pypt_variables.options.zip_update_file, 1)
                  
         if pypt_variables.options.fetch_upgrade:
-            sys.stdout.write("\nFetching packages which need upgradation\n\n")
+            log.msg("\nFetching packages which need upgradation\n\n")
                  
             # Since we're in fetch_update, the download_type will be non-deb/rpm data
             # 1 is for update packages 
@@ -584,7 +587,7 @@ def main():
         if pypt_variables.options.install_update:
             #INFO: Comment these lines to do testing on Windows machines too
             if os.geteuid() != 0:
-                sys.stderr.write("\nYou need superuser privileges to execute this option\n")
+                log.err("\nYou need superuser privileges to execute this option\n")
                 sys.exit(1)
                 
             if os.path.isfile(pypt_variables.options.install_update) is True:
@@ -594,25 +597,26 @@ def main():
                 # We're a directory
                 syncer(pypt_variables.options.install_update, pypt_variables.apt_update_target_path, 2)
             else:
-                sys.stderr.write("Aieee! %s is unsupported format\n" % (pypt_variables.options.install_update))
+                log.err("Aieee! %s is unsupported format\n" % (pypt_variables.options.install_update))
             sys.exit(0)
             
         if pypt_variables.options.install_upgrade:
             #INFO: Comment these lines to do testing on Windows machines too
             if os.geteuid() != 0:
-                sys.stderr.write("\nYou need superuser privileges to execute this option\n")
+                log.err("\nYou need superuser privileges to execute this option\n")
                 sys.exit(1)
             if os.path.isfile(pypt_variables.options.install_upgrade) is True:
                 syncer(pypt_variables.options.install_upgrade, apt_package_target_path, 1)
             elif os.path.isdir(pypt_variables.options.install_upgrade) is True:
                 syncer(pypt_variables.options.install_upgrade, pypt_variables.apt_package_target_path, 2)
             else:
-                sys.stderr.write("Aieee! %s is unsupported format\n" % (pypt_variables.options.install_upgrade))
+                log.err("Aieee! %s is unsupported format\n" % (pypt_variables.options.install_upgrade))
             sys.exit(0)
             
     except KeyboardInterrupt:
-        sys.stderr.write("\nInterrupted by user. Exiting!\n")
+        log.err("\nInterrupted by user. Exiting!\n")
         sys.exit(1)        
             
 if __name__ == "__main__":
+    #log = pypt_logger.log(pypt_variables.options.warnings, pypt_variables.options.verbose, pypt_variables.options.debug)
     main()
