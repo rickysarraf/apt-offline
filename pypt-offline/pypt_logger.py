@@ -42,7 +42,7 @@
 
 # Will enhance it more later....
 
-import sys, pypt_variables
+import sys
 
 class log:
     '''A OOP implementation for logging.
@@ -67,17 +67,6 @@ class log:
             self.DEBUG = True
         else: self.DEBUG = False
         
-#    def __init__(self):
-#        if pypt_variables.options.warnings is True:
-#            self.WARN = True
-#        else: self.WARN = False
-#        if pypt_variables.options.verbose is True:
-#            self.VERBOSE = True
-#        else: self.VERBOSE = False
-#        if pypt_variables.options.debug is True:
-#            self.DEBUG = True
-#        else: self.DEBUG = False
-    
     def msg(self, msg):
         sys.stdout.write(msg)
         sys.stdout.flush()
