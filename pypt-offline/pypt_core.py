@@ -606,7 +606,7 @@ def main():
                 log.err("\nYou need superuser privileges to execute this option\n")
                 sys.exit(1)
             if os.path.isfile(pypt_variables.options.install_upgrade) is True:
-                syncer(pypt_variables.options.install_upgrade, apt_package_target_path, 1)
+                syncer(pypt_variables.options.install_upgrade, pypt_variables.apt_package_target_path, 1)
             elif os.path.isdir(pypt_variables.options.install_upgrade) is True:
                 syncer(pypt_variables.options.install_upgrade, pypt_variables.apt_package_target_path, 2)
             else:
@@ -618,5 +618,4 @@ def main():
         sys.exit(1)        
             
 if __name__ == "__main__":
-    #log = pypt_logger.log(pypt_variables.options.warnings, pypt_variables.options.verbose, pypt_variables.options.debug)
     main()
