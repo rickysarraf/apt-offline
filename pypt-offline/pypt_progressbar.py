@@ -30,9 +30,10 @@ class progressBar:
         # figure out where to put the percentage, roughly centered
         percentPlace = (len(self.progBar) / 2) - len(str(percentDone)) 
         percentString = str(percentDone) + "%"
-
+        
         # slice the percentage into the bar
-        self.progBar = self.progBar[0:percentPlace] + percentString + self.progBar[percentPlace+len(percentString):]
+        self.progBar = self.progBar[0:percentPlace] + percentString + self.progBar[percentPlace+len(percentString):] \
+        + " " + str(newAmount/1024) + "KB of " + str(self.max/1024) + "KB"
 
     def __str__(self):
         return str(self.progBar)
@@ -44,26 +45,7 @@ def myReportHook(count, blockSize, totalSize):
 
     if prog == "":
         prog = progressBar(0,totalSize,50)
-    #print count, blockSize, totalSize
-    #prog = progressBar(0, totalSize, 77)
     prog.updateAmount(count*blockSize)
     sys.stdout.write (str(prog))
     sys.stdout.write ("\r")
     #print count * (blockSize/1024) , "kb of " , (totalSize/1024) , "kb downloaded.\n"
-#prog = ""
-#sFile = "new.rpm"
-#sUrl = "http://ftp.debian.org/debian/dists/unstable/main/binary-i386/Packages.bz2"
-#$urllib.urlretrieve(sUrl, sFile, reporthook=myReportHook)    
-#print "\n\n"
-#temp = urllib2.urlopen(sUrl)
-#lastval = int(temp.headers['Content-Length'])
-#prog = progressBar(0, lastval, 77)
-#
-#for x in range(101):
-#    prog.updateAmount(x)
-#    print prog, "\r", time.sleep(0.5)
-#
-#data = open(sFile,'wb')
-#data.write(temp.read())
-#data.close()
-#temp.close()
