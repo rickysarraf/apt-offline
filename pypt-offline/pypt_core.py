@@ -347,8 +347,69 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
             log.err("%s %s\n" % (errno, strerror))
             errfunc(errno, '')
             
-        #if options.zip_it:
-        #    zip_update_file = options.zip_update_file
+        
+#        #INFO: Thread Support
+#        # Will require more design thoughts
+#        from Queue import Queue
+#        from threading import Thread, currentThread
+#        
+#        if pypt_variables.options.num_of_threads > 1:
+#            log.msg("WARNING: Threads is still in alpha stage. It's better to use just a single thread at the moment.\n")
+#            log.warn("Threads is still in alpha stage. It's better to use just a single thread at the moment.\n")
+#            
+#        NUMTHREADS = pypt_variables.options.num_of_threads
+#        
+#        def run(request, response, func=download_from_web):
+#            '''
+#            Get items from the request Queue, process them
+#            with func(), put the results along with the
+#            Thread's name into the response Queue.
+#        
+#            Stop running once an item is None.
+#            '''
+#            name = currentThread().getName()
+#            while 1:
+#                item = request.get()
+#                (sUrl, sFile, download_size, checksum) = stripper(item)
+#                if item is None:
+#                    break
+#                response.put((name, func(sUrl, sFile, sSourceDir, None)))
+#        
+#        
+#        # Create two Queues for the requests and responses
+#        requestQueue = Queue()
+#        responseQueue = Queue()
+#        
+#        
+#        # Pool of NUMTHREADS Threads that run run().
+#        thread_pool = [
+#                       Thread(
+#                              target=run,
+#                              args=(requestQueue, responseQueue)
+#                              )
+#                       for i in range(NUMTHREADS)
+#                       ]
+#        
+#        
+#        # Start the threads.
+#        for t in thread_pool: t.start()
+#        
+#        # Queue up the requests.
+#        for item in lRawData: requestQueue.put(item)
+#        
+#        
+#        # Shut down the threads after all requests end.
+#        # (Put one None "sentinel" for each thread.)
+#        for t in thread_pool: requestQueue.put(None)
+#        
+#        # Don't end the program prematurely.
+#        #
+#        # (Note that because Queue.get() is blocking by
+#        # default this isn't strictly necessary.  But if
+#        # you were, say, handling responses in another
+#        # thread, you'd want something like this in your
+#        # main thread.)
+#        for t in thread_pool: t.join()
         
         for each_single_item in lRawData:
             (sUrl, sFile, download_size, checksum) = stripper(each_single_item)
