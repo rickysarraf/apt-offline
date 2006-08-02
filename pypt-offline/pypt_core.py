@@ -360,13 +360,12 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
 #        NUMTHREADS = pypt_variables.options.num_of_threads
 #        
 #        def run(request, response, func=download_from_web):
-#            '''
-#            Get items from the request Queue, process them
+#            '''Get items from the request Queue, process them
 #            with func(), put the results along with the
 #            Thread's name into the response Queue.
 #        
-#            Stop running once an item is None.
-#            '''
+#            Stop running once an item is None.'''
+#        
 #            name = currentThread().getName()
 #            while 1:
 #                item = request.get()

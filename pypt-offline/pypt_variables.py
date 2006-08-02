@@ -24,7 +24,7 @@ parser.add_option("--warnings", dest="warnings", help="Enable warnings", action=
 parser.add_option("--debug", dest="debug", help="Enable Debug mode", action="store_true")
 parser.add_option("-u","--uris", dest="uris_file", help="Full path of the uris file which contains the main database of files to be downloaded",action="store", type="string")
 parser.add_option("","--disable-md5check", dest="disable_md5check", help="Disable md5checksum validation on downloaded files", action="store_true")
-parser.add_option("", "--threads", dest="num_of_threads", help="Number of threads to spawn", action="store", type="int", metavar="1", default="1")
+parser.add_option("", "--threads", dest="num_of_threads", help="Number of threads to spawn", action="store", type="int", metavar="1", default=1)
    
 #INFO: Option zip is not enabled by default but is highly encouraged.
 parser.add_option("-z","--zip", dest="zip_it", help="Zip the downloaded files to a single zip file", action="store_true")
