@@ -347,82 +347,94 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
             log.err("%s %s\n" % (errno, strerror))
             errfunc(errno, '')
             
+        #INFO: Thread Support
+        # Will require more design thoughts
+        from Queue import Queue
+        from threading import Thread, currentThread
         
-#        #INFO: Thread Support
-#        # Will require more design thoughts
-#        from Queue import Queue
-#        from threading import Thread, currentThread
-#        
-#        if pypt_variables.options.num_of_threads > 1:
-#            log.msg("WARNING: Threads is still in alpha stage. It's better to use just a single thread at the moment.\n")
-#            log.warn("Threads is still in alpha stage. It's better to use just a single thread at the moment.\n")
-#            
-#        NUMTHREADS = pypt_variables.options.num_of_threads
-#        
-#        def run(request, response, func=download_from_web):
-#            '''Get items from the request Queue, process them
-#            with func(), put the results along with the
-#            Thread's name into the response Queue.
-#        
-#            Stop running once an item is None.'''
-#        
-#            name = currentThread().getName()
-#            while 1:
-#                item = request.get()
-#                (sUrl, sFile, download_size, checksum) = stripper(item)
-#                if item is None:
-#                    break
-#                response.put((name, func(sUrl, sFile, sSourceDir, None)))
-#        
-#        
-#        # Create two Queues for the requests and responses
-#        requestQueue = Queue()
-#        responseQueue = Queue()
-#        
-#        
-#        # Pool of NUMTHREADS Threads that run run().
-#        thread_pool = [
-#                       Thread(
-#                              target=run,
-#                              args=(requestQueue, responseQueue)
-#                              )
-#                       for i in range(NUMTHREADS)
-#                       ]
-#        
-#        
-#        # Start the threads.
-#        for t in thread_pool: t.start()
-#        
-#        # Queue up the requests.
-#        for item in lRawData: requestQueue.put(item)
-#        
-#        
-#        # Shut down the threads after all requests end.
-#        # (Put one None "sentinel" for each thread.)
-#        for t in thread_pool: requestQueue.put(None)
-#        
-#        # Don't end the program prematurely.
-#        #
-#        # (Note that because Queue.get() is blocking by
-#        # default this isn't strictly necessary.  But if
-#        # you were, say, handling responses in another
-#        # thread, you'd want something like this in your
-#        # main thread.)
-#        for t in thread_pool: t.join()
-        
-        for each_single_item in lRawData:
-            (sUrl, sFile, download_size, checksum) = stripper(each_single_item)
+        if pypt_variables.options.num_of_threads > 1:
+            log.msg("WARNING: Threads is still in alpha stage. It's better to use just a single thread at the moment.\n")
+            log.warn("Threads is still in alpha stage. It's better to use just a single thread at the moment.\n")
             
-            if download_from_web(sUrl, sFile, sSourceDir, None) != True:
-                #sys.stderr.write("%s not downloaded from %s\n" % (sFile, sUrl))
-                #sys.stderr.write("%s failed\n\n" % (sFile))
-                #TODO: Add an errlist[] which'll keep track of all the failed url - Done
-                pypt_variables.errlist.append(sFile)
-                pass
-            else:
-                if zip_bool:
-                    compress_the_file(zip_type_file, sFile, sSourceDir)
-                    os.remove(sFile) # Remove it because we don't need the file once it is zipped.
+        NUMTHREADS = pypt_variables.options.num_of_threads
+        
+        def run(request, response, func=download_from_web):
+            '''Get items from the request Queue, process them
+            with func(), put the results along with the
+            Thread's name into the response Queue.
+        
+            Stop running once an item is None.'''
+        
+            name = currentThread().getName()
+            while 1:
+                item = request.get()
+                if item is None:
+                    break
+                (sUrl, sFile, download_size, checksum) = stripper(item)
+                response.put((name, sUrl, sFile, func(sUrl, sFile, sSourceDir, None)))
+                
+                # This will take care of making sure that if downloaded, they are zipped
+                (thread_name, Url, File, exit_status) = responseQueue.get()
+                if exit_status == True:
+                    if zip_bool:
+                        compress_the_file(zip_type_file, File, sSourceDir)
+                        os.remove(File) # Remove it because we don't need the file once it is zipped.
+                else:
+                    pypt_variables.errlist.append(sFile)
+                    pass
+        
+        
+        # Create two Queues for the requests and responses
+        requestQueue = Queue()
+        responseQueue = Queue()
+        
+        
+        # Pool of NUMTHREADS Threads that run run().
+        thread_pool = [
+                       Thread(
+                              target=run,
+                              args=(requestQueue, responseQueue)
+                              )
+                       for i in range(NUMTHREADS)
+                       ]
+        
+        
+        # Start the threads.
+        for t in thread_pool: t.start()
+        
+        # Queue up the requests.
+        for item in lRawData:
+            requestQueue.put(item)
+            #(thread_name, Url, File, exit_status) = responseQueue.get()
+            #print "%s\t%s\t%s\t%s" % (thread_name, Url, File, exit_status)
+        
+        # Shut down the threads after all requests end.
+        # (Put one None "sentinel" for each thread.)
+        for t in thread_pool: requestQueue.put(None)
+        
+        # Don't end the program prematurely.
+        #
+        # (Note that because Queue.get() is blocking by
+        # default this isn't strictly necessary.  But if
+        # you were, say, handling responses in another
+        # thread, you'd want something like this in your
+        # main thread.)
+        for t in thread_pool: t.join()
+        
+#INFO: Deprecated in favor of threads.
+# Will be removed once felt that threading is working perfect
+#        for each_single_item in lRawData:
+#            (sUrl, sFile, download_size, checksum) = stripper(each_single_item)
+#            
+#            if download_from_web(sUrl, sFile, sSourceDir, None) != True:
+#                #sys.stderr.write("%s not downloaded from %s\n" % (sFile, sUrl))
+#                #sys.stderr.write("%s failed\n\n" % (sFile))
+#                pypt_variables.errlist.append(sFile)
+#                pass
+#            else:
+#                if zip_bool:
+#                    compress_the_file(zip_type_file, sFile, sSourceDir)
+#                    os.remove(sFile) # Remove it because we don't need the file once it is zipped.
                  
     if arg_type == 2:
         if path is None:
