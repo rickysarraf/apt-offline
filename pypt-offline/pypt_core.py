@@ -139,16 +139,16 @@ def download_from_web(sUrl, sFile, sSourceDir, checksum):
             if pypt_md5_check.md5_check(sFile, checksum, sSourceDir) != True:
                 os.remove(sFile)
                 log.err("%s checksum mismatch. File removed\n" % (sFile))
-        #sys.stdout.write("%s successfully downloaded from %s\n\n" % (sFile, sUrl))
+        log.verbose("%s successfully downloaded from %s\n\n" % (sFile, sUrl))
         return True
         
     #FIXME: Find out optimal fix for this exception handling
     except OSError, (errno, strerror):
-        sys.stderr.write ("%s\n" %(sSourceDir))
+        log.err("%s\n" %(sSourceDir))
         errfunc(errno, strerror)
         
     except urllib2.HTTPError, errstring:
-        sys.stderr.write("%s\n" % (sFile))
+        log.err("%s\n" % (sFile))
         errfunc(errstring.code, errstring.msg)
         
     except urllib2.URLError, errstring:
@@ -304,7 +304,7 @@ def errfunc(errno, errormsg):
         # 10060 is for Operation Time out. There can be multiple reasons for this timeout
         # Primarily if the host is down or a slow network or abruption, hence not the whole execution should be aborted
         log.err("%s - %s\n\n" % (errno, errormsg))
-        #sys.stderr.write(" Will still try with other package uris\n\n")
+        log.verbose(" Will still try with other package uris\n\n")
         pass
     elif errno == 1:
         # We'll pass error code 1 where ever we want to gracefully exit
@@ -500,6 +500,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
                 if exit_status == False:
                     log.verbose("%s not available in local cache %s\n" % (File, cache))
                     if download_from_web(sUrl, sFile, sSourceDir, checksum) != True:
+                        log.verbose("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
                         pypt_variables.errlist.append(sFile)
                     else:
                         # We need this because we can't do join or exists operation on None
@@ -680,6 +681,9 @@ def syncer(install_file_path, target_path, arg_type=None):
                 log.err("Aieeee! I don't understand filetype %s\n" % (eachfile))
                 
 def main():
+    '''Here we basically do the sanity checks, some validations
+    and then accordingly call the corresponding functions.'''
+    
     # Okay!! We got all the options and arguments.
     # Now let's begin....
     
