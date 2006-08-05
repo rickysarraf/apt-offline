@@ -1,4 +1,5 @@
-import os, shutil, string, sys, urllib2, Queue, threading, pypt_progressbar, pypt_md5_check, pypt_variables, pypt_logger
+import os, shutil, string, sys, urllib2, Queue, threading
+import pypt_progressbar, pypt_md5_check, pypt_variables, pypt_logger
 
 '''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
@@ -27,7 +28,7 @@ def compress_the_file(zip_file_name, files_to_compress, sSourceDir):
         log.err("\nAieee! Some error exception in creating zip file %s\n" % (zip_file_name))
         sys.exit(1)
         
-    filename.write(files_to_compress, files_to_compress, zipfile.ZIP_DEFLATED)
+    filename.write(files_to_compress, files_to_compress, zipfile.ZIP_DEFLATED)                        
     filename.close()
     
 def decompress_the_file(file, path, filename, archive_type):
@@ -170,7 +171,7 @@ def download_from_web(sUrl, sFile, sSourceDir, checksum):
 # This might require simplification and optimization.
 # But for now it's doing the job.
 # Need to find a better algorithm, maybe os.walk()                    
-def walk_tree_copy_debs(sRepository, sFile, sSourceDir):
+def walk_tree_copy_debs(cache, sFile, sSourceDir):
     '''
     This function checks for a package to see if its already downloaded
     It can search directories with depths.
@@ -183,11 +184,11 @@ def walk_tree_copy_debs(sRepository, sFile, sSourceDir):
     #Else it fetches the package from the net"""
     bFound = False
     try:
-        if sRepository is not None:
-            for name in os.listdir(sRepository) and bFound == True:
+        if cache is not None:
+            for name in os.listdir(cache) and bFound == True:
                 #if bFound == True:
                 #    break
-                path = os.path.join(sRepository, name)
+                path = os.path.join(cache, name)
                 if os.path.isdir(path):
                     walk_tree_copy_debs(path, sFile, sSourceDir)
                     #walk_tree_copy_debs(path, sFile)
@@ -362,6 +363,8 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
             log.warn("Threads is still in alpha stage. It's better to use just a single thread at the moment.\n")
             
         NUMTHREADS = pypt_variables.options.num_of_threads
+        name = threading.currentThread().getName()
+        ziplock = threading.Lock()
         
         def run(request, response, func=download_from_web):
             '''Get items from the request Queue, process them
@@ -370,8 +373,6 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
             
             Stop running once an item is None.'''
         
-            name = threading.currentThread().getName()
-            ziplock = threading.Lock()
             while 1:
                 item = request.get()
                 if item is None:
@@ -422,7 +423,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
         # Don't end the program prematurely.
         #
         # (Note that because Queue.get() is blocking by
-        # default this isn't strictly necessary.  But if
+        # defualt this isn't strictly necessary. But if
         # you were, say, handling responses in another
         # thread, you'd want something like this in your
         # main thread.)
@@ -478,6 +479,8 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
             log.warn("Threads is still in alpha stage. It's better to use just a single thread at the moment.\n")
             
         NUMTHREADS = pypt_variables.options.num_of_threads
+        name = threading.currentThread().getName()
+        ziplock = threading.Lock()
         
         def run(request, response, func=copy_first_match):
             '''Get items from the request Queue, process them
@@ -486,8 +489,6 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
             
             Stop running once an item is None.'''
         
-            name = threading.currentThread().getName()
-            ziplock = threading.Lock()
             while 1:
                 item = request.get()
                 if item is None:
@@ -500,7 +501,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
                 if exit_status == False:
                     log.verbose("%s not available in local cache %s\n" % (File, cache))
                     if download_from_web(sUrl, sFile, sSourceDir, checksum) != True:
-                        log.verbose("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
+                        log.verbose("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, cache))
                         pypt_variables.errlist.append(sFile)
                     else:
                         # We need this because we can't do join or exists operation on None
@@ -508,14 +509,18 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
                             #INFO: The file is already there.
                             pass
                         else:
-                            shutil.copy(sFile, cache)
-                            if zip_bool:
-                                ziplock.acquire()
-                                try:
-                                    compress_the_file(zip_type_file, sFile, sSourceDir)
-                                    os.remove(sFile) # Remove it because we don't need the file once it is zipped.
-                                finally:
-                                    ziplock.release()
+                            try:
+                                shutil.copy(sFile, cache)
+                            except IOError:
+                                log.err("Cannot copy %s to %s. Is %s writeable??\n" % (sFile, cache, cache))
+                                pass
+                        if zip_bool:
+                            ziplock.acquire()
+                            try:
+                                compress_the_file(zip_type_file, sFile, sSourceDir)
+                                os.remove(sFile) # Remove it because we don't need the file once it is zipped.
+                            finally:
+                                ziplock.release()
                 elif exit_status == True:
                     if zip_bool:
                         ziplock.acquire()
@@ -552,7 +557,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
         # Don't end the program prematurely.
         #
         # (Note that because Queue.get() is blocking by
-        # default this isn't strictly necessary.  But if
+        # default this isn't strictly necessary. But if
         # you were, say, handling responses in another
         # thread, you'd want something like this in your
         # main thread.)
@@ -564,7 +569,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
 #            
 #            if cache is None:
 #                if download_from_web(sUrl, sFile, sSourceDir, checksum) != True:
-#                    #sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
+#                    #sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, cache))
 #                    pypt_variables.errlist.append(sFile)
 #                    if zip_bool:
 #                        compress_the_file(zip_type_file, sFile, sSourceDir)
@@ -573,7 +578,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
 #            else:
 #                if copy_first_match(cache, sFile, sSourceDir, checksum) == False:
 #                    if download_from_web(sUrl, sFile, sSourceDir, checksum) != True:
-#                         #sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, sRepository))
+#                         #sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, cache))
 #                         pypt_variables.errlist.append(sFile)
 #                    else:
 #                        if os.path.exists(os.path.join(cache, sFile)):
@@ -699,23 +704,23 @@ def main():
         if pypt_variables.options.set_update:
             if sys.platform in pypt_variables.supported_platforms:
                 if os.geteuid() != 0:
-                    parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
+                    pypt_variables.parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                 else:
                     log.msg("Generating database of files that are needed for an update.\n")
                     os.environ['__pypt_set_update'] = pypt_variables.options.set_update
                     if os.system('/usr/bin/apt-get -qq --print-uris update > $__pypt_set_update') != 0:
                         log.err("FATAL: Something is wrong with the apt system.\n")
             else:
-                 parser.error("This argument is supported only on Unix like systems with apt installed\n")
+                 pypt_variables.parser.error("This argument is supported only on Unix like systems with apt installed\n")
             sys.exit(0)
      
         if pypt_variables.options.set_upgrade or pypt_variables.options.upgrade_type:
             if not (pypt_variables.options.set_upgrade and pypt_variables.options.upgrade_type):
-                parser.error("Options --set-upgrade and --upgrade-type are mutually inclusive\n")
+                pypt_variables.parser.error("Options --set-upgrade and --upgrade-type are mutually inclusive\n")
                      
             if sys.platform in pypt_variables.supported_platforms:
                 if os.geteuid() != 0:
-                    parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
+                    pypt_variables.parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                 #TODO: Use a more Pythonic way for it
                 if pypt_variables.options.upgrade_type == "upgrade":
                     log.msg("Generating database of files that are needed for an upgrade.\n")
@@ -733,18 +738,18 @@ def main():
                     if os.system('/usr/bin/apt-get -qq --print-uris dselect-upgrade > $__pypt_set_upgrade') != 0:
                         log.err("FATAL: Something is wrong with the apt system.\n")
                 else:
-                    parser.error("Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n")
+                    pypt_variables.parser.error("Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n")
             else:
-                parser.error("This argument is supported only on Unix like systems with apt installed\n")
+                pypt_variables.parser.error("This argument is supported only on Unix like systems with apt installed\n")
                 sys.exit(0)
                  
         if pypt_variables.options.set_install_packages or pypt_variables.options.set_install:
             if not (pypt_variables.options.set_install_packages and pypt_variables.options.set_install):
-                parser.error("Options --set-install and --set-install-package are mutually inclusive\n")
+                pypt_variables.parser.error("Options --set-install and --set-install-package are mutually inclusive\n")
                 
             if sys.platform in pypt_variables.supported_platforms:
                 if os.geteuid() != 0:
-                    parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
+                    pypt_variables.parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                     
                 log.msg("Generating database of the package and its dependencies.\n")
                 os.environ['__pypt_set_install'] = pypt_variables.options.set_install
@@ -761,7 +766,7 @@ def main():
                 if os.system('/usr/bin/apt-get -qq --print-uris install $__pypt_set_install_packages > $__pypt_set_install') != 0:
                     log.err("FATAL: Something is wrong with the apt system.\n")
             else:
-                parser.error("This argument is supported only on Unix like systems with apt installed\n")
+                pypt_variables.parser.error("This argument is supported only on Unix like systems with apt installed\n")
                 sys.exit(0)
                
         if pypt_variables.options.fetch_update:

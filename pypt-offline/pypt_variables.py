@@ -3,8 +3,8 @@ import optparse
 """Contains most of the variables that are required by the application to run.
 Also does command-line option parsing and variable validation."""
 
-version = "0.6.1"
-reldate = "07/20/2006"
+version = "0.6.2"
+reldate = "08/06/2006"
 copyright = "(C) 2005 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
         
 errlist = []
