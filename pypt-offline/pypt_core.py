@@ -224,6 +224,9 @@ def copy_first_match(repository, filename, dest_dir, checksum): # aka new_walk_t
     
     # If the repository is not given, we'll return None because the user wants to download
     # it from the web
+    # There's no need to walk also because the user knows that he doesn't have any cache_dir
+    # Earlier implementation of having a default dir (os.curdir()) hit performance badly because
+    # at times it would start the walk from "C:\" or "/"
     if repository is None:
         return False
     
@@ -597,7 +600,6 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
                         
     for error in pypt_variables.errlist:
         log.err("%s failed.\n" % (error))
-        #zip_the_file("pypt-offline-upgrade-fetched.zip", sSourceDir) 
         
 def syncer(install_file_path, target_path, arg_type=None):
     '''Syncer does the work of syncing the downloaded files.
@@ -688,9 +690,6 @@ def syncer(install_file_path, target_path, arg_type=None):
 def main():
     '''Here we basically do the sanity checks, some validations
     and then accordingly call the corresponding functions.'''
-    
-    # Okay!! We got all the options and arguments.
-    # Now let's begin....
     
     try:
         # The log implementation
@@ -819,6 +818,3 @@ def main():
     except KeyboardInterrupt:
         log.err("\nInterrupted by user. Exiting!\n")
         sys.exit(1)        
-            
-if __name__ == "__main__":
-    main()
