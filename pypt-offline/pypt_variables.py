@@ -5,7 +5,7 @@ Also does command-line option parsing and variable validation."""
 
 version = "0.6.2"
 reldate = "08/06/2006"
-copyright = "(C) 2005 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
+copyright = "(C) 2005 - 2006 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
         
 errlist = []
 supported_platforms = ["linux2", "gnu0", "gnukfreebsd5"]

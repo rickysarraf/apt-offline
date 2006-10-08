@@ -1,5 +1,5 @@
 * Support for RPM packages (Using YUM)
-* Argument Passing <done>
+* Argument Parsing <done>
 * Usage of apt-proxy like services, if available <done>
 * Usage of a .pypt-offlinerc config file
 * Download status indicator <done>

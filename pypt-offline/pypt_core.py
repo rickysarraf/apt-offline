@@ -140,6 +140,7 @@ def download_from_web(sUrl, sFile, sSourceDir, checksum):
             if pypt_md5_check.md5_check(sFile, checksum, sSourceDir) != True:
                 os.remove(sFile)
                 log.err("%s checksum mismatch. File removed\n" % (sFile))
+                return False
         log.verbose("%s successfully downloaded from %s\n\n" % (sFile, sUrl))
         return True
         
@@ -167,7 +168,7 @@ def download_from_web(sUrl, sFile, sSourceDir, checksum):
         if hasattr(e, 'code') and hasattr(e, 'reason'):
             errfunc(e.code, e.reason)
         
-#TODO: walk_tree_copy_debs "Sarraf, Ritesh" <Ritesh.Sarraf@netapp.com>- DEPRECATED
+#TODO: walk_tree_copy_debs - DEPRECATED
 # This might require simplification and optimization.
 # But for now it's doing the job.
 # Need to find a better algorithm, maybe os.walk()                    
