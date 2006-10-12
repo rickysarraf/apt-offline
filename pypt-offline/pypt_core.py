@@ -348,7 +348,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
         else:
                 sSourceDir = os.path.abspath(path)
         
-        if os.path.exists(os.path.join(sSourceDir, zip_type_file)):
+        if os.access(os.path.join(sSourceDir, zip_type_file), os.F_OK):
             log.err("%s already present.\nRemove it first.\n" % (zip_type_file))
             sys.exit(1)
             
@@ -460,7 +460,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
         else:
             sSourceDir = os.path.abspath(path)
             
-        if os.path.exists(os.path.join(sSourceDir, zip_type_file)):
+        if os.access(os.path.join(sSourceDir, zip_type_file), os.F_OK):
             log.err("%s already present.\nRemove it first.\n" % (zip_type_file))
             sys.exit(1)
                 
@@ -545,7 +545,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
                             pypt_variables.errlist.append(sFile)
                         else:
                             # We need this because we can't do join or exists operation on None
-                            if cache is None or os.path.exists(os.path.join(cache, sFile)):
+                            if cache is None or os.access(os.path.join(cache, sFile), os.F_OK):
                                 #INFO: The file is already there.
                                 pass
                             else:
@@ -649,18 +649,10 @@ def syncer(install_file_path, target_path, arg_type=None):
                 decompress_the_file(os.path.abspath(filename), target_path, filename, 1)
             elif pypt_magic.file(os.path.abspath(filename)) == "application/x-gzip":
                 decompress_the_file(os.path.abspath(filename), target_path, filename, 2)
-            elif pypt_magic.file(filename) == "PGP armored data":
-                try:
+            elif pypt_magic.file(filename) == "PGP armored data" or pypt_magic.file(filename) == "application/x-dpkg":
+                if os.access(target_path, os.W_OK):
                     shutil.copy(filename, target_path)
                     log.msg("%s file synced.\n" % (filename))
-                except shutil.Error:
-                    log.err("%s is already present.\n" % (filename))
-            elif pypt_magic.file(filename) == "application/x-dpkg":
-                try:
-                    shutil.copy(filename, target_path)
-                    log.msg("%s file synced.\n" % (filename))
-                except shutil.Error:
-                    log.err("%s is already present.\n" % (filename))
             os.unlink(filename)
                 
     elif arg_type == 2:
@@ -679,18 +671,10 @@ def syncer(install_file_path, target_path, arg_type=None):
                 decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 2)
             elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/zip":
                 decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 3)
-            elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "PGP armored data":
-                try:
+            elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "PGP armored data" or pypt_magic.file(filename) == "application/x-dpkg":
+                if os.access(target_path, os.W_OK):
                     shutil.copy(os.path.join(install_file_path, eachfile), target_path)
                     log.msg("%s file synced.\n" % (eachfile))
-                except shutil.Error:
-                    log.err("%s is already present.\n" % (filename))
-            elif pypt_magic.file(filename) == "application/x-dpkg":
-                try:
-                    shutil.copy(filename, target_path)
-                    log.msg("%s file synced.\n" % (filename))
-                except shutil.Error:
-                    log.err("%s is already present.\n" % (filename))
             else:
                 log.err("Aieeee! I don't understand filetype %s\n" % (eachfile))
                 
