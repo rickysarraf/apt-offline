@@ -243,7 +243,7 @@ def copy_first_match(repository, filename, dest_dir, checksum): # aka new_walk_t
                 except shutil.Error:
                     log.msg("%s is available in %s. Skipping Copy!\n\n" % (file, dest_dir))
                 return True
-    return False 
+    return False
 
 def stripper(item):
     '''Strips extra characters from "item".
@@ -358,7 +358,6 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
             log.err("%s %s\n" % (errno, strerror))
             errfunc(errno, '')
             
-        
         #INFO: Mac OS is having issues with Python Threading.
         # Use the conventional model for Mac OS
         if sys.platform == 'darwin':
@@ -366,16 +365,12 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
             log.verbose("Running in the conventional non-threaded way.\n")
             for each_single_item in lRawData:
                 (sUrl, sFile, download_size, checksum) = stripper(each_single_item)
-                
                 if download_from_web(sUrl, sFile, sSourceDir, None) != True:
-                    #sys.stderr.write("%s not downloaded from %s\n" % (sFile, sUrl))
-                    #sys.stderr.write("%s failed\n\n" % (sFile))
                     pypt_variables.errlist.append(sFile)
-                    pass
                 else:
                     if zip_bool:
                         compress_the_file(zip_type_file, sFile, sSourceDir)
-                        os.unlink(sFile) # Remove it because we don't need the file once it is zipped.
+                        os.unlink(os.path.join(sSourceDir, sFile)) # Remove it because we don't need the file once it is zipped.
         else:
             #INFO: Thread Support
             if pypt_variables.options.num_of_threads > 1:
@@ -407,12 +402,12 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
                             ziplock.acquire()
                             try:
                                 compress_the_file(zip_type_file, sFile, sSourceDir)
-                                os.unlink(sFile) # Remove it because we don't need the file once it is zipped.
+                                os.unlink(os.path.join(sSourceDir, sFile)) # Remove it because we don't need the file once it is zipped.
                             finally:
                                 ziplock.release()
                     else:
                         pypt_variables.errlist.append(sFile)
-                        pass
+                        #pass
             
             # Create two Queues for the requests and responses
             requestQueue = Queue.Queue()
@@ -483,21 +478,18 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
                 
                 if cache is None:
                     if download_from_web(sUrl, sFile, sSourceDir, checksum) != True:
-                        #sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, cache))
                         pypt_variables.errlist.append(sFile)
                         if zip_bool:
                             compress_the_file(zip_type_file, sFile, sSourceDir)
-                            os.unlink(sFile)
-                            
+                            os.unlink(os.path.join(sSourceDir, sFile))
                 else:
                     if copy_first_match(cache, sFile, sSourceDir, checksum) == False:
                         if download_from_web(sUrl, sFile, sSourceDir, checksum) != True:
-                             #sys.stderr.write("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, cache))
                              pypt_variables.errlist.append(sFile)
                         else:
-                            if os.path.exists(os.path.join(cache, sFile)):
-                                #INFO: The file is already there.
-                                pass
+                            if os.access(os.path.join(cache, sFile), os.F_OK):
+                                log.debug("%s file is already present in cache-dir %s. Skipping copy.\n" % (sFile, cache)) #INFO: The file is already there.
+                                log.verbose("%s file is already present in cache-dir %s. Skipping copy.\n" % (sFile, cache))
                             else:
                                 if os.access(cache, os.W_OK):
                                     shutil.copy(sFile, cache)
@@ -507,11 +499,11 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
                                     
                             if zip_bool:
                                 compress_the_file(zip_type_file, sFile, sSourceDir)
-                                os.unlink(sFile)
+                                os.unlink(os.path.join(sSourceDir, sFile))
                     elif True:
                         if zip_bool:
                             compress_the_file(zip_type_file, sFile, sSourceDir)
-                            os.unlink(sFile)
+                            os.unlink(os.path.join(sSourceDir, sFile))
         else:
             #INFO: Thread Support
             if pypt_variables.options.num_of_threads > 1:
@@ -538,38 +530,33 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
                     
                     # This will take care of making sure that if downloaded, they are zipped
                     (thread_name, Url, File, exit_status) = responseQueue.get()
-                    if exit_status == False:
+                    if exit_status == True:
+                        log.verbose("%s copied from cache-dir %s.\n" % (sFile, cache))
+                        log.debug("%s copied from cache-dir %s.\n" % (sFile, cache))
+                    else:
+                        log.debug("%s not available in local cache %s\n" % (sFile, cache))
                         log.verbose("%s not available in local cache %s\n" % (sFile, cache))
-                        if download_from_web(sUrl, sFile, sSourceDir, checksum) != True:
-                            log.verbose("%s not downloaded from %s and NA in local cache %s\n\n" % (sFile, sUrl, cache))
-                            pypt_variables.errlist.append(sFile)
+                        exit_status = download_from_web(sUrl, sFile, sSourceDir, checksum)
+                        
+                    if exit_status:
+                        if cache is None:
+                            log.debug("No cache-dir specified. Skipping copy.\n")
+                        elif os.access(os.path.join(cache, sFile), os.F_OK):
+                            log.debug("%s is already present in %s.\n" % (sFile, cache))
                         else:
-                            # We need this because we can't do join or exists operation on None
-                            if cache is None or os.access(os.path.join(cache, sFile), os.F_OK):
-                                #INFO: The file is already there.
-                                pass
-                            else:
-                                if os.access(cache, os.W_OK):
-                                    shutil.copy(sFile, cache)
-                                    log.verbose("%s copied to %s\n" % (sFile, cache))
-                                else:
-                                    log.verbose("Cannot copy %s to %s. Is %s writeable??\n" % (sFile, cache, cache))
-                                    pass
-                            if zip_bool:
-                                ziplock.acquire()
-                                try:
-                                    compress_the_file(zip_type_file, sFile, sSourceDir)
-                                    os.unlink(sFile) # Remove it because we don't need the file once it is zipped.
-                                finally:
-                                    ziplock.release()
-                    elif exit_status == True:
+                            if os.access(cache, os.W_OK):
+                                shutil.copy(sFile, cache)
+                                log.debug("%s copied to local cache-dir %s.\n" % (sFile, cache))
+                                log.verbose("%s copied to local cache-dir %s.\n" % (sFile, cache))
                         if zip_bool:
                             ziplock.acquire()
                             try:
                                 compress_the_file(zip_type_file, sFile, sSourceDir)
-                                os.unlink(sFile)
+                                os.unlink(os.path.join(sSourceDir, sFile)) # Remove it because we don't need the file once it is zipped.
                             finally:
                                 ziplock.release()
+                    else:
+                        pypt_variables.errlist.append(sFile)
                         
             # Create two Queues for the requests and responses
             requestQueue = Queue.Queue()
@@ -605,6 +592,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
             for t in thread_pool: t.join()
                         
     # Print the failed files
+    log.err("The following files failed to be downloaded.\n")
     for error in pypt_variables.errlist:
         log.err("%s failed.\n" % (error))
         
