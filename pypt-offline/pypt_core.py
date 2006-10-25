@@ -3,7 +3,7 @@ import pypt_progressbar, pypt_md5_check, pypt_variables, pypt_logger
 
 '''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
-def compress_the_file(zip_file_name, files_to_compress, sSourceDir):
+def compress_the_file(zip_file_name, files_to_compress, download_dir):
     '''Condenses all the files into one single file for easy transfer'''
     
     try:
@@ -12,7 +12,7 @@ def compress_the_file(zip_file_name, files_to_compress, sSourceDir):
         log.err("Aieee!! Module not found.\n")
         
     try:
-        os.chdir(sSourceDir)
+        os.chdir(download_dir)
     except:
         #TODO: Handle this exception
         log.err("Aieeee! I got a fatal exception that I don't understand.\nPlease debug.\n")
@@ -105,7 +105,7 @@ def decompress_the_file(file, path, filename, archive_type):
         
     return True
 
-def download_from_web(sUrl, sFile, sSourceDir, checksum):
+def download_from_web(url, file, download_dir, checksum):
     '''
     Download the required file from the web
     The arguments are passed everytime to the function so that,
@@ -117,13 +117,13 @@ def download_from_web(sUrl, sFile, sSourceDir, checksum):
         i = 0
         counter = 0
         
-        os.chdir(sSourceDir)
-        temp = urllib2.urlopen(sUrl)
+        os.chdir(download_dir)
+        temp = urllib2.urlopen(url)
         headers = temp.info()
         size = int(headers['Content-Length'])
-        data = open(sFile,'wb')
+        data = open(file,'wb')
         
-        log.msg("Downloading %s\n" % (sFile))
+        log.msg("Downloading %s\n" % (file))
         while i < size:
             data.write (temp.read(block_size))
             i += block_size
@@ -137,20 +137,20 @@ def download_from_web(sUrl, sFile, sSourceDir, checksum):
         if pypt_variables.options.disable_md5check == True:
             pass
         else:
-            if pypt_md5_check.md5_check(sFile, checksum, sSourceDir) != True:
-                os.unlink(sFile)
-                log.err("%s checksum mismatch. File removed\n" % (sFile))
+            if pypt_md5_check.md5_check(file, checksum, download_dir) != True:
+                os.unlink(file)
+                log.err("%s checksum mismatch. File removed\n" % (file))
                 return False
-        log.verbose("%s successfully downloaded from %s\n\n" % (sFile, sUrl))
+        log.verbose("%s successfully downloaded from %s\n\n" % (file, url))
         return True
         
     #FIXME: Find out optimal fix for this exception handling
     except OSError, (errno, strerror):
-        log.err("%s\n" %(sSourceDir))
+        log.err("%s\n" %(download_dir))
         errfunc(errno, strerror)
         
     except urllib2.HTTPError, errstring:
-        log.err("%s\n" % (sFile))
+        log.err("%s\n" % (file))
         errfunc(errstring.code, errstring.msg)
         
     except urllib2.URLError, errstring:
@@ -219,7 +219,7 @@ def files(root):
         for file in files: 
             yield path, file 
 
-def copy_first_match(repository, filename, dest_dir, checksum): # aka new_walk_tree_copy() 
+def copy_first_match(cache_dir, filename, dest_dir, checksum): # aka new_walk_tree_copy() 
     '''Walks into "reposiotry" looking for "filename".
     If found, copies it to "dest_dir" but first verifies their md5 "checksum".'''
     
@@ -228,10 +228,10 @@ def copy_first_match(repository, filename, dest_dir, checksum): # aka new_walk_t
     # There's no need to walk also because the user knows that he doesn't have any cache_dir
     # Earlier implementation of having a default dir (os.curdir()) hit performance badly because
     # at times it would start the walk from "C:\" or "/"
-    if repository is None:
+    if cache_dir is None:
         return False
     
-    for path, file in files(repository): 
+    for path, file in files(cache_dir): 
         if file == filename:
             #INFO: md5check is compulsory here
             # There's no point in checking for the disable-md5 option because
@@ -239,7 +239,7 @@ def copy_first_match(repository, filename, dest_dir, checksum): # aka new_walk_t
             if pypt_md5_check.md5_check(file, checksum, path) == True:
                 try:
                     shutil.copy(os.path.join(path, file), dest_dir)
-                    log.msg("%s copied from local cache %s.\n" % (file, repository))
+                    log.msg("%s copied from local cache %s.\n" % (file, cache_dir))
                 except shutil.Error:
                     log.msg("%s is available in %s. Skipping Copy!\n\n" % (file, dest_dir))
                 return True
@@ -320,7 +320,7 @@ def errfunc(errno, errormsg):
         log.err("Aieee! I don't understand this errorcode\n" % (errno))
         sys.exit(errno)
     
-def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
+def fetcher(url_file, download_dir, cache_dir, zip_bool, zip_type_file, arg_type = 0):
     '''
     uri - The uri data whill will contain the information
     path - The path (if any) where the download needs to be done
@@ -334,26 +334,26 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
         # This is at least true for Sid. Hence it doesn't make sense to copy
         # update packages' database from a cache.
         
-        if path is None:
+        if download_dir is None:
             if os.access("pypt-downloads", os.W_OK) is True:
-                sSourceDir = os.path.abspath("pypt-downloads")
+                download_dir = os.path.abspath("pypt-downloads")
             else:
                 try:
                     os.umask(0002)
                     os.mkdir("pypt-downloads")
-                    sSourceDir = os.path.abspath("pypt-downloads")
+                    download_dir = os.path.abspath("pypt-downloads")
                 except:
                     log.err("Aieeee! I couldn't create a directory")
                     errfunc(1, '')
         else:
-                sSourceDir = os.path.abspath(path)
+                download_dir = os.path.abspath(download_dir)
         
-        if os.access(os.path.join(sSourceDir, zip_type_file), os.F_OK):
+        if os.access(os.path.join(download_dir, zip_type_file), os.F_OK):
             log.err("%s already present.\nRemove it first.\n" % (zip_type_file))
             sys.exit(1)
             
         try:
-            lRawData = open(uri, 'r').readlines()
+           raw_data_list = open(url_file, 'r').readlines()
         except IOError, (errno, strerror):
             log.err("%s %s\n" % (errno, strerror))
             errfunc(errno, '')
@@ -363,14 +363,14 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
         if sys.platform == 'darwin':
             log.verbose("Running on Mac OS. Python doesn't have proper support for Threads on Mac OS X.\n")
             log.verbose("Running in the conventional non-threaded way.\n")
-            for each_single_item in lRawData:
-                (sUrl, sFile, download_size, checksum) = stripper(each_single_item)
-                if download_from_web(sUrl, sFile, sSourceDir, None) != True:
-                    pypt_variables.errlist.append(sFile)
+            for each_single_item in raw_data_list:
+                (url, file, download_size, checksum) = stripper(each_single_item)
+                if download_from_web(url, file, download_dir, None) != True:
+                    pypt_variables.errlist.append(file)
                 else:
                     if zip_bool:
-                        compress_the_file(zip_type_file, sFile, sSourceDir)
-                        os.unlink(os.path.join(sSourceDir, sFile)) # Remove it because we don't need the file once it is zipped.
+                        compress_the_file(zip_type_file, file, download_dir)
+                        os.unlink(os.path.join(download_dir, file)) # Remove it because we don't need the file once it is zipped.
         else:
             #INFO: Thread Support
             if pypt_variables.options.num_of_threads > 1:
@@ -392,21 +392,21 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
                     item = request.get()
                     if item is None:
                         break
-                    (sUrl, sFile, download_size, checksum) = stripper(item)
-                    response.put((name, sUrl, sFile, func(sUrl, sFile, sSourceDir, None)))
+                    (url, file, download_size, checksum) = stripper(item)
+                    response.put((name, url, file, func(url, file, download_dir, None)))
                     
                     # This will take care of making sure that if downloaded, they are zipped
-                    (thread_name, Url, File, exit_status) = responseQueue.get()
+                    (thread_name, url, file, exit_status) = responseQueue.get()
                     if exit_status == True:
                         if zip_bool:
                             ziplock.acquire()
                             try:
-                                compress_the_file(zip_type_file, sFile, sSourceDir)
-                                os.unlink(os.path.join(sSourceDir, sFile)) # Remove it because we don't need the file once it is zipped.
+                                compress_the_file(zip_type_file, file, download_dir)
+                                os.unlink(os.path.join(download_dir, file)) # Remove it because we don't need the file once it is zipped.
                             finally:
                                 ziplock.release()
                     else:
-                        pypt_variables.errlist.append(sFile)
+                        pypt_variables.errlist.append(file)
                         #pass
             
             # Create two Queues for the requests and responses
@@ -426,7 +426,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
             for t in thread_pool: t.start()
             
             # Queue up the requests.
-            for item in lRawData: requestQueue.put(item)
+            for item in raw_data_list: requestQueue.put(item)
             
             # Shut down the threads after all requests end.
             # (Put one None "sentinel" for each thread.)
@@ -442,28 +442,28 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
             for t in thread_pool: t.join()
                  
     if arg_type == 2:
-        if path is None:
+        if download_dir is None:
             if os.access("pypt-downloads", os.W_OK) is True:
-                sSourceDir = os.path.abspath("pypt-downloads")
+                download_dir = os.path.abspath("pypt-downloads")
             else:
                 try:
                     os.umask(0002)
                     os.mkdir("pypt-downloads")
-                    sSourceDir = os.path.abspath("pypt-downloads")
+                    download_dir = os.path.abspath("pypt-downloads")
                 except:
                     log.err("Aieeee! I couldn't create a directory")
         else:
-            sSourceDir = os.path.abspath(path)
+            download_dir = os.path.abspath(download_dir)
             
-        if os.access(os.path.join(sSourceDir, zip_type_file), os.F_OK):
+        if os.access(os.path.join(download_dir, zip_type_file), os.F_OK):
             log.err("%s already present.\nRemove it first.\n" % (zip_type_file))
             sys.exit(1)
                 
-        if cache is not None:
-            cache = os.path.abspath(cache)
+        if cache_dir is not None:
+            cache_dir = os.path.abspath(cache_dir)
             
         try:
-            lRawData = open(uri, 'r').readlines()
+            raw_data_list = open(url_file, 'r').readlines()
         except IOError, (errno, strerror):
             log.err("%s %s\n" %(errno, strerror))
             errfunc(errno, '')
@@ -473,37 +473,37 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
         if sys.platform == 'darwin':
             log.verbose("Running on Mac OS. Python doesn't have proper support for Threads on Mac OS X.\n")
             log.verbose("Running in the conventional non-threaded way.\n")
-            for each_single_item in lRawData:
-                (sUrl, sFile, download_size, checksum) = stripper(each_single_item)
+            for each_single_item in raw_data_list:
+                (url, file, download_size, checksum) = stripper(each_single_item)
                 
-                if cache is None:
-                    if download_from_web(sUrl, sFile, sSourceDir, checksum) != True:
-                        pypt_variables.errlist.append(sFile)
+                if cache_dir is None:
+                    if download_from_web(url, file, download_dir, checksum) != True:
+                        pypt_variables.errlist.append(file)
                         if zip_bool:
-                            compress_the_file(zip_type_file, sFile, sSourceDir)
-                            os.unlink(os.path.join(sSourceDir, sFile))
+                            compress_the_file(zip_type_file, file, download_dir)
+                            os.unlink(os.path.join(download_dir, file))
                 else:
-                    if copy_first_match(cache, sFile, sSourceDir, checksum) == False:
-                        if download_from_web(sUrl, sFile, sSourceDir, checksum) != True:
-                             pypt_variables.errlist.append(sFile)
+                    if copy_first_match(cache_dir, file, download_dir, checksum) == False:
+                        if download_from_web(url, file, download_dir, checksum) != True:
+                             pypt_variables.errlist.append(file)
                         else:
-                            if os.access(os.path.join(cache, sFile), os.F_OK):
-                                log.debug("%s file is already present in cache-dir %s. Skipping copy.\n" % (sFile, cache)) #INFO: The file is already there.
-                                log.verbose("%s file is already present in cache-dir %s. Skipping copy.\n" % (sFile, cache))
+                            if os.access(os.path.join(cache_dir, file), os.F_OK):
+                                log.debug("%s file is already present in cache-dir %s. Skipping copy.\n" % (file, cache_dir)) #INFO: The file is already there.
+                                log.verbose("%s file is already present in cache-dir %s. Skipping copy.\n" % (file, cache_dir))
                             else:
-                                if os.access(cache, os.W_OK):
-                                    shutil.copy(sFile, cache)
-                                    log.verbose("%s copied to %s\n" % (sFile, cache))
+                                if os.access(cache_dir, os.W_OK):
+                                    shutil.copy(file, cache_dir)
+                                    log.verbose("%s copied to %s\n" % (file, cache_dir))
                                 else:
-                                    log.verbose("Cannot copy %s to %s. Is %s writeable??\n" % (sFile, cache))
+                                    log.verbose("Cannot copy %s to %s. Is %s writeable??\n" % (file, cache_dir))
                                     
                             if zip_bool:
-                                compress_the_file(zip_type_file, sFile, sSourceDir)
-                                os.unlink(os.path.join(sSourceDir, sFile))
+                                compress_the_file(zip_type_file, file, download_dir)
+                                os.unlink(os.path.join(download_dir, file))
                     elif True:
                         if zip_bool:
-                            compress_the_file(zip_type_file, sFile, sSourceDir)
-                            os.unlink(os.path.join(sSourceDir, sFile))
+                            compress_the_file(zip_type_file, file, download_dir)
+                            os.unlink(os.path.join(download_dir, file))
         else:
             #INFO: Thread Support
             if pypt_variables.options.num_of_threads > 1:
@@ -525,38 +525,38 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
                     item = request.get()
                     if item is None:
                         break
-                    (sUrl, sFile, download_size, checksum) = stripper(item)
-                    response.put((name, sUrl, sFile, func(cache, sFile, sSourceDir, checksum)))
+                    (url, file, download_size, checksum) = stripper(item)
+                    response.put((name, url, file, func(cache_dir, file, download_dir, checksum)))
                     
                     # This will take care of making sure that if downloaded, they are zipped
-                    (thread_name, Url, File, exit_status) = responseQueue.get()
+                    (thread_name, url, file, exit_status) = responseQueue.get()
                     if exit_status == True:
-                        log.verbose("%s copied from cache-dir %s.\n" % (sFile, cache))
-                        log.debug("%s copied from cache-dir %s.\n" % (sFile, cache))
+                        log.verbose("%s copied from cache-dir %s.\n" % (file, cache_dir))
+                        log.debug("%s copied from cache-dir %s.\n" % (file, cache_dir))
                     else:
-                        log.debug("%s not available in local cache %s\n" % (sFile, cache))
-                        log.verbose("%s not available in local cache %s\n" % (sFile, cache))
-                        exit_status = download_from_web(sUrl, sFile, sSourceDir, checksum)
+                        log.debug("%s not available in local cache %s\n" % (file, cache_dir))
+                        log.verbose("%s not available in local cache %s\n" % (file, cache_dir))
+                        exit_status = download_from_web(url, file, download_dir, checksum)
                         
                     if exit_status:
-                        if cache is None:
+                        if cache_dir is None:
                             log.debug("No cache-dir specified. Skipping copy.\n")
-                        elif os.access(os.path.join(cache, sFile), os.F_OK):
-                            log.debug("%s is already present in %s.\n" % (sFile, cache))
+                        elif os.access(os.path.join(cache_dir, file), os.F_OK):
+                            log.debug("%s is already present in %s.\n" % (file, cache_dir))
                         else:
-                            if os.access(cache, os.W_OK):
-                                shutil.copy(sFile, cache)
-                                log.debug("%s copied to local cache-dir %s.\n" % (sFile, cache))
-                                log.verbose("%s copied to local cache-dir %s.\n" % (sFile, cache))
+                            if os.access(cache_dir, os.W_OK):
+                                shutil.copy(file, cache_dir)
+                                log.debug("%s copied to local cache-dir %s.\n" % (file, cache_dir))
+                                log.verbose("%s copied to local cache-dir %s.\n" % (file, cache_dir))
                         if zip_bool:
                             ziplock.acquire()
                             try:
-                                compress_the_file(zip_type_file, sFile, sSourceDir)
-                                os.unlink(os.path.join(sSourceDir, sFile)) # Remove it because we don't need the file once it is zipped.
+                                compress_the_file(zip_type_file, file, download_dir)
+                                os.unlink(os.path.join(download_dir, file)) # Remove it because we don't need the file once it is zipped.
                             finally:
                                 ziplock.release()
                     else:
-                        pypt_variables.errlist.append(sFile)
+                        pypt_variables.errlist.append(file)
                         
             # Create two Queues for the requests and responses
             requestQueue = Queue.Queue()
@@ -576,7 +576,7 @@ def fetcher(uri, path, cache, zip_bool, zip_type_file, arg_type = 0):
             for t in thread_pool: t.start()
             
             # Queue up the requests.
-            for item in lRawData: requestQueue.put(item)
+            for item in raw_data_list: requestQueue.put(item)
             
             # Shut down the threads after all requests end.
             # (Put one None "sentinel" for each thread.)
