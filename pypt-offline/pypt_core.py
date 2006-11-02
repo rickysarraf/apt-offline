@@ -592,9 +592,12 @@ def fetcher(url_file, download_dir, cache_dir, zip_bool, zip_type_file, arg_type
             for t in thread_pool: t.join()
                         
     # Print the failed files
-    log.err("The following files failed to be downloaded.\n")
-    for error in pypt_variables.errlist:
-        log.err("%s failed.\n" % (error))
+    if len(pypt_variables.errlist) == 0:
+        pass # Don't print if nothing failed.
+    else:
+        log.err("The following files failed to be downloaded.\n")
+        for error in pypt_variables.errlist:
+            log.err("%s failed.\n" % (error))
         
 def syncer(install_file_path, target_path, arg_type=None):
     '''Syncer does the work of syncing the downloaded files.
