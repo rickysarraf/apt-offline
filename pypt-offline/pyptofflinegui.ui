@@ -1,0 +1,836 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>pyptofflineguiForm</class>
+<widget class="QMainWindow">
+    <property name="name">
+        <cstring>pyptofflineguiForm</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>618</width>
+            <height>480</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>pypt-offline | Offline Package Manager | (C) Ritesh Raj Sarraf - RESEARCHUT</string>
+    </property>
+    <property name="usesTextLabel">
+        <bool>true</bool>
+    </property>
+    <widget class="QTabWidget">
+        <property name="name">
+            <cstring>pyptTabWidget</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>0</y>
+                <width>580</width>
+                <height>430</height>
+            </rect>
+        </property>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>tab</cstring>
+            </property>
+            <attribute name="title">
+                <string>Welcome</string>
+            </attribute>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>pixmapLabel1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>230</x>
+                        <y>80</y>
+                        <width>120</width>
+                        <height>150</height>
+                    </rect>
+                </property>
+                <property name="pixmap">
+                    <pixmap>image0</pixmap>
+                </property>
+                <property name="scaledContents">
+                    <bool>true</bool>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>98</x>
+                        <y>264</y>
+                        <width>381</width>
+                        <height>111</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>48</pointsize>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>&lt;p align="center"&gt;pypt-offline&lt;/p&gt;</string>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>tab</cstring>
+            </property>
+            <attribute name="title">
+                <string>Set</string>
+            </attribute>
+            <widget class="QLayoutWidget">
+                <property name="name">
+                    <cstring>layout20</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>30</y>
+                        <width>380</width>
+                        <height>210</height>
+                    </rect>
+                </property>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <widget class="QLabel" row="2" column="0">
+                        <property name="name">
+                            <cstring>setInstallPackageTextLabel</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Install Packages</string>
+                        </property>
+                        <property name="buddy" stdset="0">
+                            <cstring>setInstallPackagesLineEdit</cstring>
+                        </property>
+                    </widget>
+                    <widget class="QComboBox" row="1" column="1">
+                        <item>
+                            <property name="text">
+                                <string></string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>upgrade</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>dist-upgrade</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>dselect-upgrade</string>
+                            </property>
+                        </item>
+                        <property name="name">
+                            <cstring>setUpgradeTypeComboBox</cstring>
+                        </property>
+                    </widget>
+                    <widget class="QLineEdit" row="3" column="1">
+                        <property name="name">
+                            <cstring>setFilePathLineEdit</cstring>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>255</red>
+                                <green>255</green>
+                                <blue>127</blue>
+                            </color>
+                        </property>
+                        <property name="alignment">
+                            <set>AlignAuto</set>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="3" column="2">
+                        <property name="name">
+                            <cstring>pushButton6</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Browse</string>
+                        </property>
+                    </widget>
+                    <widget class="QLabel" row="1" column="0">
+                        <property name="name">
+                            <cstring>setUpgradeTypeTextLabel</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Upgrade Type</string>
+                        </property>
+                        <property name="buddy" stdset="0">
+                            <cstring>setUpgradeTypeComboBox</cstring>
+                        </property>
+                    </widget>
+                    <widget class="QLabel" row="0" column="0">
+                        <property name="name">
+                            <cstring>setInstallationTypeTextLabel</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Installation Type</string>
+                        </property>
+                        <property name="buddy" stdset="0">
+                            <cstring>comboBox3</cstring>
+                        </property>
+                    </widget>
+                    <widget class="QLabel" row="3" column="0">
+                        <property name="name">
+                            <cstring>setFilePathTextLabel</cstring>
+                        </property>
+                        <property name="text">
+                            <string>File Path</string>
+                        </property>
+                        <property name="buddy" stdset="0">
+                            <cstring>setFilePathLineEdit</cstring>
+                        </property>
+                    </widget>
+                    <widget class="QComboBox" row="0" column="1">
+                        <item>
+                            <property name="text">
+                                <string></string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>Update</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>Upgrade</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>Install</string>
+                            </property>
+                        </item>
+                        <property name="name">
+                            <cstring>setInstallationTypeComboBox</cstring>
+                        </property>
+                    </widget>
+                    <widget class="QLineEdit" row="2" column="1">
+                        <property name="name">
+                            <cstring>setInstallPackagesLineEdit</cstring>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>255</red>
+                                <green>255</green>
+                                <blue>127</blue>
+                            </color>
+                        </property>
+                        <property name="font">
+                            <font>
+                                <bold>1</bold>
+                            </font>
+                        </property>
+                        <property name="alignment">
+                            <set>AlignAuto</set>
+                        </property>
+                    </widget>
+                </grid>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>pushButton5</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>440</x>
+                        <y>340</y>
+                        <width>100</width>
+                        <height>20</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Start</string>
+                </property>
+                <property name="accel">
+                    <string></string>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>TabPage</cstring>
+            </property>
+            <attribute name="title">
+                <string>Fetch</string>
+            </attribute>
+            <widget class="QLayoutWidget">
+                <property name="name">
+                    <cstring>layout22</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>18</x>
+                        <y>30</y>
+                        <width>340</width>
+                        <height>130</height>
+                    </rect>
+                </property>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <widget class="QRadioButton" row="0" column="0">
+                        <property name="name">
+                            <cstring>fetchUpdateDataRadioButton</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Update Data</string>
+                        </property>
+                    </widget>
+                    <widget class="QRadioButton" row="1" column="0">
+                        <property name="name">
+                            <cstring>fetchUpgradeDataRadioButton</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Upgrade Data</string>
+                        </property>
+                    </widget>
+                    <widget class="QLineEdit" row="2" column="0">
+                        <property name="name">
+                            <cstring>fetchBrowseLineEdit</cstring>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>255</red>
+                                <green>255</green>
+                                <blue>127</blue>
+                            </color>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="2" column="1">
+                        <property name="name">
+                            <cstring>fetchBrowsePushButton</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Browse</string>
+                        </property>
+                    </widget>
+                </grid>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>fetchConsoleOutputTextLabel</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>20</x>
+                        <y>160</y>
+                        <width>141</width>
+                        <height>20</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Console Output</string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>fetchStartButton</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>440</x>
+                        <y>340</y>
+                        <width>100</width>
+                        <height>20</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Start</string>
+                </property>
+            </widget>
+            <widget class="QTextBrowser">
+                <property name="name">
+                    <cstring>fetchTextBrowser</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>20</x>
+                        <y>181</y>
+                        <width>340</width>
+                        <height>160</height>
+                    </rect>
+                </property>
+            </widget>
+            <widget class="QProgressBar">
+                <property name="name">
+                    <cstring>fetchProgressBar</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>20</x>
+                        <y>350</y>
+                        <width>340</width>
+                        <height>20</height>
+                    </rect>
+                </property>
+            </widget>
+            <widget class="QButtonGroup">
+                <property name="name">
+                    <cstring>fetchOptionsButtonGroup</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>380</x>
+                        <y>20</y>
+                        <width>190</width>
+                        <height>250</height>
+                    </rect>
+                </property>
+                <property name="title">
+                    <string>Options</string>
+                </property>
+                <widget class="QCheckBox">
+                    <property name="name">
+                        <cstring>fetchZipCheckBox</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>8</x>
+                            <y>23</y>
+                            <width>91</width>
+                            <height>20</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Zip</string>
+                    </property>
+                    <property name="checked">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QCheckBox">
+                    <property name="name">
+                        <cstring>fetchTargetDownloadFolderCheckbox</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>8</x>
+                            <y>71</y>
+                            <width>130</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Target Download Folder</string>
+                    </property>
+                </widget>
+                <widget class="QLineEdit">
+                    <property name="name">
+                        <cstring>lineEdit7</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>8</x>
+                            <y>44</y>
+                            <width>141</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>255</red>
+                            <green>255</green>
+                            <blue>127</blue>
+                        </color>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>fetchTargetDownloadFolderPushButton</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>150</x>
+                            <y>94</y>
+                            <width>30</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>...</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>fetchZipPushButton</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>150</x>
+                            <y>44</y>
+                            <width>30</width>
+                            <height>20</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>...</string>
+                    </property>
+                </widget>
+                <widget class="QCheckBox">
+                    <property name="name">
+                        <cstring>fetchCacheDirectoryCheckBox</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>8</x>
+                            <y>119</y>
+                            <width>100</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Cache Directory</string>
+                    </property>
+                </widget>
+                <widget class="QCheckBox">
+                    <property name="name">
+                        <cstring>fetchDisableMD5ChecksumCheckBox</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>8</x>
+                            <y>174</y>
+                            <width>130</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Disable MD5 Checksum</string>
+                    </property>
+                </widget>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>fetchThreadsTextLabel</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>10</x>
+                            <y>200</y>
+                            <width>121</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Threads</string>
+                    </property>
+                </widget>
+                <widget class="QSpinBox">
+                    <property name="name">
+                        <cstring>fetchThreadsSpinBox</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>10</x>
+                            <y>223</y>
+                            <width>131</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="maxValue">
+                        <number>5</number>
+                    </property>
+                    <property name="minValue">
+                        <number>1</number>
+                    </property>
+                </widget>
+                <widget class="QLineEdit">
+                    <property name="name">
+                        <cstring>fetchCacheDirectoryLineEdit</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>10</x>
+                            <y>140</y>
+                            <width>140</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>255</red>
+                            <green>255</green>
+                            <blue>127</blue>
+                        </color>
+                    </property>
+                </widget>
+                <widget class="QLineEdit">
+                    <property name="name">
+                        <cstring>fetchTargetDownloadFolderLineEdit</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>8</x>
+                            <y>94</y>
+                            <width>140</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>255</red>
+                            <green>255</green>
+                            <blue>127</blue>
+                        </color>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>fetchCacheDirectoryPushButton</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>151</x>
+                            <y>140</y>
+                            <width>30</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>...</string>
+                    </property>
+                </widget>
+            </widget>
+        </widget>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>TabPage</cstring>
+            </property>
+            <attribute name="title">
+                <string>Install</string>
+            </attribute>
+            <widget class="QTextBrowser">
+                <property name="name">
+                    <cstring>installTextBrowser</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>28</x>
+                        <y>184</y>
+                        <width>331</width>
+                        <height>201</height>
+                    </rect>
+                </property>
+            </widget>
+            <widget class="QLayoutWidget">
+                <property name="name">
+                    <cstring>layout24</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>30</x>
+                        <y>20</y>
+                        <width>330</width>
+                        <height>130</height>
+                    </rect>
+                </property>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <widget class="QRadioButton" row="0" column="0">
+                        <property name="name">
+                            <cstring>installUpdateDataRadioButton</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Update Data</string>
+                        </property>
+                    </widget>
+                    <widget class="QRadioButton" row="1" column="0">
+                        <property name="name">
+                            <cstring>installUpgradeDataRadioButton</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Upgrade Data</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="2" column="1">
+                        <property name="name">
+                            <cstring>instalBrowsePushButton</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Browse</string>
+                        </property>
+                    </widget>
+                    <widget class="QLineEdit" row="2" column="0">
+                        <property name="name">
+                            <cstring>installLineEdit</cstring>
+                        </property>
+                    </widget>
+                </grid>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel7</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>30</x>
+                        <y>150</y>
+                        <width>171</width>
+                        <height>31</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Console Output</string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>installStartPushButton</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>440</x>
+                        <y>340</y>
+                        <width>100</width>
+                        <height>20</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Start</string>
+                </property>
+            </widget>
+        </widget>
+    </widget>
+</widget>
+<menubar>
+    <property name="name">
+        <cstring>MenuBar</cstring>
+    </property>
+    <item text="&amp;File" name="fileMenu">
+        <action name="fileOpenAction"/>
+        <separator/>
+        <separator/>
+        <action name="fileExitAction"/>
+    </item>
+    <item text="&amp;Help" name="helpMenu">
+        <action name="helpContentsAction"/>
+        <separator/>
+        <action name="helpAboutAction"/>
+    </item>
+</menubar>
+<toolbars>
+</toolbars>
+<actions>
+    <action>
+        <property name="name">
+            <cstring>fileOpenAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>image1</iconset>
+        </property>
+        <property name="text">
+            <string>Open</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Open...</string>
+        </property>
+        <property name="accel">
+            <string>Ctrl+O</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileExitAction</cstring>
+        </property>
+        <property name="text">
+            <string>Exit</string>
+        </property>
+        <property name="menuText">
+            <string>E&amp;xit</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>helpContentsAction</cstring>
+        </property>
+        <property name="text">
+            <string>Contents</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Contents...</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>helpAboutAction</cstring>
+        </property>
+        <property name="text">
+            <string>About</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;About</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+    </action>
+</actions>
+<images>
+    <image name="image0">
+        <data format="XPM.GZ" length="11705">789c5d9a57732acb9285dfcfafd871eaedc6445f40122626e601e4f716565e13f3500d0db25b0690bb31ff7dbeb5aaa473ee280393dd4d65adcc95a641fffcc78f8b51ffc73ffef9c772155737d31fd3ebf8f2e31fb3f5c3c3c77fffcf7ffdeb8f3fb76a3fdaf51f8d5ae347e3cffff8e3cfe2e78fe98f50ef48ac1f5a8f12ebbfac9712eb07d6a712ebbbd66712ebfbd62b89f53deb7389f51de99847acbf5baf4bacafacfbcffadafa86c4fa87f54d89f5a5f52d89f56deb4d89f557eb2d89f507eb6d89f59ef58ec4fa9bf528b1fe6cbd9458bfb73e9558bfb53e9358bfb35e49acdf589f4bac3f49dfa849acbf58af4bac3f5a3760ebd7d6fd67fdb7f54d89f5a9f52d89f5d27a53227d6c7f6eb4243e1fadb725d62beb1d89f5603d4aaccfac9712eb73eb5389f5aef599c4fac27a25b1fe697d2eb13e90be5993583fb25e9758ef5b7780ad9f593760eb43ebfe931ed3e7b7243e3fb6de94f8bcf9b8d992480fe6fb665be2eb27d63b12eb23eb5162fddc7a29b17e6a7d2af1fa69bd99c4e78fad5712eb27d6e712eb2de95b3589f50beb7589d733df4ce784ffd2ba03ecf3e68fe1a6f8b7adfbcff89caf5b4d89cf77acb724d6afacb7255ecff1dfea487cbe693d4abc9efdbb554a7cbdf3796b2af1f535eb3389f52deb95c4d7bb5e6ccd25d69dffcd9ac4baf3af599758773d71fa26fc75eb26b4f54deb0eb0af37ff0c37e1377f9afeb3eef8355b12eb85f5b6c49f773e373b129f77fe36a3c4e75d4f9aa5c4f637ac4f253eeffc6ece243edfb05e49bc9eeb55732eb1eefad3aa49acbb7eb4ea12ebde8fcb95f107d763a7aff107d703d339e14feb39c03eef7c33dc84dffb6bf9cfbafdd56a4bfc79d79f5647e2f38e5f2b4aacbb1eb44a8975e7776b2ab1eefadd9a49ac3b3ead4ae2f5d37ee712ebf66fbb26f1f5ae67edbac4baf9e0f26cfcd1785cae127ef3d3e96bfcc1f5cc744ef85dff1cde84dff5d470137ed7afb6ffacbb7eb63b12ebae77ed28b1ee7ed02e25d61dfff65462ddf9d39e49bcdff4f94ae2f3ae77edb9c4e7bd9f4e4de2f3ce67b7dfc47fefc7ed28c5dffdcbe539e1777d70b94af81d3fa76fc2ef7e693a27fcaeff0e6fc2ef7e69b829fe49f79fcf9bef9d28b1ee7ced9412ebcecfce5462ddf5a033935877be772a8975d7ebce5c627bae4fb126f179d7678f1b29feaebf6ebf09bfebb9db51c2ef7aedf29cf0bbdeba5c25fcaeb74edf84dffdc37436fe687e38bc29feaebf869bf0bbbe47ff5977fd8da5c4baeb679c4aacbbfec599c4ebbbfec44ae2f3ae07712eb1ee7a56d624d6dd0f3c5ea5f8bb3e79dc48fc77feb9fda6fa6fbebb1d25fcaeff2ecf09bfebbdcb55ea7fe6bbd337e177fe9ace29feae3f0eaff147f3c77053fd737e96feb36e3e95538975f3b39c49acbbde9595c4baeb43399758773e4d6b12ebce0f8f9309bfeb9dc7ab84dff1f7b891f09b4f6ebfa9fe39be6e47c61fcd0f97e784dff172b94af81d5fa76fc26fbe99ce09bff9e3f026fcee1f869bf09b2f53ff59773ca7338975f3655a49ac9b9fd3b9c4baf932ab49acbb5e7a7c4ef8cd178f9309bfeb8dc7ab84dff5d9e346c26ffeb8fd26fcae8f6e4709bff9e1f29cf09b1f2e57c65f3a1f9cbec65f9a7fa6b3f197ae470eaff197e6a3e11a7f693ecefc67ddf56f5649acbb3ecee612ebe663559358371f7dbb60fca5fb85c767e31faf8a50c4a22ca63c6231438f45355e4978c7fb628e2c385b72a44c57f1998ae78ad799aee68a59be3a16217fbaf433d7663b555a31afecabd2e7790eac7b5ddc14b7c81d8f7be401b92f7e2395af49eb57dfcfda4fe5a3b23d2fd23c1875a52c243b7eaef26e1f8b27affc5cbcd8caa3ed3d17cb6255ac8b57ec3d73c58cb542da69f6c7df570169b613f35e42f694e4daab2d8b37effd15ed8db5b5bad696e575f18eac8b0fd056c527eb457bf3cb46f661d12dbab653e50855df8f8a3daf58ef95357ac536a2b59fd1b7b1fcc0b1372cec14bbc81eb2c399ebb4f3bfa2f337df393e45371df99bb7defcd9a557ddf6aa6fdfdebbf5eb2b67de8bfde2a038e4b10faa372c253c7a545f31707cd27cfe852321a95863d7fe78b79d25981e58fd8de33d47e7c696e4d53d6cfc2c7e71bd10dd21d1fb14b2ea9b0d21f3a0ca5eabeccb173cf6ceda8a84906ca3f558e59ee79e7df9e698bd72c52e767e61631f8b6bc7f1d93c0ddffb8e666ccc3c48fc0dce13adf09ae3dde37569bb6b5b7975d4d7d8dee1d8ae9f159f77e37ec87e2e93e7bc62f56f7682793987332fdeebd288d2e7d6acb6630e6f1be532ef40e7578ed10eaf1ff8ecd99c5923a5b86776c135e1b09d94675dbf8a614beffacd083ebcc6071e79cb3b10a76fcd07a1de311ee5513affe04fdf7de5891958e5fce95ad3b1292bbe1ac17bf6d1ab2ddeb3b727e23f65fd29d71f157dd6b973f476ecb7b52df5ec837df632c8b189c953d96f0bec88f98f39be3bd9e33df6fe62866a27c362548c8b49715c9c20a7bc1be2a157fb78db57dfd9bbb295b8d5fde29eedcc320b2aae5cfa732b7be091f5bbc5196b9f1717c5657155d4907ad128368a4dde6d154dac55e6c732fb2df959ec0cdf55f68b07e2c602f96d0c6bc7fc9e63ada25d7458bd1e8aa2114288a10cd3300b55988745b80e37e1167b2778b2e73c7ef13ed7c6f7c4e7158f6ecaa86f3cf2e59d19f5e1fd5d1717e12edc8707d6fb1d1ec353780e2f611956611d5e79f71adec23be73ec0b5c0c28035c58da5bdae08cd723e2ebe791033be5bb32555b36e510b9fa1cbbe7b207862f565d84676c26ed80bfbe180f7ab7008dae3f033fc0a47a07fb2cff79db5af8e68d7dc9effad1e88074fb6215edf17a3d0c74e00cb3c0cb0320ca3300e93708c9c8453e40c6b7be0ea81fa9e6bcf89a32ad1ae65098e798efcecab5edb4a00f78799d3e38a361774b152128d57d61b878b7019ae420d0b57a11e1abc5ef2d8c79f1bec25864df851129d94bb89a1dddc7543ced3a495ae29cac4019e380f5ba149149ef0cf88151ba115dadc6e14d13337379e21d463190e18bf665c17b9fec8b57e859d0ff074dd9114a798fb76b23d332fb7e1c33056b0e0dd689e88c831381a5898c705377631ce434736b17c0ad6973805d3345ee3bb11deffc07bdb996d743ff5d8ecb7851175ed3965db201cc51b3850129b67627ec1ce031616f196d53bd8bbd5d48fff4ec12af655e131de91572db2e3c3157e91a3defde6db3c67ef02cb3df79aa3781f1fc033736c8ec329563a42117f673b7359e468833dec86757ce4dadfe13e2a6fb6f1dc8d27a445ced3598e4fea4d62baeace5d7c0ed7f10526557109afea20f91d573cd63caffc6ec1f36b7ce3391223f16e033b37f0fcc9dd768ac716f6dcfcdbce2cdb11c61e5755f19e5cbf09eff18e7d8e884d1b0b6bd6d5caefc807ef567ef71b4c5778b68a9fd8e9c62e19aeda30f05c32773442e69b107e7266c143bdf79c6c201f622f76e34d7cb1ad8b5063e70b5b92955bb2886c856933aac5667c80d50df2e89035eec1b4702598a7ecf99a437c5432204a2f45276cc5edb813fa4469870a7a8cd79bc506ac18c2e605185e89cb2b32c54fa79cafc22dac3e8cbb54bc9627c8455e33cdb2a92f7c660e0ee82b702e1c51321fe0c156e8c15561eac63dea5081a571b82477da209c832310f91bd7c01ecc7c43bf8ebb7844bde0cb738a47b27364db9f719fdd9f16d7f1003cd7e4e866bca11e5fc57d6a10bcf5d155b8ca7c5eaa06e46afac9239add9bd4f647563cf2aaf3dcb767df7884f3824a735f44d06f8666fc8cdb45870cec172d76ac77af1cdfc00e2c83eb0365314cd92fc6d83a27afe74432863b561f39dadddc3f67df7eeb8b0744e430cc8b095eba63f73d98adfdbfb0c24e3c84bd4f589a87094c9bc33069e370ccf53f797da14b6da9d291ab1dfcfe64af25cf856fbff5790cd975373c72d507de7ec307a5bcc71e9764d14e18c65ff6cc3e1c68a0af41b4432d5d06e518d9a31b2dfae00771ece1f1c48345ea43b6a3f80fa32a4de0b6ec80cc89aa9f58d8883377b857561d61e911efedb92b1cb0fa981ef41ad503550575dd1376d4b56e42e9ceb7c83c0819cf1153c019c87bf8fc111491f557610f04c3b0cbf3315129a92f2b77a22b6404ae09388631a3450ec474f63ac5ef3d661465e8c2b616b6d3b7dffa45132b7376bc090766e46089572ec9d0af7e73801d18400568f15c72be1efbf0bcf495743e2cced8e5147c37ce91cc821c9f2158fa78ee59fe622fd8c1f723751cc6063dda549e3e47d4bd4f553f59f90c8caae105bbd07e6a42498c3eb152c51e1cf8748db3ad6ca75f9cc523eacd026f3f63a904cf103ba932cf5dddfa78e891e834605b9b55c958ce53536dab6519d1f3d8639c51278eb032cbb5e6d37634a1c103e6be067c3ea06235d9d7127fa8a2a9467fa89e71ec117fddc6415c63838870764036a996cfa9120d22a66ab41b66e4fb91bbdc8075c7c551c6232bc3f0b3b80c625449e51de0a1093ba4e360e59d55e89bc4bb1687711407f6d53e183fd00f795e706d0d3c8f44f099aa2a1f0d5c9ff5f8c27396f1301360e759b9c0f5fb78bcc3fee59b96f207e61da81711b392d89cc0813578c6ece316df5db0970aee3f32a9a6d82c40a5ac31df84a5181bdf88daf389f794d9cf540156737d5eb1df1afa0b5877b0b547a559c1af857b9efac4029e4ce0c954bd829a3d7497f9cc780699d7b0203e33454ff0eb398f06f5e5292a13eb46b470ec1bb06c5f131c6baa1fa9f3bdf33c77742e5c2fb6e8264fe66f3fdbe8f3dcffb2c33d008888d0a418c59f646c748486e2abfa806628cf86ea76e2790b5b9d84d47da20e9a254836a8fa47ce14796cf0f59ae333e4ec7ef8a9677c775c349da96b7c74c23efbced233fc543291f4895a23f1d87356c7d97a01d217aa68cd772b8a76dfa892b5bff08c65810778f0db05fedf608a59f2e97d4fa05a6705475e88cd840869a66b804e7ba8b19b13b0bfc64fbaef5876b28da38c27f39ae8eccb127e131788125577caaa2b6749899567faea0b35a5a4c2aaf3946473934cdb33c33575ef915f2fc5b9fd3670def713936533e131d786b283a573e2734eefee79b2de06c785f13c915b8fc47a023b34832c3d434eecc7335e97eca0d04ed9b5050b2049d14af1911dfb2ca1a173d143bb61ea2c3a509e7892de43dbc1d2085b238e8f6160f0ec3b4663de2b5aac32cc7e3b73ae0e7dc43c70e7fda967d9c0d279e236954a9566ed89f4ca3cf805be3528d6e0b9f4fc5880e7447743ece94ebbb4efcfbe3d9622f5f95d77f693f83adb614af84d04521e8dd407bc72c37559d953b87ad6cc906d6c3f722ff3d35ca282293af6d8d0a8723d50de980513fb4d19741254797f0b1371d806c995a7df5b575626384fdab27a0cfb7517d90b5dee5527ae5f6324d911e306293eb293f8669f8df44c0fdfa7cb6b96e55e0befedb0ef56aa0c5891ac6de7cc13c95c77c654914f33699c73759cfb673ff37a9c78668f8d9c3f97f86aa56a86a505d394faf8ae27edba62ef2a241f9e60bf02c91cd437cca59f78fba77d35ce5e3bb3b5c4b7896d30bf32afedb2a7372a7e6006d9d6b4c02a0be6a43b2cbd986d07d46d65d404cb2f9cff4deda4b3d10b8e23731291dd37c764e9cc5ccebca65fdfb21f55cd9a67a62b22dc21577af060c39ec7926647aade9cb83dba9b3d71e6d1790bffb0b3ebce3fa6274cfe9641f21eb6d2ef287142b71af82e40b54456d6cc39cfb633c03311ff897b6fbee71d604347d36305ae6d107599de4fa2fac65d7111c5a9d46bc67a4ddfffc71377452ce1f51a915ec5c3d080734dd679a10e4fb130f53df1aeabc398f83d7b9adbf6ddfd3618af99cc2ba23766bf7ddd4998ddb6530cd3ef16f1349ea5feebbbc25bae3de5d1c557743bd6e1ce105e3cda637baa05e2099edecbb5611b8bf435ee66d6f8e68d1d8ff1cd2b13f44f674b8acf3996344f0cdd17d5bd26f1225e32bbdcb0ee8167427d17a29950d5756ddbfb1c1fb9571cb30f7c4c7e3cb2df2b1e67ecf39c55e8b9c4f02efcca7e3b65ed317682a79b43ec1e23abb8ed494ad578e2e994d9d718d40726d4ced2b5610c0f97dc6d1f332f5c30a59cb1d6887dcad221ab8ed3ef71ac38a4c79f6a66a10f0f8c46bf4e8ee0f6a77a9da642ac9ce83b17f53a7f2fa2d9b0e1ba3302cf0ef765e7ecec923d0ad124d659e11c69c48df43b27e7e4d1131810b09ff6a25f318fa3befdd27c75819c61e58cd706b55b3368cdeffaee1143b8d2234a233e3562c7a73c1f7b15f9058ce9f728acc857a519a0f94c7bd9621f27ccdb33d736e66ccfbaa98b3798dcd26be9284dc8cf0d7c72ccca75d6ad63638b4703fd026c938ce750bec2bbefb6a3e86cc4268f6376be609f5f13fd49f6dba5ef196aeea4638e4cc8f4253ed26fbbf2f806eb6ff9975fc5fecb4e8dd54fa2be5b919589af6f61a7c5d527e4e823eb5cb96f9ea659841d7dcd05637bf2996ef5611f084183d796ad348daf967e5706cf198f1135f8ccbcac1b4d2bb6b97e93d5340578baa2df5cda73354d20b6ace357fa8e01ffe8138afa967f73dee07ddbef3b6591e33331a60136268e0e78e9364bac364144b7f6dd88bed1291c7bcd54fad33758ba57598046ab766ca7c9bb66b2c06b47434bae0762a1987e66a69cebee9adcb967a7f8811ab1edf9709dbea5caa25ec44c0cf3dee0837cd0c978dafa0598f7c2d729a7ba0d4bbfa7ba22a8960ecdfd00c3767517c83bb1f2141497e97b10cfd3fa9e473335d3283bfa8507af8843d3bfc0cb6bc2a01ff164513fe7cdf2efcce7ce6259faa07ee217dff70cdcd14e9c6d138eae5c9bde9c036f3cf47c6b8e0eb966337ba9210601675a4e63cbaffac53bc5475694b9a7e6426425e153d558b09a6ac305afb7ae8e437365ec77dc0539272fb8b686a73ae20d0fa1607d5e43f25ac673e1aa993ca44addb09f8f795cdade212b9f63e536a35107011b5c18b8a71c731e3441954db9233c4519329af06d67d36765a791bc8bb4940dec51bc39c69f2b22fd3b7f2ff6aeefc67c8f55e7dc79f6591d76bf6069e3db5f535bd36be241d34c6c9b8153632e8c689323fe0397708a87d1f7221faa08d8a83b2b1bdedb31f874073dc24e916c7cb12ddb699b89296233db9a7e232ab2dd56aaf3e95b5fb8bcc7ceb7bcc34dc5c31cd82062dc87e197b678ada3ac3bfbfabf076fb9b0e599ed488468336ef89f01fc3f128e32ac7365d3fd754dab607f2bfb22716c0b5bf261cad0d2acce79cafbbfd0c42c44d1ffd1d2ce76673ea22aaf596b0f741bae2eba4671d7a72bef3372748434bd6e99769e7ec7cfbb4effab11bfbce78cde5278723c237ba482e60e50fbca1a7f7696feafa39ca7079f3d97d7391bbfeac177f4e3df2478ff4d23d299b4d60cfd0334e7b90eb7b3b7f5bf220bdb58f89d6ccdb40bd615ce69b613bee390e213bd72e97a98bc12126270a8dfca63c7f6e95f1816ffef31f72ae96cfeff06ef3ffe1ba2c40555c666ca6e47b941ae9ea408737cea8854e93f5fca6b56bfcec8925419297bfff37ffff38fff03800f0cce</data>
+    </image>
+    <image name="image1">
+        <data format="PNG" length="210">89504e470d0a1a0a0000000d4948445200000016000000160806000000c4b46c3b0000009949444154388ded94410e85200c445f89c7367f61bc775d2848a42860ffced9548bbe8e13043e1d928177f481a123dc2b34f6f47a3de2b865a8843f4001982a0b3d5f62c58300aa1ad70550449ab9d507a773a8a4ba4f92a2df333c64c63bebbd82e5b8addecbcc7820eb4266c639745dfa80f36faf66c66fa19c3f882fb470ec05cdc0bed07893f68e171492635f686c3eeff6ba3c8fdd366dc4c0452c8781f8080000000049454e44ae426082</data>
+    </image>
+</images>
+<connections>
+    <connection>
+        <sender>fileOpenAction</sender>
+        <signal>activated()</signal>
+        <receiver>pyptofflineguiForm</receiver>
+        <slot>fileOpen()</slot>
+    </connection>
+    <connection>
+        <sender>fileExitAction</sender>
+        <signal>activated()</signal>
+        <receiver>pyptofflineguiForm</receiver>
+        <slot>close()</slot>
+    </connection>
+    <connection>
+        <sender>helpContentsAction</sender>
+        <signal>activated()</signal>
+        <receiver>pyptofflineguiForm</receiver>
+        <slot>helpContents()</slot>
+    </connection>
+    <connection>
+        <sender>helpAboutAction</sender>
+        <signal>activated()</signal>
+        <receiver>pyptofflineguiForm</receiver>
+        <slot>helpAbout()</slot>
+    </connection>
+</connections>
+<slots>
+    <slot>fileNew()</slot>
+    <slot>fileOpen()</slot>
+    <slot>fileSave()</slot>
+    <slot>fileSaveAs()</slot>
+    <slot>filePrint()</slot>
+    <slot>fileExit()</slot>
+    <slot>helpIndex()</slot>
+    <slot>helpContents()</slot>
+    <slot>helpAbout()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
