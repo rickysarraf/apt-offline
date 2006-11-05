@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pyptofflinegui.ui'
 #
-# Created: Mon Nov 6 00:00:43 2006
+# Created: Mon Nov 6 01:06:29 2006
 #      by: The PyQt User Interface Compiler (pyuic) 3.16
 #
 # WARNING! All changes made in this file will be lost!
