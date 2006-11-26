@@ -105,7 +105,7 @@ def decompress_the_file(file, path, filename, archive_type):
         
     return True
 
-def download_from_web(url, file, download_dir, checksum):
+def download_from_web(url, file, download_dir, checksum, number_of_threads, thread_name):
     '''
     Download the required file from the web
     The arguments are passed everytime to the function so that,
@@ -124,11 +124,12 @@ def download_from_web(url, file, download_dir, checksum):
         data = open(file,'wb')
         
         log.msg("Downloading %s\n" % (file))
+        prog = pypt_progressbar.myReportHook(size, number_of_threads)
         while i < size:
             data.write (temp.read(block_size))
             i += block_size
             counter += 1
-            pypt_progressbar.myReportHook(counter, block_size, size)
+            prog.updateAmount(counter * block_size, thread_name)
         print "\n"
         data.close()
         temp.close()
@@ -378,7 +379,6 @@ def fetcher(url_file, download_dir, cache_dir, zip_bool, zip_type_file, arg_type
                 log.warn("Threads is still in alpha stage. It's better to use just a single thread at the moment.\n")
                 
             NUMTHREADS = pypt_variables.options.num_of_threads
-            name = threading.currentThread().getName()
             ziplock = threading.Lock()
             
             def run(request, response, func=download_from_web):
@@ -393,7 +393,8 @@ def fetcher(url_file, download_dir, cache_dir, zip_bool, zip_type_file, arg_type
                     if item is None:
                         break
                     (url, file, download_size, checksum) = stripper(item)
-                    response.put((name, url, file, func(url, file, download_dir, None)))
+                    thread_name = threading.currentThread().getName()
+                    response.put((thread_name, url, file, func(url, file, download_dir, None, NUMTHREADS, thread_name)))
                     
                     # This will take care of making sure that if downloaded, they are zipped
                     (thread_name, url, file, exit_status) = responseQueue.get()
@@ -427,6 +428,10 @@ def fetcher(url_file, download_dir, cache_dir, zip_bool, zip_type_file, arg_type
             
             # Queue up the requests.
             for item in raw_data_list: requestQueue.put(item)
+            
+            for i in range(len(raw_data_list)):
+                response = responseQueue.get()
+                responseQueue.put(i)
             
             # Shut down the threads after all requests end.
             # (Put one None "sentinel" for each thread.)
