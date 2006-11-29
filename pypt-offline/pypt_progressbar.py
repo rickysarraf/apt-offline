@@ -4,7 +4,7 @@ class progressBar:
     def __init__(self, minValue = 0, maxValue = 10, totalWidth = 12, number_of_threads = 1):
         self.progBar = {}
         for thread in range(number_of_threads):
-            self.progBar["Thread-" + str(thread+1)] = "[]"
+            self.progBar["Thread-" + str(thread+1)] = ""
         #self.progBar = "[]"   # This holds the progress bar string
         self.min = minValue
         self.max = maxValue
@@ -39,9 +39,15 @@ class progressBar:
                self.progBar[name] = self.progBar[name][0:percentPlace] + percentString + self.progBar[name][percentPlace+len(percentString):] \
                + " " + str(newAmount/1024) + "KB of " + str(self.max/1024) + "KB"
                
-        for name in self.progBar.keys():
-            print self.progBar[name],
-            sys.stdout.write("\r")
+        progress = ""   
+        keys = self.progBar.keys()
+        keys.sort()
+        for name in keys:
+            progress += self.progBar[name] + " "
+            #print self.progBar[name],
+            #sys.stdout.write(self.progBar[name] + "\t")
+            sys.stdout.write(progress + "\r")
+            #sys.stdout.write("\r")
         
 def myReportHook(totalSize, number_of_threads):
     prog = progressBar(0,totalSize,50, number_of_threads)

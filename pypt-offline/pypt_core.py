@@ -1,5 +1,5 @@
 import os, shutil, string, sys, urllib2, Queue, threading
-import pypt_progressbar, pypt_md5_check, pypt_variables, pypt_logger
+import pypt_progressbar, pypt_md5_check, pypt_variables, pypt_logger, progressbar
 
 '''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
@@ -125,12 +125,18 @@ def download_from_web(url, file, download_dir, checksum, number_of_threads, thre
         
         log.msg("Downloading %s\n" % (file))
         prog = pypt_progressbar.myReportHook(size, number_of_threads)
+        #widgets = ['Test: ', progressbar.Percentage(), ' ', progressbar.Bar(marker=progressbar.RotatingMarker()), ' ', progressbar.ETA(), ' ', progressbar.FileTransferSpeed()]
+        #widgets = [CrazyFileTransferSpeed(),' <<<', Bar(), '>>> ', Percentage(),' ', ETA()]
+        #pbar = progressbar.ProgressBar(widgets=widgets, maxval=size)
+        #pbar.start()
         while i < size:
             data.write (temp.read(block_size))
             i += block_size
             counter += 1
+            #pbar.update(i)
             prog.updateAmount(counter * block_size, thread_name)
-        print "\n"
+        #pbar.finish()
+        #print "\n"
         data.close()
         temp.close()
         
@@ -147,19 +153,19 @@ def download_from_web(url, file, download_dir, checksum, number_of_threads, thre
         
     #FIXME: Find out optimal fix for this exception handling
     except OSError, (errno, strerror):
-        log.err("%s\n" %(download_dir))
-        errfunc(errno, strerror)
+        #log.err("%s\n" %(download_dir))
+        errfunc(errno, strerror, download_dir)
         
     except urllib2.HTTPError, errstring:
-        log.err("%s\n" % (file))
-        errfunc(errstring.code, errstring.msg)
+        #log.err("%s\n" % (file))
+        errfunc(errstring.code, errstring.msg, file)
         
     except urllib2.URLError, errstring:
         #We pass error code "1" here becuase URLError
         # doesn't pass any error code.
         # URLErrors shouldn't be ignored, hence program termination
         if errstring.reason.args[0] == 10060:
-            errfunc(errstring.reason.args[0], errstring.reason)
+            errfunc(errstring.reason.args[0], errstring.reason, url)
         #errfunc(1, errstring.reason)
         #pass
     
@@ -167,7 +173,7 @@ def download_from_web(url, file, download_dir, checksum, number_of_threads, thre
         if hasattr(e, 'reason'):
             log.err("%s\n" % (e.reason))
         if hasattr(e, 'code') and hasattr(e, 'reason'):
-            errfunc(e.code, e.reason)
+            errfunc(e.code, e.reason, file)
         
 #TODO: walk_tree_copy_debs - DEPRECATED
 # This might require simplification and optimization.
@@ -240,9 +246,8 @@ def copy_first_match(cache_dir, filename, dest_dir, checksum): # aka new_walk_tr
             if pypt_md5_check.md5_check(file, checksum, path) == True:
                 try:
                     shutil.copy(os.path.join(path, file), dest_dir)
-                    log.msg("%s copied from local cache %s.\n" % (file, cache_dir))
                 except shutil.Error:
-                    log.msg("%s is available in %s. Skipping Copy!\n\n" % (file, dest_dir))
+                    log.msg("%s available. Skipping Copy!\n\n" % (file, dest_dir))
                 return True
     return False
 
@@ -274,7 +279,7 @@ def stripper(item):
     return url, file, size, md5_text
 
 
-def errfunc(errno, errormsg):
+def errfunc(errno, errormsg, filename):
     '''
     We use errfunc to handler errors.
     There are some error codes (-3 and 13 as of now)
@@ -309,7 +314,7 @@ def errfunc(errno, errormsg):
         # THere can be instances where one source is changed but the rest are working.
         # 10060 is for Operation Time out. There can be multiple reasons for this timeout
         # Primarily if the host is down or a slow network or abruption, hence not the whole execution should be aborted
-        log.err("%s - %s\n\n" % (errno, errormsg))
+        log.err("%s - %s - %s\n" % (filename, errno, errormsg))
         log.verbose(" Will still try with other package uris\n\n")
         pass
     elif errno == 1:
@@ -429,10 +434,6 @@ def fetcher(url_file, download_dir, cache_dir, zip_bool, zip_type_file, arg_type
             # Queue up the requests.
             for item in raw_data_list: requestQueue.put(item)
             
-            for i in range(len(raw_data_list)):
-                response = responseQueue.get()
-                responseQueue.put(i)
-            
             # Shut down the threads after all requests end.
             # (Put one None "sentinel" for each thread.)
             for t in thread_pool: requestQueue.put(None)
@@ -516,7 +517,6 @@ def fetcher(url_file, download_dir, cache_dir, zip_bool, zip_type_file, arg_type
                 log.warn("Threads is still in alpha stage. It's better to use just a single thread at the moment.\n")
                 
             NUMTHREADS = pypt_variables.options.num_of_threads
-            name = threading.currentThread().getName()
             ziplock = threading.Lock()
             
             def run(request, response, func=copy_first_match):
@@ -531,19 +531,25 @@ def fetcher(url_file, download_dir, cache_dir, zip_bool, zip_type_file, arg_type
                     if item is None:
                         break
                     (url, file, download_size, checksum) = stripper(item)
-                    response.put((name, url, file, func(cache_dir, file, download_dir, checksum)))
+                    thread_name = threading.currentThread().getName()
+                    response.put((thread_name, url, file, func(cache_dir, file, download_dir, checksum)))
                     
                     # This will take care of making sure that if downloaded, they are zipped
                     (thread_name, url, file, exit_status) = responseQueue.get()
                     if exit_status == True:
+                        log.msg("%s copied from cache.\n" % (file))
                         log.verbose("%s copied from cache-dir %s.\n" % (file, cache_dir))
                         log.debug("%s copied from cache-dir %s.\n" % (file, cache_dir))
                     else:
                         log.debug("%s not available in local cache %s\n" % (file, cache_dir))
                         log.verbose("%s not available in local cache %s\n" % (file, cache_dir))
-                        exit_status = download_from_web(url, file, download_dir, checksum)
+                        exit_status = download_from_web(url, file, download_dir, checksum, NUMTHREADS, thread_name)
                         
                     if exit_status:
+                        
+                        #INFO: copy to cache-dir for further use
+                        # Here we try copying the downloaded file to the cache-dir
+                        # so that if the same file is asked for again, it can be copied from the local storage device
                         if cache_dir is None:
                             log.debug("No cache-dir specified. Skipping copy.\n")
                         elif os.access(os.path.join(cache_dir, file), os.F_OK):
@@ -553,6 +559,7 @@ def fetcher(url_file, download_dir, cache_dir, zip_bool, zip_type_file, arg_type
                                 shutil.copy(file, cache_dir)
                                 log.debug("%s copied to local cache-dir %s.\n" % (file, cache_dir))
                                 log.verbose("%s copied to local cache-dir %s.\n" % (file, cache_dir))
+                                
                         if zip_bool:
                             ziplock.acquire()
                             try:
