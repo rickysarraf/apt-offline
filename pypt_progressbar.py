@@ -1,54 +1,63 @@
-import sys
+# A minor part of this code is taken from Nilton Volpato's progressbar implementation,
+# precisely the terminal width probe code.
+# Rest of the code was mostly from Dennis Lee Beiber
+import signal, sys
+from array import array
 
-class progressBar:
-    def __init__(self, minValue = 0, maxValue = 10, totalWidth = 12, number_of_threads = 1):
-        self.progBar = {}
-        for thread in range(number_of_threads):
-            self.progBar["Thread-" + str(thread+1)] = ""
-        #self.progBar = "[]"   # This holds the progress bar string
+if sys.platform == "win32":
+    pass
+else:
+    from fcntl import ioctl
+    import termios
+
+
+class ProgressBar(object):
+    def __init__(self, minValue = 0, maxValue = 0, width = None, fd = sys.stderr):
+        #width does NOT include the two places for [] markers
         self.min = minValue
         self.max = maxValue
-        self.span = maxValue - minValue
-        self.width = totalWidth
-        self.amount = 0       # When amount == max, we are 100% done 
-        self.updateAmount(0)  # Build progress bar string
-
-    def updateAmount(self, newAmount = 0, thread_name = "Thread-1"):
-        if newAmount < self.min: newAmount = self.min
-        if newAmount > self.max: newAmount = self.max
-        self.amount = newAmount
-
-        # Figure out the new percent done, round to an integer
-        diffFromMin = float(self.amount - self.min)
-        percentDone = (diffFromMin / float(self.span)) * 100.0
-        percentDone = round(percentDone)
-        percentDone = int(percentDone)
-
-        # Figure out how many hash bars the percentage should be
-        allFull = self.width - 2
-        numHashes = (percentDone / 100.0) * allFull
-        numHashes = int(round(numHashes))
+        self.span = float(self.max - self.min)
+        self.fd = fd
+        self.signal_set = False
+        if width is None:
+            try:
+                self.handle_resize(None, None)
+                signal.signal(signal.SIGWINCH, self.handle_resize)
+                self.signal_set = True
+            except:
+                self.width = 79 #The standard
+        else:
+            self.width = width
+        self.value = self.min
+        self.items = 0 #count of items being tracked
+        self.complete = 0
         
-        for name in self.progBar.keys():
-            if name == thread_name:
-               self.progBar[name] =  "[" + '#'*numHashes + ' '*(allFull-numHashes) + "]"
-               
-               percentPlace = (len(self.progBar[name]) / 2) - len(str(percentDone)) 
-               percentString = str(percentDone) + "%"
-               
-               self.progBar[name] = self.progBar[name][0:percentPlace] + percentString + self.progBar[name][percentPlace+len(percentString):] \
-               + " " + str(newAmount/1024) + "KB of " + str(self.max/1024) + "KB"
-               
-        progress = ""   
-        keys = self.progBar.keys()
-        keys.sort()
-        for name in keys:
-            progress += self.progBar[name] + " "
-            #print self.progBar[name],
-            #sys.stdout.write(self.progBar[name] + "\t")
-            sys.stdout.write(progress + "\r")
-            #sys.stdout.write("\r")
+    def handle_resize(self, signum, frame):
+        h,w=array('h', ioctl(self.fd,termios.TIOCGWINSZ,'\0'*8))[:2]
+        self.width = w
+    
+    def updateValue(self, newValue):
+        #require caller to supply a value! newValue is the increment from last call
+        self.value = max(self.min, min(self.max, self.value + newValue))
+        self.display()
         
-def myReportHook(totalSize, number_of_threads):
-    prog = progressBar(0,totalSize,50, number_of_threads)
-    return prog
+    def completed(self):
+        self.complete = self.complete + 1
+        if self.signal_set:
+            signal.signal(signal.SIGWINCH, signal.SIG_DFL)
+        self.display()
+        
+    def addItem(self, maxValue):
+        self.max = self.max + maxValue
+        self.span = float(self.max - self.min)
+        self.items = self.items + 1
+        self.display()
+        
+    def display(self):
+        print "%3s/%3s items: %s\r" % (self.complete, self.items, str(self)),
+        
+    def __str__(self):
+        #compute display fraction
+        percentFilled = ((self.value - self.min) / self.span)
+        widthFilled = int(self.width * percentFilled + 0.5)
+        return ("[" + "#"*widthFilled + " "*(self.width - widthFilled) + "]" + " %5.1f%% of %d KB" % (percentFilled * 100.0, self.max/1024))
