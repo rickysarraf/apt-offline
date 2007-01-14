@@ -1,0 +1,30 @@
+.TH pypt-offline 1 "December 10, 2006" "version 0.6.2" "USER COMMANDS"
+.SH NAME
+pypt-offline \- Offline Package manager
+.SH SYNOPSIS
+.B pypt-offline
+[OPTIONS] [ARGUMENTS]
+.SH DESCRIPTION
+pypt-offline is an Offline Package Manager for Debian based systems. It bring offline package management functionality. It can download the required packages for a disconnected machine from a connected machine running Windows or Linux or Mac OS X.
+.PP
+Currently it supports only apt based systems but plans are there to support RPM based distros also.
+.SH OPTIONS
+.TP
+\-\-fetch\-update filename
+Specify the data file which contains the details about update files to be downloaded
+.TP
+\-\-threads N
+Specifiy the number of threads to be spawned (Default: 1)
+.TP
+\-\-help
+display a short help text
+.TP
+\-\-version
+display the version of the progream
+.SH EXAMPLES
+.TP
+.B pypt-offline \-\-fetch\-update uris\-file
+.SH AUTHOR
+Ritesh Raj Sarraf (rrs@researchut.com)
+.SH SEE ALSO
+.SM apt(1)
