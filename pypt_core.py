@@ -1,5 +1,5 @@
 import os, shutil, string, sys, urllib2, Queue, threading
-import pypt_progressbar, pypt_md5_check, pypt_variables, pypt_logger, progressbar
+import pypt_progressbar, pypt_md5_check, pypt_variables, pypt_logger, pypt_progressbar
 
 '''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
@@ -123,20 +123,17 @@ def download_from_web(url, file, download_dir, checksum, number_of_threads, thre
         size = int(headers['Content-Length'])
         data = open(file,'wb')
         
-        log.msg("Downloading %s\n" % (file))
-        prog = pypt_progressbar.myReportHook(size, number_of_threads)
-        #widgets = ['Test: ', progressbar.Percentage(), ' ', progressbar.Bar(marker=progressbar.RotatingMarker()), ' ', progressbar.ETA(), ' ', progressbar.FileTransferSpeed()]
-        #widgets = [CrazyFileTransferSpeed(),' <<<', Bar(), '>>> ', Percentage(),' ', ETA()]
-        #pbar = progressbar.ProgressBar(widgets=widgets, maxval=size)
-        #pbar.start()
+        progbar.addItem(size)
+            
+        log.msg("Downloading %s - %d KB\n" % (file, size/1024))
         while i < size:
             data.write (temp.read(block_size))
+            increment = min(block_size, size - i)
             i += block_size
             counter += 1
-            #pbar.update(i)
-            prog.updateAmount(counter * block_size, thread_name)
-        #pbar.finish()
-        #print "\n"
+            progbar.updateValue(increment)
+        progbar.completed()
+        log.msg("%s\tdone.\n" % (file))
         data.close()
         temp.close()
         
@@ -247,7 +244,7 @@ def copy_first_match(cache_dir, filename, dest_dir, checksum): # aka new_walk_tr
                 try:
                     shutil.copy(os.path.join(path, file), dest_dir)
                 except shutil.Error:
-                    log.msg("%s available. Skipping Copy!\n\n" % (file, dest_dir))
+                    log.verbose("%s already available in dest_dir. Skipping copy!!!\n\n" % (file))
                 return True
     return False
 
@@ -334,6 +331,10 @@ def fetcher(url_file, download_dir, cache_dir, zip_bool, zip_type_file, arg_type
     arg_type - arg_type is basically used to identify wether it's a update download or upgrade download
     '''
     
+    #INFO: For the Progress Bar
+    global progbar
+    progbar = pypt_progressbar.ProgressBar(width = 30)
+    
     if arg_type == 1:
         #INFO: Oh! We're only downloading the update package list database
         # Package Update database changes almost daily in Debian.
@@ -380,8 +381,8 @@ def fetcher(url_file, download_dir, cache_dir, zip_bool, zip_type_file, arg_type
         else:
             #INFO: Thread Support
             if pypt_variables.options.num_of_threads > 1:
-                log.msg("WARNING: Threads is still in alpha stage. It's better to use just a single thread at the moment.\n")
-                log.warn("Threads is still in alpha stage. It's better to use just a single thread at the moment.\n")
+                log.msg("WARNING: Threads is still in alpha stage. It's better to use just a single thread at the moment.\n\n")
+                log.warn("Threads is still in alpha stage. It's better to use just a single thread at the moment.\n\n")
                 
             NUMTHREADS = pypt_variables.options.num_of_threads
             ziplock = threading.Lock()
@@ -607,7 +608,7 @@ def fetcher(url_file, download_dir, cache_dir, zip_bool, zip_type_file, arg_type
     if len(pypt_variables.errlist) == 0:
         pass # Don't print if nothing failed.
     else:
-        log.err("The following files failed to be downloaded.\n")
+        log.err("\n\nThe following files failed to be downloaded.\n")
         for error in pypt_variables.errlist:
             log.err("%s failed.\n" % (error))
         
