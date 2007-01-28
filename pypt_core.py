@@ -133,7 +133,7 @@ def download_from_web(url, file, download_dir, checksum, number_of_threads, thre
             counter += 1
             progbar.updateValue(increment)
         progbar.completed()
-        log.msg("%s\tdone.\n" % (file))
+        log.msg("\r%s %s done.\n" % (file, "    "))
         data.close()
         temp.close()
         

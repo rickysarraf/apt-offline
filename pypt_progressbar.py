@@ -54,7 +54,7 @@ class ProgressBar(object):
         self.display()
         
     def display(self):
-        print "%3s/%3s items: %s\r" % (self.complete, self.items, str(self)),
+        print "\r%3s/%3s items: %s\r" % (self.complete, self.items, str(self)),
         
     def __str__(self):
         #compute display fraction
