@@ -473,7 +473,7 @@ def fetcher(url_file, download_dir, cache_dir, zip_bool, zip_type_file, arg_type
             raw_data_list = open(url_file, 'r').readlines()
         except IOError, (errno, strerror):
             log.err("%s %s\n" %(errno, strerror))
-            errfunc(errno, '')
+            errfunc(errno, '', url_file)
             
         #INFO: Mac OS X in mis-behaving with Python Threading
         # Use the conventional model for Mac OS X
@@ -764,22 +764,28 @@ def main():
                 sys.exit(0)
                
         if pypt_variables.options.fetch_update:
-            log.msg("\nFetching uris which update apt's package database\n\n")
-           
-            pypt_variables.options.disable_md5check = True
-            # Since we're in fetch_update, the download_type will be non-deb/rpm data
-            # 1 is for update packages 
-            # 2 is for upgrade packages
-            fetcher(pypt_variables.options.fetch_update, pypt_variables.options.download_dir, pypt_variables.options.cache_dir, pypt_variables.options.zip_it, pypt_variables.options.zip_update_file, 1)
+            if os.access(pypt_variables.options.fetch_update, os.F_OK):
+                log.msg("\nFetching uris which update apt's package database\n\n")
+            	pypt_variables.options.disable_md5check = True
+            	# Since we're in fetch_update, the download_type will be non-deb/rpm data
+            	# 1 is for update packages 
+            	# 2 is for upgrade packages
+            	fetcher(pypt_variables.options.fetch_update, pypt_variables.options.download_dir, pypt_variables.options.cache_dir, pypt_variables.options.zip_it, pypt_variables.options.zip_update_file, 1)
+            else:
+                log.err("\n%s file not present. Check path.\n" % (pypt_variables.options.fetch_update) )
+                sys.exit(1)
                  
         if pypt_variables.options.fetch_upgrade:
-            log.msg("\nFetching packages which need upgradation\n\n")
-                 
-            # Since we're in fetch_update, the download_type will be non-deb/rpm data
-            # 1 is for update packages 
-            # 2 is for upgrade packages
-            fetcher(pypt_variables.options.fetch_upgrade, pypt_variables.options.download_dir, pypt_variables.options.cache_dir, pypt_variables.options.zip_it, pypt_variables.options.zip_upgrade_file, 2)
-            sys.exit(0)
+            if os.access(pypt_variables.options.fetch_upgrade, os.F_OK):
+                log.msg("\nFetching packages which need upgradation\n\n")
+            	# Since we're in fetch_update, the download_type will be non-deb/rpm data
+            	# 1 is for update packages 
+            	# 2 is for upgrade packages
+            	fetcher(pypt_variables.options.fetch_upgrade, pypt_variables.options.download_dir, pypt_variables.options.cache_dir, pypt_variables.options.zip_it, pypt_variables.options.zip_upgrade_file, 2)
+            	sys.exit(0)
+            else:
+                log.err("\n%s file not present. Check path.\n" % (pypt_variables.options.fetch_upgrade) )
+                sys.exit(1)
                  
         if pypt_variables.options.install_update:
             #INFO: Comment these lines to do testing on Windows machines too
