@@ -7,7 +7,7 @@ version = "0.6.4"
 copyright = "(C) 2005 - 2007 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
         
 errlist = []
-supported_platforms = ["linux2", "gnu0", "gnukfreebsd5"]
+supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
 apt_update_target_path = '/var/lib/apt/lists/'
 apt_package_target_path = '/var/cache/apt/archives/'
 # Dummy paths while testing on Windows

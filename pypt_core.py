@@ -1,4 +1,4 @@
-import os, shutil, string, sys, urllib2, Queue, threading
+import os, shutil, string, sys, urllib2, Queue, threading, platform
 import pypt_progressbar, pypt_md5_check, pypt_variables, pypt_logger, pypt_progressbar
 
 '''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
@@ -696,7 +696,7 @@ def main():
         log.msg("Copyright %s\n" % (pypt_variables.copyright))
         
         if pypt_variables.options.set_update:
-            if sys.platform in pypt_variables.supported_platforms:
+            if platform.system() in pypt_variables.supported_platforms:
                 if os.geteuid() != 0:
                     pypt_variables.parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                 else:
@@ -712,7 +712,7 @@ def main():
             if not (pypt_variables.options.set_upgrade and pypt_variables.options.upgrade_type):
                 pypt_variables.parser.error("Options --set-upgrade and --upgrade-type are mutually inclusive\n")
                      
-            if sys.platform in pypt_variables.supported_platforms:
+            if platform.system() in pypt_variables.supported_platforms:
                 if os.geteuid() != 0:
                     pypt_variables.parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                 #TODO: Use a more Pythonic way for it
@@ -741,7 +741,7 @@ def main():
             if not (pypt_variables.options.set_install_packages and pypt_variables.options.set_install):
                 pypt_variables.parser.error("Options --set-install and --set-install-package are mutually inclusive\n")
                 
-            if sys.platform in pypt_variables.supported_platforms:
+            if platform.system() in pypt_variables.supported_platforms:
                 if os.geteuid() != 0:
                     pypt_variables.parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                     
