@@ -528,7 +528,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                     else:
                         log.msg("\r%s %s done.\n" % (file, "    ") )
                         if zip_bool:
-                            if archive.compress_the_file(ArgumentOptions.zip_update_file, file) != True:
+                            if FetcherInstance.compress_the_file(ArgumentOptions.zip_update_file, file) != True:
                                 log.verbose("%s added to archive %s.\n" % (file, ArgumentOptions.zip_update_file) )
                                 os.unlink(os.path.join(download_path, file) ) # Remove it because we don't need the file once it is zipped.
                                 sys.exit(1)
@@ -538,21 +538,20 @@ def fetcher(ArgumentOptions, arg_type = None):
                     if cache_dir is None:
                         log.msg("Downloading %s - %d KB\n" % (file, size/1024))
                         if download_from_web(url, file, download_path, FetcherInstance) != True:
-                            pypt_variables.errlist.append(file)
+                            errlist.append(file)
                             if zip_bool:
                                 log.msg("\r%s %s done.\n" % (file, "    "))
-                                archive.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
+                                FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
                                 os.unlink(os.path.join(download_path, file))
                     else:
-                        if copy_first_match(cache_dir, file, download_path, checksum) == False:
+                        if find_first_match(cache_dir, file, download_path, checksum) == False:
                             log.msg("Downloading %s - %d KB\n" % (file, size/1024))
                             if download_from_web(url, file, download_path, FetcherInstance) != True:
                                  errlist.append(file)
                             else:
                                 log.msg("\r%s %s done.\n" % (file, "    "))
                                 if os.access(os.path.join(cache_dir, file), os.F_OK):
-                                    log.debug("%s file is already present in cache-dir %s. Skipping copy.\n" % (file, cache_dir)) #INFO: The file is already there.
-                                    log.verbose("%s file is already present in cache-dir %s. Skipping copy.\n" % (file, cache_dir))
+                                    log.verbose("%s file is already present in cache-dir %s. Skipping copy.\n" % (file, cache_dir) ) #INFO: The file is already there.
                                 else:
                                     if os.access(cache_dir, os.W_OK):
                                         shutil.copy(file, cache_dir)
@@ -561,11 +560,11 @@ def fetcher(ArgumentOptions, arg_type = None):
                                         log.verbose("Cannot copy %s to %s. Is %s writeable??\n" % (file, cache_dir))
                                         
                                 if zip_bool:
-                                    archive.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
+                                    FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
                                     os.unlink(os.path.join(download_path, file))
                         elif True:
                             if zip_bool:
-                                archive.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
+                                FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
                                 os.unlink(os.path.join(download_path, file))
                                 
                 else:
@@ -575,7 +574,6 @@ def fetcher(ArgumentOptions, arg_type = None):
         #INFO: Thread Support
         if ArgumentOptions.num_of_threads > 1:
             log.msg("WARNING: Threads is still in beta stage. It's better to use just a single thread at the moment.\n\n")
-            log.warn("Threads is still in beta stage. It's better to use just a single thread at the moment.\n\n")
             
         def run(request, response, func=find_first_match):
             '''Get items from the request Queue, process them
