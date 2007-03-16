@@ -174,7 +174,7 @@ class Archiver:
         
         try:
             if self.lock:
-                self.ZipLock.acquire()
+                self.ZipLock.acquire(True)
             
             filename = zipfile.ZipFile(zip_file_name, "a")
         except IOError:
