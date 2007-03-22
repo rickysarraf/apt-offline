@@ -109,7 +109,7 @@ class Log:
     '''A OOP implementation for logging.
     warnings is to tackle the warning option
     verbose is to tackle the verbose option
-    debug is to tackle the debug option
+    color is if you want to colorize your output
     
     You should pass these options, taking it from optparse/getopt,
     during instantiation'''
@@ -137,19 +137,29 @@ class Log:
         self.color = color
         
     def msg(self, msg):
+        'Print general messages'
         if self.color:
             WConio.textcolor(15)
         sys.stdout.write(msg)
         sys.stdout.flush()
         
     def err(self, msg):
+        'Print messages with an error'
         if self.color:
             WConio.textcolor(4)
         sys.stderr.write(msg)
         sys.stderr.flush()
+        
+    def success(self, msg):
+        'Print messages with a success'
+        if self.color:
+            WConio.textcolor(2)
+        sys.stdout.write(msg)
+        sys.stdout.flush()
     
     # For the rest, we need to check the options also
     def warn(self, msg):
+        'Print warnings'
         if self.WARN is True:
             if self.color:
                 WConio.textcolor(12)
@@ -157,6 +167,7 @@ class Log:
             sys.stderr.flush()
 
     def verbose(self, msg):
+        'Print verbose messages'
         if self.VERBOSE is True:
             if self.color:
                 WConio.textcolor(11)
@@ -540,7 +551,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                     if FetcherInstance.download_from_web(url, file, download_path) != True:
                         errlist.append(file)
                     else:
-                        log.msg("\r%s %s done.\n" % (file, "    ") )
+                        log.success("\r%s %s done.\n" % (file, "    ") )
                         if zip_bool:
                             if FetcherInstance.compress_the_file(ArgumentOptions.zip_update_file, file) != True:
                                 log.verbose("%s added to archive %s.\n" % (file, ArgumentOptions.zip_update_file) )
@@ -554,7 +565,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                         if FetcherInstance.download_from_web(url, file, download_path) != True:
                             errlist.append(file)
                             if zip_bool:
-                                log.msg("\r%s %s done.\n" % (file, "    "))
+                                log.success("\r%s %s done.\n" % (file, "    "))
                                 FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
                                 os.unlink(os.path.join(download_path, file))
                     else:
@@ -563,7 +574,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                             if FetcherInstance.download_from_web(url, file, download_path) != True:
                                  errlist.append(file)
                             else:
-                                log.msg("\r%s %s done.\n" % (file, "    "))
+                                log.success("\r%s %s done.\n" % (file, "    "))
                                 if os.access(os.path.join(cache_dir, file), os.F_OK):
                                     log.verbose("%s file is already present in cache-dir %s. Skipping copy.\n" % (file, cache_dir) ) #INFO: The file is already there.
                                 else:
@@ -620,7 +631,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                         log.msg("Downloading %s\n" % (file) ) 
                         
                         if FetcherInstance.download_from_web(url, file, download_path) == True:
-                            log.msg("%s done.\n" % (file) )
+                            log.success("%s done.\n" % (file) )
                             if zip_bool:
                                 if FetcherInstance.compress_the_file(ArgumentOptions.zip_update_file, file) != True:
                                     log.err("Couldn't archive %s to file %s.\n" % (file, ArgumentOptions.zip_update_file) )
@@ -639,11 +650,11 @@ def fetcher(ArgumentOptions, arg_type = None):
                             if FetcherInstance.md5_check(full_file_path, checksum) is True:
                                 if zip_bool:
                                     if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, full_file_path) is True:
-                                        log.msg("%s copied from local cache directory %s\n" % (file, cache_dir) )
+                                        log.success("%s copied from local cache directory %s\n" % (file, cache_dir) )
                                 else:
                                     try:
                                         shutil.copy(full_file_path, download_path)
-                                        log.msg("%s copied from local cache directory %s\n" % (file, cache_dir) )
+                                        log.success("%s copied from local cache directory %s\n" % (file, cache_dir) )
                                     except shutil.Error:
                                         log.verbose("%s already available in %s. Skipping copy!!!\n\n" % (file, download_path) )
                                         
@@ -651,7 +662,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 log.verbose("%s MD5 checksum mismatch. Skipping file.\n" % (file) )
                                 log.msg("Downloading %s - %d KB\n" % (file, download_size/1024) )
                                 if FetcherInstance.download_from_web(url, file, download_path) == True:
-                                    log.msg("%s done.\n" % (file) )
+                                    log.success("%s done.\n" % (file) )
                                     if ArgumentOptions.cache_dir:
                                         try:
                                             shutil.copy(file, cache_dir)
@@ -668,7 +679,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                             #INFO: If md5check is disabled, just copy it.
                             try:
                                 shutil.copy(full_file_path, download_path)
-                                log.msg("%s copied from local cache directory %s\n" % (file, cache_dir) )
+                                log.success("%s copied from local cache directory %s\n" % (file, cache_dir) )
                             except shutil.Error:
                                 log.verbose("%s already available in dest_dir. Skipping copy!!!\n\n" % (file) )
                     else:
@@ -697,7 +708,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     sys.exit(1)
                                 log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                 os.unlink(os.path.join(download_path, file) )
-                            log.msg("%s done.\n" % (file) )
+                            log.success("%s done.\n" % (file) )
                         else:
                             log.err("Couldn't find %s\n" % (file) )
                             errlist.append(file)
