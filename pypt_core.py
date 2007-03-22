@@ -108,6 +108,21 @@ class Log:
     You should pass these options, taking it from optparse/getopt,
     during instantiation'''
     
+    ''' WConio can provide simple coloring mechanism for Microsoft Windows console
+    Color Codes:
+    Black = 0
+    Green = 2
+    Red = 4
+    White = 15
+    Light Red = 12
+    Light Cyan = 11
+    '''
+    
+    try:
+        import WConio
+    except ImportError:
+        WindowColor = False
+    
     def __init__(self, warnings, verbose, debug):
         
         if warnings is True:
@@ -123,29 +138,29 @@ class Log:
         else: self.DEBUG = False
         
     def msg(self, msg):
+        if self.WindowColor:
+            WConio.textcolor(15)
         sys.stdout.write(msg)
         sys.stdout.flush()
         
     def err(self, msg):
+        if self.WindowColor:
+            WConio.textcolor(4)
         sys.stderr.write(msg)
         sys.stderr.flush()
     
     # For the rest, we need to check the options also
     def warn(self, msg):
         if self.WARN is True:
-        #if options.warnings is True:
+            if self.WindowColor:
+                WConio.textcolor(12)
             sys.stderr.write(msg)
             sys.stderr.flush()
 
     def verbose(self, msg):
         if self.VERBOSE is True:
-        #if options.verbose is True:
-            sys.stdout.write(msg)
-            sys.stdout.flush()
-            
-    def debug(self, msg):
-        if self.DEBUG is True:
-        #if options.debug is True:
+            if self.WindowColor:
+                WConio.textcolor(11)
             sys.stdout.write(msg)
             sys.stdout.flush()
             
@@ -257,7 +272,7 @@ class Archiver:
             return False
 
 
-def files(self, root): 
+def files(root): 
     for path, folders, files in os.walk(root): 
         for file in files: 
             yield path, file 
@@ -336,11 +351,6 @@ class DownloadFromWeb(ProgressBar):
                 log.err("%s\n" % (e.reason))
             if hasattr(e, 'code') and hasattr(e, 'reason'):
                 errfunc(e.code, e.reason, file)
-        
-def files(root): 
-    for path, folders, files in os.walk(root): 
-        for file in files: 
-            yield path, file 
 
 def copy_first_match(cache_dir, filename, dest_dir, checksum): # aka new_walk_tree_copy() 
     '''Walks into "reposiotry" looking for "filename".
@@ -822,7 +832,6 @@ def main():
                       action="store", type="string", metavar=".")
     parser.add_option("--verbose", dest="verbose", help="Enable verbose messages", action="store_true")
     parser.add_option("--warnings", dest="warnings", help="Enable warnings", action="store_true")
-    parser.add_option("--debug", dest="debug", help="Enable Debug mode", action="store_true")
     parser.add_option("-u","--uris", dest="uris_file",
                       help="Full path of the uris file which contains the main database of files to be downloaded",action="store", type="string")
     parser.add_option("","--disable-md5check", dest="disable_md5check",
