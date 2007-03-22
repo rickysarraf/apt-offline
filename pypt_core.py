@@ -19,6 +19,12 @@ try:
 except ImportError:
     pass
 
+WindowColor = True
+try:
+    import WConio
+except ImportError:
+    WindowColor = False
+
 '''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
 
@@ -118,12 +124,7 @@ class Log:
     Light Cyan = 11
     '''
     
-    try:
-        import WConio
-    except ImportError:
-        WindowColor = False
-    
-    def __init__(self, warnings, verbose):
+    def __init__(self, warnings, verbose, color = None):
         
         if warnings is True:
             self.WARN = True
@@ -133,14 +134,16 @@ class Log:
             self.VERBOSE = True
         else: self.VERBOSE = False
         
+        self.color = color
+        
     def msg(self, msg):
-        if self.WindowColor:
+        if self.color:
             WConio.textcolor(15)
         sys.stdout.write(msg)
         sys.stdout.flush()
         
     def err(self, msg):
-        if self.WindowColor:
+        if self.color:
             WConio.textcolor(4)
         sys.stderr.write(msg)
         sys.stderr.flush()
@@ -148,14 +151,14 @@ class Log:
     # For the rest, we need to check the options also
     def warn(self, msg):
         if self.WARN is True:
-            if self.WindowColor:
+            if self.color:
                 WConio.textcolor(12)
             sys.stderr.write(msg)
             sys.stderr.flush()
 
     def verbose(self, msg):
         if self.VERBOSE is True:
-            if self.WindowColor:
+            if self.color:
                 WConio.textcolor(11)
             sys.stdout.write(msg)
             sys.stdout.flush()
@@ -623,6 +626,8 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     log.err("Couldn't archive %s to file %s.\n" % (file, ArgumentOptions.zip_update_file) )
                                     sys.exit(1)
                                 os.unlink(os.path.join(download_path, file) )
+                        else:
+                            errlist.append(file)
                                 
                 elif key == 'Upgrade':
                     response.put(func(cache_dir, file) ) 
@@ -878,7 +883,7 @@ def main():
         # The log implementation
         # Instantiate the class
         global log
-        log = Log(options.warnings, options.verbose)
+        log = Log(options.warnings, options.verbose, WindowColor)
         
         log.msg("pypt-offline %s\n" % (version))
         log.msg("Copyright %s\n" % (copyright))

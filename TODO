@@ -12,3 +12,4 @@
 * Use Python's logging module to better handle messages, warnings and errors <done>
 * Implement apt's newly added feature (> 0.6.4) of Package Diff
 * Add functionality for Offline Bug Reports
+* Handle KeyboardInterrupt exception in threads so that if the user sends an interrupt signal, the program should exit
