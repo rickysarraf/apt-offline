@@ -123,7 +123,7 @@ class Log:
     except ImportError:
         WindowColor = False
     
-    def __init__(self, warnings, verbose, debug):
+    def __init__(self, warnings, verbose):
         
         if warnings is True:
             self.WARN = True
@@ -132,10 +132,6 @@ class Log:
         if verbose is True:
             self.VERBOSE = True
         else: self.VERBOSE = False
-        
-        if debug is True:
-            self.DEBUG = True
-        else: self.DEBUG = False
         
     def msg(self, msg):
         if self.WindowColor:
@@ -882,7 +878,7 @@ def main():
         # The log implementation
         # Instantiate the class
         global log
-        log = Log(options.warnings, options.verbose, options.debug)
+        log = Log(options.warnings, options.verbose)
         
         log.msg("pypt-offline %s\n" % (version))
         log.msg("Copyright %s\n" % (copyright))
