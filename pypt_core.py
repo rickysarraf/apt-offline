@@ -275,62 +275,67 @@ def find_first_match(cache_dir=None, filename=None):
                 return os.path.join(path, file)
             return False
             
-def download_from_web(url, file, download_dir, ProgressBarInstance):
-    '''
-    Download the required file from the web
-    The arguments are passed everytime to the function so that,
-    may be in future, we could reuse this function
-    '''
-       
-    try:
-        block_size = 4096
-        i = 0
-        counter = 0
-        
-        os.chdir(download_dir)
-        temp = urllib2.urlopen(url)
-        headers = temp.info()
-        size = int(headers['Content-Length'])
-        data = open(file,'wb')
-        
-        ProgressBarInstance.addItem(size)
-            
- 
-        while i < size:
-            data.write (temp.read(block_size))
-            increment = min(block_size, size - i)
-            i += block_size
-            counter += 1
-            ProgressBarInstance.updateValue(increment)
-        ProgressBarInstance.completed()
-        data.close()
-        temp.close()
-        
-        return True
-        
-    #FIXME: Find out optimal fix for this exception handling
-    except OSError, (errno, strerror):
-        #log.err("%s\n" %(download_dir))
-        errfunc(errno, strerror, download_dir)
-        
-    except urllib2.HTTPError, errstring:
-        #log.err("%s\n" % (file))
-        errfunc(errstring.code, errstring.msg, file)
-        
-    except urllib2.URLError, errstring:
-        #We pass error code "1" here becuase URLError
-        # doesn't pass any error code.
-        # URLErrors shouldn't be ignored, hence program termination
-        if errstring.reason.args[0] == 10060:
-            errfunc(errstring.reason.args[0], errstring.reason, url)
-        #errfunc(1, errstring.reason)
-        #pass
+class DownloadFromWeb(ProgressBar):
     
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            log.err("%s\n" % (e.reason))
-        if hasattr(e, 'code') and hasattr(e, 'reason'):
-            errfunc(e.code, e.reason, file)
+    def __init__(self, width):
+        ProgressBar.__init__(self, width=width)
+    
+    def download_from_web(self, url, file, download_dir):
+        '''
+        Download the required file from the web
+        The arguments are passed everytime to the function so that,
+        may be in future, we could reuse this function
+        '''
+           
+        try:
+            block_size = 4096
+            i = 0
+            counter = 0
+            
+            os.chdir(download_dir)
+            temp = urllib2.urlopen(url)
+            headers = temp.info()
+            size = int(headers['Content-Length'])
+            data = open(file,'wb')
+            
+            #INFO: Add the download thread into the Global ProgressBar Thread
+            self.addItem(size)
+     
+            while i < size:
+                data.write (temp.read(block_size))
+                increment = min(block_size, size - i)
+                i += block_size
+                counter += 1
+                self.updateValue(increment)
+            self.completed()
+            data.close()
+            temp.close()
+            
+            return True
+            
+        #FIXME: Find out optimal fix for this exception handling
+        except OSError, (errno, strerror):
+            #log.err("%s\n" %(download_dir))
+            errfunc(errno, strerror, download_dir)
+            
+        except urllib2.HTTPError, errstring:
+            #log.err("%s\n" % (file))
+            errfunc(errstring.code, errstring.msg, file)
+            
+        except urllib2.URLError, errstring:
+            #We pass error code "1" here becuase URLError
+            # doesn't pass any error code.
+            # URLErrors shouldn't be ignored, hence program termination
+            if errstring.reason.args[0] == 10060:
+                errfunc(errstring.reason.args[0], errstring.reason, url)
+            #errfunc(1, errstring.reason)
+            #pass
+        
+        except IOError, e:
+            if hasattr(e, 'reason'):
+                log.err("%s\n" % (e.reason))
+            if hasattr(e, 'code') and hasattr(e, 'reason'):
+                errfunc(e.code, e.reason, file)
         
 def files(root): 
     for path, folders, files in os.walk(root): 
@@ -448,9 +453,9 @@ def fetcher(ArgumentOptions, arg_type = None):
     cache_dir = ArgumentOptions.cache_dir
     zip_bool = ArgumentOptions.zip_it
     
-    class FetcherClass(ProgressBar, Archiver, MD5Check):
+    class FetcherClass(DownloadFromWeb, Archiver, MD5Check):
         def __init__(self, width, lock):
-            ProgressBar.__init__(self, width=width)
+            DownloadFromWeb.__init__(self, width=width)
             #ProgressBar.__init__(self, width)
             #self.width = width
             Archiver.__init__(self, lock=lock)
@@ -523,7 +528,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                 log.msg("Downloading %s\n" % (file) ) 
                 
                 if key == 'Update':
-                    if download_from_web(url, file, download_path, FetcherInstance) != True:
+                    if FetcherInstance.download_from_web(url, file, download_path) != True:
                         errlist.append(file)
                     else:
                         log.msg("\r%s %s done.\n" % (file, "    ") )
@@ -537,7 +542,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                 elif key == 'Upgrade':
                     if cache_dir is None:
                         log.msg("Downloading %s - %d KB\n" % (file, size/1024))
-                        if download_from_web(url, file, download_path, FetcherInstance) != True:
+                        if FetcherInstance.download_from_web(url, file, download_path) != True:
                             errlist.append(file)
                             if zip_bool:
                                 log.msg("\r%s %s done.\n" % (file, "    "))
@@ -546,7 +551,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                     else:
                         if find_first_match(cache_dir, file, download_path, checksum) == False:
                             log.msg("Downloading %s - %d KB\n" % (file, size/1024))
-                            if download_from_web(url, file, download_path, FetcherInstance) != True:
+                            if FetcherInstance.download_from_web(url, file, download_path) != True:
                                  errlist.append(file)
                             else:
                                 log.msg("\r%s %s done.\n" % (file, "    "))
@@ -605,7 +610,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                     if exit_status == False:
                         log.msg("Downloading %s\n" % (file) ) 
                         
-                        if download_from_web(url, file, download_path, FetcherInstance) == True:
+                        if FetcherInstance.download_from_web(url, file, download_path) == True:
                             log.msg("%s done.\n" % (file) )
                             if zip_bool:
                                 if FetcherInstance.compress_the_file(ArgumentOptions.zip_update_file, file) != True:
@@ -634,7 +639,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                             else:
                                 log.verbose("%s MD5 checksum mismatch. Skipping file.\n" % (file) )
                                 log.msg("Downloading %s - %d KB\n" % (file, download_size/1024) )
-                                if download_from_web(url, file, download_path, FetcherInstance) == True:
+                                if FetcherInstance.download_from_web(url, file, download_path) == True:
                                     log.msg("%s done.\n" % (file) )
                                     if ArgumentOptions.cache_dir:
                                         try:
@@ -658,7 +663,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                     else:
                         log.verbose("%s not available in local cache %s.\n" % (file, ArgumentOptions.cache_dir) )
                         log.msg("Downloading %s - %d KB\n" % (file, download_size/1024) )
-                        if download_from_web(url, file, download_path, FetcherInstance) == True:
+                        if FetcherInstance.download_from_web(url, file, download_path) == True:
                             if ArgumentOptions.disable_md5check is False:
                                 if FetcherInstance.md5_check(full_file_path, checksum) is True:
                                             
