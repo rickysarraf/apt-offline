@@ -2,13 +2,11 @@ import os
 import sys
 import string
 
-sys.path.append('/usr/share/reportbug')
 import debianbts
 
 package = "sl"
-bug_dict = {}
 bug_list = []
-file = "/tmp/bug_report.txt"
+file = "C:\\bug_report.txt"
 file_handle = open(file, 'w')
 
 (num_of_bugs, header, bugs_list) = debianbts.get_reports(package)
