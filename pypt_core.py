@@ -289,23 +289,24 @@ def FetchBugReportsDebian(PackageName, FileHandle):
         return False
     
     bug_list = []
-    file_handle = open("FileHandle", 'w')
+    file_handle = open(FileHandle, 'w')
     
-    (num_of_bugs, header, bugs_list) = debianbts.get_reports(package)
+    (num_of_bugs, header, bugs_list) = debianbts.get_reports(PackageName)
 
     if num_of_bugs:
         for x in bugs_list:
             (sub_bugs_header, sub_bugs_list) = x
-            for x in sub_bugs_list:
-                break_bugs = x.split(':')
-                bug_num = string.lstrip(break_bugs[0], '#')
-                data = debianbts.get_report(bug_num, followups=True)
-                file_handle.write(data[0] + "\n\n")
-                for x in data[1]:
-                    file_handle.write(x)
-                    file_handle.write("\n")
-                file_handle.write("\n\n\n")
-                file_handle.flush()
+            if not "Resolved bugs" in sub_bugs_header:
+                for x in sub_bugs_list:
+                    break_bugs = x.split(':')
+                    bug_num = string.lstrip(break_bugs[0], '#')
+                    data = debianbts.get_report(bug_num, followups=True)
+                    file_handle.write(data[0] + "\n\n")
+                    for x in data[1]:
+                        file_handle.write(x)
+                        file_handle.write("\n")
+                    file_handle.write("\n" * 3)
+                    file_handle.flush()
     
     
 def files(root): 
