@@ -28,7 +28,7 @@ except ImportError:
 '''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
 
-version = "0.6.4"
+version = "0.7.0"
 copyright = "(C) 2005 - 2007 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
         
 errlist = []
@@ -777,6 +777,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                         
     # Print the failed files
     if len(errlist) == 0:
+        log.msg("\nAll files have been downloaded.\n")
         pass # Don't print if nothing failed.
     else:
         log.err("\n\nThe following files failed to be downloaded.\n")
@@ -914,6 +915,8 @@ def main():
     parser.add_option("", "--install-upgrade", dest="install_upgrade",
                       help="Install the fetched packages to the  NONET machine and _upgrade_ the packages on the NONET machine. This command must be executed on the NONET machine",
                       action="store", type="string", metavar="pypt-offline-upgrade.zip")
+    parser.add_option("", "--fetch-bug-reports", dest="deb_bugs",
+                      help="Fetch bug reports from the BTS", action="store_false")
     #global options, args
     (options, args) = parser.parse_args()
     
