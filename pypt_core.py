@@ -778,7 +778,6 @@ def fetcher(ArgumentOptions, arg_type = None):
     # Print the failed files
     if len(errlist) == 0:
         log.msg("\nAll files have been downloaded.\n")
-        pass # Don't print if nothing failed.
     else:
         log.err("\n\nThe following files failed to be downloaded.\n")
         for error in errlist:
