@@ -568,6 +568,7 @@ def fetcher(ArgumentOptions, arg_type = None):
             for item in FetchData.get(key):
                 
                 (url, file, download_size, checksum) = stripper(each_single_item)
+                PackageName = file.split("_")[0]
                 log.msg("Downloading %s\n" % (file) ) 
                 
                 if key == 'Update':
@@ -586,18 +587,18 @@ def fetcher(ArgumentOptions, arg_type = None):
                     if cache_dir is None:
                         log.msg("Downloading %s - %d KB\n" % (file, size/1024))
                         if FetcherInstance.download_from_web(url, file, download_path) != True:
-                            errlist.append(file)
+                            errlist.append(PackageName)
                             if zip_bool:
-                                log.success("\r%s %s done.\n" % (file, "    "))
+                                log.success("\r%s %s done.\n" % (PackageName, "    "))
                                 FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
                                 os.unlink(os.path.join(download_path, file))
                     else:
                         if find_first_match(cache_dir, file, download_path, checksum) == False:
-                            log.msg("Downloading %s - %d KB\n" % (file, size/1024))
+                            log.msg("Downloading %s - %d KB\n" % (PackageName, size/1024))
                             if FetcherInstance.download_from_web(url, file, download_path) != True:
-                                 errlist.append(file)
+                                 errlist.append(PackageName)
                             else:
-                                log.success("\r%s %s done.\n" % (file, "    "))
+                                log.success("\r%s %s done.\n" % (PackageName, "    "))
                                 if os.access(os.path.join(cache_dir, file), os.F_OK):
                                     log.verbose("%s file is already present in cache-dir %s. Skipping copy.\n" % (file, cache_dir) ) #INFO: The file is already there.
                                 else:
@@ -636,6 +637,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                     break
                 (key, item) = tuple_item_key
                 (url, file, download_size, checksum) = stripper(item)
+                PackageName = file.split("_")[0]
                 thread_name = threading.currentThread().getName()
                 
                 if key == 'Update':
@@ -673,19 +675,19 @@ def fetcher(ArgumentOptions, arg_type = None):
                             if FetcherInstance.md5_check(full_file_path, checksum) is True:
                                 if zip_bool:
                                     if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, full_file_path) is True:
-                                        log.success("%s copied from local cache directory %s\n" % (file, cache_dir) )
+                                        log.success("%s copied from local cache directory %s\n" % (PackageName, cache_dir) )
                                 else:
                                     try:
                                         shutil.copy(full_file_path, download_path)
-                                        log.success("%s copied from local cache directory %s\n" % (file, cache_dir) )
+                                        log.success("%s copied from local cache directory %s\n" % (PackageName, cache_dir) )
                                     except shutil.Error:
                                         log.verbose("%s already available in %s. Skipping copy!!!\n\n" % (file, download_path) )
                                         
                             else:
                                 log.verbose("%s MD5 checksum mismatch. Skipping file.\n" % (file) )
-                                log.msg("Downloading %s - %d KB\n" % (file, download_size/1024) )
+                                log.msg("Downloading %s - %d KB\n" % (PackageName, download_size/1024) )
                                 if FetcherInstance.download_from_web(url, file, download_path) == True:
-                                    log.success("%s done.\n" % (file) )
+                                    log.success("%s done.\n" % (PackageName) )
                                     if ArgumentOptions.cache_dir:
                                         try:
                                             shutil.copy(file, cache_dir)
@@ -707,7 +709,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 log.verbose("%s already available in dest_dir. Skipping copy!!!\n\n" % (file) )
                     else:
                         log.verbose("%s not available in local cache %s.\n" % (file, ArgumentOptions.cache_dir) )
-                        log.msg("Downloading %s - %d KB\n" % (file, download_size/1024) )
+                        log.msg("Downloading %s - %d KB\n" % (PackageName, download_size/1024) )
                         if FetcherInstance.download_from_web(url, file, download_path) == True:
                             if ArgumentOptions.disable_md5check is False:
                                 if FetcherInstance.md5_check(full_file_path, checksum) is True:
@@ -731,10 +733,10 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     sys.exit(1)
                                 log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                 os.unlink(os.path.join(download_path, file) )
-                            log.success("%s done.\n" % (file) )
+                            log.success("\n%s done.\n" % (PackageName) )
                         else:
-                            log.err("Couldn't find %s\n" % (file) )
-                            errlist.append(file)
+                            #log.err("Couldn't find %s\n" % (PackageName) )
+                            errlist.append(PackageName)
                     
         # Create two Queues for the requests and responses
         requestQueue = Queue.Queue()
