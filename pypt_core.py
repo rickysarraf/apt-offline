@@ -466,10 +466,6 @@ def errfunc(errno, errormsg, filename):
         log.err("%s\n" % (errormsg))
         sys.exit(errno)
     elif errno == 504 or errno == 404 or errno == 10060:
-        #TODO: Counter which will inform that some packages weren't fetched.
-        # A counter needs to be implemented which will at the end inform the list of sources which 
-        # failed to be downloaded with the above codes.
-        
         # 504 is for gateway timeout
         # On gateway timeouts we can keep trying out becuase
         # one apt source.list might have different hosts.
