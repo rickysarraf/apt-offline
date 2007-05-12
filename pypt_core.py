@@ -454,30 +454,25 @@ def errfunc(errno, errormsg, filename):
     This function does the job of behaving accordingly
     as per the error codes.
     '''
+    error_codes = [-3, 13, 504, 404, 10060, 104]
+    # 104, 'Connection reset by peer'
+    # 504 is for gateway timeout
+    # 404 is for URL error. Page not found.
+    # 10060 is for Operation Time out. There can be multiple reasons for this timeout
     
-    if errno == -3 or errno == 13:
-        #TODO: Find out what these error codes are for
-        # and better document them the next time you find it out.
-        # 13 is for "Permission Denied" when you don't have privileges to access the destination 
+    #TODO: Find out what these error codes are for
+    # and better document them the next time you find it out.
+    # 13 is for "Permission Denied" when you don't have privileges to access the destination 
+    if errno in error_codes:
+        log.err("%s - %s - %s\n" % (filename, errno, errormsg))
+        log.verbose(" Will still try with other package uris\n\n")
         pass
     elif errno == 407 or errno == 2:
         # These, I believe are from OSError/IOError exception.
         # I'll document it as soon as I confirm it.
         log.err("%s\n" % (errormsg))
         sys.exit(errno)
-    elif errno == 504 or errno == 404 or errno == 10060:
-        # 504 is for gateway timeout
-        # On gateway timeouts we can keep trying out becuase
-        # one apt source.list might have different hosts.
-        # 404 is for URL error. Page not found.
-        # THere can be instances where one source is changed but the rest are working.
-        # 10060 is for Operation Time out. There can be multiple reasons for this timeout
-        # Primarily if the host is down or a slow network or abruption, hence not the whole execution should be aborted
-        log.err("%s - %s - %s\n" % (filename, errno, errormsg))
-        log.verbose(" Will still try with other package uris\n\n")
-        pass
     elif errno == 1:
-        # We'll pass error code 1 where ever we want to gracefully exit
         log.err(errormsg)
         log.err("Explicit program termination %s\n" % (errno))
         sys.exit(errno)
@@ -494,7 +489,6 @@ def fetcher(ArgumentOptions, arg_type = None):
     '''
     
     cache_dir = ArgumentOptions.cache_dir
-    zip_bool = ArgumentOptions.zip_it
     
     class FetcherClass(DownloadFromWeb, Archiver, MD5Check):
         def __init__(self, width, lock):
@@ -568,28 +562,33 @@ def fetcher(ArgumentOptions, arg_type = None):
             for item in FetchData.get(key):
                 
                 (url, file, download_size, checksum) = stripper(each_single_item)
-                PackageName = file.split("_")[0]
-                log.msg("Downloading %s\n" % (file) ) 
                 
                 if key == 'Update':
+                    temp_file = file.split("_")
+                    PackageName = temp_file[0]
+                    PackageName += " - " + temp_file[len(temp_file) - 1]
+                    del temp_file
+                    
+                    log.msg("Downloading %s\n" % (PackageName) ) 
                     if FetcherInstance.download_from_web(url, file, download_path) != True:
                         errlist.append(file)
                     else:
-                        log.success("\r%s %s done.\n" % (file, "    ") )
-                        if zip_bool:
+                        log.success("\n%s done.\n" % (PackageName) )
+                        if ArgumentOptions.zip_it:
                             if FetcherInstance.compress_the_file(ArgumentOptions.zip_update_file, file) != True:
                                 log.verbose("%s added to archive %s.\n" % (file, ArgumentOptions.zip_update_file) )
                                 os.unlink(os.path.join(download_path, file) ) # Remove it because we don't need the file once it is zipped.
-                                sys.exit(1)
+                                #sys.exit(1)
                         pass
                                         
                 elif key == 'Upgrade':
+                    PackageName = file.split("_")[0]
                     if cache_dir is None:
                         log.msg("Downloading %s - %d KB\n" % (file, size/1024))
                         if FetcherInstance.download_from_web(url, file, download_path) != True:
                             errlist.append(PackageName)
-                            if zip_bool:
-                                log.success("\r%s %s done.\n" % (PackageName, "    "))
+                            if ArgumentOptions.zip_it:
+                                log.success("\n%s done.\n" % (PackageName) )
                                 FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
                                 os.unlink(os.path.join(download_path, file))
                     else:
@@ -598,7 +597,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                             if FetcherInstance.download_from_web(url, file, download_path) != True:
                                  errlist.append(PackageName)
                             else:
-                                log.success("\r%s %s done.\n" % (PackageName, "    "))
+                                log.success("\n%s done.\n" % (PackageName) )
                                 if os.access(os.path.join(cache_dir, file), os.F_OK):
                                     log.verbose("%s file is already present in cache-dir %s. Skipping copy.\n" % (file, cache_dir) ) #INFO: The file is already there.
                                 else:
@@ -608,11 +607,11 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     else:
                                         log.verbose("Cannot copy %s to %s. Is %s writeable??\n" % (file, cache_dir))
                                         
-                                if zip_bool:
+                                if ArgumentOptions.zip_it:
                                     FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
                                     os.unlink(os.path.join(download_path, file))
                         elif True:
-                            if zip_bool:
+                            if ArgumentOptions.zip_it:
                                 FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
                                 os.unlink(os.path.join(download_path, file))
                                 
@@ -637,10 +636,13 @@ def fetcher(ArgumentOptions, arg_type = None):
                     break
                 (key, item) = tuple_item_key
                 (url, file, download_size, checksum) = stripper(item)
-                PackageName = file.split("_")[0]
                 thread_name = threading.currentThread().getName()
                 
                 if key == 'Update':
+                    temp_file = file.split("_")
+                    PackageName = temp_file[0]
+                    PackageName += " - " + temp_file[len(temp_file) - 1]
+                    del temp_file
                     
                     #INFO: We pass None as a filename here because we don't want to do a tree search of
                     # update files. Update files are changed daily and there is no point in doing a search of
@@ -653,11 +655,11 @@ def fetcher(ArgumentOptions, arg_type = None):
                     exit_status = response.get()
                     
                     if exit_status == False:
-                        log.msg("Downloading %s\n" % (file) ) 
+                        log.msg("Downloading %s\n" % (PackageName) ) 
                         
                         if FetcherInstance.download_from_web(url, file, download_path) == True:
-                            log.success("%s done.\n" % (file) )
-                            if zip_bool:
+                            log.success("\r%s done.%s\n" % (PackageName, " "* 40) )
+                            if ArgumentOptions.zip_it:
                                 if FetcherInstance.compress_the_file(ArgumentOptions.zip_update_file, file) != True:
                                     log.err("Couldn't archive %s to file %s.\n" % (file, ArgumentOptions.zip_update_file) )
                                     sys.exit(1)
@@ -666,6 +668,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                             errlist.append(file)
                                 
                 elif key == 'Upgrade':
+                    PackageName = file.split("_")[0]
                     response.put(func(cache_dir, file) ) 
                     #INFO: find_first_match() returns False of a file name with absolute path
                     full_file_path = response.get()
@@ -673,7 +676,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                     if full_file_path != False:
                         if ArgumentOptions.disable_md5check is False:
                             if FetcherInstance.md5_check(full_file_path, checksum) is True:
-                                if zip_bool:
+                                if ArgumentOptions.zip_it:
                                     if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, full_file_path) is True:
                                         log.success("%s copied from local cache directory %s\n" % (PackageName, cache_dir) )
                                 else:
@@ -687,7 +690,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 log.verbose("%s MD5 checksum mismatch. Skipping file.\n" % (file) )
                                 log.msg("Downloading %s - %d KB\n" % (PackageName, download_size/1024) )
                                 if FetcherInstance.download_from_web(url, file, download_path) == True:
-                                    log.success("%s done.\n" % (PackageName) )
+                                    log.success("\r%s done.%s\n" % (PackageName, " "* 40) )
                                     if ArgumentOptions.cache_dir:
                                         try:
                                             shutil.copy(file, cache_dir)
@@ -721,19 +724,19 @@ def fetcher(ArgumentOptions, arg_type = None):
                                         except shutil.Error:
                                             log.verbose("%s already available in %s. Skipping copy!!!\n\n" % (file, ArgumentOptions.cache_dir) )
                                             
-                                    if zip_bool:
+                                    if ArgumentOptions.zip_it:
                                         if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
                                             log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                             sys.exit(1)
                                         log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                         os.unlink(os.path.join(download_path, file) )
-                            if zip_bool:
+                            if ArgumentOptions.zip_it:
                                 if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
                                     log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                     sys.exit(1)
                                 log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                 os.unlink(os.path.join(download_path, file) )
-                            log.success("\n%s done.\n" % (PackageName) )
+                            log.success("\r%s done.%s\n" % (PackageName, " "* 40) )
                         else:
                             #log.err("Couldn't find %s\n" % (PackageName) )
                             errlist.append(PackageName)
