@@ -55,6 +55,7 @@ class MD5Check:
         return False
         
 class ProgressBar(object):
+    
     def __init__(self, minValue = 0, maxValue = 0, width = None, fd = sys.stderr):
         #width does NOT include the two places for [] markers
         self.min = minValue
@@ -62,15 +63,19 @@ class ProgressBar(object):
         self.span = float(self.max - self.min)
         self.fd = fd
         self.signal_set = False
+        
         if width is None:
+            
             try:
                 self.handle_resize(None, None)
                 signal.signal(signal.SIGWINCH, self.handle_resize)
                 self.signal_set = True
             except:
                 self.width = 79 #The standard
+                
         else:
             self.width = width
+            
         self.value = self.min
         self.items = 0 #count of items being tracked
         self.complete = 0
@@ -86,8 +91,10 @@ class ProgressBar(object):
         
     def completed(self):
         self.complete = self.complete + 1
+        
         if self.signal_set:
             signal.signal(signal.SIGWINCH, signal.SIG_DFL)
+            
         self.display()
         
     def addItem(self, maxValue):
@@ -106,6 +113,7 @@ class ProgressBar(object):
         return ("[" + "#"*widthFilled + " "*(self.width - widthFilled) + "]" + " %5.1f%% of %d KB" % (percentFilled * 100.0, self.max/1024))
     
 class Log:
+    
     '''A OOP implementation for logging.
     warnings is to tackle the warning option
     verbose is to tackle the verbose option
@@ -138,39 +146,49 @@ class Log:
         
     def msg(self, msg):
         'Print general messages'
+        
         if self.color:
             WConio.textcolor(15)
+            
         sys.stdout.write(msg)
         sys.stdout.flush()
         
     def err(self, msg):
         'Print messages with an error'
+        
         if self.color:
             WConio.textcolor(4)
+            
         sys.stderr.write(msg)
         sys.stderr.flush()
         
     def success(self, msg):
         'Print messages with a success'
+        
         if self.color:
             WConio.textcolor(2)
+            
         sys.stdout.write(msg)
         sys.stdout.flush()
     
     # For the rest, we need to check the options also
     def warn(self, msg):
         'Print warnings'
+        
         if self.WARN is True:
             if self.color:
                 WConio.textcolor(12)
+                
             sys.stderr.write(msg)
             sys.stderr.flush()
 
     def verbose(self, msg):
         'Print verbose messages'
+        
         if self.VERBOSE is True:
             if self.color:
                 WConio.textcolor(11)
+                
             sys.stdout.write(msg)
             sys.stdout.flush()
             
@@ -200,7 +218,6 @@ class Archiver:
         try:
             if self.lock:
                 self.ZipLock.acquire(True)
-            
             filename = zipfile.ZipFile(zip_file_name, "a")
         except IOError:
             #INFO: By design zipfile throws an IOError exception when you open
@@ -209,11 +226,12 @@ class Archiver:
         #except:
             #TODO Handle the exception
             #return False
-                    
         filename.write(files_to_compress, files_to_compress, zipfile.ZIP_DEFLATED)                        
         filename.close()
+        
         if self.lock:
             self.ZipLock.release()
+            
         return True
         
     def decompress_the_file(self, archive_file, path, target_file, archive_type):
@@ -238,7 +256,6 @@ class Archiver:
                             
             if TarGzipBZ2_Uncomprerssed(read_from, write_to) != True:
                 raise ArchiveError
-            
             write_to.close()
             read_from.close()
             return True
@@ -261,7 +278,6 @@ class Archiver:
             
             if TarGzipBZ2_Uncomprerssed(read_from, write_to) != True:
                 raise ArchiveError
-            
             write_to.close()
             read_from.close()
             return True
@@ -275,38 +291,53 @@ class Archiver:
                 
             for filename in zip_file.namelist():
                 data = zip_file.read()
-                
             zip_file.close()
             return True
+        
         else:
             return False
 
 
-def FetchBugReportsDebian(PackageName, FileHandle):
+def FetchBugReportsDebian(PackageName, ZipFileName=None, lock=False):
     try:
         import debianbts
     except ImportError:
         return False
     
     bug_list = []
-    file_handle = open(FileHandle, 'w')
+    if ZipFileName is not None:
+        AddToArchive = Archiver(lock)
     
     (num_of_bugs, header, bugs_list) = debianbts.get_reports(PackageName)
 
     if num_of_bugs:
         for x in bugs_list:
             (sub_bugs_header, sub_bugs_list) = x
+            
             if not "Resolved bugs" in sub_bugs_header:
+                
                 for x in sub_bugs_list:
                     break_bugs = x.split(':')
                     bug_num = string.lstrip(break_bugs[0], '#')
                     data = debianbts.get_report(bug_num, followups=True)
+                    FileName = PackageName + "." + bug_num
+                    file_handle = open(FileName, 'w')
                     file_handle.write(data[0] + "\n\n")
+                    
                     for x in data[1]:
                         file_handle.write(x)
                         file_handle.write("\n")
+                        
                     file_handle.write("\n" * 3)
                     file_handle.flush()
+                    file_handle.close()
+                    
+                    if ZipFileName is not None:
+                        AddToArchive.compress_the_file(ZipFileName, FileName)
+                        os.unlink(FileName)
+                        
+        return True
+    return False
     
     
 def files(root): 
@@ -359,6 +390,7 @@ class DownloadFromWeb(ProgressBar):
                 i += block_size
                 counter += 1
                 self.updateValue(increment)
+                
             self.completed()
             data.close()
             temp.close()
@@ -467,15 +499,18 @@ def errfunc(errno, errormsg, filename):
         log.err("%s - %s - %s\n" % (filename, errno, errormsg))
         log.verbose(" Will still try with other package uris\n\n")
         pass
+    
     elif errno == 407 or errno == 2:
         # These, I believe are from OSError/IOError exception.
         # I'll document it as soon as I confirm it.
         log.err("%s\n" % (errormsg))
         sys.exit(errno)
+        
     elif errno == 1:
         log.err(errormsg)
         log.err("Explicit program termination %s\n" % (errno))
         sys.exit(errno)
+        
     else:
         log.err("Aieee! I don't understand this errorcode\n" % (errno))
         sys.exit(errno)
@@ -585,15 +620,27 @@ def fetcher(ArgumentOptions, arg_type = None):
                     PackageName = file.split("_")[0]
                     if cache_dir is None:
                         log.msg("Downloading %s - %d KB\n" % (file, size/1024))
+                        
                         if FetcherInstance.download_from_web(url, file, download_path) != True:
                             errlist.append(PackageName)
+                            
+                            bug_report_fetch_flag = 0
                             if ArgumentOptions.zip_it:
                                 log.success("\n%s done.\n" % (PackageName) )
                                 FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
                                 os.unlink(os.path.join(download_path, file))
+                                if ArgumentOptions.deb_bugs:
+                                    if FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file) is True:
+                                        log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
+                                        bug_report_fetch_flag = 1
+                                    
+                            if ArgumentOptions.deb_bugs and bug_report_fetch_flag != 1:
+                                if FetchBugReportsDebian(PackageName) is True:
+                                    log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                     else:
                         if find_first_match(cache_dir, file, download_path, checksum) == False:
                             log.msg("Downloading %s - %d KB\n" % (PackageName, size/1024))
+                            
                             if FetcherInstance.download_from_web(url, file, download_path) != True:
                                  errlist.append(PackageName)
                             else:
@@ -607,14 +654,31 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     else:
                                         log.verbose("Cannot copy %s to %s. Is %s writeable??\n" % (file, cache_dir))
                                         
+                                bug_report_fetch_flag = 0
                                 if ArgumentOptions.zip_it:
                                     FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
                                     os.unlink(os.path.join(download_path, file))
+                                    if ArgumentOptions.deb_bugs:
+                                        FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file)
+                                        log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
+                                        bug_report_fetch_flag = 1
+                                        
+                                if ArgumentOptions.deb_bugs and bug_report_fetch_flag != 1:
+                                    if FetchBugReportsDebian(PackageName) is True:
+                                        log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                         elif True:
+                            bug_report_fetch_flag = 0
                             if ArgumentOptions.zip_it:
                                 FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
                                 os.unlink(os.path.join(download_path, file))
-                                
+                                if ArgumentOptions.deb_bugs:
+                                    if FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file) is True:
+                                        log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
+                                        bug_report_fetch_flag = 1
+                                    
+                            if ArgumentOptions.deb_bugs and bug_report_fetch_flag != 1:
+                                if FetchBugReportsDebian(PackageName) is True:
+                                    log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                 else:
                     raise FetchDataKeyError
                     
@@ -658,7 +722,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                         log.msg("Downloading %s\n" % (PackageName) ) 
                         
                         if FetcherInstance.download_from_web(url, file, download_path) == True:
-                            log.success("\r%s done.%s\n" % (PackageName, " "* 40) )
+                            log.success("\r%s done.%s\n" % (PackageName, " "* 60) )
                             if ArgumentOptions.zip_it:
                                 if FetcherInstance.compress_the_file(ArgumentOptions.zip_update_file, file) != True:
                                     log.err("Couldn't archive %s to file %s.\n" % (file, ArgumentOptions.zip_update_file) )
@@ -679,18 +743,25 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 if ArgumentOptions.zip_it:
                                     if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, full_file_path) is True:
                                         log.success("%s copied from local cache directory %s\n" % (PackageName, cache_dir) )
+                                        if ArgumentOptions.deb_bugs:
+                                            if FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file, lock=True) is True:
+                                                log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
                                 else:
                                     try:
                                         shutil.copy(full_file_path, download_path)
                                         log.success("%s copied from local cache directory %s\n" % (PackageName, cache_dir) )
                                     except shutil.Error:
                                         log.verbose("%s already available in %s. Skipping copy!!!\n\n" % (file, download_path) )
+                                                
+                                    if ArgumentOptions.deb_bugs:
+                                        if FetchBugReportsDebian(PackageName, lock=True) is True:
+                                            log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                                         
                             else:
                                 log.verbose("%s MD5 checksum mismatch. Skipping file.\n" % (file) )
                                 log.msg("Downloading %s - %d KB\n" % (PackageName, download_size/1024) )
                                 if FetcherInstance.download_from_web(url, file, download_path) == True:
-                                    log.success("\r%s done.%s\n" % (PackageName, " "* 40) )
+                                    log.success("\r%s done.%s\n" % (PackageName, " "* 60) )
                                     if ArgumentOptions.cache_dir:
                                         try:
                                             shutil.copy(file, cache_dir)
@@ -702,9 +773,18 @@ def fetcher(ArgumentOptions, arg_type = None):
                                             log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                             sys.exit(1)
                                         os.unlink(os.path.join(download_path, file) )
+                                        bug_report_fetch_flag = 0
+                                        if ArgumentOptions.deb_bugs:
+                                            if FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file, lock=True) is True:
+                                                log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
+                                                bug_report_fetch_flag = 1
+                                                
+                                    if ArgumentOptions.deb_bugs and bug_report_fetch_flag != 1:
+                                        if FetchBugReportsDebian(PackageName, lock=True) is True:
+                                            log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                                         
                         else:
-                            #INFO: If md5check is disabled, just copy it.
+                            #INFO: If md5check is disabled, just copy it to the cache_dir
                             try:
                                 shutil.copy(full_file_path, download_path)
                                 log.success("%s copied from local cache directory %s\n" % (file, cache_dir) )
@@ -730,13 +810,32 @@ def fetcher(ArgumentOptions, arg_type = None):
                                             sys.exit(1)
                                         log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                         os.unlink(os.path.join(download_path, file) )
+                                        bug_report_fetch_flag = 0
+                                        if ArgumentOptions.deb_bugs:
+                                            if FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file, lock=True) is True:
+                                                log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
+                                                bug_report_fetch_flag = 1
+                                    if ArgumentOptions.deb_bugs:
+                                        if FetchBugReportsDebian(PackageName, lock=True) is True:
+                                            log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                            
                             if ArgumentOptions.zip_it:
                                 if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
                                     log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                     sys.exit(1)
                                 log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                 os.unlink(os.path.join(download_path, file) )
-                            log.success("\r%s done.%s\n" % (PackageName, " "* 40) )
+                                bug_report_fetch_flag = 0
+                                if ArgumentOptions.deb_bugs:
+                                    if FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file, lock=True) is True:
+                                        log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
+                                        bug_report_fetch_flag = 1
+                                        
+                            if ArgumentOptions.deb_bugs and bug_report_fetch_flag != 1:
+                                if FetchBugReportsDebian(PackageName, lock=True) is True:
+                                    log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                    
+                            log.success("\r%s done.%s\n" % (PackageName, " "* 60) )
                         else:
                             #log.err("Couldn't find %s\n" % (PackageName) )
                             errlist.append(PackageName)
@@ -916,7 +1015,7 @@ def main():
                       help="Install the fetched packages to the  NONET machine and _upgrade_ the packages on the NONET machine. This command must be executed on the NONET machine",
                       action="store", type="string", metavar="pypt-offline-upgrade.zip")
     parser.add_option("", "--fetch-bug-reports", dest="deb_bugs",
-                      help="Fetch bug reports from the BTS", action="store_false")
+                      help="Fetch bug reports from the BTS", action="store_true")
     #global options, args
     (options, args) = parser.parse_args()
     
