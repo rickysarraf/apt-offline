@@ -305,6 +305,10 @@ def FetchBugReportsDebian(PackageName, ZipFileName=None, lock=False):
         return False
     
     bug_list = []
+    bug_types = ["Resolved bugs", "Minor bugs", "Wishlist items"]
+    #INFO: These are the ignore bug types. No one should really be caring about these
+    
+    
     if ZipFileName is not None:
         AddToArchive = Archiver(lock)
     
@@ -314,8 +318,13 @@ def FetchBugReportsDebian(PackageName, ZipFileName=None, lock=False):
         for x in bugs_list:
             (sub_bugs_header, sub_bugs_list) = x
             
-            if not "Resolved bugs" in sub_bugs_header:
-                
+            for BugType in bug_types:
+                if BugType in sub_bugs_header:
+                    bug_flag = 0
+                    break
+                bug_flag = 1
+                    
+            if bug_flag:
                 for x in sub_bugs_list:
                     break_bugs = x.split(':')
                     bug_num = string.lstrip(break_bugs[0], '#')
@@ -920,6 +929,8 @@ def syncer(install_file_path, target_path, arg_type=None):
             #data = tempfile.NamedTemporaryFile('wb', -1, '', '', os.curdir)
             #data.write(file.read(filename))
             #data = file.read(filename)
+            
+            # retval = subprocess.call(['less', filename])
             
             if pypt_magic.file(os.path.abspath(filename)) == "application/x-bzip2":
                 archive.decompress_the_file(os.path.abspath(filename), target_path, filename, 1)
