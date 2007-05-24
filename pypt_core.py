@@ -132,11 +132,7 @@ class Log:
     Light Cyan = 11
     '''
     
-    def __init__(self, warnings, verbose, color = None):
-        
-        if warnings is True:
-            self.WARN = True
-        else: self.WARN = False
+    def __init__(self, verbose, color = None):
         
         if verbose is True:
             self.VERBOSE = True
@@ -172,15 +168,6 @@ class Log:
         sys.stdout.flush()
     
     # For the rest, we need to check the options also
-    def warn(self, msg):
-        'Print warnings'
-        
-        if self.WARN is True:
-            if self.color:
-                WConio.textcolor(12)
-                
-            sys.stderr.write(msg)
-            sys.stderr.flush()
 
     def verbose(self, msg):
         'Print verbose messages'
@@ -298,56 +285,77 @@ class Archiver:
             return False
 
 
-def FetchBugReportsDebian(PackageName, ZipFileName=None, lock=False):
-    try:
-        import debianbts
-    except ImportError:
-        return False
-    
-    bug_list = []
-    bug_types = ["Resolved bugs", "Minor bugs", "Wishlist items"]
-    #INFO: These are the ignore bug types. No one should really be caring about these
-    
-    
-    if ZipFileName is not None:
-        AddToArchive = Archiver(lock)
-    
-    (num_of_bugs, header, bugs_list) = debianbts.get_reports(PackageName)
-
-    if num_of_bugs:
-        for x in bugs_list:
-            (sub_bugs_header, sub_bugs_list) = x
-            
-            for BugType in bug_types:
-                if BugType in sub_bugs_header:
-                    bug_flag = 0
-                    break
-                bug_flag = 1
-                    
-            if bug_flag:
-                for x in sub_bugs_list:
-                    break_bugs = x.split(':')
-                    bug_num = string.lstrip(break_bugs[0], '#')
-                    data = debianbts.get_report(bug_num, followups=True)
-                    FileName = PackageName + "." + bug_num
-                    file_handle = open(FileName, 'w')
-                    file_handle.write(data[0] + "\n\n")
-                    
-                    for x in data[1]:
-                        file_handle.write(x)
-                        file_handle.write("\n")
+class FetchBugReports(Archiver):
+    def __init__(self, bugTypes=["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items"], lock=False, ArchiveFile=None):
+        
+        self.bugsList = []
+        self.bugTypes = bugTypes
+        self.lock = lock
+        
+        if self.lock:
+            Archiver.__init__(self, lock)
+            self.ArchiveFile = ArchiveFile
+            #ArchiveFiles = Archiver(True)
+        #import debianbts
+        
+    def FetchBugsDebian(self, PackageName, Filename=None):
+        
+        try:
+            import debianbts
+        except ImportError:
+            return False
+        
+        if Filename != None:
+            try:
+                file_handle = open(Filename, 'a')
+            except IOError:
+                sys.exit(1)
+        
+        (num_of_bugs, header, self.bugs_list) = debianbts.get_reports(PackageName)
+        
+        if num_of_bugs:
+            for x in self.bugs_list:
+                (sub_bugs_header, sub_bugs_list) = x
+                
+                for BugType in self.bugTypes:
+                    if BugType in sub_bugs_header:
+                        bug_flag = 0
+                        break
+                    bug_flag = 1
                         
-                    file_handle.write("\n" * 3)
-                    file_handle.flush()
-                    file_handle.close()
+                if bug_flag:
+                    bug_downloaded = True
                     
-                    if ZipFileName is not None:
-                        AddToArchive.compress_the_file(ZipFileName, FileName)
-                        os.unlink(FileName)
+                    for x in sub_bugs_list:
+                        break_bugs = x.split(':')
+                        bug_num = string.lstrip(break_bugs[0], '#')
+                        data = debianbts.get_report(bug_num, followups=True)
+                        if Filename == None:
+                            self.fileName = PackageName + "." + bug_num
+                            file_handle = open(self.fileName, 'w')
+                        else:
+                            file_handle = open(Filename, 'a')
+                            
+                        file_handle.write(data[0] + "\n\n")
+                        for x in data[1]:
+                            file_handle.write(x)
+                            file_handle.write("\n")
                         
-        return True
-    return False
+                        file_handle.write("\n" * 3)
+                        file_handle.flush()
+                        file_handle.close()
+                        
+                        if self.lock:
+                            self.AddToArchive(self.ArchiveFile)
+            return True
     
+    def AddToArchive(self, ArchiveFile):
+        if self.compress_the_file(self.ArchiveFile, self.fileName):
+            os.unlink(self.fileName)
+            return True
+        
+        
+        
     
 def files(root): 
     for path, folders, files in os.walk(root): 
@@ -366,17 +374,29 @@ def find_first_match(cache_dir=None, filename=None):
             if file == filename:
                 return os.path.join(path, file)
             return False
+        
+        
+        
             
 class DownloadFromWeb(ProgressBar):
+    '''
+    Class for DownloadFromWeb
+    
+    This class also inherits progressbar functionalities from
+    parent class, ProgressBar
+    '''
     
     def __init__(self, width):
+        '''
+        width = Progress Bar width
+        '''
         ProgressBar.__init__(self, width=width)
     
     def download_from_web(self, url, file, download_dir):
         '''
-        Download the required file from the web
-        The arguments are passed everytime to the function so that,
-        may be in future, we could reuse this function
+        url = url to fetch
+        file = file to save to
+        donwload_dir = download path
         '''
            
         try:
@@ -547,6 +567,12 @@ def fetcher(ArgumentOptions, arg_type = None):
     #INFO: For the Progress Bar
     #progbar = ProgressBar(width = 30)
     
+    if ArgumentOptions.deb_bugs:
+        if ArgumentOptions.zip_it:
+            FetchBugReportsDebian = FetchBugReports(lock=True, ArchiveFile=ArgumentOptions.zip_upgrade_file)
+        else:
+            FetchBugReportsDebian = FetchBugReports()
+    
     if ArgumentOptions.download_dir is None:
         if os.access("pypt-downloads", os.W_OK) is True:
             download_path = os.path.abspath("pypt-downloads")
@@ -632,20 +658,22 @@ def fetcher(ArgumentOptions, arg_type = None):
                         
                         if FetcherInstance.download_from_web(url, file, download_path) != True:
                             errlist.append(PackageName)
+                        else:
+                            if ArgumentOptions.deb_bugs:
+                                bug_fetched = 0
+                                if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                    log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                    bug_fetched = 1
                             
-                            bug_report_fetch_flag = 0
                             if ArgumentOptions.zip_it:
                                 log.success("\n%s done.\n" % (PackageName) )
                                 FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
                                 os.unlink(os.path.join(download_path, file))
-                                if ArgumentOptions.deb_bugs:
-                                    if FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file) is True:
-                                        log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
-                                        bug_report_fetch_flag = 1
-                                    
-                            if ArgumentOptions.deb_bugs and bug_report_fetch_flag != 1:
-                                if FetchBugReportsDebian(PackageName) is True:
-                                    log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                
+                                if bug_fetched:
+                                        if FetchBugReportsDebian.AddToArchive(ArgumentOptions.zip_upgrade_file):
+                                            log.verbose("Archived bug reports for package %s to archive %s\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
+                                            
                     else:
                         if find_first_match(cache_dir, file, download_path, checksum) == False:
                             log.msg("Downloading %s - %d KB\n" % (PackageName, size/1024))
@@ -663,31 +691,34 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     else:
                                         log.verbose("Cannot copy %s to %s. Is %s writeable??\n" % (file, cache_dir))
                                         
-                                bug_report_fetch_flag = 0
+                                if ArgumentOptions.deb_bugs:
+                                    bug_fetched = 0
+                                    if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                        log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                        bug_fetched = 1
+                                        
                                 if ArgumentOptions.zip_it:
                                     FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
                                     os.unlink(os.path.join(download_path, file))
-                                    if ArgumentOptions.deb_bugs:
-                                        FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file)
-                                        log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
-                                        bug_report_fetch_flag = 1
+                                    
+                                    if bug_fetched:
+                                            if FetchBugReportsDebian.AddToArchive(ArgumentOptions.zip_upgrade_file):
+                                                log.verbose("Archived bug reports for package %s to archive %s\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
                                         
-                                if ArgumentOptions.deb_bugs and bug_report_fetch_flag != 1:
-                                    if FetchBugReportsDebian(PackageName) is True:
-                                        log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                         elif True:
-                            bug_report_fetch_flag = 0
+                            if ArgumentOptions.deb_bugs:
+                                bug_fetched = 0
+                                if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                    log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                    bug_fetched = 1
+                                    
                             if ArgumentOptions.zip_it:
                                 FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
                                 os.unlink(os.path.join(download_path, file))
-                                if ArgumentOptions.deb_bugs:
-                                    if FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file) is True:
-                                        log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
-                                        bug_report_fetch_flag = 1
-                                    
-                            if ArgumentOptions.deb_bugs and bug_report_fetch_flag != 1:
-                                if FetchBugReportsDebian(PackageName) is True:
-                                    log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                
+                                if bug_fetched:
+                                    if FetchBugReportsDebian.AddToArchive(ArgumentOptions.zip_upgrade_file):
+                                        log.verbose("Archived bug reports for package %s to archive %s\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
                 else:
                     raise FetchDataKeyError
                     
@@ -749,9 +780,16 @@ def fetcher(ArgumentOptions, arg_type = None):
                     if full_file_path != False:
                         if ArgumentOptions.disable_md5check is False:
                             if FetcherInstance.md5_check(full_file_path, checksum) is True:
+                                if ArgumentOptions.deb_bugs:
+                                    bug_fetched = 0
+                                    if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                        log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                        bug_fetched = 1
+                                
                                 if ArgumentOptions.zip_it:
                                     if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, full_file_path) is True:
                                         log.success("%s copied from local cache directory %s\n" % (PackageName, cache_dir) )
+                                        
                                         if ArgumentOptions.deb_bugs:
                                             if FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file, lock=True) is True:
                                                 log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
@@ -763,7 +801,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                         log.verbose("%s already available in %s. Skipping copy!!!\n\n" % (file, download_path) )
                                                 
                                     if ArgumentOptions.deb_bugs:
-                                        if FetchBugReportsDebian(PackageName, lock=True) is True:
+                                        if FetchBugReportsDebian.FetchBugsDebian(PackageName):
                                             log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                                         
                             else:
@@ -777,20 +815,22 @@ def fetcher(ArgumentOptions, arg_type = None):
                                             log.verbose("%s copied to local cache directory %s\n" % (file, ArgumentOptions.cache_dir) )
                                         except shutil.Error:
                                             log.verbose("Couldn't copy %s  to %s\n\n" % (file, ArgumentOptions.cache_dir) )
+                                            
+                                    if ArgumentOptions.deb_bugs:
+                                        bug_fetched = 0
+                                        if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                            log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                            bug_fetched = 1
+                                            
                                     if ArgumentOptions.zip_it:
                                         if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
                                             log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                             sys.exit(1)
                                         os.unlink(os.path.join(download_path, file) )
-                                        bug_report_fetch_flag = 0
-                                        if ArgumentOptions.deb_bugs:
-                                            if FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file, lock=True) is True:
-                                                log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
-                                                bug_report_fetch_flag = 1
-                                                
-                                    if ArgumentOptions.deb_bugs and bug_report_fetch_flag != 1:
-                                        if FetchBugReportsDebian(PackageName, lock=True) is True:
-                                            log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                        
+                                        if bug_fetched:
+                                            if FetchBugReportsDebian.AddToArchive(ArgumentOptions.zip_upgrade_file):
+                                                log.verbose("Archived bug reports for package %s to archive %s\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
                                         
                         else:
                             #INFO: If md5check is disabled, just copy it to the cache_dir
@@ -813,37 +853,36 @@ def fetcher(ArgumentOptions, arg_type = None):
                                         except shutil.Error:
                                             log.verbose("%s already available in %s. Skipping copy!!!\n\n" % (file, ArgumentOptions.cache_dir) )
                                             
+                                    if ArgumentOptions.deb_bugs:
+                                        bug_fetched = 0
+                                        if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                            log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                            bug_fetched = 1
+                                            
                                     if ArgumentOptions.zip_it:
                                         if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
                                             log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                             sys.exit(1)
                                         log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                         os.unlink(os.path.join(download_path, file) )
-                                        bug_report_fetch_flag = 0
-                                        if ArgumentOptions.deb_bugs:
-                                            if FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file, lock=True) is True:
-                                                log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
-                                                bug_report_fetch_flag = 1
-                                    if ArgumentOptions.deb_bugs:
-                                        if FetchBugReportsDebian(PackageName, lock=True) is True:
-                                            log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                        
+                                        if bug_fetched:
+                                            if FetchBugReportsDebian.AddToArchive(ArgumentOptions.zip_upgrade_file):
+                                                log.verbose("Archived bug reports for package %s to archive %s\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
                                             
+                            if ArgumentOptions.deb_bugs:
+                                bug_fetched = 0
+                                if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                    log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                    bug_fetched = 1
+                                    
                             if ArgumentOptions.zip_it:
                                 if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
                                     log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                     sys.exit(1)
                                 log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                 os.unlink(os.path.join(download_path, file) )
-                                bug_report_fetch_flag = 0
-                                if ArgumentOptions.deb_bugs:
-                                    if FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file, lock=True) is True:
-                                        log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
-                                        bug_report_fetch_flag = 1
-                                        
-                            if ArgumentOptions.deb_bugs and bug_report_fetch_flag != 1:
-                                if FetchBugReportsDebian(PackageName, lock=True) is True:
-                                    log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
-                                    
+                                                
                             log.success("\r%s done.%s\n" % (PackageName, " "* 60) )
                         else:
                             #log.err("Couldn't find %s\n" % (PackageName) )
@@ -981,7 +1020,6 @@ def main():
                       help="Root directory path where the pre-downloaded files will be searched. If not, give a period '.'",
                       action="store", type="string", metavar=".")
     parser.add_option("--verbose", dest="verbose", help="Enable verbose messages", action="store_true")
-    parser.add_option("--warnings", dest="warnings", help="Enable warnings", action="store_true")
     parser.add_option("-u","--uris", dest="uris_file",
                       help="Full path of the uris file which contains the main database of files to be downloaded",action="store", type="string")
     parser.add_option("","--disable-md5check", dest="disable_md5check",
@@ -1034,7 +1072,7 @@ def main():
         # The log implementation
         # Instantiate the class
         global log
-        log = Log(options.warnings, options.verbose, WindowColor)
+        log = Log(options.verbose, WindowColor)
         
         log.msg("pypt-offline %s\n" % (version))
         log.msg("Copyright %s\n" % (copyright))
