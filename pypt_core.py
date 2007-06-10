@@ -934,7 +934,12 @@ def fetcher(ArgumentOptions, arg_type = None):
 def syncer(install_file_path, target_path, arg_type=None):
     '''Syncer does the work of syncing the downloaded files.
     It syncs "install_file_path" which could be a valid file path
-    or a zip archive to "target_path'''
+    or a zip archive to "target_path"
+    arg_type defines whether install_file_path is a zip file
+    or a folder path
+    
+    1 => install_file_path is a File
+    2 => install_file_path is a Folder'''
     
     archive = Archiver()
     if arg_type == 1:
@@ -982,9 +987,9 @@ def syncer(install_file_path, target_path, arg_type=None):
             os.unlink(filename)
                 
     elif arg_type == 2:
+        archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
         for eachfile in os.listdir(install_file_path):
             
-            archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
             archive_type = None
             try:
                 import pypt_magic
