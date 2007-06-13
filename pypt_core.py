@@ -11,6 +11,11 @@ import optparse
 import array
 
 from array import array
+from socket import setdefaulttimeout
+
+#INFO: Set the default timeout to 15 seconds for the packages that are being downloaded.
+setdefaulttimeout(15)
+
 
 #INFO: They aren't on Windows
 try:
@@ -286,7 +291,7 @@ class Archiver:
 
 
 class FetchBugReports(Archiver):
-    def __init__(self, bugTypes=["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items"], lock=False, ArchiveFile=None):
+    def __init__(self, bugTypes=["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"], lock=False, ArchiveFile=None):
         
         self.bugsList = []
         self.bugTypes = bugTypes
@@ -367,13 +372,18 @@ def find_first_match(cache_dir=None, filename=None):
     Else Return False'''
 
     # Do the sanity check first
-    if cache_dir is None or filename is None or os.path.isdir(cache_dir) is False:
+    #if cache_dir is None or filename is None or os.path.isdir(cache_dir) is False:
+    if cache_dir is None:
+        return False
+    elif filename is None:
+        return False
+    elif os.path.isdir(cache_dir) is False:
         return False
     else:
         for path, file in files(cache_dir): 
             if file == filename:
                 return os.path.join(path, file)
-            return False
+        return False
         
         
         
@@ -553,6 +563,8 @@ def fetcher(ArgumentOptions, arg_type = None):
     '''
     
     cache_dir = ArgumentOptions.cache_dir
+    if os.path.isdir(cache_dir) is False:
+        log.verbose("WARNING: cache dir is incorrect. Did you give the full path ?\n")
     
     class FetcherClass(DownloadFromWeb, Archiver, MD5Check):
         def __init__(self, width, lock):
@@ -839,6 +851,24 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 log.success("%s copied from local cache directory %s\n" % (file, cache_dir) )
                             except shutil.Error:
                                 log.verbose("%s already available in dest_dir. Skipping copy!!!\n\n" % (file) )
+                                
+                            if ArgumentOptions.deb_bugs:
+                                bug_fetched = 0
+                                if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                    log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                    bug_fetched = 1
+                            
+                            file = full_file_path.split("/")
+                            file = file[len(file) - 1]
+                            if ArgumentOptions.zip_it:
+                                if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
+                                    log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                    sys.exit(1)
+                                os.unlink(os.path.join(download_path, file) )
+                                
+                                if bug_fetched:
+                                    if FetchBugReportsDebian.AddToArchive(ArgumentOptions.zip_upgrade_file):
+                                        log.verbose("Archived bug reports for package %s to archive %s\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
                     else:
                         log.verbose("%s not available in local cache %s.\n" % (file, ArgumentOptions.cache_dir) )
                         log.msg("Downloading %s - %d KB\n" % (PackageName, download_size/1024) )
@@ -1022,7 +1052,7 @@ def main():
     parser.add_option("-d","--download-dir", dest="download_dir",
                       help="Root directory path to save the downloaded files", action="store", type="string", metavar="pypt-downloads")
     parser.add_option("-s","--cache-dir", dest="cache_dir",
-                      help="Root directory path where the pre-downloaded files will be searched. If not, give a period '.'",
+                      help="Root directory path where the pre-downloaded files will be searched.Make sure you give the full path of the cache directory. If not, give a period '.'",
                       action="store", type="string", metavar=".")
     parser.add_option("--verbose", dest="verbose", help="Enable verbose messages", action="store_true")
     parser.add_option("-u","--uris", dest="uris_file",
