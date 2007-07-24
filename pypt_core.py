@@ -1,4 +1,5 @@
 import os
+import md5
 import sys
 import shutil
 import platform
@@ -47,15 +48,15 @@ apt_package_target_path = '/var/cache/apt/archives/'
        
 class MD5Check:
     
-    def md5_string(data):
+    def md5_string(self, data):
         hash = md5.new()
         hash.update(data.read())
         return hash.hexdigest() 
     
-    def md5_check(file, checksum):
+    def md5_check(self, file, checksum):
         data = open(file, 'rb')
         #local = md5_string(data)
-        if checksum == md5_string(data):
+        if checksum == self.md5_string(data):
             return True
         return False
         
@@ -350,9 +351,15 @@ class FetchBugReports(Archiver):
                         file_handle.flush()
                         file_handle.close()
                         
+                        #We're adding to an archive file here.
                         if self.lock:
                             self.AddToArchive(self.ArchiveFile)
-            return True
+            if bug_downloaded:
+                return True
+            else:
+                return False
+        return False
+    #return False
     
     def AddToArchive(self, ArchiveFile):
         if self.compress_the_file(self.ArchiveFile, self.fileName):
@@ -563,8 +570,9 @@ def fetcher(ArgumentOptions, arg_type = None):
     '''
     
     cache_dir = ArgumentOptions.cache_dir
-    if os.path.isdir(cache_dir) is False:
-        log.verbose("WARNING: cache dir is incorrect. Did you give the full path ?\n")
+    if cache_dir is not None:
+        if os.path.isdir(cache_dir) is False:
+            log.verbose("WARNING: cache dir is incorrect. Did you give the full path ?\n")
     
     class FetcherClass(DownloadFromWeb, Archiver, MD5Check):
         def __init__(self, width, lock):
@@ -786,41 +794,54 @@ def fetcher(ArgumentOptions, arg_type = None):
                 elif key == 'Upgrade':
                     PackageName = file.split("_")[0]
                     response.put(func(cache_dir, file) ) 
-                    #INFO: find_first_match() returns False of a file name with absolute path
+                    #INFO: find_first_match() returns False or a file name with absolute path
                     full_file_path = response.get()
                     
+                    #INFO: If we find the file in the local cache_dir, we'll execute this block.
                     if full_file_path != False:
+                        
+                        # We'll first check for its md5 checksum
                         if ArgumentOptions.disable_md5check is False:
+                            
                             if FetcherInstance.md5_check(full_file_path, checksum) is True:
+                                log.verbose("md5checksum correct for package %s.\n" % (PackageName) )
+                                
                                 if ArgumentOptions.deb_bugs:
                                     bug_fetched = 0
+                                    log.verbose("Fetching bug reports for package %s.\n" (PackageName) )
                                     if FetchBugReportsDebian.FetchBugsDebian(PackageName):
                                         log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                                         bug_fetched = 1
                                 
                                 if ArgumentOptions.zip_it:
+                                    
                                     if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, full_file_path) is True:
                                         log.success("%s copied from local cache directory %s\n" % (PackageName, cache_dir) )
-                                        
-                                        if ArgumentOptions.deb_bugs:
-                                            if FetchBugReportsDebian(PackageName, ArgumentOptions.zip_upgrade_file, lock=True) is True:
-                                                log.verbose("Fetched bug reports for package %s and archived to file %s.\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
+                                            
+                                #INFO: If no zip option enabled, simply copy the downloaded package file
+                                # along with the downloaded bug reports.
                                 else:
                                     try:
                                         shutil.copy(full_file_path, download_path)
                                         log.success("%s copied from local cache directory %s\n" % (PackageName, cache_dir) )
                                     except shutil.Error:
                                         log.verbose("%s already available in %s. Skipping copy!!!\n\n" % (file, download_path) )
-                                                
-                                    if ArgumentOptions.deb_bugs:
-                                        if FetchBugReportsDebian.FetchBugsDebian(PackageName):
-                                            log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                    
+                                    if bug_fetched == 1:
+                                        for x in os.listdir(os.curdir()):
+                                            if x.startswith(PackageName):
+                                                shutil.move(x, download_path)
+                                                log.verbose("Moved %s file to %s folder.\n" % (x, download_path) )
                                         
+                            #INFO: Damn!! The md5chesum didn't match :-(
+                            # The file is corrupted and we need to download a new copy from the internet
                             else:
                                 log.verbose("%s MD5 checksum mismatch. Skipping file.\n" % (file) )
                                 log.msg("Downloading %s - %d KB\n" % (PackageName, download_size/1024) )
                                 if FetcherInstance.download_from_web(url, file, download_path) == True:
                                     log.success("\r%s done.%s\n" % (PackageName, " "* 60) )
+                                    
+                                    #Add to cache_dir if possible
                                     if ArgumentOptions.cache_dir:
                                         try:
                                             shutil.copy(file, cache_dir)
@@ -828,11 +849,10 @@ def fetcher(ArgumentOptions, arg_type = None):
                                         except shutil.Error:
                                             log.verbose("Couldn't copy %s  to %s\n\n" % (file, ArgumentOptions.cache_dir) )
                                             
+                                    #Fetch bug reports
                                     if ArgumentOptions.deb_bugs:
-                                        bug_fetched = 0
                                         if FetchBugReportsDebian.FetchBugsDebian(PackageName):
                                             log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
-                                            bug_fetched = 1
                                             
                                     if ArgumentOptions.zip_it:
                                         if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
@@ -840,10 +860,8 @@ def fetcher(ArgumentOptions, arg_type = None):
                                             sys.exit(1)
                                         os.unlink(os.path.join(download_path, file) )
                                         
-                                        if bug_fetched:
-                                            if FetchBugReportsDebian.AddToArchive(ArgumentOptions.zip_upgrade_file):
-                                                log.verbose("Archived bug reports for package %s to archive %s\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
-                                        
+                        #INFO: You're and idiot.
+                        # You should NOT disable md5checksum for any files
                         else:
                             #INFO: If md5check is disabled, just copy it to the cache_dir
                             try:
@@ -853,28 +871,28 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 log.verbose("%s already available in dest_dir. Skipping copy!!!\n\n" % (file) )
                                 
                             if ArgumentOptions.deb_bugs:
-                                bug_fetched = 0
                                 if FetchBugReportsDebian.FetchBugsDebian(PackageName):
                                     log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
-                                    bug_fetched = 1
                             
                             file = full_file_path.split("/")
                             file = file[len(file) - 1]
+                            file = download_path + "/" + file
                             if ArgumentOptions.zip_it:
                                 if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
                                     log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                     sys.exit(1)
                                 os.unlink(os.path.join(download_path, file) )
-                                
-                                if bug_fetched:
-                                    if FetchBugReportsDebian.AddToArchive(ArgumentOptions.zip_upgrade_file):
-                                        log.verbose("Archived bug reports for package %s to archive %s\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
+                                        
                     else:
+                        #INFO: This block gets executed if the file is not found in local cache_dir or cache_dir is None
+                        # We go ahead and try to download it from the internet
                         log.verbose("%s not available in local cache %s.\n" % (file, ArgumentOptions.cache_dir) )
                         log.msg("Downloading %s - %d KB\n" % (PackageName, download_size/1024) )
                         if FetcherInstance.download_from_web(url, file, download_path) == True:
+                            
+                            #INFO: This block gets executed if md5checksum is allowed
                             if ArgumentOptions.disable_md5check is False:
-                                if FetcherInstance.md5_check(full_file_path, checksum) is True:
+                                if FetcherInstance.md5_check(file, checksum) is True:
                                             
                                     if ArgumentOptions.cache_dir:
                                         try:
@@ -884,10 +902,8 @@ def fetcher(ArgumentOptions, arg_type = None):
                                             log.verbose("%s already available in %s. Skipping copy!!!\n\n" % (file, ArgumentOptions.cache_dir) )
                                             
                                     if ArgumentOptions.deb_bugs:
-                                        bug_fetched = 0
                                         if FetchBugReportsDebian.FetchBugsDebian(PackageName):
                                             log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
-                                            bug_fetched = 1
                                             
                                     if ArgumentOptions.zip_it:
                                         if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
@@ -895,24 +911,19 @@ def fetcher(ArgumentOptions, arg_type = None):
                                             sys.exit(1)
                                         log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                         os.unlink(os.path.join(download_path, file) )
-                                        
-                                        if bug_fetched:
-                                            if FetchBugReportsDebian.AddToArchive(ArgumentOptions.zip_upgrade_file):
-                                                log.verbose("Archived bug reports for package %s to archive %s\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
                                             
-                            if ArgumentOptions.deb_bugs:
-                                bug_fetched = 0
-                                if FetchBugReportsDebian.FetchBugsDebian(PackageName):
-                                    log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
-                                    bug_fetched = 1
-                                    
-                            if ArgumentOptions.zip_it:
-                                if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
-                                    log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
-                                    sys.exit(1)
-                                log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
-                                os.unlink(os.path.join(download_path, file) )
-                                                
+                            else:
+                                if ArgumentOptions.deb_bugs:
+                                    if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                        log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                        
+                                if ArgumentOptions.zip_it:
+                                    if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
+                                        log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                        sys.exit(1)
+                                    log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                    os.unlink(os.path.join(download_path, file) )
+                                            
                             log.success("\r%s done.%s\n" % (PackageName, " "* 60) )
                         else:
                             #log.err("Couldn't find %s\n" % (PackageName) )
@@ -1058,7 +1069,7 @@ def main():
     parser.add_option("-u","--uris", dest="uris_file",
                       help="Full path of the uris file which contains the main database of files to be downloaded",action="store", type="string")
     parser.add_option("","--disable-md5check", dest="disable_md5check",
-                      help="Disable md5checksum validation on downloaded files",action="store_true")
+                      help="Disable md5checksum validation on downloaded files",action="store_false", default=False)
     parser.add_option("", "--threads", dest="num_of_threads", help="Number of threads to spawn",
                       action="store", type="int", metavar="1", default=1)
        
