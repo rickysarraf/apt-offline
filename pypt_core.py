@@ -330,7 +330,6 @@ class FetchBugReports(Archiver):
                     bug_flag = 1
                         
                 if bug_flag:
-                    bug_downloaded = True
                     
                     for x in sub_bugs_list:
                         break_bugs = x.split(':')
@@ -354,7 +353,7 @@ class FetchBugReports(Archiver):
                         #We're adding to an archive file here.
                         if self.lock:
                             self.AddToArchive(self.ArchiveFile)
-            if bug_downloaded:
+            if bug_flag:
                 return True
             else:
                 return False
