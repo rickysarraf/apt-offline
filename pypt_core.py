@@ -219,7 +219,7 @@ class Archiver:
         #except:
             #TODO Handle the exception
             #return False
-        filename.write(files_to_compress, files_to_compress, zipfile.ZIP_DEFLATED)                        
+        filename.write(files_to_compress, os.path.basename(files_to_compress), zipfile.ZIP_DEFLATED)                        
         filename.close()
         
         if self.lock:
@@ -807,7 +807,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 
                                 if ArgumentOptions.deb_bugs:
                                     bug_fetched = 0
-                                    log.verbose("Fetching bug reports for package %s.\n" (PackageName) )
+                                    log.verbose("Fetching bug reports for package %s.\n" % (PackageName) )
                                     if FetchBugReportsDebian.FetchBugsDebian(PackageName):
                                         log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                                         bug_fetched = 1
