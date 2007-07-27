@@ -375,10 +375,10 @@ class FetchBugReports(Archiver):
                     for x in sub_bugs_list:
                         break_bugs = x.split(':')
                         bug_num = string.lstrip(break_bugs[0], '#')
-			try:
-			    data = debianbts.get_report(bug_num, followups=True)
-			except socket.timeout:
-			    return False
+                        try:
+                            data = debianbts.get_report(bug_num, followups=True)
+                        except socket.timeout:
+                            return False
                         if Filename == None:
                             self.fileName = PackageName + "." + bug_num
                             file_handle = open(self.fileName, 'w')
