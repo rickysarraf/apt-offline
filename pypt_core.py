@@ -178,7 +178,9 @@ class Log:
             
         sys.stderr.write(msg)
         sys.stderr.flush()
-        WConio.textcolor(15) #Once the error is displayed, change back to the normal color
+
+	if self.color:
+	    WConio.textcolor(15) #Once the error is displayed, change back to the normal color
         
         if self.lock:
             self.DispLock.release()
@@ -194,7 +196,9 @@ class Log:
             
         sys.stdout.write(msg)
         sys.stdout.flush()
-        WConio.textcolor(15) #Once the error is displayed, change back to the normal color
+
+	if self.color:
+	    WConio.textcolor(15) #Once the error is displayed, change back to the normal color
         
         if self.lock:
             self.DispLock.release()
@@ -213,7 +217,8 @@ class Log:
                 
             sys.stdout.write(msg)
             sys.stdout.flush()
-            WConio.textcolor(15) #Once the error is displayed, change back to the normal color
+	    if self.color:
+		WConio.textcolor(15) #Once the error is displayed, change back to the normal color
         
         if self.lock:
             self.DispLock.release()
