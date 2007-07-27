@@ -41,6 +41,7 @@ errlist = []
 supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
 apt_update_target_path = '/var/lib/apt/lists/'
 apt_package_target_path = '/var/cache/apt/archives/'
+pypt_bug_file_format = "__pypt__bug__report"
 # Dummy paths while testing on Windows
 #apt_update_target_path = 'C:\\temp'
 #apt_package_target_path = 'C:\\temp'
@@ -330,11 +331,12 @@ class Archiver:
 
 
 class FetchBugReports(Archiver):
-    def __init__(self, bugTypes=["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"], lock=False, ArchiveFile=None):
+    def __init__(self, pypt_bug_file_format, bugTypes=["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"], lock=False, ArchiveFile=None):
         
         self.bugsList = []
         self.bugTypes = bugTypes
         self.lock = lock
+        self.pypt_bug = pypt_bug_file_format
         
         if self.lock:
             Archiver.__init__(self, lock)
@@ -361,9 +363,12 @@ class FetchBugReports(Archiver):
 	    return False
         
         if num_of_bugs:
+            atleast_one_bug_report_downloaded = False
             for x in self.bugs_list:
                 (sub_bugs_header, sub_bugs_list) = x
                 
+                #INFO: We filter all the bugTypes that we think aren't necessary.
+                # We don't download those low priority bug reports
                 for BugType in self.bugTypes:
                     if BugType in sub_bugs_header:
                         bug_flag = 0
@@ -380,7 +385,7 @@ class FetchBugReports(Archiver):
                         except socket.timeout:
                             return False
                         if Filename == None:
-                            self.fileName = PackageName + "." + bug_num
+                            self.fileName = PackageName + "." + bug_num + "." + self.pypt_bug
                             file_handle = open(self.fileName, 'w')
                         else:
                             file_handle = open(Filename, 'a')
@@ -397,7 +402,9 @@ class FetchBugReports(Archiver):
                         #We're adding to an archive file here.
                         if self.lock:
                             self.AddToArchive(self.ArchiveFile)
-            if bug_flag:
+                        
+                        atleast_one_bug_report_downloaded = True
+            if atleast_one_bug_report_downloaded:
                 return True
             else:
                 return False
@@ -637,9 +644,9 @@ def fetcher(ArgumentOptions, arg_type = None):
     
     if ArgumentOptions.deb_bugs:
         if ArgumentOptions.zip_it:
-            FetchBugReportsDebian = FetchBugReports(lock=True, ArchiveFile=ArgumentOptions.zip_upgrade_file)
+            FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, ArgumentOptions.zip_upgrade_file, lock=True)
         else:
-            FetchBugReportsDebian = FetchBugReports()
+            FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format)
     
     if ArgumentOptions.download_dir is None:
         if os.access("pypt-downloads", os.W_OK) is True:
@@ -794,8 +801,8 @@ def fetcher(ArgumentOptions, arg_type = None):
                             else:
                                 #Copy the bug report to the target download_path folder
                                 if bug_fetched == 1:
-                                    for x in os.listdir(os.curdir()):
-                                        if x.startswith(PackageName):
+                                    for x in os.listdir(os.curdir):
+                                        if (x.startswith(PackageName) and x.endswith(pypt_bug_file_format) ):
                                             shutil.move(x, download_path)
                                             log.verbose("Moved %s file to %s folder.\n" % (x, download_path) )
                                 
@@ -805,7 +812,8 @@ def fetcher(ArgumentOptions, arg_type = None):
     else:
         #INFO: Thread Support
         if ArgumentOptions.num_of_threads > 1:
-            log.msg("WARNING: Threads is still in beta stage. It's better to use just a single thread at the moment.\n\n")
+            log.msg("WARNING: If you are on a slow connection, it is good to limit the number of threads to a low number like 2.\n")
+            log.msg("WARNING: Else higher number of threads executed could cause network congestion and timeouts.\n\n")
             
         def run(request, response, func=find_first_match):
             '''Get items from the request Queue, process them
@@ -895,8 +903,8 @@ def fetcher(ArgumentOptions, arg_type = None):
                                         log.verbose("%s already available in %s. Skipping copy!!!\n\n" % (file, download_path) )
                                     
                                     if bug_fetched == 1:
-                                        for x in os.listdir(os.curdir()):
-                                            if x.startswith(PackageName):
+                                        for x in os.listdir(os.curdir):
+                                            if (x.startswith(PackageName) and x.endswith(pypt_bug_file_format) ):
                                                 shutil.move(x, download_path)
                                                 log.verbose("Moved %s file to %s folder.\n" % (x, download_path) )
                                         
@@ -963,8 +971,8 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     
                                 # And also the bug reports
                                 if bug_fetched == 1:
-                                    for x in os.listdir(os.curdir()):
-                                        if x.startswith(PackageName):
+                                    for x in os.listdir(os.curdir):
+                                        if (x.startswith(PackageName) and x.endswith(pypt_bug_file_format) ):
                                             shutil.move(x, download_path)
                                             log.verbose("Moved %s file to %s folder.\n" % (x, download_path) )
                                         
