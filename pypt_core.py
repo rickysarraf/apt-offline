@@ -10,12 +10,12 @@ import threading
 import signal
 import optparse
 import array
+import socket
 
 from array import array
-from socket import setdefaulttimeout
 
 #INFO: Set the default timeout to 15 seconds for the packages that are being downloaded.
-setdefaulttimeout(30)
+socket.setdefaulttimeout(30)
 
 
 #INFO: They aren't on Windows
@@ -355,7 +355,10 @@ class FetchBugReports(Archiver):
             except IOError:
                 sys.exit(1)
         
-        (num_of_bugs, header, self.bugs_list) = debianbts.get_reports(PackageName)
+	try:
+	    (num_of_bugs, header, self.bugs_list) = debianbts.get_reports(PackageName)
+	except socket.timeout:
+	    return False
         
         if num_of_bugs:
             for x in self.bugs_list:
@@ -372,7 +375,10 @@ class FetchBugReports(Archiver):
                     for x in sub_bugs_list:
                         break_bugs = x.split(':')
                         bug_num = string.lstrip(break_bugs[0], '#')
-                        data = debianbts.get_report(bug_num, followups=True)
+			try:
+			    data = debianbts.get_report(bug_num, followups=True)
+			except socket.timeout:
+			    return False
                         if Filename == None:
                             self.fileName = PackageName + "." + bug_num
                             file_handle = open(self.fileName, 'w')
@@ -504,6 +510,9 @@ class DownloadFromWeb(ProgressBar):
             if hasattr(e, 'code') and hasattr(e, 'reason'):
                 errfunc(e.code, e.reason, file)
 
+	except socket.timeout:
+	    errfunc(101010, "Socket timeout.", file)
+
 def copy_first_match(cache_dir, filename, dest_dir, checksum): # aka new_walk_tree_copy() 
     '''Walks into "reposiotry" looking for "filename".
     If found, copies it to "dest_dir" but first verifies their md5 "checksum".'''
@@ -569,11 +578,13 @@ def errfunc(errno, errormsg, filename):
     This function does the job of behaving accordingly
     as per the error codes.
     '''
-    error_codes = [-3, 13, 504, 404, 10060, 104]
+    error_codes = [-3, 13, 504, 404, 10060, 104, 101010]
     # 104, 'Connection reset by peer'
     # 504 is for gateway timeout
     # 404 is for URL error. Page not found.
     # 10060 is for Operation Time out. There can be multiple reasons for this timeout
+    # 101010 - Dummy error code for socket timeouts. FIXME: Find the
+    # 		correct socket timeout error code
     
     #TODO: Find out what these error codes are for
     # and better document them the next time you find it out.
