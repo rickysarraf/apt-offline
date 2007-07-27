@@ -15,7 +15,7 @@ from array import array
 from socket import setdefaulttimeout
 
 #INFO: Set the default timeout to 15 seconds for the packages that are being downloaded.
-setdefaulttimeout(15)
+setdefaulttimeout(30)
 
 
 #INFO: They aren't on Windows
