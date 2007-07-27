@@ -138,7 +138,7 @@ class Log:
     Light Cyan = 11
     '''
     
-    def __init__(self, verbose, color = None):
+    def __init__(self, verbose, color = None, lock = None):
         
         if verbose is True:
             self.VERBOSE = True
@@ -146,44 +146,77 @@ class Log:
         
         self.color = color
         
+        if lock is None or lock != 1:
+            self.DispLock = False
+        else:
+            self.DispLock = threading.Lock()
+            self.lock = True
+        
     def msg(self, msg):
         'Print general messages'
         
+        if self.lock:
+            self.DispLock.acquire(True)
+            
         if self.color:
             WConio.textcolor(15)
             
         sys.stdout.write(msg)
         sys.stdout.flush()
         
+        if self.lock:
+            self.DispLock.release()
+        
     def err(self, msg):
         'Print messages with an error'
         
+        if self.lock:
+            self.DispLock.acquire(True)
+            
         if self.color:
             WConio.textcolor(4)
             
         sys.stderr.write(msg)
         sys.stderr.flush()
+        WConio.textcolor(15) #Once the error is displayed, change back to the normal color
+        
+        if self.lock:
+            self.DispLock.release()
         
     def success(self, msg):
         'Print messages with a success'
         
+        if self.lock:
+            self.DispLock.acquire(True)
+            
         if self.color:
             WConio.textcolor(2)
             
         sys.stdout.write(msg)
         sys.stdout.flush()
+        WConio.textcolor(15) #Once the error is displayed, change back to the normal color
+        
+        if self.lock:
+            self.DispLock.release()
     
     # For the rest, we need to check the options also
 
     def verbose(self, msg):
         'Print verbose messages'
         
+        if self.lock:
+            self.DispLock.acquire(True)
+            
         if self.VERBOSE is True:
             if self.color:
                 WConio.textcolor(11)
                 
             sys.stdout.write(msg)
             sys.stdout.flush()
+            WConio.textcolor(15) #Once the error is displayed, change back to the normal color
+        
+        if self.lock:
+            self.DispLock.release()
             
 class Archiver:
     def __init__(self, lock=None):
@@ -1117,7 +1150,7 @@ def main():
         # The log implementation
         # Instantiate the class
         global log
-        log = Log(options.verbose, WindowColor)
+        log = Log(options.verbose, WindowColor, lock = True)
         
         log.msg("pypt-offline %s\n" % (version))
         log.msg("Copyright %s\n" % (copyright))
