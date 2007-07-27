@@ -811,7 +811,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                     
     else:
         #INFO: Thread Support
-        if ArgumentOptions.num_of_threads > 1:
+        if ArgumentOptions.num_of_threads > 2:
             log.msg("WARNING: If you are on a slow connection, it is good to limit the number of threads to a low number like 2.\n")
             log.msg("WARNING: Else higher number of threads executed could cause network congestion and timeouts.\n\n")
             
