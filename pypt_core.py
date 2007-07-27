@@ -221,7 +221,7 @@ class Log:
 class Archiver:
     def __init__(self, lock=None):
         if lock is None or lock != 1:
-            self.ziplock = False
+            self.ZipLock = False
         else:
             self.ZipLock = threading.Lock()
             self.lock = True
