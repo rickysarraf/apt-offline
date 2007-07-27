@@ -732,6 +732,8 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 if FetchBugReportsDebian.FetchBugsDebian(PackageName):
                                     log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                                     bug_fetched = 1
+                                else:
+                                    log.verbose("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
                             
                             if ArgumentOptions.zip_it:
                                 log.success("\n%s done.\n" % (PackageName) )
@@ -760,18 +762,18 @@ def fetcher(ArgumentOptions, arg_type = None):
                                         log.verbose("Cannot copy %s to %s. Is %s writeable??\n" % (file, cache_dir))
                                         
                                 if ArgumentOptions.deb_bugs:
-                                    bug_fetched = 0
                                     if FetchBugReportsDebian.FetchBugsDebian(PackageName):
                                         log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
-                                        bug_fetched = 1
+                                    else:
+                                        log.verbose("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
                                         
                                 if ArgumentOptions.zip_it:
-                                    FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
-                                    os.unlink(os.path.join(download_path, file))
-                                    
-                                    if bug_fetched:
-                                            if FetchBugReportsDebian.AddToArchive(ArgumentOptions.zip_upgrade_file):
-                                                log.verbose("Archived bug reports for package %s to archive %s\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
+                                    if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
+                                        log.err("Couldn't add %s to archive %s.\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                        sys.exit(1)
+                                    else:
+                                        log.verbose("%s added to archive %s.\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                        os.unlink(os.path.join(download_path, file))
                                         
                         elif True:
                             if ArgumentOptions.deb_bugs:
@@ -779,11 +781,16 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 if FetchBugReportsDebian.FetchBugsDebian(PackageName):
                                     log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                                     bug_fetched = 1
+                                else:
+                                    log.err("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
                                     
                             if ArgumentOptions.zip_it:
-                                FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
-                                log.verbose("%s added to archive %s.\n" % (file, ArgumentOptions.zip_upgrade_file) )
-                                os.unlink(os.path.join(download_path, file))
+                                if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
+                                    log.err("Couldn't add %s to archive %s.\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                    sys.exit(1)
+                                else:
+                                    log.verbose("%s added to archive %s.\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                    os.unlink(os.path.join(download_path, file))
                             else:
                                 #Copy the bug report to the target download_path folder
                                 if bug_fetched == 1:
@@ -840,7 +847,9 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 if FetcherInstance.compress_the_file(ArgumentOptions.zip_update_file, file) != True:
                                     log.err("Couldn't archive %s to file %s.\n" % (file, ArgumentOptions.zip_update_file) )
                                     sys.exit(1)
-                                os.unlink(os.path.join(download_path, file) )
+                                else:
+                                    log.verbose("%s added to archive %s.\n" % (file, ArgumentOptions.zip_update_file) )
+                                    os.unlink(os.path.join(download_path, file) )
                         else:
                             errlist.append(file)
                                 
@@ -865,11 +874,16 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     if FetchBugReportsDebian.FetchBugsDebian(PackageName):
                                         log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                                         bug_fetched = 1
+                                    else:
+                                        log.verbose("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
                                 
                                 if ArgumentOptions.zip_it:
                                     
                                     if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, full_file_path) is True:
                                         log.success("%s copied from local cache directory %s\n" % (PackageName, cache_dir) )
+                                    else:
+                                        log.err("Couldn't add %s to archive %s.\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                        sys.exit(1)
                                             
                                 #INFO: If no zip option enabled, simply copy the downloaded package file
                                 # along with the downloaded bug reports.
@@ -906,12 +920,16 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     if ArgumentOptions.deb_bugs:
                                         if FetchBugReportsDebian.FetchBugsDebian(PackageName):
                                             log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                        else:
+                                            log.err("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
                                             
                                     if ArgumentOptions.zip_it:
                                         if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
                                             log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                             sys.exit(1)
-                                        os.unlink(os.path.join(download_path, file) )
+                                        else:
+                                            log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                            os.unlink(os.path.join(download_path, file) )
                                         
                         #INFO: You're and idiot.
                         # You should NOT disable md5checksum for any files
@@ -921,6 +939,8 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 if FetchBugReportsDebian.FetchBugsDebian(PackageName):
                                     log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                                     bug_fetched = 1
+                                else:
+                                    log.verbose("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
                                     
                             #FIXME: Don't know why this was really required. If this has no changes, delete it.
                             #file = full_file_path.split("/")
@@ -930,7 +950,9 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
                                     log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                     sys.exit(1)
-                                os.unlink(os.path.join(download_path, file) )
+                                else:
+                                    log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                    os.unlink(os.path.join(download_path, file) )
                             else:
                                 # Since zip file option is not enabled let's copy the file to the target folder
                                 try:
@@ -967,25 +989,31 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     if ArgumentOptions.deb_bugs:
                                         if FetchBugReportsDebian.FetchBugsDebian(PackageName):
                                             log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                        else:
+                                            log.err("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
                                             
                                     if ArgumentOptions.zip_it:
                                         if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
                                             log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                             sys.exit(1)
-                                        log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
-                                        os.unlink(os.path.join(download_path, file) )
+                                        else:
+                                            log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                            os.unlink(os.path.join(download_path, file) )
                                             
                             else:
                                 if ArgumentOptions.deb_bugs:
                                     if FetchBugReportsDebian.FetchBugsDebian(PackageName):
                                         log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                    else:
+                                        log.err("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
                                         
                                 if ArgumentOptions.zip_it:
                                     if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
                                         log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                         sys.exit(1)
-                                    log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
-                                    os.unlink(os.path.join(download_path, file) )
+                                    else:
+                                        log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                        os.unlink(os.path.join(download_path, file) )
                                             
                             log.success("\r%s done.%s\n" % (PackageName, " "* 60) )
                         else:
