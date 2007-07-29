@@ -41,11 +41,16 @@ errlist = []
 supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
 apt_update_target_path = '/var/lib/apt/lists/'
 apt_package_target_path = '/var/cache/apt/archives/'
-pypt_bug_file_format = "__pypt__bug__report"
 # Dummy paths while testing on Windows
 #apt_update_target_path = 'C:\\temp'
 #apt_package_target_path = 'C:\\temp'
-       
+
+pypt_bug_file_format = "__pypt__bug__report"
+
+#These are spaces which will overwrite the progressbar left mess
+LINE_OVERWRITE_MID = " " * 30
+LINE_OVERWRITE_FULL = " " * 60
+LINE_OVERWRITE_SMALL = " " * 15
        
 class MD5Check:
     
@@ -597,7 +602,7 @@ def errfunc(errno, errormsg, filename):
     # and better document them the next time you find it out.
     # 13 is for "Permission Denied" when you don't have privileges to access the destination 
     if errno in error_codes:
-        log.err("%s - %s - %s\n" % (filename, errno, errormsg))
+        log.err("%s - %s - %s.%s\n" % (filename, errno, errormsg, LINE_OVERWRITE_MID))
         log.verbose(" Will still try with other package uris\n\n")
         pass
     
@@ -850,13 +855,13 @@ def fetcher(ArgumentOptions, arg_type = None):
                         log.msg("Downloading %s\n" % (PackageName) ) 
                         
                         if FetcherInstance.download_from_web(url, file, download_path) == True:
-                            log.success("\r%s done.%s\n" % (PackageName, " "* 60) )
+                            log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                             if ArgumentOptions.zip_it:
                                 if FetcherInstance.compress_the_file(ArgumentOptions.zip_update_file, file) != True:
-                                    log.err("Couldn't archive %s to file %s.\n" % (file, ArgumentOptions.zip_update_file) )
+                                    log.err("Couldn't archive %s to file %s.%s\n" % (file, ArgumentOptions.zip_update_file, LINE_OVERWRITE_MID) )
                                     sys.exit(1)
                                 else:
-                                    log.verbose("%s added to archive %s.\n" % (file, ArgumentOptions.zip_update_file) )
+                                    log.verbose("%s added to archive %s.%s\n" % (file, ArgumentOptions.zip_update_file, LINE_OVERWRITE_FULL) )
                                     os.unlink(os.path.join(download_path, file) )
                         else:
                             errlist.append(file)
@@ -874,23 +879,23 @@ def fetcher(ArgumentOptions, arg_type = None):
                         if ArgumentOptions.disable_md5check is False:
                             
                             if FetcherInstance.md5_check(full_file_path, checksum) is True:
-                                log.verbose("md5checksum correct for package %s.\n" % (PackageName) )
+                                log.verbose("md5checksum correct for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                 
                                 if ArgumentOptions.deb_bugs:
                                     bug_fetched = 0
-                                    log.verbose("Fetching bug reports for package %s.\n" % (PackageName) )
+                                    log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                     if FetchBugReportsDebian.FetchBugsDebian(PackageName):
-                                        log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                        log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                         bug_fetched = 1
                                     else:
-                                        log.verbose("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
+                                        log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                 
                                 if ArgumentOptions.zip_it:
                                     
                                     if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, full_file_path) is True:
-                                        log.success("%s copied from local cache directory %s\n" % (PackageName, cache_dir) )
+                                        log.success("%s copied from local cache directory %s.%s\n" % (PackageName, cache_dir, LINE_OVERWRITE_MID) )
                                     else:
-                                        log.err("Couldn't add %s to archive %s.\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                        log.err("Couldn't add %s to archive %s.%s\n" % (file, ArgumentOptions.zip_upgrade_file, LINE_OVERWRITE_MID) )
                                         sys.exit(1)
                                             
                                 #INFO: If no zip option enabled, simply copy the downloaded package file
@@ -898,45 +903,45 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 else:
                                     try:
                                         shutil.copy(full_file_path, download_path)
-                                        log.success("%s copied from local cache directory %s\n" % (PackageName, cache_dir) )
+                                        log.success("%s copied from local cache directory %s.%s\n" % (PackageName, cache_dir, LINE_OVERWRITE_MID) )
                                     except shutil.Error:
-                                        log.verbose("%s already available in %s. Skipping copy!!!\n\n" % (file, download_path) )
+                                        log.verbose("%s already available in %s. Skipping copy!!!%s\n\n" % (file, download_path, LINE_OVERWRITE_MID) )
                                     
                                     if bug_fetched == 1:
                                         for x in os.listdir(os.curdir):
                                             if (x.startswith(PackageName) and x.endswith(pypt_bug_file_format) ):
                                                 shutil.move(x, download_path)
-                                                log.verbose("Moved %s file to %s folder.\n" % (x, download_path) )
+                                                log.verbose("Moved %s file to %s folder.%s\n" % (x, download_path, LINE_OVERWRITE_FULL) )
                                         
                             #INFO: Damn!! The md5chesum didn't match :-(
                             # The file is corrupted and we need to download a new copy from the internet
                             else:
-                                log.verbose("%s MD5 checksum mismatch. Skipping file.\n" % (file) )
-                                log.msg("Downloading %s - %d KB\n" % (PackageName, download_size/1024) )
+                                log.verbose("%s MD5 checksum mismatch. Skipping file.%s\n" % (file, LINE_OVERWRITE_FULL) )
+                                log.msg("Downloading %s - %d KB%s\n" % (PackageName, download_size/1024, LINE_OVERWRITE_FULL) )
                                 if FetcherInstance.download_from_web(url, file, download_path) == True:
-                                    log.success("\r%s done.%s\n" % (PackageName, " "* 60) )
+                                    log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                     
                                     #Add to cache_dir if possible
                                     if ArgumentOptions.cache_dir:
                                         try:
                                             shutil.copy(file, cache_dir)
-                                            log.verbose("%s copied to local cache directory %s\n" % (file, ArgumentOptions.cache_dir) )
+                                            log.verbose("%s copied to local cache directory %s.%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
                                         except shutil.Error:
-                                            log.verbose("Couldn't copy %s  to %s\n\n" % (file, ArgumentOptions.cache_dir) )
+                                            log.verbose("Couldn't copy %s to %s.%s\n\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_FULL) )
                                             
                                     #Fetch bug reports
                                     if ArgumentOptions.deb_bugs:
                                         if FetchBugReportsDebian.FetchBugsDebian(PackageName):
-                                            log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                            log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                         else:
-                                            log.err("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
+                                            log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                             
                                     if ArgumentOptions.zip_it:
                                         if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
-                                            log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                            log.err("Couldn't archive %s to file %s.%s\n" % (file, ArgumentOptions.zip_upgrade_file, LINE_OVERWRITE_SMALL) )
                                             sys.exit(1)
                                         else:
-                                            log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                            log.verbose("%s added to archive %s.%s\n" % (file, ArgumentOptions.zip_upgrade_file, LINE_OVERWRITE_SMALL) )
                                             os.unlink(os.path.join(download_path, file) )
                                         
                         #INFO: You're and idiot.
@@ -945,10 +950,10 @@ def fetcher(ArgumentOptions, arg_type = None):
                             if ArgumentOptions.deb_bugs:
                                 bug_fetched = 0
                                 if FetchBugReportsDebian.FetchBugsDebian(PackageName):
-                                    log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                    log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                     bug_fetched = 1
                                 else:
-                                    log.verbose("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
+                                    log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                     
                             #FIXME: Don't know why this was really required. If this has no changes, delete it.
                             #file = full_file_path.split("/")
@@ -956,31 +961,31 @@ def fetcher(ArgumentOptions, arg_type = None):
                             #file = download_path + "/" + file
                             if ArgumentOptions.zip_it:
                                 if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
-                                    log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                    log.err("Couldn't archive %s to file %s.%s\n" % (file, ArgumentOptions.zip_upgrade_file, LINE_OVERWRITE_SMALL) )
                                     sys.exit(1)
                                 else:
-                                    log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                    log.verbose("%s added to archive %s.%s\n" % (file, ArgumentOptions.zip_upgrade_file, LINE_OVERWRITE_SMALL) )
                                     os.unlink(os.path.join(download_path, file) )
                             else:
                                 # Since zip file option is not enabled let's copy the file to the target folder
                                 try:
                                     shutil.copy(full_file_path, download_path)
-                                    log.success("%s copied from local cache directory %s\n" % (file, cache_dir) )
+                                    log.success("%s copied from local cache directory %s.%s\n" % (file, cache_dir, LINE_OVERWRITE_SMALL) )
                                 except shutil.Error:
-                                    log.verbose("%s already available in dest_dir. Skipping copy!!!\n\n" % (file) )
+                                    log.verbose("%s already available in dest_dir. Skipping copy!!!%s\n\n" % (file, LINE_OVERWRITE_SMALL) )
                                     
                                 # And also the bug reports
                                 if bug_fetched == 1:
                                     for x in os.listdir(os.curdir):
                                         if (x.startswith(PackageName) and x.endswith(pypt_bug_file_format) ):
                                             shutil.move(x, download_path)
-                                            log.verbose("Moved %s file to %s folder.\n" % (x, download_path) )
+                                            log.verbose("Moved %s file to %s folder.%s\n" % (x, download_path, LINE_OVERWRITE_MID) )
                                         
                     else:
                         #INFO: This block gets executed if the file is not found in local cache_dir or cache_dir is None
                         # We go ahead and try to download it from the internet
-                        log.verbose("%s not available in local cache %s.\n" % (file, ArgumentOptions.cache_dir) )
-                        log.msg("Downloading %s - %d KB\n" % (PackageName, download_size/1024) )
+                        log.verbose("%s not available in local cache %s.%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
+                        log.msg("Downloading %s - %d KB%s\n" % (PackageName, download_size/1024, LINE_OVERWRITE_FULL) )
                         if FetcherInstance.download_from_web(url, file, download_path) == True:
                             
                             #INFO: This block gets executed if md5checksum is allowed
@@ -990,40 +995,40 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     if ArgumentOptions.cache_dir:
                                         try:
                                             shutil.copy(file, ArgumentOptions.cache_dir)
-                                            log.verbose("%s copied to local cache directory %s\n" % (file, ArgumentOptions.cache_dir) )
+                                            log.verbose("%s copied to local cache directory %s.%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
                                         except shutil.Error:
-                                            log.verbose("%s already available in %s. Skipping copy!!!\n\n" % (file, ArgumentOptions.cache_dir) )
+                                            log.verbose("%s already available in %s. Skipping copy!!!%s\n\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
                                             
                                     if ArgumentOptions.deb_bugs:
                                         if FetchBugReportsDebian.FetchBugsDebian(PackageName):
-                                            log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                            log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                         else:
-                                            log.err("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
+                                            log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                             
                                     if ArgumentOptions.zip_it:
                                         if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
-                                            log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                            log.err("Couldn't archive %s to file %s.%s\n" % (file, ArgumentOptions.zip_upgrade_file, LINE_OVERWRITE_SMALL) )
                                             sys.exit(1)
                                         else:
-                                            log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                            log.verbose("%s added to archive %s.%s\n" % (file, ArgumentOptions.zip_upgrade_file, LINE_OVERWRITE_SMALL) )
                                             os.unlink(os.path.join(download_path, file) )
                                             
                             else:
                                 if ArgumentOptions.deb_bugs:
                                     if FetchBugReportsDebian.FetchBugsDebian(PackageName):
-                                        log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
+                                        log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                     else:
-                                        log.err("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
+                                        log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                         
                                 if ArgumentOptions.zip_it:
                                     if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
-                                        log.err("Couldn't archive %s to file %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                        log.err("Couldn't archive %s to file %s.%s\n" % (file, ArgumentOptions.zip_upgrade_file, LINE_OVERWRITE_SMALL) )
                                         sys.exit(1)
                                     else:
-                                        log.verbose("%s added to archive %s\n" % (file, ArgumentOptions.zip_upgrade_file) )
+                                        log.verbose("%s added to archive %s.%s\n" % (file, ArgumentOptions.zip_upgrade_file, LINE_OVERWRITE_SMALL) )
                                         os.unlink(os.path.join(download_path, file) )
                                             
-                            log.success("\r%s done.%s\n" % (PackageName, " "* 60) )
+                            log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                         else:
                             #log.err("Couldn't find %s\n" % (PackageName) )
                             errlist.append(PackageName)
