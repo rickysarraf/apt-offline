@@ -521,9 +521,9 @@ class DownloadFromWeb(ProgressBar):
                 log.err("%s\n" % (e.reason))
             if hasattr(e, 'code') and hasattr(e, 'reason'):
                 errfunc(e.code, e.reason, file)
-
-	except socket.timeout:
-	    errfunc(101010, "Socket timeout.", file)
+                
+        except socket.timeout:
+            errfunc(101010, "Socket timeout.", file)
 
 def copy_first_match(cache_dir, filename, dest_dir, checksum): # aka new_walk_tree_copy() 
     '''Walks into "reposiotry" looking for "filename".
@@ -734,7 +734,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                 elif key == 'Upgrade':
                     PackageName = file.split("_")[0]
                     if cache_dir is None:
-                        log.msg("Downloading %s - %d KB\n" % (file, size/1024))
+                        log.msg("Downloading %s - %d KB\n" % (file, size/1024 ) )
                         
                         if FetcherInstance.download_from_web(url, file, download_path) != True:
                             errlist.append(PackageName)
@@ -758,7 +758,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                             
                     else:
                         if find_first_match(cache_dir, file, download_path, checksum) == False:
-                            log.msg("Downloading %s - %d KB\n" % (PackageName, size/1024))
+                            log.msg("Downloading %s - %d KB\n" % (PackageName, size/1024 ) )
                             
                             if FetcherInstance.download_from_web(url, file, download_path) != True:
                                  errlist.append(PackageName)
@@ -852,7 +852,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                     exit_status = response.get()
                     
                     if exit_status == False:
-                        log.msg("Downloading %s\n" % (PackageName) ) 
+                        log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) ) 
                         
                         if FetcherInstance.download_from_web(url, file, download_path) == True:
                             log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
