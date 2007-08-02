@@ -1113,53 +1113,60 @@ def syncer(install_file_path, target_path, arg_type=None):
             for each_bug in bugs_number:
                 each_bug = each_bug.split('.')[1]
                 log.msg("%s\n" % (each_bug) )
-            response = raw_input("What would you like to do next:\t (y, N, Bug Number, ?)" )
-            response = response.rstrip("\r")
-            if response == "?":
-                log.msg("(yY) Yes. Proceed with installation\n")
-                log.msg("(nN) No, Abort.\n")
-                log.msg("(Bug Number) Display the bug report.\n")
-                log.msg("(?) Display this help message.\n")
-            elif respone == 'y' or response == 'Y':
-                pass
-            elif response == 'n' or response == 'N':
-                pass
-            elif response == 'Number':
-                pass
-            
-            printf("I found %d number of bugs.\n" % len(bugs_number) )
-            pass
+            response = '?'
+            while response == '?':
+                response = raw_input("What would you like to do next:\t (y, N, Bug Number, ?)" )
+                response = response.rstrip("\r")
                 
+                if response == "?":
+                    log.msg("(Y) Yes. Proceed with installation\n")
+                    log.msg("(N) No, Abort.\n")
+                    log.msg("(Bug Number) Display the bug report from the Offline Bug Reports.\n")
+                    log.msg("(?) Display this help message.\n")
+                    
+                elif response.startswith('y') or response.startswith('Y'):
+                    for filename in file.namelist():
+                        
+                        data = open(filename, "wb")
+                        data.write(file.read(filename))
+                        data.close()
+                        
+                        #FIXME: Fix this tempfile feature
+                        # Access to the temporary file is not being allowed
+                        # It's throwing a Permission denied exception
+                        #try:
+                        #    import tempfile
+                        #except ImportError:
+                        #    sys.stderr.write("Aieeee! Module pypt_magic not found.\n")
+                        #    sys.exit(1)
+                        #data = tempfile.NamedTemporaryFile('wb', -1, '', '', os.curdir)
+                        #data.write(file.read(filename))
+                        #data = file.read(filename)
+                        
+                        if pypt_magic.file(os.path.abspath(filename)) == "application/x-bzip2":
+                            archive.decompress_the_file(os.path.abspath(filename), target_path, filename, 1)
+                        elif pypt_magic.file(os.path.abspath(filename)) == "application/x-gzip":
+                            archive.decompress_the_file(os.path.abspath(filename), target_path, filename, 2)
+                        elif pypt_magic.file(filename) == "PGP armored data" or pypt_magic.file(filename) == "application/x-dpkg":
+                            if os.access(target_path, os.W_OK):
+                                shutil.copy(filename, target_path)
+                                log.msg("%s file synced.\n" % (filename))
+                        os.unlink(filename)
+                        
+                elif response.startswith('n') or response.startswith('N'):
+                    log.err("Exiting gracefully on user request.\n\n")
+                    sys.exit(1)
+                    
+                elif response.isdigit() is True:
+                    for full_bug_file_name in bugs_number:
+                        if response in full_bug_file_name:
+                            bug_file_to_display = full_bug_file_name
+                            break
+                    file.read(bug_file_to_display)
+                    # retval = subprocess.call(['less', filename])
+                    # Do an open in the zip file for the appropriate but report
+                    #for x in bugs_number:
             
-        for filename in file.namelist():
-            
-            data = open(filename, "wb")
-            data.write(file.read(filename))
-            data.close()
-            
-            #FIXME: Fix this tempfile feature
-            # Access to the temporary file is not being allowed
-            # It's throwing a Permission denied exception
-            #try:
-            #    import tempfile
-            #except ImportError:
-            #    sys.stderr.write("Aieeee! Module pypt_magic not found.\n")
-            #    sys.exit(1)
-            #data = tempfile.NamedTemporaryFile('wb', -1, '', '', os.curdir)
-            #data.write(file.read(filename))
-            #data = file.read(filename)
-            
-            # retval = subprocess.call(['less', filename])
-            
-            if pypt_magic.file(os.path.abspath(filename)) == "application/x-bzip2":
-                archive.decompress_the_file(os.path.abspath(filename), target_path, filename, 1)
-            elif pypt_magic.file(os.path.abspath(filename)) == "application/x-gzip":
-                archive.decompress_the_file(os.path.abspath(filename), target_path, filename, 2)
-            elif pypt_magic.file(filename) == "PGP armored data" or pypt_magic.file(filename) == "application/x-dpkg":
-                if os.access(target_path, os.W_OK):
-                    shutil.copy(filename, target_path)
-                    log.msg("%s file synced.\n" % (filename))
-            os.unlink(filename)
                 
     elif arg_type == 2:
         archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
@@ -1379,9 +1386,9 @@ def main():
             
         if options.install_upgrade:
             #INFO: Comment these lines to do testing on Windows machines too
-            if os.geteuid() != 0:
-                log.err("\nYou need superuser privileges to execute this option\n")
-                sys.exit(1)
+            #if os.geteuid() != 0:
+            #    log.err("\nYou need superuser privileges to execute this option\n")
+            #    sys.exit(1)
             if os.path.isfile(options.install_upgrade) is True:
                 syncer(options.install_upgrade, apt_package_target_path, 1)
             elif os.path.isdir(options.install_upgrade) is True:
