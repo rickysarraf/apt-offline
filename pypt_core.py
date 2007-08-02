@@ -1102,8 +1102,18 @@ def syncer(install_file_path, target_path, arg_type=None):
             sys.exit(1)
             
         file = zipfile.ZipFile(install_file_path, "r")
+        bugs_number = []
         for filename in file.namelist():
+            if filename.endswith(pypt_bug_file_format):
+                bugs_number += filename
                 
+        if bugs_number:
+            printf("I found %d number of bugs.\n" % len(bugs_number) )
+            pass
+                
+            
+        for filename in file.namelist():
+            
             data = open(filename, "wb")
             data.write(file.read(filename))
             data.close()
