@@ -637,7 +637,40 @@ def get_pager_cmd(pager_cmd = None):
     
     return pager_cmd
 
+class PagerCmd:
     
+    def __init__(self, pager_cmd = None):
+        if os.name == 'posix':
+            self.default_pager_cmd = 'less -r'
+        elif os.name in ['nt', 'dos']:
+            self.default_pager_cmd = 'type'
+            
+        if pager_cmd is None:
+            try:
+                self.pager_cmd = os.environ['PAGER']
+            except:
+                self.pager_cmd = self.default_pager_cmd
+                
+    def send_to_pager(self, String = None):
+        if String is None:
+            return False
+        else:
+            try:
+                retval = None # None is correct. On success, None is returned
+                pager = os.popen(self.pager_cmd, 'w')
+                pager.write(String.read() )
+                #pager.close()
+                retval = pager.close()
+            except IOError,msg:  # broken pipe when user quits
+                if msg.args == (32,'Broken pipe'):
+                    retval = None
+                else:
+                    retval = 1
+            except OSError:
+                retval = 1
+        return retval
+            
+
 def fetcher(ArgumentOptions, arg_type = None):
     '''
     uri - The uri data whill will contain the information
@@ -1178,10 +1211,15 @@ def syncer(install_file_path, target_path, arg_type=None):
                         if response in full_bug_file_name:
                             bug_file_to_display = full_bug_file_name
                             break
-                    file.read(bug_file_to_display)
+                    display_pager = PagerCmd()
+                    #file.read(bug_file_to_display)
+                    display_pager.send_to_pager(file.read(bug_file_to_display) )
                     # retval = subprocess.call(['less', filename])
                     # Do an open in the zip file for the appropriate but report
                     #for x in bugs_number:
+                else:
+                    log.err('Incorrect choice. Exiting\n')
+                    sys.exit(1)
             
                 
     elif arg_type == 2:
