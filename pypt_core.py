@@ -46,6 +46,7 @@ apt_package_target_path = '/var/cache/apt/archives/'
 #apt_package_target_path = 'C:\\temp'
 
 pypt_bug_file_format = "__pypt__bug__report"
+bugTypes = ["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"]
 
 #These are spaces which will overwrite the progressbar left mess
 LINE_OVERWRITE_MID = " " * 30
@@ -336,7 +337,7 @@ class Archiver:
 
 
 class FetchBugReports(Archiver):
-    def __init__(self, pypt_bug_file_format, bugTypes=["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"], lock=False, ArchiveFile=None):
+    def __init__(self, pypt_bug_file_format, bugTypes, ArchiveFile=None, lock=False):
         
         self.bugsList = []
         self.bugTypes = bugTypes
@@ -649,9 +650,9 @@ def fetcher(ArgumentOptions, arg_type = None):
     
     if ArgumentOptions.deb_bugs:
         if ArgumentOptions.zip_it:
-            FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, ArgumentOptions.zip_upgrade_file, lock=True)
+            FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, bugTypes, ArgumentOptions.zip_upgrade_file, lock=True)
         else:
-            FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format)
+            FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, bugTypes)
     
     if ArgumentOptions.download_dir is None:
         if os.access("pypt-downloads", os.W_OK) is True:
@@ -1105,9 +1106,27 @@ def syncer(install_file_path, target_path, arg_type=None):
         bugs_number = []
         for filename in file.namelist():
             if filename.endswith(pypt_bug_file_format):
-                bugs_number += filename
+                bugs_number.append(filename)
                 
         if bugs_number:
+            log.msg("\n\nFollowing are the list of bugs present.\n")
+            for each_bug in bugs_number:
+                each_bug = each_bug.split('.')[1]
+                log.msg("%s\n" % (each_bug) )
+            response = raw_input("What would you like to do next:\t (y, N, Bug Number, ?)" )
+            response = response.rstrip("\r")
+            if response == "?":
+                log.msg("(yY) Yes. Proceed with installation\n")
+                log.msg("(nN) No, Abort.\n")
+                log.msg("(Bug Number) Display the bug report.\n")
+                log.msg("(?) Display this help message.\n")
+            elif respone == 'y' or response == 'Y':
+                pass
+            elif response == 'n' or response == 'N':
+                pass
+            elif response == 'Number':
+                pass
+            
             printf("I found %d number of bugs.\n" % len(bugs_number) )
             pass
                 
@@ -1364,9 +1383,9 @@ def main():
                 log.err("\nYou need superuser privileges to execute this option\n")
                 sys.exit(1)
             if os.path.isfile(options.install_upgrade) is True:
-                syncer(options, 1)
+                syncer(options.install_upgrade, apt_package_target_path, 1)
             elif os.path.isdir(options.install_upgrade) is True:
-                syncer(options, 2)
+                syncer(options.install_upgrade, apt_package_target_path, 2)
             else:
                 log.err("Aieee! %s is unsupported format\n" % (options.install_upgrade))
             sys.exit(0)
