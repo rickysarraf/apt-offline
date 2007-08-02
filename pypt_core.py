@@ -621,6 +621,22 @@ def errfunc(errno, errormsg, filename):
     else:
         log.err("Aieee! I don't understand this errorcode\n" % (errno))
         sys.exit(errno)
+        
+def get_pager_cmd(pager_cmd = None):
+    
+    if os.name == 'posix':
+        default_pager_cmd = 'less -r'
+    elif os.name in ['nt', 'dos']:
+        default_pager_cmd = 'type'
+        
+    if pager_cmd is None:
+        try:
+            pager_cmd = os.environ['PAGER']
+        except:
+            pager_cmd = default_pager_cmd
+    
+    return pager_cmd
+
     
 def fetcher(ArgumentOptions, arg_type = None):
     '''
