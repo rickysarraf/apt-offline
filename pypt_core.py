@@ -699,7 +699,7 @@ def fetcher(ArgumentOptions, arg_type = None):
     
     if ArgumentOptions.deb_bugs:
         if ArgumentOptions.zip_it:
-            FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, bugTypes, ArgumentOptions.zip_upgrade_file, lock=True)
+            FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, bugTypes, ArgumentOptions.download_dir+"/"+ArgumentOptions.zip_upgrade_file, lock=True)
         else:
             FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, bugTypes)
     
@@ -799,11 +799,11 @@ def fetcher(ArgumentOptions, arg_type = None):
                             
                             if ArgumentOptions.zip_it:
                                 log.success("\n%s done.\n" % (PackageName) )
-                                FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file)
+                                FetcherInstance.compress_the_file(ArgumentOptions.download_dir+"/"+ArgumentOptions.zip_upgrade_file, file)
                                 os.unlink(os.path.join(download_path, file))
                                 
                                 if bug_fetched:
-                                        if FetchBugReportsDebian.AddToArchive(ArgumentOptions.zip_upgrade_file):
+                                        if FetchBugReportsDebian.AddToArchive(ArgumentOptions.download_dir+"/"+ArgumentOptions.zip_upgrade_file):
                                             log.verbose("Archived bug reports for package %s to archive %s\n" % (PackageName, ArgumentOptions.zip_upgrade_file) )
                                             
                     else:
@@ -830,7 +830,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                         log.verbose("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
                                         
                                 if ArgumentOptions.zip_it:
-                                    if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
+                                    if FetcherInstance.compress_the_file(ArgumentOptions.download_dir+"/"+ArgumentOptions.zip_upgrade_file, file) != True:
                                         log.err("Couldn't add %s to archive %s.\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                         sys.exit(1)
                                     else:
@@ -847,7 +847,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     log.err("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
                                     
                             if ArgumentOptions.zip_it:
-                                if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
+                                if FetcherInstance.compress_the_file(ArgumentOptions.download_dir+"/"+ArgumentOptions.zip_upgrade_file, file) != True:
                                     log.err("Couldn't add %s to archive %s.\n" % (file, ArgumentOptions.zip_upgrade_file) )
                                     sys.exit(1)
                                 else:
@@ -942,7 +942,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 
                                 if ArgumentOptions.zip_it:
                                     
-                                    if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, full_file_path) is True:
+                                    if FetcherInstance.compress_the_file(ArgumentOptions.download_dir+"/"+ArgumentOptions.zip_upgrade_file, full_file_path) is True:
                                         log.success("%s copied from local cache directory %s.%s\n" % (PackageName, cache_dir, LINE_OVERWRITE_MID) )
                                     else:
                                         log.err("Couldn't add %s to archive %s.%s\n" % (file, ArgumentOptions.zip_upgrade_file, LINE_OVERWRITE_MID) )
@@ -987,7 +987,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                             log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                             
                                     if ArgumentOptions.zip_it:
-                                        if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
+                                        if FetcherInstance.compress_the_file(ArgumentOptions.download_dir+"/"+ArgumentOptions.zip_upgrade_file, file) != True:
                                             log.err("Couldn't archive %s to file %s.%s\n" % (file, ArgumentOptions.zip_upgrade_file, LINE_OVERWRITE_SMALL) )
                                             sys.exit(1)
                                         else:
@@ -1010,7 +1010,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                             #file = file[len(file) - 1]
                             #file = download_path + "/" + file
                             if ArgumentOptions.zip_it:
-                                if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
+                                if FetcherInstance.compress_the_file(ArgumentOptions.download_dir+"/"+ArgumentOptions.zip_upgrade_file, file) != True:
                                     log.err("Couldn't archive %s to file %s.%s\n" % (file, ArgumentOptions.zip_upgrade_file, LINE_OVERWRITE_SMALL) )
                                     sys.exit(1)
                                 else:
@@ -1056,7 +1056,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                             log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                             
                                     if ArgumentOptions.zip_it:
-                                        if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
+                                        if FetcherInstance.compress_the_file(ArgumentOptions.download_dir+"/"+ArgumentOptions.zip_upgrade_file, file) != True:
                                             log.err("Couldn't archive %s to file %s.%s\n" % (file, ArgumentOptions.zip_upgrade_file, LINE_OVERWRITE_SMALL) )
                                             sys.exit(1)
                                         else:
@@ -1071,7 +1071,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                         log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                         
                                 if ArgumentOptions.zip_it:
-                                    if FetcherInstance.compress_the_file(ArgumentOptions.zip_upgrade_file, file) != True:
+                                    if FetcherInstance.compress_the_file(ArgumentOptions.download_dir+"/"+ArgumentOptions.zip_upgrade_file, file) != True:
                                         log.err("Couldn't archive %s to file %s.%s\n" % (file, ArgumentOptions.zip_upgrade_file, LINE_OVERWRITE_SMALL) )
                                         sys.exit(1)
                                     else:
