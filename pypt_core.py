@@ -1441,7 +1441,7 @@ def main():
                 syncer(options, 2)
             else:
                 log.err("Aieee! %s is unsupported format\n" % (options.install_update))
-            sys.exit(0)
+                sys.exit(0)
             
         if options.install_upgrade:
             #INFO: Comment these lines to do testing on Windows machines too
