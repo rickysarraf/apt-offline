@@ -1163,7 +1163,6 @@ def syncer(install_file_path, target_path, arg_type=None):
                 bugs_number.append(filename)
                 
         def display_options():
-            response = None
             
             log.msg("(Y) Yes. Proceed with installation\n")
             log.msg("(N) No, Abort.\n")
@@ -1186,10 +1185,10 @@ def syncer(install_file_path, target_path, arg_type=None):
             # Display the list of bugs
             list_bugs()
             
+            response = display_options()
             while True:
-                response = display_options()
                 if response == "?":
-                    display_options()
+                    response = display_options()
                     
                 elif response.startswith('y') or response.startswith('Y'):
                     for filename in file.namelist():
@@ -1225,22 +1224,25 @@ def syncer(install_file_path, target_path, arg_type=None):
                     sys.exit(1)
                     
                 elif response.isdigit() is True:
+                    found = False
                     for full_bug_file_name in bugs_number:
                         if response in full_bug_file_name:
                             bug_file_to_display = full_bug_file_name
+                            found = True
                             break
-                        #else:
-                        #    log.err("Incorrect bug number %s provided.\n" % (response) )
+                    if found == False:
+                        log.err("Incorrect bug number %s provided.\n" % (response) )
+                    
                     display_pager = PagerCmd()
-                    #file.read(bug_file_to_display)
                     retval = display_pager.send_to_pager(file.read(bug_file_to_display) )
                     if retval == 1:
                         log.err("Broken pager. Can't display the bug details.\n")
                     # Redisplay the menu
-                    display_options()
+                    response = display_options()
                     
                 elif response.startswith('r') or response.startswith('R'):
                     list_bugs()
+                    response = display_options()
                     
                 else:
                     log.err('Incorrect choice. Exiting\n')
