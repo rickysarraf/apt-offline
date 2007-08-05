@@ -1233,9 +1233,9 @@ def syncer(install_file_path, target_path, arg_type=None):
                         #    log.err("Incorrect bug number %s provided.\n" % (response) )
                     display_pager = PagerCmd()
                     #file.read(bug_file_to_display)
-                    display_pager.send_to_pager(file.read(bug_file_to_display) )
-                    # retval = subprocess.call(['less', filename])
-                    
+                    retval = display_pager.send_to_pager(file.read(bug_file_to_display) )
+                    if retval == 1:
+                        log.err("Broken pager. Can't display the bug details.\n")
                     # Redisplay the menu
                     display_options()
                     
