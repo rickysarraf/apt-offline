@@ -1160,23 +1160,32 @@ def syncer(install_file_path, target_path, arg_type=None):
             if filename.endswith(pypt_bug_file_format):
                 bugs_number.append(filename)
                 
+        def display_options():
+            response = None
+            
+            log.msg("(Y) Yes. Proceed with installation\n")
+            log.msg("(N) No, Abort.\n")
+            log.msg("(R) Redisplay the list of bugs.\n")
+            log.msg("(Bug Number) Display the bug report from the Offline Bug Reports.\n")
+            log.msg("(?) Display this help message.\n")
+            
+            response = raw_input("What would you like to do next:\t (y, N, Bug Number, R, ?)" )
+            response = response.rstrip("\r")
+            
+            return response
+                
         if bugs_number:
-            log.msg("\n\nFollowing are the list of bugs present.\n")
-            for each_bug in bugs_number:
-                each_bug = each_bug.split('.')[1]
-                log.msg("%s\n" % (each_bug) )
-                
-            def display_options():
-                response = None
-                response = raw_input("What would you like to do next:\t (y, N, Bug Number, ?)" )
-                response = response.rstrip("\r")
-                
-                log.msg("(Y) Yes. Proceed with installation\n")
-                log.msg("(N) No, Abort.\n")
-                log.msg("(Bug Number) Display the bug report from the Offline Bug Reports.\n")
-                log.msg("(?) Display this help message.\n")
-                
+            def list_bugs():
+                log.msg("\n\nFollowing are the list of bugs present.\n")
+                for each_bug in bugs_number:
+                    each_bug = each_bug.split('.')[1]
+                    log.msg("%s\n" % (each_bug) )
+                    
+            # Display the list of bugs
+            list_bugs()
+            
             while True:
+                response = display_options()
                 if response == "?":
                     display_options()
                     
@@ -1218,8 +1227,8 @@ def syncer(install_file_path, target_path, arg_type=None):
                         if response in full_bug_file_name:
                             bug_file_to_display = full_bug_file_name
                             break
-                        else:
-                            log.err("Incorrect bug number %d provided.\n" % (response) )
+                        #else:
+                        #    log.err("Incorrect bug number %s provided.\n" % (response) )
                     display_pager = PagerCmd()
                     #file.read(bug_file_to_display)
                     display_pager.send_to_pager(file.read(bug_file_to_display) )
@@ -1227,6 +1236,10 @@ def syncer(install_file_path, target_path, arg_type=None):
                     
                     # Redisplay the menu
                     display_options()
+                    
+                elif response.startswith('r') or response.startswith('R'):
+                    list_bugs()
+                    
                 else:
                     log.err('Incorrect choice. Exiting\n')
                     sys.exit(1)
@@ -1447,24 +1460,24 @@ def main():
                 # We're a directory
                 syncer(options, 2)
             else:
-                log.err("Aieee! %s is unsupported format\n" % (options.install_update))
+                log.err("%s file not found\n" % (options.install_update))
                 sys.exit(0)
             
         if options.install_upgrade:
             #INFO: Comment these lines to do testing on Windows machines too
-            try:
-                if os.geteuid() != 0:
-                    log.err("\nYou need superuser privileges to execute this option\n")
-                    sys.exit(1)
-            except AttributeError:
-                log.err("Are you really running the install command on a Debian box?\n")
-                sys.exit(1)
+            #try:
+            #    if os.geteuid() != 0:
+            #        log.err("\nYou need superuser privileges to execute this option\n")
+            #        sys.exit(1)
+            #except AttributeError:
+            #    log.err("Are you really running the install command on a Debian box?\n")
+            #    sys.exit(1)
             if os.path.isfile(options.install_upgrade) is True:
                 syncer(options.install_upgrade, apt_package_target_path, 1)
             elif os.path.isdir(options.install_upgrade) is True:
                 syncer(options.install_upgrade, apt_package_target_path, 2)
             else:
-                log.err("Aieee! %s is unsupported format\n" % (options.install_upgrade))
+                log.err("%s file not found\n" % (options.install_upgrade))
                 sys.exit(0)
             
     except KeyboardInterrupt:
