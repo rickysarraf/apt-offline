@@ -1165,16 +1165,20 @@ def syncer(install_file_path, target_path, arg_type=None):
             for each_bug in bugs_number:
                 each_bug = each_bug.split('.')[1]
                 log.msg("%s\n" % (each_bug) )
-            response = '?'
-            while response == '?':
+                
+            def display_options():
+                response = None
                 response = raw_input("What would you like to do next:\t (y, N, Bug Number, ?)" )
                 response = response.rstrip("\r")
                 
+                log.msg("(Y) Yes. Proceed with installation\n")
+                log.msg("(N) No, Abort.\n")
+                log.msg("(Bug Number) Display the bug report from the Offline Bug Reports.\n")
+                log.msg("(?) Display this help message.\n")
+                
+            while True:
                 if response == "?":
-                    log.msg("(Y) Yes. Proceed with installation\n")
-                    log.msg("(N) No, Abort.\n")
-                    log.msg("(Bug Number) Display the bug report from the Offline Bug Reports.\n")
-                    log.msg("(?) Display this help message.\n")
+                    display_options()
                     
                 elif response.startswith('y') or response.startswith('Y'):
                     for filename in file.namelist():
@@ -1214,12 +1218,15 @@ def syncer(install_file_path, target_path, arg_type=None):
                         if response in full_bug_file_name:
                             bug_file_to_display = full_bug_file_name
                             break
+                        else:
+                            log.err("Incorrect bug number %d provided.\n" % (response) )
                     display_pager = PagerCmd()
                     #file.read(bug_file_to_display)
                     display_pager.send_to_pager(file.read(bug_file_to_display) )
                     # retval = subprocess.call(['less', filename])
-                    # Do an open in the zip file for the appropriate but report
-                    #for x in bugs_number:
+                    
+                    # Redisplay the menu
+                    display_options()
                 else:
                     log.err('Incorrect choice. Exiting\n')
                     sys.exit(1)
