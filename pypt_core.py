@@ -638,6 +638,7 @@ def get_pager_cmd(pager_cmd = None):
     return pager_cmd
 
 class PagerCmd:
+    """ Tries to automatically detect and set the pager on the running OS"""
     
     def __init__(self, pager_cmd = None):
         if os.name == 'posix':
@@ -652,13 +653,14 @@ class PagerCmd:
                 self.pager_cmd = self.default_pager_cmd
                 
     def send_to_pager(self, String = None):
+        """Writes the String to the pager"""
         if String is None:
             return False
         else:
             try:
                 retval = None # None is correct. On success, None is returned
                 pager = os.popen(self.pager_cmd, 'w')
-                pager.write(String.read() )
+                pager.write(String)
                 #pager.close()
                 retval = pager.close()
             except IOError,msg:  # broken pipe when user quits
