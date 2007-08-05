@@ -1223,6 +1223,8 @@ def syncer(install_file_path, target_path, arg_type=None):
                 else:
                     log.err('Incorrect choice. Exiting\n')
                     sys.exit(1)
+        else:
+            log.verbose("Great!!! No bugs found for all the packages that were downloaded.\n")
             
                 
     elif arg_type == 2:
@@ -1443,16 +1445,20 @@ def main():
             
         if options.install_upgrade:
             #INFO: Comment these lines to do testing on Windows machines too
-            #if os.geteuid() != 0:
-            #    log.err("\nYou need superuser privileges to execute this option\n")
-            #    sys.exit(1)
+            try:
+                if os.geteuid() != 0:
+                    log.err("\nYou need superuser privileges to execute this option\n")
+                    sys.exit(1)
+            except AttributeError:
+                log.err("Are you really running the install command on a Debian box?\n")
+                sys.exit(1)
             if os.path.isfile(options.install_upgrade) is True:
                 syncer(options.install_upgrade, apt_package_target_path, 1)
             elif os.path.isdir(options.install_upgrade) is True:
                 syncer(options.install_upgrade, apt_package_target_path, 2)
             else:
                 log.err("Aieee! %s is unsupported format\n" % (options.install_upgrade))
-            sys.exit(0)
+                sys.exit(0)
             
     except KeyboardInterrupt:
         log.err("\nInterrupted by user. Exiting!\n")
