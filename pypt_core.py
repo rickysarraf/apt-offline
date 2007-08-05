@@ -1232,13 +1232,16 @@ def syncer(install_file_path, target_path, arg_type=None):
                             break
                     if found == False:
                         log.err("Incorrect bug number %s provided.\n" % (response) )
+                        list_bugs()
+                        response = display_options()
                     
-                    display_pager = PagerCmd()
-                    retval = display_pager.send_to_pager(file.read(bug_file_to_display) )
-                    if retval == 1:
-                        log.err("Broken pager. Can't display the bug details.\n")
-                    # Redisplay the menu
-                    response = display_options()
+                    if found:
+                        display_pager = PagerCmd()
+                        retval = display_pager.send_to_pager(file.read(bug_file_to_display) )
+                        if retval == 1:
+                            log.err("Broken pager. Can't display the bug details.\n")
+                        # Redisplay the menu
+                        response = display_options()
                     
                 elif response.startswith('r') or response.startswith('R'):
                     list_bugs()
