@@ -1359,9 +1359,20 @@ def main():
                     parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                 else:
                     log.msg("Generating database of files that are needed for an update.\n")
+                    
+                    #FIXME: Unicode Fix
+                    # This is only a workaround.
+                    # When using locales, we get translation files. But apt doesn't extract the URI properly.
+                    # Once the extraction problem is root-caused, we can fix this easily.
                     os.environ['__pypt_set_update'] = options.set_update
+                    old_environ = os.environ['LANG']
+                    os.environ['LANG'] = "C"
+                    log.verbose("Set environment variable for LANG from %s to %s temporarily.\n" % (old_environ, os.environ['LANG']) )
                     if os.system('/usr/bin/apt-get -qq --print-uris update > $__pypt_set_update') != 0:
                         log.err("FATAL: Something is wrong with the apt system.\n")
+                        log.verbose("Set environment variable for LANG back to its original from %s to %s.\n" % (os.environ['LANG'], old_environ) )
+                        os.environ['LANG'] = old_environ
+                    log.verbose("Set environment variable for LANG back to its original from %s to %s.\n" % (os.environ['LANG'], old_environ) )
             else:
                  parser.error("This argument is supported only on Unix like systems with apt installed\n")
             sys.exit(0)
