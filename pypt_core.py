@@ -1373,6 +1373,7 @@ def main():
                         log.verbose("Set environment variable for LANG back to its original from %s to %s.\n" % (os.environ['LANG'], old_environ) )
                         os.environ['LANG'] = old_environ
                     log.verbose("Set environment variable for LANG back to its original from %s to %s.\n" % (os.environ['LANG'], old_environ) )
+                    os.environ['LANG'] = old_environ
             else:
                  parser.error("This argument is supported only on Unix like systems with apt installed\n")
             sys.exit(0)
