@@ -1163,6 +1163,26 @@ def syncer(install_file_path, target_path, arg_type=None):
     2 => install_file_path is a Folder'''
     
     archive = Archiver()
+                
+    def display_options():
+        
+        log.msg("(Y) Yes. Proceed with installation\n")
+        log.msg("(N) No, Abort.\n")
+        log.msg("(R) Redisplay the list of bugs.\n")
+        log.msg("(Bug Number) Display the bug report from the Offline Bug Reports.\n")
+        log.msg("(?) Display this help message.\n")
+        
+    def get_response():
+        response = raw_input("What would you like to do next:\t (y, N, Bug Number, R, ?)" )
+        response = response.rstrip("\r")
+        return response
+    
+    def list_bugs():
+        log.msg("\n\nFollowing are the list of bugs present.\n")
+        for each_bug in bugs_number:
+            each_bug = each_bug.split('.')[1]
+            log.msg("%s\n" % (each_bug) )
+            
     if arg_type == 1:
         try:
             import zipfile
@@ -1182,26 +1202,7 @@ def syncer(install_file_path, target_path, arg_type=None):
             if filename.endswith(pypt_bug_file_format):
                 bugs_number.append(filename)
                 
-        def display_options():
-            
-            log.msg("(Y) Yes. Proceed with installation\n")
-            log.msg("(N) No, Abort.\n")
-            log.msg("(R) Redisplay the list of bugs.\n")
-            log.msg("(Bug Number) Display the bug report from the Offline Bug Reports.\n")
-            log.msg("(?) Display this help message.\n")
-            
-        def get_response():
-            response = raw_input("What would you like to do next:\t (y, N, Bug Number, R, ?)" )
-            response = response.rstrip("\r")
-            
-            return response
-                
         if bugs_number:
-            def list_bugs():
-                log.msg("\n\nFollowing are the list of bugs present.\n")
-                for each_bug in bugs_number:
-                    each_bug = each_bug.split('.')[1]
-                    log.msg("%s\n" % (each_bug) )
                     
             # Display the list of bugs
             list_bugs()
@@ -1279,6 +1280,80 @@ def syncer(install_file_path, target_path, arg_type=None):
                 
     elif arg_type == 2:
         archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
+        
+        bugs_number = []
+        for filename in os.listdir(install_file_path):
+            if filename.endswith(pypt_bug_file_format):
+                bugs_number.append(filename)
+                
+        if bugs_number:
+            #Give the choice to the user
+            list_bugs()
+            display_options()
+            response = get_response()
+            
+            while True:
+                if response == "?":
+                    display_options()
+                    response = get_response()
+                    
+                elif response.startswith('y') or response.startswith('Y'):
+                    
+                    for eachfile in os.listdir(install_file_path):
+                        archive_type = None
+                        try:
+                            import pypt_magic
+                        except ImportError:
+                            log.err("Aieeee! module not found.\n")
+                            sys.exit(1)
+                            
+                        if pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/x-bzip2":
+                            archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 1)
+                        elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/gzip":
+                            archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 2)
+                        elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/zip":
+                            archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 3)
+                        elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "PGP armored data" or pypt_magic.file(filename) == "application/x-dpkg":
+                            if os.access(target_path, os.W_OK):
+                                shutil.copy(os.path.join(install_file_path, eachfile), target_path)
+                                log.msg("%s file synced.\n" % (eachfile))
+                        else:
+                            log.err("Aieeee! I don't understand filetype %s\n" % (eachfile))
+                        
+                elif response.startswith('n') or response.startswith('N'):
+                    log.err("Exiting gracefully on user request.\n\n")
+                    sys.exit(1)
+                    
+                elif response.isdigit() is True:
+                    found = False
+                    for full_bug_file_name in bugs_number:
+                        if response in full_bug_file_name:
+                            bug_file_to_display = full_bug_file_name
+                            found = True
+                            break
+                    if found == False:
+                        log.err("Incorrect bug number %s provided.\n" % (response) )
+                        response = get_response()
+                    
+                    if found:
+                        display_pager = PagerCmd()
+                        retval = display_pager.send_to_pager(file.read(bug_file_to_display) )
+                        if retval == 1:
+                            log.err("Broken pager. Can't display the bug details.\n")
+                        # Redisplay the menu
+                        # FIXME: See a pythonic possibility of cleaning the screen at this stage
+                        response = get_response()
+                    
+                elif response.startswith('r') or response.startswith('R'):
+                    list_bugs()
+                    response = get_response()
+                    
+                else:
+                    log.err('Incorrect choice. Exiting\n')
+                    sys.exit(1)
+        else:
+            log.verbose("Great!!! No bugs found for all the packages that were downloaded.\n")
+                    
         for eachfile in os.listdir(install_file_path):
             
             archive_type = None
