@@ -1245,7 +1245,7 @@ def syncer(install_file_path, target_path, arg_type=None):
                         
                 elif response.startswith('n') or response.startswith('N'):
                     log.err("Exiting gracefully on user request.\n\n")
-                    sys.exit(1)
+                    sys.exit(0)
                     
                 elif response.isdigit() is True:
                     found = False
@@ -1276,7 +1276,28 @@ def syncer(install_file_path, target_path, arg_type=None):
                     sys.exit(1)
         else:
             log.verbose("Great!!! No bugs found for all the packages that were downloaded.\n")
-            
+            response = raw_input("Continue with Installation. Y/N ?")
+            response = response.rstrip("\r")
+            if response.endswith('y') or reponse.endswith('Y'):
+                log.verbose("Continuing with syncing the files.\n")
+                for filename in file.namelist():
+                    
+                    data = open(filename, "wb")
+                    data.write(file.read(filename))
+                    data.close()
+                    
+                    if pypt_magic.file(os.path.abspath(filename)) == "application/x-bzip2":
+                        archive.decompress_the_file(os.path.abspath(filename), target_path, filename, 1)
+                    elif pypt_magic.file(os.path.abspath(filename)) == "application/x-gzip":
+                        archive.decompress_the_file(os.path.abspath(filename), target_path, filename, 2)
+                    elif pypt_magic.file(filename) == "PGP armored data" or pypt_magic.file(filename) == "application/x-dpkg":
+                        if os.access(target_path, os.W_OK):
+                            shutil.copy(filename, target_path)
+                            log.msg("%s file synced.\n" % (filename))
+                    os.unlink(filename)
+            else:
+                log.msg("Exiting gracefully on user request.\n")
+                sys.exit(0)
                 
     elif arg_type == 2:
         archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
@@ -1322,7 +1343,7 @@ def syncer(install_file_path, target_path, arg_type=None):
                         
                 elif response.startswith('n') or response.startswith('N'):
                     log.err("Exiting gracefully on user request.\n\n")
-                    sys.exit(1)
+                    sys.exit(0)
                     
                 elif response.isdigit() is True:
                     found = False
@@ -1353,27 +1374,34 @@ def syncer(install_file_path, target_path, arg_type=None):
                     sys.exit(1)
         else:
             log.verbose("Great!!! No bugs found for all the packages that were downloaded.\n")
-                    
-        for eachfile in os.listdir(install_file_path):
+            response = raw_input("Continue with Installation. Y/N?")
+            response = response.rstrip("\r")
             
-            archive_type = None
-            try:
-                import pypt_magic
-            except ImportError:
-                log.err("Aieeee! module not found.\n")
-                
-            if pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/x-bzip2":
-                archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 1)
-            elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/gzip":
-                archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 2)
-            elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/zip":
-                archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 3)
-            elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "PGP armored data" or pypt_magic.file(filename) == "application/x-dpkg":
-                if os.access(target_path, os.W_OK):
-                    shutil.copy(os.path.join(install_file_path, eachfile), target_path)
-                    log.msg("%s file synced.\n" % (eachfile))
+            if response.startswith('y') or response.startswith('Y'):
+                    
+                for eachfile in os.listdir(install_file_path):
+                    archive_type = None
+                    try:
+                        import pypt_magic
+                    except ImportError:
+                        log.err("Aieeee! module not found.\n")
+                        sys.exit(1)
+                        
+                    if pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/x-bzip2":
+                        archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 1)
+                    elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/gzip":
+                        archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 2)
+                    elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/zip":
+                        archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 3)
+                    elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "PGP armored data" or pypt_magic.file(filename) == "application/x-dpkg":
+                        if os.access(target_path, os.W_OK):
+                            shutil.copy(os.path.join(install_file_path, eachfile), target_path)
+                            log.msg("%s file synced.\n" % (eachfile))
+                    else:
+                        log.err("Aieeee! I don't understand filetype %s\n" % (eachfile))
             else:
-                log.err("Aieeee! I don't understand filetype %s\n" % (eachfile))
+                log.msg("Exiting gracefully on user request.\n")
+                sys.exit(0)
                 
 def main():
     '''Here we basically do the sanity checks, some validations
@@ -1472,7 +1500,7 @@ def main():
                     os.environ['LANG'] = old_environ
             else:
                  parser.error("This argument is supported only on Unix like systems with apt installed\n")
-            sys.exit(0)
+            sys.exit(1)
      
         if options.set_upgrade or options.upgrade_type:
             if not (options.set_upgrade and options.upgrade_type):
@@ -1501,7 +1529,7 @@ def main():
                     parser.error("Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n")
             else:
                 parser.error("This argument is supported only on Unix like systems with apt installed\n")
-                sys.exit(0)
+                sys.exit(1)
                  
         if options.set_install_packages or options.set_install:
             if not (options.set_install_packages and options.set_install):
@@ -1527,7 +1555,7 @@ def main():
                     log.err("FATAL: Something is wrong with the apt system.\n")
             else:
                 parser.error("This argument is supported only on Unix like systems with apt installed\n")
-                sys.exit(0)
+                sys.exit(1)
                
         if options.fetch_update and options.fetch_upgrade:
             if os.access(options.fetch_update, os.F_OK) and os.access(options.fetch_upgrade, os.F_OK):
@@ -1579,7 +1607,7 @@ def main():
                 syncer(options, 2)
             else:
                 log.err("%s file not found\n" % (options.install_update))
-                sys.exit(0)
+                sys.exit(1)
             
         if options.install_upgrade:
             #INFO: Comment these lines to do testing on Windows machines too
@@ -1596,8 +1624,8 @@ def main():
                 syncer(options.install_upgrade, apt_package_target_path, 2)
             else:
                 log.err("%s file not found\n" % (options.install_upgrade))
-                sys.exit(0)
+                sys.exit(1)
             
     except KeyboardInterrupt:
         log.err("\nInterrupted by user. Exiting!\n")
-        sys.exit(1)        
+        sys.exit(0)        
