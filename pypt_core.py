@@ -43,11 +43,11 @@ try:
 except ImportError:
     pass
 
-WindowColor = True
-try:
-    import WConio
-except ImportError:
-    WindowColor = False
+#WindowColor = True
+#try:
+#    import WConio
+#except ImportError:
+#    WindowColor = False
 
 '''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
@@ -212,67 +212,85 @@ class Log:
     Now for example, say I wanted blinking, yellow text on a magenta background... I'd type ESC[45;33;5m 
     '''
     
-    def __init__(self, verbose, color = None, lock = None):
-        
+    def __init__(self, verbose, lock = None):
+            
         if verbose is True:
             self.VERBOSE = True
         else: self.VERBOSE = False
         
-        self.color = color
+        self.color_syntax = '\033[1;'
         
         if lock is None or lock != 1:
             self.DispLock = False
         else:
             self.DispLock = threading.Lock()
             self.lock = True
+            
+        if os.name == 'posix':
+           self.platform = 'posix'
+           self.color = {'Red': '31m', 'Black': '30m',
+                         'Green': '32m', 'Yellow': '33m',
+                         'Blue': '34m', 'Magneta': '35m',
+                         'Cyan': '36m', 'White': '37m',
+                         'Bold_Text': '1m', 'Underline': '4m',
+                         'Blink': '5m', 'SwitchOffAttributes': '0m'}
+           
+        elif os.name in ['nt', 'dos']:
+            self.platform = 'microsoft'
+            self.color = {'Red': 4, 'Black': 0,
+                          'Green': 2, 'White': 15,
+                          'LightRed': 12, 'LightCyan': 11,
+                          'SwitchOffAttributes': 15}
+        else:
+            self.platform = None
+            self.color = None
+ 
+    def set_color(self, color):
+        '''Check the platform and set the color'''
         
+        if self.platform == 'posix':
+            sys.stdout.write(self.color_syntax + self.color[color])
+        elif self.platform in ['n', 'dos']:
+            WConio.textcolor(self.color[color])
+            
     def msg(self, msg):
-        'Print general messages'
+        '''Print general messages. If locking is available use them.'''
         
         if self.lock:
             self.DispLock.acquire(True)
-            
-        if self.color:
-            WConio.textcolor(15)
-            
+          
+        self.set_color('White')
         sys.stdout.write(msg)
         sys.stdout.flush()
+        self.set_color('SwitchOffAttributes')
         
         if self.lock:
             self.DispLock.release()
         
     def err(self, msg):
-        'Print messages with an error'
+        '''Print messages with an error. If locking is available use them.'''
         
         if self.lock:
             self.DispLock.acquire(True)
             
-        if self.color:
-            WConio.textcolor(4)
-            
+        self.set_color('Red')
         sys.stderr.write(msg)
         sys.stderr.flush()
-
-    	if self.color:
-    	    WConio.textcolor(15) #Once the error is displayed, change back to the normal color
+        self.set_color('SwitchOffAttributes')
         
         if self.lock:
             self.DispLock.release()
         
     def success(self, msg):
-        'Print messages with a success'
+        '''Print messages with a success. If locking is available use them.'''
         
         if self.lock:
             self.DispLock.acquire(True)
             
-        if self.color:
-            WConio.textcolor(2)
-            
+        self.set_color('Green')
         sys.stdout.write(msg)
         sys.stdout.flush()
-
-    	if self.color:
-    	    WConio.textcolor(15) #Once the error is displayed, change back to the normal color
+        self.set_color('SwitchOffAttributes')
         
         if self.lock:
             self.DispLock.release()
@@ -280,22 +298,21 @@ class Log:
     # For the rest, we need to check the options also
 
     def verbose(self, msg):
-        'Print verbose messages'
+        '''Print verbose messages. If locking is available use them.'''
         
         if self.lock:
             self.DispLock.acquire(True)
             
         if self.VERBOSE is True:
-            if self.color:
-                WConio.textcolor(11)
-                
+            
+            self.set_color('Cyan')
             sys.stdout.write(msg)
             sys.stdout.flush()
-    	    if self.color:
-    		WConio.textcolor(15) #Once the error is displayed, change back to the normal color
+            self.set_color('SwitchOffAttributes')
         
         if self.lock:
             self.DispLock.release()
+            
             
 class Archiver:
     def __init__(self, lock=None):
@@ -1517,7 +1534,7 @@ def main():
         # The log implementation
         # Instantiate the class
         global log
-        log = Log(options.verbose, WindowColor, lock = True)
+        log = Log(options.verbose, lock = True)
         
         log.msg("pypt-offline %s\n" % (version))
         log.msg("Copyright %s\n" % (copyright))
