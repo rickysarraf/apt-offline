@@ -1252,9 +1252,10 @@ def syncer(install_file_path, target_path, arg_type=None):
     
     def list_bugs():
         log.msg("\n\nFollowing are the list of bugs present.\n")
-        for each_bug in bugs_number:
-            each_bug = each_bug.split('.')[1]
-            log.msg("%s\n" % (each_bug) )
+        for each_bug in bugs_number.keys():
+            bug_num = each_bug.split('.')[1]
+            bug_subject = bugs_number[each_bug]
+            log.msg("%s\t%s\n" % (bug_num, bug_subject) )
             
     if arg_type == 1:
         try:
@@ -1270,10 +1271,17 @@ def syncer(install_file_path, target_path, arg_type=None):
             sys.exit(1)
             
         file = zipfile.ZipFile(install_file_path, "r")
-        bugs_number = []
+        bugs_number = {}
         for filename in file.namelist():
             if filename.endswith(pypt_bug_file_format):
-                bugs_number.append(filename)
+                bug_subject_file = file.read(filename)
+                bug_subject = bug_subject_file.split('\r')
+                del bug_subject_file
+                for subject in bug_subject:
+                    if subject.startswith('#'):
+                        subject = subject.lstrip(subject.split(":")[0])
+                        break
+                bugs_number[filename] = subject
                 
         if bugs_number:
             # Display the list of bugs
@@ -1347,10 +1355,10 @@ def syncer(install_file_path, target_path, arg_type=None):
                     log.err('Incorrect choice. Exiting\n')
                     sys.exit(1)
         else:
-            log.verbose("Great!!! No bugs found for all the packages that were downloaded.\n")
+            log.msg("Great!!! No bugs found for all the packages that were downloaded.\n")
             response = raw_input("Continue with Installation. Y/N ?")
             response = response.rstrip("\r")
-            if response.endswith('y') or reponse.endswith('Y'):
+            if response.endswith('y') or response.endswith('Y'):
                 log.verbose("Continuing with syncing the files.\n")
                 for filename in file.namelist():
                     
@@ -1445,7 +1453,7 @@ def syncer(install_file_path, target_path, arg_type=None):
                     log.err('Incorrect choice. Exiting\n')
                     sys.exit(1)
         else:
-            log.verbose("Great!!! No bugs found for all the packages that were downloaded.\n")
+            log.msg("Great!!! No bugs found for all the packages that were downloaded.\n")
             response = raw_input("Continue with Installation. Y/N?")
             response = response.rstrip("\r")
             
