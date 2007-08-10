@@ -6,10 +6,10 @@
 * Proxy Authentication
 * Implement a function which will keep track of the failed uris and print them at last. It'll keep the uri and it's failure reason as a dictionary <done>
 * Implement Threads - When we implement threads multiple files will be downloaded at the same time. <done>
-  At that point, say we execute with 5 threads, the progressbar for all 5 threads should be displayed together.
+  At that point, say we execute with 5 threads, the progressbar for all 5 threads should be displayed together. <done>
 * Implement Curses and GUI interfaces. For these UIs it will be interactive. For all the options, only one will be selectable and once that option
   is selected the others will be deactivated. That's design, only one option allowed a time. :-)
 * Use Python's logging module to better handle messages, warnings and errors <done>
 * Implement apt's newly added feature (> 0.6.4) of Package Diff
-* Add functionality for Offline Bug Reports
+* Add functionality for Offline Bug Reports <done>
 * Handle KeyboardInterrupt exception in threads so that if the user sends an interrupt signal, the program should exit
