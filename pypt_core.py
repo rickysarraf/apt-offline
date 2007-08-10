@@ -250,7 +250,8 @@ class Log:
         
         if self.platform == 'posix':
             sys.stdout.write(self.color_syntax + self.color[color])
-        elif self.platform in ['n', 'dos']:
+            sys.stderr.write(self.color_syntax + self.color(color))
+        elif self.platform == 'microsoft':
             WConio.textcolor(self.color[color])
             
     def msg(self, msg):
