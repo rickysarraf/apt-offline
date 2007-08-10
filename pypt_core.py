@@ -43,11 +43,11 @@ try:
 except ImportError:
     pass
 
-#WindowColor = True
-#try:
-#    import WConio
-#except ImportError:
-#    WindowColor = False
+WindowColor = True
+try:
+    import WConio
+except ImportError:
+    WindowColor = False
 
 '''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
@@ -236,7 +236,15 @@ class Log:
                          'Blink': '5m', 'SwitchOffAttributes': '0m'}
            
         elif os.name in ['nt', 'dos']:
-            self.platform = 'microsoft'
+            self.platform = None
+            
+            #try:
+            #    import WConio
+            #except ImportError:
+            #    self.platform = None
+            if WindowColor is True:
+                self.platform = 'microsoft'
+                
             self.color = {'Red': 4, 'Black': 0,
                           'Green': 2, 'White': 15,
                           'LightRed': 12, 'LightCyan': 11,
