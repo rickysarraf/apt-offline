@@ -705,8 +705,7 @@ def errfunc(errno, errormsg, filename):
     # 504 is for gateway timeout
     # 404 is for URL error. Page not found.
     # 10060 is for Operation Time out. There can be multiple reasons for this timeout
-    # 101010 - Dummy error code for socket timeouts. FIXME: Find the
-    # 		correct socket timeout error code
+    # 10054 is for Socket Timeout. Socket Timeout are seen during network congestion
     
     #TODO: Find out what these error codes are for
     # and better document them the next time you find it out.
