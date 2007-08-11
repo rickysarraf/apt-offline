@@ -588,11 +588,9 @@ class DownloadFromWeb(ProgressBar):
                 try:
                     data.write (temp.read(block_size))
                 except socket.timeout, timeout:
-                    print timeout
                     socket_timeout = True
                     socket_counter += 1
                 except socket.error, error:
-                    print error
                     socket_timeout = True
                     socket_counter += 1
                 if socket_counter == SOCKET_TIMEOUT_RETRY:
