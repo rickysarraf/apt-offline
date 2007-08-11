@@ -72,6 +72,9 @@ bugTypes = ["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIX
 LINE_OVERWRITE_MID = " " * 30
 LINE_OVERWRITE_FULL = " " * 60
 LINE_OVERWRITE_SMALL = " " * 15
+
+# How many times should we retry on socket timeouts
+SOCKET_TIMEOUT_RETRY = 5
        
 class MD5Check:
     
@@ -579,8 +582,27 @@ class DownloadFromWeb(ProgressBar):
             #INFO: Add the download thread into the Global ProgressBar Thread
             self.addItem(size)
      
+            socket_counter = 0
             while i < size:
-                data.write (temp.read(block_size))
+                socket_timeout = None
+                try:
+                    data.write (temp.read(block_size))
+                except socket.timeout, timeout:
+                    print timeout
+                    socket_timeout = True
+                    socket_counter += 1
+                except socket.error, error:
+                    print error
+                    socket_timeout = True
+                    socket_counter += 1
+                if socket_counter == SOCKET_TIMEOUT_RETRY:
+                    errfunc(10054, "Max timeout retry count reached. Discontinuing file %s.\n", file)
+                    return False
+                    #break
+                if socket_timeout is True:
+                    errfunc(10054, "Socket Timeout. Retry - %d\n" % (socket_counter) , file)
+                    continue
+                
                 increment = min(block_size, size - i)
                 i += block_size
                 counter += 1
@@ -594,21 +616,15 @@ class DownloadFromWeb(ProgressBar):
             
         #FIXME: Find out optimal fix for this exception handling
         except OSError, (errno, strerror):
-            #log.err("%s\n" %(download_dir))
             errfunc(errno, strerror, download_dir)
             
         except urllib2.HTTPError, errstring:
-            #log.err("%s\n" % (file))
             errfunc(errstring.code, errstring.msg, file)
             
         except urllib2.URLError, errstring:
-            #We pass error code "1" here becuase URLError
-            # doesn't pass any error code.
             # URLErrors shouldn't be ignored, hence program termination
             if errstring.reason.args[0] == 10060:
                 errfunc(errstring.reason.args[0], errstring.reason, url)
-            #errfunc(1, errstring.reason)
-            #pass
         
         except IOError, e:
             if hasattr(e, 'reason'):
@@ -617,7 +633,7 @@ class DownloadFromWeb(ProgressBar):
                 errfunc(e.code, e.reason, file)
                 
         except socket.timeout:
-            errfunc(101010, "Socket timeout.", file)
+            errfunc(10054, "Socket timeout.", file)
 
 def copy_first_match(cache_dir, filename, dest_dir, checksum): # aka new_walk_tree_copy() 
     '''Walks into "reposiotry" looking for "filename".
@@ -684,7 +700,7 @@ def errfunc(errno, errormsg, filename):
     This function does the job of behaving accordingly
     as per the error codes.
     '''
-    error_codes = [-3, 13, 504, 404, 10060, 104, 101010]
+    error_codes = [-3, 13, 504, 404, 10060, 104, 10054]
     # 104, 'Connection reset by peer'
     # 504 is for gateway timeout
     # 404 is for URL error. Page not found.
