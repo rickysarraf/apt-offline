@@ -378,17 +378,17 @@ class Archiver:
             except ImportError:
                 return False
             
-            try:
-                read_from = bz2.BZ2File(archive_file, 'r')
-            except:
-                return False
+            #try:
+            read_from = bz2.BZ2File(archive_file, 'r')
+            #except:
+            #    return False
                             
-            try:
-                write_to = open (os.path.join(path, filename), 'wb')
-            except:
-                return False
+            #try:
+            write_to = open (os.path.join(path, target_file), 'wb')
+            #except:
+            #    return False
                             
-            if TarGzipBZ2_Uncomprerssed(read_from, write_to) != True:
+            if self.TarGzipBZ2_Uncompress(read_from, write_to) != True:
                 raise ArchiveError
             write_to.close()
             read_from.close()
@@ -400,17 +400,17 @@ class Archiver:
             except ImportError:
                 return False
             
-            try:
-                read_from = gzip.GzipFile(file, 'r')
-            except:
-                return False
+            #try:
+            read_from = gzip.GzipFile(file, 'r')
+            #except:
+            #    return False
                             
-            try:
-                write_to = open(os.path.join(path,filename), 'wb')
-            except:
-                return False            
+            #try:
+            write_to = open(os.path.join(path,filename), 'wb')
+            #except:
+            #    return False            
             
-            if TarGzipBZ2_Uncomprerssed(read_from, write_to) != True:
+            if self.TarGzipBZ2_Uncompress(read_from, write_to) != True:
                 raise ArchiveError
             write_to.close()
             read_from.close()
@@ -418,10 +418,10 @@ class Archiver:
             
         elif archive_type is 3:
             # FIXME: This looks odd. Where are we writing to a file ???
-            try:
-                zip_file = zipfile.ZipFile(file, 'rb')
-            except:
-                return False
+            #try:
+            zip_file = zipfile.ZipFile(file, 'rb')
+            #except:
+            #    return False
                 
             for filename in zip_file.namelist():
                 data = zip_file.read()
@@ -730,7 +730,7 @@ def errfunc(errno, errormsg, filename):
         sys.exit(errno)
         
     else:
-        log.err("Aieee! I don't understand this errorcode\n" % (errno))
+        log.err("Error: I don't understand this errorcode\n" % (errno))
         sys.exit(errno)
         
 def get_pager_cmd(pager_cmd = None):
@@ -819,7 +819,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                 os.mkdir("pypt-downloads")
                 download_path = os.path.abspath("pypt-downloads")
             except:
-                log.err("Aieeee! I couldn't create a directory")
+                log.err("Error: I couldn't create a directory")
                 errfunc(1, '')
     else:
             download_path = os.path.abspath(ArgumentOptions.download_dir)
@@ -1243,8 +1243,9 @@ def fetcher(ArgumentOptions, arg_type = None):
         for error in errlist:
             log.err("%s failed.\n" % (error))
         
-def syncer(install_file_path, target_path, path_type=None, file_type=None):
-    '''Syncer does the work of syncing the downloaded files.
+def syncer(install_file_path, target_path, path_type=None, bug_parse_required=None):
+    '''
+    Syncer does the work of syncing the downloaded files.
     It syncs "install_file_path" which could be a valid file path
     or a zip archive to "target_path"
     path_type defines whether install_file_path is a zip file
@@ -1252,13 +1253,16 @@ def syncer(install_file_path, target_path, path_type=None, file_type=None):
     
     # path_type
     1 => install_file_path is a File
-    2 => install_file_path is a Folder'''
-
-    # file_type
-    1 => update file
-    2 => upgrade file
+    2 => install_file_path is a Folder
+    '''
     
     archive = Archiver()
+                
+    try:
+        import pypt_magic
+    except ImportError:
+        log.err("Error: Module pypt_magic not found.\n")
+        sys.exit(1)
                 
     def display_options():
         
@@ -1280,231 +1284,235 @@ def syncer(install_file_path, target_path, path_type=None, file_type=None):
             bug_subject = bugs_number[each_bug]
             log.msg("%s\t%s\n" % (bug_num, bug_subject) )
             
+    def magic_check_and_uncompress(archive_file=None, target_path=None, filename=None, Mode=None):
+        
+        if pypt_magic.file(archive_file) == "application/x-bzip2":
+            retval = archive.decompress_the_file(archive_file, target_path, filename, 1)
+        elif pypt_magic.file(archive_file) == "application/x-gzip":
+            retval = archive.decompress_the_file(archive_file, target_path, filename, 2)
+        elif pypt_magic.file(archive_file) == "application/zip":
+            retval = archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 3)
+        elif pypt_magic.file(filename) == "PGP armored data" or pypt_magic.file(filename) == "application/x-dpkg":
+            if os.access(target_path, os.W_OK):
+                shutil.copy(filename, target_path)
+                retval = True
+            else:
+                log.err("ERROR: Cannot write to target path %s.\n" % (target_path) )
+        elif filename.endswith(pypt_bug_file_format):
+            retval = False # We intentionally put the bug report files as not printed.
+        else:
+            log.err("ERROR: I couldn't understand file type %s.\n" % (filename) )
+        if retval is True:
+            log.msg("%s file synced.\n" % (filename))
+        os.unlink(archive_file)
+        
     if path_type == 1:
+        
         try:
             import zipfile
         except ImportError:
-            log.err("Aieeee! Module zipfile not found.\n")
-            sys.exit(1)
-            
-        try:
-            import pypt_magic
-        except ImportError:
-            log.err("Aieeee! Module pypt_magic not found.\n")
+            log.err("Error: Module zipfile not found.\n")
             sys.exit(1)
             
         file = zipfile.ZipFile(install_file_path, "r")
-        bugs_number = {}
-        for filename in file.namelist():
-            if filename.endswith(pypt_bug_file_format):
-                bug_subject_file = file.read(filename)
-                bug_subject = bug_subject_file.split('\r')
-                del bug_subject_file
-                for subject in bug_subject:
-                    if subject.startswith('#'):
-                        subject = subject.lstrip(subject.split(":")[0])
-                        break
-                bugs_number[filename] = subject
+        if bug_parse_required is True:
                 
-        if bugs_number:
-            # Display the list of bugs
-            list_bugs()
-            display_options()
-            response = get_response()
-            
-            while True:
-                if response == "?":
-                    display_options()
-                    response = get_response()
+            bugs_number = {}
+            for filename in file.namelist():
+                if filename.endswith(pypt_bug_file_format):
+                    bug_subject_file = file.read(filename)
+                    bug_subject = bug_subject_file.split('\r')
+                    del bug_subject_file
+                    for subject in bug_subject:
+                        if subject.startswith('#'):
+                            subject = subject.lstrip(subject.split(":")[0])
+                            break
+                    bugs_number[filename] = subject
                     
-                elif response.startswith('y') or response.startswith('Y'):
+            if bugs_number:
+                # Display the list of bugs
+                list_bugs()
+                display_options()
+                response = get_response()
+                
+                while True:
+                    if response == "?":
+                        display_options()
+                        response = get_response()
+                        
+                    elif response.startswith('y') or response.startswith('Y'):
+                        for filename in file.namelist():
+                            
+                            data = open(filename, "wb")
+                            data.write(file.read(filename))
+                            data.close()
+                            
+                            #FIXME: Fix this tempfile feature
+                            # Access to the temporary file is not being allowed
+                            # It's throwing a Permission denied exception
+                            #try:
+                            #    import tempfile
+                            #except ImportError:
+                            #    sys.stderr.write("Aieeee! Module pypt_magic not found.\n")
+                            #    sys.exit(1)
+                            #data = tempfile.NamedTemporaryFile('wb', -1, '', '', os.curdir)
+                            #data.write(file.read(filename))
+                            #data = file.read(filename)
+                            
+                            magic_check_and_uncompress(os.path.abspath(filename), target_path, filename)
+                        sys.exit(0)
+                            
+                    elif response.startswith('n') or response.startswith('N'):
+                        log.err("Exiting gracefully on user request.\n\n")
+                        sys.exit(0)
+                        
+                    elif response.isdigit() is True:
+                        found = False
+                        for full_bug_file_name in bugs_number:
+                            if response in full_bug_file_name:
+                                bug_file_to_display = full_bug_file_name
+                                found = True
+                                break
+                        if found == False:
+                            log.err("Incorrect bug number %s provided.\n" % (response) )
+                            response = get_response()
+                        
+                        if found:
+                            display_pager = PagerCmd()
+                            retval = display_pager.send_to_pager(file.read(bug_file_to_display) )
+                            if retval == 1:
+                                log.err("Broken pager. Can't display the bug details.\n")
+                            # Redisplay the menu
+                            # FIXME: See a pythonic possibility of cleaning the screen at this stage
+                            response = get_response()
+                        
+                    elif response.startswith('r') or response.startswith('R'):
+                        list_bugs()
+                        response = get_response()
+                        
+                    else:
+                        log.err('Incorrect choice. Exiting\n')
+                        sys.exit(1)
+            else:
+                log.msg("Great!!! No bugs found for all the packages that were downloaded.\n")
+                response = raw_input("Continue with Installation. Y/N ?")
+                response = response.rstrip("\r")
+                if response.endswith('y') or response.endswith('Y'):
+                    log.verbose("Continuing with syncing the files.\n")
                     for filename in file.namelist():
                         
                         data = open(filename, "wb")
                         data.write(file.read(filename))
                         data.close()
                         
-                        #FIXME: Fix this tempfile feature
-                        # Access to the temporary file is not being allowed
-                        # It's throwing a Permission denied exception
-                        #try:
-                        #    import tempfile
-                        #except ImportError:
-                        #    sys.stderr.write("Aieeee! Module pypt_magic not found.\n")
-                        #    sys.exit(1)
-                        #data = tempfile.NamedTemporaryFile('wb', -1, '', '', os.curdir)
-                        #data.write(file.read(filename))
-                        #data = file.read(filename)
-                        
-                        if pypt_magic.file(os.path.abspath(filename)) == "application/x-bzip2":
-                            archive.decompress_the_file(os.path.abspath(filename), target_path, filename, 1)
-                        elif pypt_magic.file(os.path.abspath(filename)) == "application/x-gzip":
-                            archive.decompress_the_file(os.path.abspath(filename), target_path, filename, 2)
-                        elif pypt_magic.file(filename) == "PGP armored data" or pypt_magic.file(filename) == "application/x-dpkg":
-                            if os.access(target_path, os.W_OK):
-                                shutil.copy(filename, target_path)
-                                log.msg("%s file synced.\n" % (filename))
-                        os.unlink(filename)
-                        
-                elif response.startswith('n') or response.startswith('N'):
-                    log.err("Exiting gracefully on user request.\n\n")
-                    sys.exit(0)
-                    
-                elif response.isdigit() is True:
-                    found = False
-                    for full_bug_file_name in bugs_number:
-                        if response in full_bug_file_name:
-                            bug_file_to_display = full_bug_file_name
-                            found = True
-                            break
-                    if found == False:
-                        log.err("Incorrect bug number %s provided.\n" % (response) )
-                        response = get_response()
-                    
-                    if found:
-                        display_pager = PagerCmd()
-                        retval = display_pager.send_to_pager(file.read(bug_file_to_display) )
-                        if retval == 1:
-                            log.err("Broken pager. Can't display the bug details.\n")
-                        # Redisplay the menu
-                        # FIXME: See a pythonic possibility of cleaning the screen at this stage
-                        response = get_response()
-                    
-                elif response.startswith('r') or response.startswith('R'):
-                    list_bugs()
-                    response = get_response()
-                    
+                        magic_check_and_uncompress(os.path.abspath(filename), target_path, filename)
                 else:
-                    log.err('Incorrect choice. Exiting\n')
-                    sys.exit(1)
-        else:
-            log.msg("Great!!! No bugs found for all the packages that were downloaded.\n")
-            response = raw_input("Continue with Installation. Y/N ?")
-            response = response.rstrip("\r")
-            if response.endswith('y') or response.endswith('Y'):
-                log.verbose("Continuing with syncing the files.\n")
-                for filename in file.namelist():
-                    
-                    data = open(filename, "wb")
-                    data.write(file.read(filename))
-                    data.close()
-                    
-                    if pypt_magic.file(os.path.abspath(filename)) == "application/x-bzip2":
-                        archive.decompress_the_file(os.path.abspath(filename), target_path, filename, 1)
-                    elif pypt_magic.file(os.path.abspath(filename)) == "application/x-gzip":
-                        archive.decompress_the_file(os.path.abspath(filename), target_path, filename, 2)
-                    elif pypt_magic.file(filename) == "PGP armored data" or pypt_magic.file(filename) == "application/x-dpkg":
-                        if os.access(target_path, os.W_OK):
-                            shutil.copy(filename, target_path)
-                            log.msg("%s file synced.\n" % (filename))
-                    os.unlink(filename)
-            else:
-                log.msg("Exiting gracefully on user request.\n")
-                sys.exit(0)
+                    log.msg("Exiting gracefully on user request.\n")
+                    sys.exit(0)
+        elif bug_parse_required is False:
                 
+            for filename in file.namelist():
+                
+                data = open(filename, "wb")
+                data.write(file.read(filename))
+                data.close()
+                            
+                #FIXME: Fix this tempfile feature
+                # Access to the temporary file is not being allowed
+                # It's throwing a Permission denied exception
+                #try:
+                #    import tempfile
+                #except ImportError:
+                #    sys.stderr.write("Aieeee! Module pypt_magic not found.\n")
+                #    sys.exit(1)
+                #data = tempfile.NamedTemporaryFile('wb', -1, '', '', os.curdir)
+                #data.write(file.read(filename))
+                #data = file.read(filename)
+                magic_check_and_uncompress(os.path.abspath(filename), target_path, filename)
+        else:
+            log.err("ERROR: Inappropriate argument sent to syncer during data fetch. Do you need to fetch bugs or not?\n")    
+            sys.exit(1)
+            
     elif path_type == 2:
         archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
         
-        bugs_number = []
-        for filename in os.listdir(install_file_path):
-            if filename.endswith(pypt_bug_file_format):
-                bugs_number.append(filename)
+        if bug_parse_required is True:
+            bugs_number = []
+            for filename in os.listdir(install_file_path):
+                if filename.endswith(pypt_bug_file_format):
+                    bugs_number.append(filename)
+                    
+            if bugs_number:
+                #Give the choice to the user
+                list_bugs()
+                display_options()
+                response = get_response()
                 
-        if bugs_number:
-            #Give the choice to the user
-            list_bugs()
-            display_options()
-            response = get_response()
-            
-            while True:
-                if response == "?":
-                    display_options()
-                    response = get_response()
-                    
-                elif response.startswith('y') or response.startswith('Y'):
-                    
+                while True:
+                    if response == "?":
+                        display_options()
+                        response = get_response()
+                        
+                    elif response.startswith('y') or response.startswith('Y'):
+                        
+                        for eachfile in os.listdir(install_file_path):
+                            archive_type = None
+                                
+                            magic_check_and_uncompress(os.path.abspath(filename), target_path, filename)
+                            
+                    elif response.startswith('n') or response.startswith('N'):
+                        log.err("Exiting gracefully on user request.\n\n")
+                        sys.exit(0)
+                        
+                    elif response.isdigit() is True:
+                        found = False
+                        for full_bug_file_name in bugs_number:
+                            if response in full_bug_file_name:
+                                bug_file_to_display = full_bug_file_name
+                                found = True
+                                break
+                        if found == False:
+                            log.err("Incorrect bug number %s provided.\n" % (response) )
+                            response = get_response()
+                        
+                        if found:
+                            display_pager = PagerCmd()
+                            retval = display_pager.send_to_pager(file.read(bug_file_to_display) )
+                            if retval == 1:
+                                log.err("Broken pager. Can't display the bug details.\n")
+                            # Redisplay the menu
+                            # FIXME: See a pythonic possibility of cleaning the screen at this stage
+                            response = get_response()
+                        
+                    elif response.startswith('r') or response.startswith('R'):
+                        list_bugs()
+                        response = get_response()
+                        
+                    else:
+                        log.err('Incorrect choice. Exiting\n')
+                        sys.exit(1)
+            else:
+                log.msg("Great!!! No bugs found for all the packages that were downloaded.\n")
+                response = raw_input("Continue with Installation. Y/N?")
+                response = response.rstrip("\r")
+                
+                if response.startswith('y') or response.startswith('Y'):
+                        
                     for eachfile in os.listdir(install_file_path):
                         archive_type = None
-                        try:
-                            import pypt_magic
-                        except ImportError:
-                            log.err("Aieeee! module not found.\n")
-                            sys.exit(1)
                             
-                        if pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/x-bzip2":
-                            archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 1)
-                        elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/gzip":
-                            archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 2)
-                        elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/zip":
-                            archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 3)
-                        elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "PGP armored data" or pypt_magic.file(filename) == "application/x-dpkg":
-                            if os.access(target_path, os.W_OK):
-                                shutil.copy(os.path.join(install_file_path, eachfile), target_path)
-                                log.msg("%s file synced.\n" % (eachfile))
-                        else:
-                            log.err("Aieeee! I don't understand filetype %s\n" % (eachfile))
-                        
-                elif response.startswith('n') or response.startswith('N'):
-                    log.err("Exiting gracefully on user request.\n\n")
-                    sys.exit(0)
-                    
-                elif response.isdigit() is True:
-                    found = False
-                    for full_bug_file_name in bugs_number:
-                        if response in full_bug_file_name:
-                            bug_file_to_display = full_bug_file_name
-                            found = True
-                            break
-                    if found == False:
-                        log.err("Incorrect bug number %s provided.\n" % (response) )
-                        response = get_response()
-                    
-                    if found:
-                        display_pager = PagerCmd()
-                        retval = display_pager.send_to_pager(file.read(bug_file_to_display) )
-                        if retval == 1:
-                            log.err("Broken pager. Can't display the bug details.\n")
-                        # Redisplay the menu
-                        # FIXME: See a pythonic possibility of cleaning the screen at this stage
-                        response = get_response()
-                    
-                elif response.startswith('r') or response.startswith('R'):
-                    list_bugs()
-                    response = get_response()
-                    
+                        magic_check_and_uncompress(os.path.abspath(filename), target_path, filename)
                 else:
-                    log.err('Incorrect choice. Exiting\n')
-                    sys.exit(1)
-        else:
-            log.msg("Great!!! No bugs found for all the packages that were downloaded.\n")
-            response = raw_input("Continue with Installation. Y/N?")
-            response = response.rstrip("\r")
-            
-            if response.startswith('y') or response.startswith('Y'):
+                    log.msg("Exiting gracefully on user request.\n")
+                    sys.exit(0)
+        elif bug_parse_required is False:
+            for eachfile in os.listdir(install_file_path):
+                archive_type = None
                     
-                for eachfile in os.listdir(install_file_path):
-                    archive_type = None
-                    try:
-                        import pypt_magic
-                    except ImportError:
-                        log.err("Aieeee! module not found.\n")
-                        sys.exit(1)
-                        
-                    if pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/x-bzip2":
-                        archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 1)
-                    elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/gzip":
-                        archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 2)
-                    elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "application/zip":
-                        archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 3)
-                    elif pypt_magic.file(os.path.join(install_file_path, eachfile)) == "PGP armored data" or pypt_magic.file(filename) == "application/x-dpkg":
-                        if os.access(target_path, os.W_OK):
-                            shutil.copy(os.path.join(install_file_path, eachfile), target_path)
-                            log.msg("%s file synced.\n" % (eachfile))
-                    else:
-                        log.err("Aieeee! I don't understand filetype %s\n" % (eachfile))
-            else:
-                log.msg("Exiting gracefully on user request.\n")
-                sys.exit(0)
+                magic_check_and_uncompress(os.path.abspath(filename), target_path, filename)
+        else:
+            log.err("ERROR: Inappropriate argument sent to syncer during data fetch. Do you need to fetch bugs or not?\n")    
+            sys.exit(1)
                 
 def main():
     '''Here we basically do the sanity checks, some validations
@@ -1698,20 +1706,20 @@ def main():
                  
         if options.install_update:
             #INFO: Comment these lines to do testing on Windows machines too
-	    try:
-            	if os.geteuid() != 0:
-		    log.err("\nYou need superuser privileges to execute this option\n")
-                    sys.exit(1)
-	    except AttributeError:
-	    	log.err("Are you really running the install command on a Debian box?\n")
-		sys.exit(1)
+            #try:
+            #    if os.geteuid() != 0:
+            #        log.err("\nYou need superuser privileges to execute this option\n")
+            #        sys.exit(1)
+            #except AttributeError:
+            #    log.err("Are you really running the install command on a Debian box?\n")
+            #    sys.exit(1)
                 
             if os.path.isfile(options.install_update) is True:
                 # Okay! We're a file. It should be a zip file
-                syncer(options.install_update, apt_update_target_path, 1)
+                syncer(options.install_update, apt_update_target_path, 1, bug_parse_required = False)
             elif os.path.isdir(options.install_update) is True:
                 # We're a directory
-                syncer(options.install_update, apt_update_target_path, 1)
+                syncer(options.install_update, apt_update_target_path, 1, bug_parse_required = False)
             else:
                 log.err("%s file not found\n" % (options.install_update))
                 sys.exit(1)
@@ -1726,9 +1734,9 @@ def main():
                 log.err("Are you really running the install command on a Debian box?\n")
                 sys.exit(1)
             if os.path.isfile(options.install_upgrade) is True:
-                syncer(options.install_upgrade, apt_package_target_path, 1)
+                syncer(options.install_upgrade, apt_package_target_path, 1, bug_parse_required = True)
             elif os.path.isdir(options.install_upgrade) is True:
-                syncer(options.install_upgrade, apt_package_target_path, 2)
+                syncer(options.install_upgrade, apt_package_target_path, 2, bug_parse_required = True)
             else:
                 log.err("%s file not found\n" % (options.install_upgrade))
                 sys.exit(1)
