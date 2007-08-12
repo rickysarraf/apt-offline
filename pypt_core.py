@@ -1243,14 +1243,14 @@ def fetcher(ArgumentOptions, arg_type = None):
         for error in errlist:
             log.err("%s failed.\n" % (error))
         
-def syncer(install_file_path, target_path, arg_type=None, file_type=None):
+def syncer(install_file_path, target_path, path_type=None, file_type=None):
     '''Syncer does the work of syncing the downloaded files.
     It syncs "install_file_path" which could be a valid file path
     or a zip archive to "target_path"
-    arg_type defines whether install_file_path is a zip file
+    path_type defines whether install_file_path is a zip file
     or a folder path
     
-    #install_file_path
+    # path_type
     1 => install_file_path is a File
     2 => install_file_path is a Folder'''
 
@@ -1280,7 +1280,7 @@ def syncer(install_file_path, target_path, arg_type=None, file_type=None):
             bug_subject = bugs_number[each_bug]
             log.msg("%s\t%s\n" % (bug_num, bug_subject) )
             
-    if arg_type == 1:
+    if path_type == 1:
         try:
             import zipfile
         except ImportError:
@@ -1402,7 +1402,7 @@ def syncer(install_file_path, target_path, arg_type=None, file_type=None):
                 log.msg("Exiting gracefully on user request.\n")
                 sys.exit(0)
                 
-    elif arg_type == 2:
+    elif path_type == 2:
         archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
         
         bugs_number = []
