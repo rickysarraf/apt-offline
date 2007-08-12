@@ -1693,29 +1693,33 @@ def main():
                  
         if options.install_update:
             #INFO: Comment these lines to do testing on Windows machines too
-            if os.geteuid() != 0:
-                log.err("\nYou need superuser privileges to execute this option\n")
-                sys.exit(1)
+	    try:
+            	if os.geteuid() != 0:
+		    log.err("\nYou need superuser privileges to execute this option\n")
+                    sys.exit(1)
+	    except AttributeError:
+	    	log.err("Are you really running the install command on a Debian box?\n")
+		sys.exit(1)
                 
             if os.path.isfile(options.install_update) is True:
                 # Okay! We're a file. It should be a zip file
-                syncer(options, 1)
+                syncer(options.install_update, apt_update_target_path, 1)
             elif os.path.isdir(options.install_update) is True:
                 # We're a directory
-                syncer(options, 2)
+                syncer(options.install_update, apt_update_target_path, 1)
             else:
                 log.err("%s file not found\n" % (options.install_update))
                 sys.exit(1)
             
         if options.install_upgrade:
             #INFO: Comment these lines to do testing on Windows machines too
-            #try:
-            #    if os.geteuid() != 0:
-            #        log.err("\nYou need superuser privileges to execute this option\n")
-            #        sys.exit(1)
-            #except AttributeError:
-            #    log.err("Are you really running the install command on a Debian box?\n")
-            #    sys.exit(1)
+            try:
+                if os.geteuid() != 0:
+                    log.err("\nYou need superuser privileges to execute this option\n")
+                    sys.exit(1)
+            except AttributeError:
+                log.err("Are you really running the install command on a Debian box?\n")
+                sys.exit(1)
             if os.path.isfile(options.install_upgrade) is True:
                 syncer(options.install_upgrade, apt_package_target_path, 1)
             elif os.path.isdir(options.install_upgrade) is True:
