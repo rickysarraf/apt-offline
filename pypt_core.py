@@ -69,9 +69,9 @@ pypt_bug_file_format = "__pypt__bug__report"
 bugTypes = ["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"]
 
 #These are spaces which will overwrite the progressbar left mess
+LINE_OVERWRITE_SMALL = " " * 10
 LINE_OVERWRITE_MID = " " * 30
 LINE_OVERWRITE_FULL = " " * 60
-LINE_OVERWRITE_SMALL = " " * 15
 
 # How many times should we retry on socket timeouts
 SOCKET_TIMEOUT_RETRY = 5
@@ -594,7 +594,7 @@ class DownloadFromWeb(ProgressBar):
                     socket_timeout = True
                     socket_counter += 1
                 if socket_counter == SOCKET_TIMEOUT_RETRY:
-                    errfunc(10054, "Max timeout retry count reached. Discontinuing file %s.\n", file)
+                    errfunc(101010, "Max timeout retry count reached. Discontinuing download.\n", file)
                     return False
                     #break
                 if socket_timeout is True:
@@ -631,7 +631,7 @@ class DownloadFromWeb(ProgressBar):
                 errfunc(e.code, e.reason, file)
                 
         except socket.timeout:
-            errfunc(10054, "Socket timeout.", file)
+            errfunc(10054, "Socket timeout.\n", file)
 
 def copy_first_match(cache_dir, filename, dest_dir, checksum): # aka new_walk_tree_copy() 
     '''Walks into "reposiotry" looking for "filename".
@@ -654,7 +654,7 @@ def copy_first_match(cache_dir, filename, dest_dir, checksum): # aka new_walk_tr
                 try:
                     shutil.copy(os.path.join(path, file), dest_dir)
                 except shutil.Error:
-                    log.verbose("%s already available in dest_dir. Skipping copy!!!\n\n" % (file))
+                    log.verbose("%s already available in dest_dir. Skipping copy!!!\n" % (file))
                 return True
     return False
 
@@ -698,11 +698,12 @@ def errfunc(errno, errormsg, filename):
     This function does the job of behaving accordingly
     as per the error codes.
     '''
-    error_codes = [-3, 13, 504, 404, 10060, 104, 10054]
+    error_codes = [-3, 13, 504, 404, 10060, 104, 101010]
     # 104, 'Connection reset by peer'
     # 504 is for gateway timeout
     # 404 is for URL error. Page not found.
     # 10060 is for Operation Time out. There can be multiple reasons for this timeout
+    # 101010 is for socket max retry count
     # 10054 is for Socket Timeout. Socket Timeout are seen during network congestion
     
     #TODO: Find out what these error codes are for
@@ -710,7 +711,11 @@ def errfunc(errno, errormsg, filename):
     # 13 is for "Permission Denied" when you don't have privileges to access the destination 
     if errno in error_codes:
         log.err("%s - %s - %s.%s\n" % (filename, errno, errormsg, LINE_OVERWRITE_MID))
-        log.verbose(" Will still try with other package uris\n\n")
+        log.verbose("Will still try with other package uris\n")
+        pass
+    
+    elif errno == 10054:
+        log.verbose("%s - %s - %s.%s\n" % (filename, errno, errormsg, LINE_OVERWRITE_SMALL) )
         pass
     
     elif errno == 407 or errno == 2:
@@ -880,11 +885,11 @@ def fetcher(ArgumentOptions, arg_type = None):
                     PackageName += " - " + temp_file[len(temp_file) - 1]
                     del temp_file
                     
-                    log.msg("Downloading %s\n" % (PackageName) ) 
+                    log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
                     if FetcherInstance.download_from_web(url, file, download_path) != True:
                         errlist.append(file)
                     else:
-                        log.success("\n%s done.\n" % (PackageName) )
+                        log.success("%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                         if ArgumentOptions.zip_it:
                             if FetcherInstance.compress_the_file(zip_update_file, file) != True:
                                 log.verbose("%s added to archive %s.\n" % (file, zip_update_file) )
@@ -895,7 +900,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                 elif key == 'Upgrade':
                     PackageName = file.split("_")[0]
                     if cache_dir is None:
-                        log.msg("Downloading %s - %d KB\n" % (file, size/1024 ) )
+                        log.msg("Downloading %s - %d KB%s\n" % (file, size/1024, LINE_OVERWRITE_FULL) )
                         
                         if FetcherInstance.download_from_web(url, file, download_path) != True:
                             errlist.append(PackageName)
@@ -909,7 +914,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     log.verbose("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
                             
                             if ArgumentOptions.zip_it:
-                                log.success("\n%s done.\n" % (PackageName) )
+                                log.success("%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                 FetcherInstance.compress_the_file(zip_upgrade_file, file)
                                 os.unlink(os.path.join(download_path, file))
                                 
@@ -919,12 +924,12 @@ def fetcher(ArgumentOptions, arg_type = None):
                                             
                     else:
                         if find_first_match(cache_dir, file, download_path, checksum) == False:
-                            log.msg("Downloading %s - %d KB\n" % (PackageName, size/1024 ) )
+                            log.msg("Downloading %s - %d KB%s\n" % (PackageName, size/1024, LINE_OVERWRITE_MID) )
                             
                             if FetcherInstance.download_from_web(url, file, download_path) != True:
                                  errlist.append(PackageName)
                             else:
-                                log.success("\n%s done.\n" % (PackageName) )
+                                log.success("%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                 if os.access(os.path.join(cache_dir, file), os.F_OK):
                                     log.verbose("%s file is already present in cache-dir %s. Skipping copy.\n" % (file, cache_dir) ) #INFO: The file is already there.
                                 else:
@@ -1013,7 +1018,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                     exit_status = response.get()
                     
                     if exit_status == False:
-                        log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) ) 
+                        log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
                         
                         if FetcherInstance.download_from_web(url, file, download_path) == True:
                             log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
@@ -1066,7 +1071,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                         shutil.copy(full_file_path, download_path)
                                         log.success("%s copied from local cache directory %s.%s\n" % (PackageName, cache_dir, LINE_OVERWRITE_MID) )
                                     except shutil.Error:
-                                        log.verbose("%s already available in %s. Skipping copy!!!%s\n\n" % (file, download_path, LINE_OVERWRITE_MID) )
+                                        log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (file, download_path, LINE_OVERWRITE_MID) )
                                     
                                     if bug_fetched == 1:
                                         for x in os.listdir(os.curdir):
@@ -1078,7 +1083,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                             # The file is corrupted and we need to download a new copy from the internet
                             else:
                                 log.verbose("%s MD5 checksum mismatch. Skipping file.%s\n" % (file, LINE_OVERWRITE_FULL) )
-                                log.msg("Downloading %s - %d KB%s\n" % (PackageName, download_size/1024, LINE_OVERWRITE_FULL) )
+                                log.msg("Downloading %s - %d KB%s\n" % (PackageName, download_size/1024, LINE_OVERWRITE_MID) )
                                 if FetcherInstance.download_from_web(url, file, download_path) == True:
                                     log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                     
@@ -1088,7 +1093,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                             shutil.copy(file, cache_dir)
                                             log.verbose("%s copied to local cache directory %s.%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
                                         except shutil.Error:
-                                            log.verbose("Couldn't copy %s to %s.%s\n\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_FULL) )
+                                            log.verbose("Couldn't copy %s to %s.%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_FULL) )
                                             
                                     #Fetch bug reports
                                     if ArgumentOptions.deb_bugs:
@@ -1133,7 +1138,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     shutil.copy(full_file_path, download_path)
                                     log.success("%s copied from local cache directory %s.%s\n" % (file, cache_dir, LINE_OVERWRITE_SMALL) )
                                 except shutil.Error:
-                                    log.verbose("%s already available in dest_dir. Skipping copy!!!%s\n\n" % (file, LINE_OVERWRITE_SMALL) )
+                                    log.verbose("%s already available in dest_dir. Skipping copy!!!%s\n" % (file, LINE_OVERWRITE_SMALL) )
                                     
                                 # And also the bug reports
                                 if bug_fetched == 1:
@@ -1146,7 +1151,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                         #INFO: This block gets executed if the file is not found in local cache_dir or cache_dir is None
                         # We go ahead and try to download it from the internet
                         log.verbose("%s not available in local cache %s.%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
-                        log.msg("Downloading %s - %d KB%s\n" % (PackageName, download_size/1024, LINE_OVERWRITE_FULL) )
+                        log.msg("Downloading %s - %d KB%s\n" % (PackageName, download_size/1024, LINE_OVERWRITE_MID) )
                         if FetcherInstance.download_from_web(url, file, download_path) == True:
                             
                             #INFO: This block gets executed if md5checksum is allowed
@@ -1158,7 +1163,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                             shutil.copy(file, ArgumentOptions.cache_dir)
                                             log.verbose("%s copied to local cache directory %s.%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
                                         except shutil.Error:
-                                            log.verbose("%s already available in %s. Skipping copy!!!%s\n\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
+                                            log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
                                             
                                     if ArgumentOptions.deb_bugs:
                                         if FetchBugReportsDebian.FetchBugsDebian(PackageName):
