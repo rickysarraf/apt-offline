@@ -401,12 +401,12 @@ class Archiver:
                 return False
             
             #try:
-            read_from = gzip.GzipFile(file, 'r')
+            read_from = gzip.GzipFile(archive_file, 'r')
             #except:
             #    return False
                             
             #try:
-            write_to = open(os.path.join(path,filename), 'wb')
+            write_to = open(os.path.join(path,target_file), 'wb')
             #except:
             #    return False            
             
