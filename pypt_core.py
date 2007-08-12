@@ -1593,7 +1593,7 @@ def main():
                 if os.geteuid() != 0:
                     parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                 else:
-                    log.msg("Generating database of files that are needed for an update.\n")
+                    log.msg("\n\nGenerating database of files that are needed for an update.\n")
                     
                     #FIXME: Unicode Fix
                     # This is only a workaround.
@@ -1622,17 +1622,17 @@ def main():
                     parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                 #TODO: Use a more Pythonic way for it
                 if options.upgrade_type == "upgrade":
-                    log.msg("Generating database of files that are needed for an upgrade.\n")
+                    log.msg("\n\nGenerating database of files that are needed for an upgrade.\n")
                     os.environ['__pypt_set_upgrade'] = options.set_upgrade
                     if os.system('/usr/bin/apt-get -qq --print-uris upgrade > $__pypt_set_upgrade') != 0:
                         log.err("FATAL: Something is wrong with the apt system.\n")
                 elif options.upgrade_type == "dist-upgrade":
-                    log.msg("Generating database of files that are needed for a dist-upgrade.\n")
+                    log.msg("\n\nGenerating database of files that are needed for a dist-upgrade.\n")
                     os.environ['__pypt_set_upgrade'] = options.set_upgrade
                     if os.system('/usr/bin/apt-get -qq --print-uris dist-upgrade > $__pypt_set_upgrade') != 0:
                         log.err("FATAL: Something is wrong with the apt system.\n")
                 elif options.upgrade_type == "dselect-upgrade":
-                    log.msg("Generating database of files that are needed for a dselect-upgrade.\n")
+                    log.msg("\n\nGenerating database of files that are needed for a dselect-upgrade.\n")
                     os.environ['__pypt_set_upgrade'] = options.set_upgrade
                     if os.system('/usr/bin/apt-get -qq --print-uris dselect-upgrade > $__pypt_set_upgrade') != 0:
                         log.err("FATAL: Something is wrong with the apt system.\n")
@@ -1650,7 +1650,7 @@ def main():
                 if os.geteuid() != 0:
                     parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
                     
-                log.msg("Generating database of the package and its dependencies.\n")
+                log.msg("\n\nGenerating database of the package and its dependencies.\n")
                 os.environ['__pypt_set_install'] = options.set_install
                 os.environ['__pypt_set_install_packages'] = ''
                 
