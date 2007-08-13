@@ -1293,20 +1293,19 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
             retval = archive.decompress_the_file(archive_file, target_path, filename, 2)
         elif pypt_magic.file(archive_file) == "application/zip":
             retval = archive.decompress_the_file(os.path.join(install_file_path, eachfile), target_path, eachfile, 3)
-        elif pypt_magic.file(filename) == "PGP armored data" or pypt_magic.file(filename) == "application/x-dpkg":
+        elif pypt_magic.file(archive_file) == "PGP armored data" or pypt_magic.file(archive_file) == "application/x-dpkg":
             if os.access(target_path, os.W_OK):
-                shutil.copy(filename, target_path)
+                shutil.copy(archive_file, target_path + filename)
                 retval = True
             else:
                 log.err("ERROR: Cannot write to target path %s\n" % (target_path) )
-		sys.exit(1)
+                sys.exit(1)
         elif filename.endswith(pypt_bug_file_format):
             retval = False # We intentionally put the bug report files as not printed.
         else:
             log.err("ERROR: I couldn't understand file type %s.\n" % (filename) )
         if retval is True:
             log.msg("%s file synced.\n" % (filename))
-        os.unlink(archive_file)
         
     if path_type == 1:
         
@@ -1348,23 +1347,13 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
                     elif response.startswith('y') or response.startswith('Y'):
                         for filename in file.namelist():
                             
-                            data = open(filename, "wb")
-                            data.write(file.read(filename))
-                            data.close()
+                            data = tempfile.NamedTemporaryFile()
+                            data.file.write(file.read(filename))
+                            data.file.flush()
+                            archive_file = data.name
                             
-                            #FIXME: Fix this tempfile feature
-                            # Access to the temporary file is not being allowed
-                            # It's throwing a Permission denied exception
-                            #try:
-                            #    import tempfile
-                            #except ImportError:
-                            #    sys.stderr.write("Aieeee! Module pypt_magic not found.\n")
-                            #    sys.exit(1)
-                            #data = tempfile.NamedTemporaryFile('wb', -1, '', '', os.curdir)
-                            #data.write(file.read(filename))
-                            #data = file.read(filename)
-                            
-                            magic_check_and_uncompress(os.path.abspath(filename), target_path, filename)
+                            magic_check_and_uncompress(archive_file, target_path, filename)
+                            data.file.close()
                         sys.exit(0)
                             
                     elif response.startswith('n') or response.startswith('N'):
@@ -1406,11 +1395,13 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
                     log.verbose("Continuing with syncing the files.\n")
                     for filename in file.namelist():
                         
-                        data = open(filename, "wb")
-                        data.write(file.read(filename))
-                        data.close()
-                        
+                        data = tempfile.NamedTemporaryFile()
+                        data.file.write(file.read(filename))
+                        data.file.flush()
+                        archive_file = data.name
+                            
                         magic_check_and_uncompress(os.path.abspath(filename), target_path, filename)
+                        data.file.close()
                 else:
                     log.msg("Exiting gracefully on user request.\n")
                     sys.exit(0)
@@ -1418,22 +1409,13 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
                 
             for filename in file.namelist():
                 
-                data = open(filename, "wb")
-                data.write(file.read(filename))
-                data.close()
+                data = tempfile.NamedTemporaryFile()
+                data.file.write(file.read(filename))
+                data.file.flush()
+                archive_file = data.name
                             
-                #FIXME: Fix this tempfile feature
-                # Access to the temporary file is not being allowed
-                # It's throwing a Permission denied exception
-                #try:
-                #    import tempfile
-                #except ImportError:
-                #    sys.stderr.write("Aieeee! Module pypt_magic not found.\n")
-                #    sys.exit(1)
-                #data = tempfile.NamedTemporaryFile('wb', -1, '', '', os.curdir)
-                #data.write(file.read(filename))
-                #data = file.read(filename)
                 magic_check_and_uncompress(os.path.abspath(filename), target_path, filename)
+                data.file.close()
         else:
             log.err("ERROR: Inappropriate argument sent to syncer during data fetch. Do you need to fetch bugs or not?\n")    
             sys.exit(1)
