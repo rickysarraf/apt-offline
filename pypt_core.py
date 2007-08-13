@@ -56,7 +56,7 @@ except ImportError:
 version = "0.7.0"
 copyright = "(C) 2005 - 2007 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
-This is free software, and you are welcome to redistribute it under certain conditions.\n"
+This is free software, and you are welcome to redistribute it under certain conditions.\n\n\n"
         
 errlist = []
 supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
@@ -379,15 +379,15 @@ class Archiver:
             except ImportError:
                 return False
             
-            #try:
-            read_from = bz2.BZ2File(archive_file, 'r')
-            #except:
-            #    return False
+            try:
+                read_from = bz2.BZ2File(archive_file, 'r')
+            except IOError:
+                return False
                             
-            #try:
-            write_to = open (os.path.join(path, target_file), 'wb')
-            #except:
-            #    return False
+            try:
+                write_to = open (os.path.join(path, target_file), 'wb')
+            except IOError:
+                return False
                             
             if self.TarGzipBZ2_Uncompress(read_from, write_to) != True:
                 raise ArchiveError
@@ -401,15 +401,15 @@ class Archiver:
             except ImportError:
                 return False
             
-            #try:
-            read_from = gzip.GzipFile(archive_file, 'r')
-            #except:
-            #    return False
+            try:
+                read_from = gzip.GzipFile(archive_file, 'r')
+            except IOError:
+                return False
                             
-            #try:
-            write_to = open(os.path.join(path,target_file), 'wb')
-            #except:
-            #    return False            
+            try:
+                write_to = open(os.path.join(path,target_file), 'wb')
+            except IOError:
+                return False            
             
             if self.TarGzipBZ2_Uncompress(read_from, write_to) != True:
                 raise ArchiveError
@@ -1400,7 +1400,7 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
                         data.file.flush()
                         archive_file = data.name
                             
-                        magic_check_and_uncompress(os.path.abspath(filename), target_path, filename)
+                        magic_check_and_uncompress(archive_file, target_path, filename)
                         data.file.close()
                 else:
                     log.msg("Exiting gracefully on user request.\n")
@@ -1414,7 +1414,7 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
                 data.file.flush()
                 archive_file = data.name
                             
-                magic_check_and_uncompress(os.path.abspath(filename), target_path, filename)
+                magic_check_and_uncompress(archive_file, target_path, filename)
                 data.file.close()
         else:
             log.err("ERROR: Inappropriate argument sent to syncer during data fetch. Do you need to fetch bugs or not?\n")    
@@ -1445,7 +1445,7 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
                         for eachfile in os.listdir(install_file_path):
                             archive_type = None
                                 
-                            magic_check_and_uncompress(os.path.abspath(filename), target_path, filename)
+                            magic_check_and_uncompress(archive_file, target_path, filename)
                             
                     elif response.startswith('n') or response.startswith('N'):
                         log.err("Exiting gracefully on user request.\n\n")
@@ -1488,7 +1488,7 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
                     for eachfile in os.listdir(install_file_path):
                         archive_type = None
                             
-                        magic_check_and_uncompress(os.path.abspath(filename), target_path, filename)
+                        magic_check_and_uncompress(archive_file, target_path, filename)
                 else:
                     log.msg("Exiting gracefully on user request.\n")
                     sys.exit(0)
@@ -1496,7 +1496,7 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
             for eachfile in os.listdir(install_file_path):
                 archive_type = None
                     
-                magic_check_and_uncompress(os.path.abspath(filename), target_path, filename)
+                magic_check_and_uncompress(archive_file, target_path, filename)
         else:
             log.err("ERROR: Inappropriate argument sent to syncer during data fetch. Do you need to fetch bugs or not?\n")    
             sys.exit(1)
