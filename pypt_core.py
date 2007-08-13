@@ -29,6 +29,7 @@ import signal
 import optparse
 import array
 import socket
+import tempfile
 
 from array import array
 
@@ -1320,14 +1321,17 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
             bugs_number = {}
             for filename in file.namelist():
                 if filename.endswith(pypt_bug_file_format):
-                    bug_subject_file = file.read(filename)
-                    bug_subject = bug_subject_file.split('\r')
-                    del bug_subject_file
-                    for subject in bug_subject:
-                        if subject.startswith('#'):
-                            subject = subject.lstrip(subject.split(":")[0])
+                    temp = tempfile.NamedTemporaryFile()
+                    temp.file.write(file.read(filename))
+                    temp.file.flush()
+                    temp.file.seek(0) #Let's go back to the start of the file
+                    for bug_subject_identifier in temp.file.readlines():
+                        if bug_subject_identifier.startswith('#'):
+                            subject = bug_subject_identifier.lstrip(bug_subject_identifier.split(":")[0])
+                            subject = subject.rstrip("\n")
                             break
                     bugs_number[filename] = subject
+                    temp.file.close()
                     
             if bugs_number:
                 # Display the list of bugs
@@ -1726,13 +1730,13 @@ def main():
             
         if options.install_upgrade:
             #INFO: Comment these lines to do testing on Windows machines too
-            try:
-                if os.geteuid() != 0:
-                    log.err("\nYou need superuser privileges to execute this option\n")
-                    sys.exit(1)
-            except AttributeError:
-                log.err("Are you really running the install command on a Debian box?\n")
-                sys.exit(1)
+            #try:
+            #    if os.geteuid() != 0:
+            #        log.err("\nYou need superuser privileges to execute this option\n")
+            #        sys.exit(1)
+            #except AttributeError:
+            #    log.err("Are you really running the install command on a Debian box?\n")
+            #    sys.exit(1)
             if os.path.isfile(options.install_upgrade) is True:
                 syncer(options.install_upgrade, apt_package_target_path, 1, bug_parse_required = True)
             elif os.path.isdir(options.install_upgrade) is True:
