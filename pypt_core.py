@@ -1298,7 +1298,8 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
                 shutil.copy(filename, target_path)
                 retval = True
             else:
-                log.err("ERROR: Cannot write to target path %s.\n" % (target_path) )
+                log.err("ERROR: Cannot write to target path %s\n" % (target_path) )
+		sys.exit(1)
         elif filename.endswith(pypt_bug_file_format):
             retval = False # We intentionally put the bug report files as not printed.
         else:
