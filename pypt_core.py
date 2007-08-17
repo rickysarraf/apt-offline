@@ -70,9 +70,6 @@ errlist = []
 supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
 apt_update_target_path = '/var/lib/apt/lists/'
 apt_package_target_path = '/var/cache/apt/archives/'
-# Dummy paths while testing on Windows
-#apt_update_target_path = 'C:\\temp'
-#apt_package_target_path = 'C:\\temp'
 
 pypt_bug_file_format = "__pypt__bug__report"
 bugTypes = ["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"]
@@ -1532,6 +1529,7 @@ def main():
                       action="store", type="string", metavar="pypt-offline-upgrade.zip")
     parser.add_option("", "--fetch-bug-reports", dest="deb_bugs",
                       help="Fetch bug reports from the BTS", action="store_true")
+    parser.add_option("", "--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.", action="store_true")
     #global options, args
     (options, args) = parser.parse_args()
     
@@ -1662,14 +1660,19 @@ def main():
                 sys.exit(1)
                  
         if options.install_update:
-            #INFO: Comment these lines to do testing on Windows machines too
-            #try:
-            #    if os.geteuid() != 0:
-            #        log.err("\nYou need superuser privileges to execute this option\n")
-            #        sys.exit(1)
-            #except AttributeError:
-            #    log.err("Are you really running the install command on a Debian box?\n")
-            #    sys.exit(1)
+            if options.test_windows:
+                # Dummy paths while testing on Windows
+                apt_update_target_path = 'C:\\temp'
+                apt_package_target_path = 'C:\\temp'
+                pass
+            else:
+                try:
+                    if os.geteuid() != 0:
+                        log.err("\nYou need superuser privileges to execute this option\n")
+                        sys.exit(1)
+                except AttributeError:
+                    log.err("Are you really running the install command on a Debian box?\n")
+                    sys.exit(1)
                 
             if os.path.isfile(options.install_update) is True:
                 # Okay! We're a file. It should be a zip file
@@ -1682,14 +1685,20 @@ def main():
                 sys.exit(1)
             
         if options.install_upgrade:
-            #INFO: Comment these lines to do testing on Windows machines too
-            #try:
-            #    if os.geteuid() != 0:
-            #        log.err("\nYou need superuser privileges to execute this option\n")
-            #        sys.exit(1)
-            #except AttributeError:
-            #    log.err("Are you really running the install command on a Debian box?\n")
-            #    sys.exit(1)
+            if options.test_windows:
+                # Dummy paths while testing on Windows
+                apt_update_target_path = 'C:\\temp'
+                apt_package_target_path = 'C:\\temp'
+                pass
+            else:
+                try:
+                    if os.geteuid() != 0:
+                        log.err("\nYou need superuser privileges to execute this option\n")
+                        sys.exit(1)
+                except AttributeError:
+                    log.err("Are you really running the install command on a Debian box?\n")
+                    sys.exit(1)
+                    
             if os.path.isfile(options.install_upgrade) is True:
                 syncer(options.install_upgrade, apt_package_target_path, 1, bug_parse_required = True)
             elif os.path.isdir(options.install_upgrade) is True:
