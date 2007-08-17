@@ -1562,7 +1562,10 @@ def main():
                     # When using locales, we get translation files. But apt doesn't extract the URI properly.
                     # Once the extraction problem is root-caused, we can fix this easily.
                     os.environ['__pypt_set_update'] = options.set_update
-                    old_environ = os.environ['LANG']
+                    try:
+                        old_environ = os.environ['LANG']
+                    except KeyError:
+                        old_environ = "C"
                     os.environ['LANG'] = "C"
                     log.verbose("Set environment variable for LANG from %s to %s temporarily.\n" % (old_environ, os.environ['LANG']) )
                     if os.system('/usr/bin/apt-get -qq --print-uris update > $__pypt_set_update') != 0:
