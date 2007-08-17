@@ -74,6 +74,7 @@ apt_package_target_path = '/var/cache/apt/archives/'
 pypt_bug_file_format = "__pypt__bug__report"
 bugTypes = ["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"]
 
+
 #These are spaces which will overwrite the progressbar left mess
 LINE_OVERWRITE_SMALL = " " * 10
 LINE_OVERWRITE_MID = " " * 30
@@ -1543,6 +1544,12 @@ def main():
         log.msg("Copyright %s\n" % (copyright))
         log.msg(terminal_license)
         
+        if options.test_windows:
+            global apt_package_target_path
+            global apt_update_target_path
+            apt_package_target_path = 'C:\\temp'
+            apt_update_target_path = 'C:\\temp'
+        
         if options.set_update:
             if platform.system() in supported_platforms:
                 if os.geteuid() != 0:
@@ -1661,8 +1668,6 @@ def main():
                  
         if options.install_update:
             if options.test_windows:
-                # Dummy paths while testing on Windows
-                apt_update_target_path = 'C:\\temp'
                 pass
             else:
                 try:
@@ -1678,15 +1683,13 @@ def main():
                 syncer(options.install_update, apt_update_target_path, 1, bug_parse_required = False)
             elif os.path.isdir(options.install_update) is True:
                 # We're a directory
-                syncer(options.install_update, apt_update_target_path, 1, bug_parse_required = False)
+                syncer(options.install_update, apt_update_target_path, 2, bug_parse_required = False)
             else:
                 log.err("%s file not found\n" % (options.install_update))
                 sys.exit(1)
             
         if options.install_upgrade:
             if options.test_windows:
-                # Dummy paths while testing on Windows
-                apt_package_target_path = 'C:\\temp'
                 pass
             else:
                 try:
