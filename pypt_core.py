@@ -31,11 +31,15 @@ import array
 import socket
 import tempfile
 
+import zipfile
+import bz2
+import gzip
+
+import debianbts
+
+import pypt_magic
+
 from array import array
-
-#INFO: Set the default timeout to 15 seconds for the packages that are being downloaded.
-socket.setdefaulttimeout(30)
-
 
 #INFO: They aren't on Windows
 try:
@@ -49,6 +53,10 @@ try:
     import WConio
 except ImportError:
     WindowColor = False
+
+#INFO: Set the default timeout to 15 seconds for the packages that are being downloaded.
+socket.setdefaulttimeout(30)
+
 
 '''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
@@ -86,7 +94,6 @@ class MD5Check:
     
     def md5_check(self, file, checksum):
         data = open(file, 'rb')
-        #local = md5_string(data)
         if checksum == self.md5_string(data):
             return True
         return False
@@ -242,10 +249,6 @@ class Log:
         elif os.name in ['nt', 'dos']:
             self.platform = None
             
-            #try:
-            #    import WConio
-            #except ImportError:
-            #    self.platform = None
             if WindowColor is True:
                 self.platform = 'microsoft'
                 
@@ -346,11 +349,6 @@ class Archiver:
         '''Condenses all the files into one single file for easy transfer'''
         
         try:
-            import zipfile
-        except ImportError:
-            return False
-        
-        try:
             if self.lock:
                 self.ZipLock.acquire(True)
             filename = zipfile.ZipFile(zip_file_name, "a")
@@ -374,10 +372,6 @@ class Archiver:
         
         
         if archive_type is 1:
-            try:
-                import bz2
-            except ImportError:
-                return False
             
             try:
                 read_from = bz2.BZ2File(archive_file, 'r')
@@ -396,10 +390,6 @@ class Archiver:
             return True
             
         elif archive_type is 2:
-            try:
-                import gzip
-            except ImportError:
-                return False
             
             try:
                 read_from = gzip.GzipFile(archive_file, 'r')
@@ -419,10 +409,10 @@ class Archiver:
             
         elif archive_type is 3:
             # FIXME: This looks odd. Where are we writing to a file ???
-            #try:
-            zip_file = zipfile.ZipFile(file, 'rb')
-            #except:
-            #    return False
+            try:
+                zip_file = zipfile.ZipFile(file, 'rb')
+            except IOError:
+                return False
                 
             for filename in zip_file.namelist():
                 data = zip_file.read()
@@ -444,15 +434,8 @@ class FetchBugReports(Archiver):
         if self.lock:
             Archiver.__init__(self, lock)
             self.ArchiveFile = ArchiveFile
-            #ArchiveFiles = Archiver(True)
-        #import debianbts
         
     def FetchBugsDebian(self, PackageName, Filename=None):
-        
-        try:
-            import debianbts
-        except ImportError:
-            return False
         
         if Filename != None:
             try:
@@ -895,7 +878,6 @@ def fetcher(ArgumentOptions, arg_type = None):
                             if FetcherInstance.compress_the_file(zip_update_file, file) != True:
                                 log.verbose("%s added to archive %s.\n" % (file, zip_update_file) )
                                 os.unlink(os.path.join(download_path, file) ) # Remove it because we don't need the file once it is zipped.
-                                #sys.exit(1)
                         pass
                                         
                 elif key == 'Upgrade':
@@ -1259,12 +1241,6 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
     
     archive = Archiver()
                 
-    try:
-        import pypt_magic
-    except ImportError:
-        log.err("Error: Module pypt_magic not found.\n")
-        sys.exit(1)
-                
     def display_options():
         
         log.msg("(Y) Yes. Proceed with installation\n")
@@ -1308,12 +1284,6 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
             log.msg("%s file synced.\n" % (filename))
         
     if path_type == 1:
-        
-        try:
-            import zipfile
-        except ImportError:
-            log.err("Error: Module zipfile not found.\n")
-            sys.exit(1)
             
         file = zipfile.ZipFile(install_file_path, "r")
         if bug_parse_required is True:
