@@ -1663,7 +1663,6 @@ def main():
             if options.test_windows:
                 # Dummy paths while testing on Windows
                 apt_update_target_path = 'C:\\temp'
-                apt_package_target_path = 'C:\\temp'
                 pass
             else:
                 try:
@@ -1687,7 +1686,6 @@ def main():
         if options.install_upgrade:
             if options.test_windows:
                 # Dummy paths while testing on Windows
-                apt_update_target_path = 'C:\\temp'
                 apt_package_target_path = 'C:\\temp'
                 pass
             else:
