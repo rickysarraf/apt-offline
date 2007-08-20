@@ -223,9 +223,7 @@ class Log:
     
     def __init__(self, verbose, lock = None):
             
-        if verbose is True:
-            self.VERBOSE = True
-        else: self.VERBOSE = False
+        self.VERBOSE = bool(verbose)
         
         self.color_syntax = '\033[1;'
         
