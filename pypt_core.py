@@ -1506,6 +1506,8 @@ def main():
                       action="store", metavar="pypt-offline-install.dat")
     parser.add_option("", "--set-install-packages", dest="set_install_packages", help="Name of the packages which need to be fetched",
                       action="store_true", metavar="package_names")
+    parser.add_option("", "--set-install-release", dest="set_install_release", help="Name of the release from which packages need to be fetched",
+                      action="store", metavar="release_name")
        
     parser.add_option("", "--set-update", dest="set_update", help="Extract the list of uris which need to be fetched for updation",
                       action="store", type="string", metavar="pypt-offline-update.dat")
@@ -1624,9 +1626,14 @@ def main():
                 for x in args:
                     os.environ['__pypt_set_install_packages'] += x + ' '
                     
-                #FIXME: Find a more Pythonic implementation
-                if os.system('/usr/bin/apt-get -qq --print-uris install $__pypt_set_install_packages > $__pypt_set_install') != 0:
-                    log.err("FATAL: Something is wrong with the apt system.\n")
+                if options.set_install_release:
+                    os.environ['__pypt_set_install_release'] = options.set_install_release
+                    if os.system('/usr/bin/apt-get -qq --print-uris -t $__pypt_set_install_release install $__pypt_set_install_packages > $__pypt_set_install') != 0:
+                        log.err("FATAL: Something is wrong with the apt system.\n")
+                else:
+                    #FIXME: Find a more Pythonic implementation
+                    if os.system('/usr/bin/apt-get -qq --print-uris install $__pypt_set_install_packages > $__pypt_set_install') != 0:
+                        log.err("FATAL: Something is wrong with the apt system.\n")
             else:
                 parser.error("This argument is supported only on Unix like systems with apt installed\n")
                 sys.exit(1)
