@@ -67,6 +67,9 @@ Path where the downloaded files will be saved to. Eg: C:\\debs or /var/tmp/debs
 \-s/\-\-cache\-dir path
 Path to search for files before downloading from the web. Eg: C:\\debs or /var/tmp/debs
 .TP
+\-\-socket\-timeout N
+Set socket timeout value. Default: 30
+.TP
 \-\-verbose
 Enable verbose messages
 .TP
@@ -131,6 +134,10 @@ Disabled by default but highly recommened to use it.
 .B Ritesh Raj Sarraf (rrs@researchut.com)
 
 .SH BUGS
+Currently there is no way to break out from the application which it is fetching the required packages.
+This is because when multiple threads are spawned, the signal needs to be handled accordingly. This is in the TODO list.
+
+
 If you wish to report a bug in pypt-offline, please see 
 .B http://sf.net/projects/pypt-offline
 or send an email to me at
