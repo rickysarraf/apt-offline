@@ -286,7 +286,7 @@ class Log:
             self.DispLock.acquire(True)
             
         self.set_color('Red')
-        sys.stderr.write(msg)
+        sys.stderr.write("ERROR: " + msg)
         sys.stderr.flush()
         self.set_color('SwitchOffAttributes')
         
@@ -318,7 +318,7 @@ class Log:
         if self.VERBOSE is True:
             
             self.set_color('Cyan')
-            sys.stdout.write(msg)
+            sys.stdout.write("VERBOSE: " + msg)
             sys.stdout.flush()
             self.set_color('SwitchOffAttributes')
         
@@ -710,7 +710,7 @@ def errfunc(errno, errormsg, filename):
         sys.exit(errno)
         
     else:
-        log.err("Error: I don't understand this errorcode\n" % (errno))
+        log.err("I don't understand this errorcode\n" % (errno))
         sys.exit(errno)
         
 def get_pager_cmd(pager_cmd = None):
@@ -799,7 +799,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                 os.mkdir("pypt-downloads")
                 download_path = os.path.abspath("pypt-downloads")
             except:
-                log.err("Error: I couldn't create a directory")
+                log.err("I couldn't create a directory")
                 errfunc(1, '')
     else:
             download_path = os.path.abspath(ArgumentOptions.download_dir)
@@ -1270,12 +1270,12 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
                 shutil.copy(archive_file, target_path + filename)
                 retval = True
             else:
-                log.err("ERROR: Cannot write to target path %s\n" % (target_path) )
+                log.err("Cannot write to target path %s\n" % (target_path) )
                 sys.exit(1)
         elif filename.endswith(pypt_bug_file_format):
             retval = False # We intentionally put the bug report files as not printed.
         else:
-            log.err("ERROR: I couldn't understand file type %s.\n" % (filename) )
+            log.err("I couldn't understand file type %s.\n" % (filename) )
         if retval is True:
             log.msg("%s file synced.\n" % (filename))
         
@@ -1383,7 +1383,7 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
                 magic_check_and_uncompress(archive_file, target_path, filename)
                 data.file.close()
         else:
-            log.err("ERROR: Inappropriate argument sent to syncer during data fetch. Do you need to fetch bugs or not?\n")    
+            log.err("Inappropriate argument sent to syncer during data fetch. Do you need to fetch bugs or not?\n")    
             sys.exit(1)
             
     elif path_type == 2:
@@ -1464,7 +1464,7 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
                     
                 magic_check_and_uncompress(archive_file, target_path, filename)
         else:
-            log.err("ERROR: Inappropriate argument sent to syncer during data fetch. Do you need to fetch bugs or not?\n")    
+            log.err("Inappropriate argument sent to syncer during data fetch. Do you need to fetch bugs or not?\n")    
             sys.exit(1)
                 
 def main():
