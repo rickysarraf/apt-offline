@@ -1483,12 +1483,11 @@ def main():
                       help="Root directory path where the pre-downloaded files will be searched.Make sure you give the full path of the cache directory. If not, give a period '.'",
                       action="store", type="string", metavar=".")
     parser.add_option("--verbose", dest="verbose", help="Enable verbose messages", action="store_true")
-    parser.add_option("-u","--uris", dest="uris_file",
-                      help="Full path of the uris file which contains the main database of files to be downloaded",action="store", type="string")
     parser.add_option("","--disable-md5check", dest="disable_md5check",
                       help="Disable md5checksum validation on downloaded files",action="store_false", default=False)
     parser.add_option("", "--threads", dest="num_of_threads", help="Number of threads to spawn",
                       action="store", type="int", metavar="1", default=1)
+    parser.add_option("", "--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.", action="store_true")
        
     #INFO: Option zip is not enabled by default but is highly encouraged.
     parser.add_option("-z","--zip", dest="zip_it", help="Zip the downloaded files to a single zip file", action="store_true")
@@ -1511,26 +1510,27 @@ def main():
        
     parser.add_option("", "--set-update", dest="set_update", help="Extract the list of uris which need to be fetched for updation",
                       action="store", type="string", metavar="pypt-offline-update.dat")
-    parser.add_option("", "--fetch-update", dest="fetch_update",
-                      help="Fetch the list of uris which are needed for apt's databases _updation_. This command must be executed on the WITHNET machine",
-                      action="store", type="string", metavar="pypt-offline-update.dat")
-    parser.add_option("", "--install-update", dest="install_update",
-                      help="Install the fetched database files to the  NONET machine and _update_ the apt database on the NONET machine. This command must be executed on the NONET machine",
-                      action="store", type="string", metavar="pypt-offline-update.zip")
     parser.add_option("", "--set-upgrade", dest="set_upgrade", help="Extract the list of uris which need to be fetched for _upgradation_",
                       action="store", type="string", metavar="pypt-offline-upgrade.dat")
     parser.add_option("", "--upgrade-type", dest="upgrade_type",
                       help="Type of upgrade to do. Use one of upgrade, dist-upgrade, dselect-ugprade",
                       action="store", type="string", metavar="upgrade")
+    
+    parser.add_option("", "--fetch-update", dest="fetch_update",
+                      help="Fetch the list of uris which are needed for apt's databases _updation_. This command must be executed on the WITHNET machine",
+                      action="store", type="string", metavar="pypt-offline-update.dat")
     parser.add_option("", "--fetch-upgrade", dest="fetch_upgrade",
                       help="Fetch the list of uris which are needed for apt's databases _upgradation_. This command must be executed on the WITHNET machine",
                       action="store", type="string", metavar="pypt-offline-upgrade.dat")
+    parser.add_option("", "--fetch-bug-reports", dest="deb_bugs",
+                      help="Fetch bug reports from the BTS", action="store_true")
+    
+    parser.add_option("", "--install-update", dest="install_update",
+                      help="Install the fetched database files to the  NONET machine and _update_ the apt database on the NONET machine. This command must be executed on the NONET machine",
+                      action="store", type="string", metavar="pypt-offline-update.zip")
     parser.add_option("", "--install-upgrade", dest="install_upgrade",
                       help="Install the fetched packages to the  NONET machine and _upgrade_ the packages on the NONET machine. This command must be executed on the NONET machine",
                       action="store", type="string", metavar="pypt-offline-upgrade.zip")
-    parser.add_option("", "--fetch-bug-reports", dest="deb_bugs",
-                      help="Fetch bug reports from the BTS", action="store_true")
-    parser.add_option("", "--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.", action="store_true")
     #global options, args
     (options, args) = parser.parse_args()
     
