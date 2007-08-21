@@ -1488,6 +1488,8 @@ def main():
     parser.add_option("", "--threads", dest="num_of_threads", help="Number of threads to spawn",
                       action="store", type="int", metavar="1", default=1)
     parser.add_option("", "--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.", action="store_true")
+    parser.add_option("", "--socket-timeout", dest="socket_timeout", help="Set the socket timeout value. Default is 30s.",
+                      action="store", type="int", metavar="30", default=30)
        
     #INFO: Option zip is not enabled by default but is highly encouraged.
     parser.add_option("-z","--zip", dest="zip_it", help="Zip the downloaded files to a single zip file", action="store_true")
@@ -1544,6 +1546,15 @@ def main():
         log.msg("Copyright %s\n" % (copyright))
         log.msg(terminal_license)
         
+        if options.socket_timeout:
+            try:
+                options.socket_timeout.__int__()
+                socket.setdefaulttimeout(options.socket_timeout)
+                log.verbose("Default timeout now is: %d.\n" % (socket.getdefaulttimeout() ) )
+            except AttributeError:
+                log.err("Incorrect value set for socket timeout.\n")
+                sys.exit(1)
+                
         if options.test_windows:
             global apt_package_target_path
             global apt_update_target_path
