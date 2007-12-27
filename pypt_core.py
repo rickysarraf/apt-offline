@@ -27,7 +27,6 @@ import Queue
 import threading
 import signal
 import optparse
-import array
 import socket
 import tempfile
 
@@ -906,7 +905,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                             log.msg("Downloading %s - %d KB%s\n" % (PackageName, size/1024, LINE_OVERWRITE_MID) )
                             
                             if FetcherInstance.download_from_web(url, file, download_path) != True:
-                                 errlist.append(PackageName)
+                                errlist.append(PackageName)
                             else:
                                 log.success("%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                 if os.access(os.path.join(cache_dir, file), os.F_OK):
