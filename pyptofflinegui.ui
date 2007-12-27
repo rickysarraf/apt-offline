@@ -1,0 +1,895 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>pyptofflineguiForm</class>
+<widget class="QMainWindow">
+    <property name="name">
+        <cstring>pyptofflineguiForm</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>618</width>
+            <height>480</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>pypt-offline | Offline Package Manager | (C) Ritesh Raj Sarraf - RESEARCHUT</string>
+    </property>
+    <property name="usesTextLabel">
+        <bool>true</bool>
+    </property>
+    <widget class="QTabWidget">
+        <property name="name">
+            <cstring>pyptTabWidget</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>0</y>
+                <width>600</width>
+                <height>430</height>
+            </rect>
+        </property>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>tab</cstring>
+            </property>
+            <attribute name="title">
+                <string>Welcome</string>
+            </attribute>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>110</x>
+                        <y>81</y>
+                        <width>361</width>
+                        <height>80</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>48</pointsize>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>&lt;p align="center"&gt;pypt-offline&lt;/p&gt;</string>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel1_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>150</x>
+                        <y>190</y>
+                        <width>280</width>
+                        <height>24</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>&lt;p align="center"&gt;&lt;font&gt;&lt;font size="+1"&gt;Offline Package Manager&lt;/font&gt;&lt;/font&gt;&lt;/p&gt;</string>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>140</x>
+                        <y>220</y>
+                        <width>291</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>&lt;p align="center"&gt;&lt;font size="+1"&gt;(C) Ritesh Raj Sarraf - RESEARCHUT&lt;/font&gt;&lt;/p&gt;</string>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>tab</cstring>
+            </property>
+            <attribute name="title">
+                <string>Set</string>
+            </attribute>
+            <widget class="QLayoutWidget">
+                <property name="name">
+                    <cstring>layout20</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>20</y>
+                        <width>380</width>
+                        <height>210</height>
+                    </rect>
+                </property>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <widget class="QLabel" row="2" column="0">
+                        <property name="name">
+                            <cstring>setInstallPackageTextLabel</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Install Packages</string>
+                        </property>
+                        <property name="buddy" stdset="0">
+                            <cstring>setInstallPackagesLineEdit</cstring>
+                        </property>
+                    </widget>
+                    <widget class="QComboBox" row="1" column="1">
+                        <item>
+                            <property name="text">
+                                <string></string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>upgrade</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>dist-upgrade</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>dselect-upgrade</string>
+                            </property>
+                        </item>
+                        <property name="name">
+                            <cstring>setUpgradeTypeComboBox</cstring>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                            <string>Select the type of upgrade you want to perform</string>
+                        </property>
+                    </widget>
+                    <widget class="QLineEdit" row="3" column="1">
+                        <property name="name">
+                            <cstring>setFilePathLineEdit</cstring>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>255</red>
+                                <green>255</green>
+                                <blue>255</blue>
+                            </color>
+                        </property>
+                        <property name="alignment">
+                            <set>AlignAuto</set>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                            <string>Full path to a file you want to write to</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="3" column="2">
+                        <property name="name">
+                            <cstring>pushButton6</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Browse</string>
+                        </property>
+                    </widget>
+                    <widget class="QLabel" row="1" column="0">
+                        <property name="name">
+                            <cstring>setUpgradeTypeTextLabel</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Upgrade Type</string>
+                        </property>
+                        <property name="buddy" stdset="0">
+                            <cstring>setUpgradeTypeComboBox</cstring>
+                        </property>
+                    </widget>
+                    <widget class="QLabel" row="0" column="0">
+                        <property name="name">
+                            <cstring>setInstallationTypeTextLabel</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Installation Type</string>
+                        </property>
+                        <property name="buddy" stdset="0">
+                            <cstring>comboBox3</cstring>
+                        </property>
+                    </widget>
+                    <widget class="QLabel" row="3" column="0">
+                        <property name="name">
+                            <cstring>setFilePathTextLabel</cstring>
+                        </property>
+                        <property name="text">
+                            <string>File Path</string>
+                        </property>
+                        <property name="buddy" stdset="0">
+                            <cstring>setFilePathLineEdit</cstring>
+                        </property>
+                    </widget>
+                    <widget class="QComboBox" row="0" column="1">
+                        <item>
+                            <property name="text">
+                                <string></string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>Update</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>Upgrade</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>Install</string>
+                            </property>
+                        </item>
+                        <property name="name">
+                            <cstring>setInstallationTypeComboBox</cstring>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                            <string>Select the type of installation you want to perform</string>
+                        </property>
+                    </widget>
+                    <widget class="QLineEdit" row="2" column="1">
+                        <property name="name">
+                            <cstring>setInstallPackagesLineEdit</cstring>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>255</red>
+                                <green>255</green>
+                                <blue>255</blue>
+                            </color>
+                        </property>
+                        <property name="font">
+                            <font>
+                                <bold>1</bold>
+                            </font>
+                        </property>
+                        <property name="alignment">
+                            <set>AlignAuto</set>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                            <string>Package names separated by space</string>
+                        </property>
+                    </widget>
+                </grid>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>pushButton5</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>450</x>
+                        <y>350</y>
+                        <width>100</width>
+                        <height>20</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Start</string>
+                </property>
+                <property name="accel">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QTextBrowser">
+                <property name="name">
+                    <cstring>textBrowser3</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>8</x>
+                        <y>249</y>
+                        <width>381</width>
+                        <height>140</height>
+                    </rect>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel3</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>8</x>
+                        <y>228</y>
+                        <width>191</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>textLabel3</string>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>TabPage</cstring>
+            </property>
+            <attribute name="title">
+                <string>Fetch</string>
+            </attribute>
+            <widget class="QLayoutWidget">
+                <property name="name">
+                    <cstring>layout22</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>18</x>
+                        <y>30</y>
+                        <width>340</width>
+                        <height>130</height>
+                    </rect>
+                </property>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <widget class="QRadioButton" row="0" column="0">
+                        <property name="name">
+                            <cstring>fetchUpdateDataRadioButton</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Update Data</string>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                            <string>Select this if you want to fetch the package database updates</string>
+                        </property>
+                    </widget>
+                    <widget class="QRadioButton" row="1" column="0">
+                        <property name="name">
+                            <cstring>fetchUpgradeDataRadioButton</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Upgrade Data</string>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                            <string>Select this if you want to fetch the packages which need to be upgraded/installed</string>
+                        </property>
+                    </widget>
+                    <widget class="QLineEdit" row="2" column="0">
+                        <property name="name">
+                            <cstring>fetchBrowseLineEdit</cstring>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>255</red>
+                                <green>255</green>
+                                <blue>255</blue>
+                            </color>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                            <string>Path to the data file that was generated on the disconnected machine</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="2" column="1">
+                        <property name="name">
+                            <cstring>fetchBrowsePushButton</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Browse</string>
+                        </property>
+                    </widget>
+                </grid>
+            </widget>
+            <widget class="QProgressBar">
+                <property name="name">
+                    <cstring>fetchProgressBar</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>20</x>
+                        <y>350</y>
+                        <width>340</width>
+                        <height>20</height>
+                    </rect>
+                </property>
+                <property name="toolTip" stdset="0">
+                    <string>Not Implemented Yet</string>
+                </property>
+            </widget>
+            <widget class="QButtonGroup">
+                <property name="name">
+                    <cstring>fetchOptionsButtonGroup</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>380</x>
+                        <y>20</y>
+                        <width>190</width>
+                        <height>290</height>
+                    </rect>
+                </property>
+                <property name="title">
+                    <string>Options</string>
+                </property>
+                <widget class="QCheckBox">
+                    <property name="name">
+                        <cstring>fetchZipCheckBox</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>8</x>
+                            <y>23</y>
+                            <width>91</width>
+                            <height>20</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Zip</string>
+                    </property>
+                    <property name="checked">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>fetchTargetDownloadFolderPushButton</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>150</x>
+                            <y>94</y>
+                            <width>30</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>...</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>fetchZipPushButton</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>150</x>
+                            <y>44</y>
+                            <width>30</width>
+                            <height>20</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>...</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>fetchCacheDirectoryPushButton</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>151</x>
+                            <y>140</y>
+                            <width>30</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>...</string>
+                    </property>
+                </widget>
+                <widget class="QCheckBox">
+                    <property name="name">
+                        <cstring>fetchCacheDirectoryCheckBox</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>8</x>
+                            <y>119</y>
+                            <width>170</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Cache Directory</string>
+                    </property>
+                </widget>
+                <widget class="QCheckBox">
+                    <property name="name">
+                        <cstring>fetchTargetDownloadFolderCheckbox</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>8</x>
+                            <y>71</y>
+                            <width>170</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Target Download Folder</string>
+                    </property>
+                </widget>
+                <widget class="QLineEdit">
+                    <property name="name">
+                        <cstring>fetchCacheDirectoryLineEdit</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>10</x>
+                            <y>140</y>
+                            <width>140</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>255</red>
+                            <green>255</green>
+                            <blue>255</blue>
+                        </color>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                        <string>Check this and specify the cache directory which contains pre-downloaded packages</string>
+                    </property>
+                </widget>
+                <widget class="QLineEdit">
+                    <property name="name">
+                        <cstring>fetchTargetDownloadFolderLineEdit</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>8</x>
+                            <y>94</y>
+                            <width>140</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>255</red>
+                            <green>255</green>
+                            <blue>255</blue>
+                        </color>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                        <string>Check this and specify the target download folder where the downloaded data will be saved</string>
+                    </property>
+                </widget>
+                <widget class="QLineEdit">
+                    <property name="name">
+                        <cstring>lineEdit7</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>8</x>
+                            <y>44</y>
+                            <width>141</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>255</red>
+                            <green>255</green>
+                            <blue>255</blue>
+                        </color>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                        <string>Check this and specify the full path for zip archive</string>
+                    </property>
+                </widget>
+                <widget class="QSpinBox">
+                    <property name="name">
+                        <cstring>fetchThreadsSpinBox</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>10</x>
+                            <y>260</y>
+                            <width>131</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="maxValue">
+                        <number>5</number>
+                    </property>
+                    <property name="minValue">
+                        <number>1</number>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                        <string>Number of threads you want to spawn</string>
+                    </property>
+                </widget>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>fetchThreadsTextLabel</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>10</x>
+                            <y>240</y>
+                            <width>121</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Threads</string>
+                    </property>
+                </widget>
+                <widget class="QCheckBox">
+                    <property name="name">
+                        <cstring>fetchDisableMD5ChecksumCheckBox</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>10</x>
+                            <y>190</y>
+                            <width>170</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Disable MD5 Checksum</string>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                        <string>Check this if you want to disable MD5 Checksum</string>
+                    </property>
+                </widget>
+                <widget class="QCheckBox">
+                    <property name="name">
+                        <cstring>checkBox5</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>10</x>
+                            <y>210</y>
+                            <width>170</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Fetch Bug Reports</string>
+                    </property>
+                    <property name="checked">
+                        <bool>true</bool>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                        <string>Check this if you want to download the bug reports</string>
+                    </property>
+                </widget>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>fetchStartButton</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>450</x>
+                        <y>350</y>
+                        <width>100</width>
+                        <height>20</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Start</string>
+                </property>
+            </widget>
+            <widget class="QTextBrowser">
+                <property name="name">
+                    <cstring>fetchTextBrowser</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>20</x>
+                        <y>181</y>
+                        <width>340</width>
+                        <height>160</height>
+                    </rect>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>fetchConsoleOutputTextLabel</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>20</x>
+                        <y>160</y>
+                        <width>141</width>
+                        <height>20</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Console Output</string>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>TabPage</cstring>
+            </property>
+            <attribute name="title">
+                <string>Install</string>
+            </attribute>
+            <widget class="QLayoutWidget">
+                <property name="name">
+                    <cstring>layout24</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>30</x>
+                        <y>20</y>
+                        <width>330</width>
+                        <height>130</height>
+                    </rect>
+                </property>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <widget class="QRadioButton" row="0" column="0">
+                        <property name="name">
+                            <cstring>installUpdateDataRadioButton</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Update Data</string>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                            <string>Select this to install the package database update</string>
+                        </property>
+                    </widget>
+                    <widget class="QRadioButton" row="1" column="0">
+                        <property name="name">
+                            <cstring>installUpgradeDataRadioButton</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Upgrade Data</string>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                            <string>Select this to install/upgrade the packages</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="2" column="1">
+                        <property name="name">
+                            <cstring>instalBrowsePushButton</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Browse</string>
+                        </property>
+                    </widget>
+                    <widget class="QLineEdit" row="2" column="0">
+                        <property name="name">
+                            <cstring>installLineEdit</cstring>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                            <string>Specify the zip archive or full folder path which contains the downloaded data</string>
+                        </property>
+                    </widget>
+                </grid>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel7</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>30</x>
+                        <y>150</y>
+                        <width>171</width>
+                        <height>31</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Console Output</string>
+                </property>
+            </widget>
+            <widget class="QTextBrowser">
+                <property name="name">
+                    <cstring>installTextBrowser</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>28</x>
+                        <y>184</y>
+                        <width>331</width>
+                        <height>201</height>
+                    </rect>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>installStartPushButton</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>450</x>
+                        <y>350</y>
+                        <width>100</width>
+                        <height>20</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Start</string>
+                </property>
+            </widget>
+        </widget>
+    </widget>
+</widget>
+<menubar>
+    <property name="name">
+        <cstring>MenuBar</cstring>
+    </property>
+    <item text="&amp;File" name="fileMenu">
+        <separator/>
+        <separator/>
+        <action name="fileExitAction"/>
+    </item>
+    <item text="&amp;Help" name="helpMenu">
+        <action name="helpAboutAction"/>
+        <separator/>
+    </item>
+</menubar>
+<toolbars>
+</toolbars>
+<actions>
+    <action>
+        <property name="name">
+            <cstring>fileExitAction</cstring>
+        </property>
+        <property name="text">
+            <string>Exit</string>
+        </property>
+        <property name="menuText">
+            <string>E&amp;xit</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>helpAboutAction</cstring>
+        </property>
+        <property name="text">
+            <string>About</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;About</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+    </action>
+</actions>
+<connections>
+    <connection>
+        <sender>fileExitAction</sender>
+        <signal>activated()</signal>
+        <receiver>pyptofflineguiForm</receiver>
+        <slot>close()</slot>
+    </connection>
+    <connection>
+        <sender>helpAboutAction</sender>
+        <signal>activated()</signal>
+        <receiver>pyptofflineguiForm</receiver>
+        <slot>helpAbout()</slot>
+    </connection>
+</connections>
+<slots>
+    <slot>fileNew()</slot>
+    <slot>fileOpen()</slot>
+    <slot>fileSave()</slot>
+    <slot>fileSaveAs()</slot>
+    <slot>filePrint()</slot>
+    <slot>fileExit()</slot>
+    <slot>helpIndex()</slot>
+    <slot>helpContents()</slot>
+    <slot>helpAbout()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
