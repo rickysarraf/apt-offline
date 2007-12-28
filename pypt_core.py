@@ -1489,6 +1489,8 @@ def main():
     parser.add_option("", "--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.", action="store_true")
     parser.add_option("", "--socket-timeout", dest="socket_timeout", help="Set the socket timeout value. Default is 30s.",
                       action="store", type="int", metavar="30", default=30)
+    parser.add_option("", "--gui", dest="gui", help="Run in Graphical Mode",
+                      action="store_true")
        
     #INFO: Option zip is not enabled by default but is highly encouraged.
     parser.add_option("-z","--zip", dest="zip_it", help="Zip the downloaded files to a single zip file", action="store_true")
@@ -1536,6 +1538,23 @@ def main():
     (options, args) = parser.parse_args()
     
     try:
+        if options.gui:
+            try:
+                from qt import *
+            except ImportError:
+                sys.exit(1)
+            
+            try:
+                from pyptofflinegui import pyptofflineguiForm
+            except ImportError:
+                sys.exit(1)
+                
+            app = QApplication(sys.argv)
+            QObject.connect(app, SIGNAL("lastWindowClosed()"), app, SLOT("quit()") )
+            w = pyptofflineguiForm()
+            app.setMainWidget(w)
+            w.show()
+            app.exec_loop()
         # The log implementation
         # Instantiate the class
         global log
