@@ -47,6 +47,12 @@ try:
 except ImportError:
     pass
 
+guiBool = True
+try:
+    from pyptofflinegui import pyptofflineguiForm
+except ImportError:
+    guiBool = False
+    
 WindowColor = True
 try:
     import WConio
@@ -726,6 +732,9 @@ def get_pager_cmd(pager_cmd = None):
             pager_cmd = default_pager_cmd
     
     return pager_cmd
+
+class GUI(pyptofflineguiForm):
+    pass
 
 class PagerCmd:
     """ Tries to automatically detect and set the pager on the running OS"""
@@ -1538,20 +1547,15 @@ def main():
     (options, args) = parser.parse_args()
     
     try:
-        if options.gui:
+        if options.gui and guiBool is True:
             try:
                 from qt import *
-            except ImportError:
-                sys.exit(1)
-            
-            try:
-                from pyptofflinegui import pyptofflineguiForm
             except ImportError:
                 sys.exit(1)
                 
             app = QApplication(sys.argv)
             QObject.connect(app, SIGNAL("lastWindowClosed()"), app, SLOT("quit()") )
-            w = pyptofflineguiForm()
+            w = GUI()
             app.setMainWidget(w)
             w.show()
             app.exec_loop()
