@@ -766,9 +766,6 @@ def get_pager_cmd(pager_cmd = None):
     
     return pager_cmd
 
-class GUI(pyptofflineguiForm):
-    pass
-
 class PagerCmd:
     """ Tries to automatically detect and set the pager on the running OS"""
     
@@ -1605,6 +1602,10 @@ def main():
     try:
         if options.gui:
             if guiBool is True:
+                
+                class GUI(pyptofflineguiForm):
+                    pass
+
                 app = QApplication(sys.argv)
                 QObject.connect(app, SIGNAL("lastWindowClosed()"), app, SLOT("quit()") )
                 w = GUI()
