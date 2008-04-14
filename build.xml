@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<project name="pypt-offline" default="make">
+	<description>
+		Ant adaptor for the pypt-offline Makefile
+	</description>
+	
+	<target name="make" description="build pyptofflinegui">
+		<exec executable="make">
+			<arg value="-f"/>
+			<arg value="Makefile"/>
+			<arg value="all"/>
+		</exec>
+	</target>
+	
+	<target name="clean" description="clean pypt-offline" depends="make">
+		<exec executable="make">
+			<arg value="-f"/>
+			<arg value="Makefile"/>
+			<arg value="clean"/>
+		</exec>
+	</target>
+</project>
