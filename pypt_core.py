@@ -1614,6 +1614,7 @@ def main():
                 app.exec_loop()
             else:
                 log.err("Incomplete installation. PyQT or pypt-offline GUI libraries not available.\n")
+                sys.exit(1)
         
         log.msg("pypt-offline %s\n" % (version))
         log.msg("Copyright %s\n" % (copyright))
