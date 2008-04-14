@@ -801,7 +801,16 @@ def fetcher(ArgumentOptions, arg_type = None):
                 log.err("I couldn't create a directory")
                 errfunc(1, '')
     else:
+        if os.access(ArgumentOptions.download_dir, os.W_OK) is True:
             download_path = os.path.abspath(ArgumentOptions.download_dir)
+        else:
+            try:
+                os.umask(0002)
+                os.mkdir(ArgumentOptions.download_dir)
+                download_path = os.path.abspath(ArgumentOptions.download_dir)
+            except:
+                log.err("I couldn't create a directory")
+                errfunc(1, '')
             
     zip_update_file = os.path.join(os.path.abspath(download_path), ArgumentOptions.zip_update_file) 
     zip_upgrade_file = os.path.join(os.path.abspath(download_path), ArgumentOptions.zip_upgrade_file) 
