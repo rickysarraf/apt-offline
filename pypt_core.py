@@ -77,7 +77,7 @@ apt_update_target_path = '/var/lib/apt/lists/'
 apt_package_target_path = '/var/cache/apt/archives/'
 
 pypt_bug_file_format = "__pypt__bug__report"
-bugTypes = ["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"]
+bugTypes = ["Resolved bugs", "Important bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"]
 
 
 #These are spaces which will overwrite the progressbar left mess
