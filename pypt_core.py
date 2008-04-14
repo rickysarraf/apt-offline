@@ -1109,12 +1109,15 @@ def fetcher(ArgumentOptions, arg_type = None):
                                     log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                     
                                     #Add to cache_dir if possible
-                                    if ArgumentOptions.cache_dir:
+                                    if ArgumentOptions.cache_dir and os.access(ArgumentOptions.cache_dir, os.W_OK) == True:
                                         try:
                                             shutil.copy(file, cache_dir)
                                             log.verbose("%s copied to local cache directory %s.%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
                                         except shutil.Error:
                                             log.verbose("Couldn't copy %s to %s.%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_FULL) )
+                                    else:
+                                        log.verbose("cache_dir %s is not writeable. Skipping copy to it.\n" % (ArgumentOptions.cache_dir) )
+                                        
                                             
                                     #Fetch bug reports
                                     if ArgumentOptions.deb_bugs:
@@ -1179,12 +1182,14 @@ def fetcher(ArgumentOptions, arg_type = None):
                             if ArgumentOptions.disable_md5check is False:
                                 if FetcherInstance.CheckHashDigest(file, checksum) is True:
                                             
-                                    if ArgumentOptions.cache_dir:
+                                    if ArgumentOptions.cache_dir and os.access(ArgumentOptions.cache_dir, os.W_OK) == True:
                                         try:
                                             shutil.copy(file, ArgumentOptions.cache_dir)
                                             log.verbose("%s copied to local cache directory %s.%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
                                         except shutil.Error:
                                             log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
+                                    else:
+                                        log.verbose("cache_dir %s is not writeable. Skipping copy to it.\n" % (ArgumentOptions.cache_dir) )
                                             
                                     if ArgumentOptions.deb_bugs:
                                         if FetchBugReportsDebian.FetchBugsDebian(PackageName):
