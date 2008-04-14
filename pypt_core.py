@@ -86,7 +86,7 @@ apt_update_target_path = '/var/lib/apt/lists/'
 apt_package_target_path = '/var/cache/apt/archives/'
 
 pypt_bug_file_format = "__pypt__bug__report"
-bugTypes = ["Resolved bugs", "Important bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"]
+IgnoredBugTypes = ["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"]
 
 
 #These are spaces which will overwrite the progressbar left mess
@@ -450,10 +450,10 @@ class Archiver:
 
 
 class FetchBugReports(Archiver):
-    def __init__(self, pypt_bug_file_format, bugTypes, ArchiveFile=None, lock=False):
+    def __init__(self, pypt_bug_file_format, IgnoredBugTypes, ArchiveFile=None, lock=False):
         
         self.bugsList = []
-        self.bugTypes = bugTypes
+        self.IgnoredBugTypes = IgnoredBugTypes
         self.lock = lock
         self.pypt_bug = pypt_bug_file_format
         
@@ -462,6 +462,11 @@ class FetchBugReports(Archiver):
             self.ArchiveFile = ArchiveFile
         
     def FetchBugsDebian(self, PackageName, Filename=None):
+        '''
+        0 => False
+        1 => No Bug Reports
+        2 => True
+        '''
         
         if Filename != None:
             try:
@@ -472,16 +477,16 @@ class FetchBugReports(Archiver):
         try:
             (num_of_bugs, header, self.bugs_list) = debianbts.get_reports(PackageName)
         except socket.timeout:
-            return False
+            return 0
         
         if num_of_bugs:
             atleast_one_bug_report_downloaded = False
             for x in self.bugs_list:
                 (sub_bugs_header, sub_bugs_list) = x
                 
-                #INFO: We filter all the bugTypes that we think aren't necessary.
+                #INFO: We filter all the IgnoredBugTypes that we think aren't necessary.
                 # We don't download those low priority bug reports
-                for BugType in self.bugTypes:
+                for BugType in self.IgnoredBugTypes:
                     if BugType in sub_bugs_header:
                         bug_flag = 0
                         break
@@ -517,11 +522,13 @@ class FetchBugReports(Archiver):
                         
                         atleast_one_bug_report_downloaded = True
             if atleast_one_bug_report_downloaded:
-                return True
+                return 2
             else:
-                return False
-        return False
-    #return False
+                return 1
+        else:
+            #FIXME: When no bug reports are there, i.e. bug count is 0, we hit here
+            # We shouldn't be returning False
+            return 1
     
     def AddToArchive(self, ArchiveFile):
         if self.compress_the_file(self.ArchiveFile, self.fileName):
@@ -851,9 +858,9 @@ def fetcher(ArgumentOptions, arg_type = None):
     
     if ArgumentOptions.deb_bugs:
         if ArgumentOptions.zip_it:
-            FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, bugTypes, zip_upgrade_file, lock=True)
+            FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, IgnoredBugTypes, zip_upgrade_file, lock=True)
         else:
-            FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, bugTypes)
+            FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, IgnoredBugTypes)
     
     FetchData = {}
     if ArgumentOptions.fetch_update:
@@ -928,7 +935,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                         else:
                             if ArgumentOptions.deb_bugs:
                                 bug_fetched = 0
-                                if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
                                     log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                                     bug_fetched = 1
                                 else:
@@ -961,7 +968,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                         log.verbose("Cannot copy %s to %s. Is %s writeable??\n" % (file, cache_dir))
                                         
                                 if ArgumentOptions.deb_bugs:
-                                    if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                    if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
                                         log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                                     else:
                                         log.verbose("Couldn't fetch bug reports for package %s.\n" % (PackageName) )
@@ -977,7 +984,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                         elif True:
                             if ArgumentOptions.deb_bugs:
                                 bug_fetched = 0
-                                if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
                                     log.verbose("Fetched bug reports for package %s.\n" % (PackageName) )
                                     bug_fetched = 1
                                 else:
@@ -1071,7 +1078,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 if ArgumentOptions.deb_bugs:
                                     bug_fetched = 0
                                     log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                    if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                    if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
                                         log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                         bug_fetched = 1
                                     else:
@@ -1103,7 +1110,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                             #INFO: Damn!! The md5chesum didn't match :-(
                             # The file is corrupted and we need to download a new copy from the internet
                             else:
-                                log.verbose("%s MD5 checksum mismatch. Skipping file.%s\n" % (file, LINE_OVERWRITE_FULL) )
+                                log.verbose("%s checksum mismatch. Skipping file.%s\n" % (file, LINE_OVERWRITE_FULL) )
                                 log.msg("Downloading %s - %d KB%s\n" % (PackageName, download_size/1024, LINE_OVERWRITE_MID) )
                                 if FetcherInstance.download_from_web(url, file, download_path) == True:
                                     log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
@@ -1121,7 +1128,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                             
                                     #Fetch bug reports
                                     if ArgumentOptions.deb_bugs:
-                                        if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                        if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
                                             log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                         else:
                                             log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
@@ -1139,7 +1146,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                         else:
                             if ArgumentOptions.deb_bugs:
                                 bug_fetched = 0
-                                if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
                                     log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                     bug_fetched = 1
                                 else:
@@ -1192,7 +1199,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                         log.verbose("cache_dir %s is not writeable. Skipping copy to it.\n" % (ArgumentOptions.cache_dir) )
                                             
                                     if ArgumentOptions.deb_bugs:
-                                        if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                        if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
                                             log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                         else:
                                             log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
@@ -1211,7 +1218,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                             
                             else:
                                 if ArgumentOptions.deb_bugs:
-                                    if FetchBugReportsDebian.FetchBugsDebian(PackageName):
+                                    if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
                                         log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                     else:
                                         log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
