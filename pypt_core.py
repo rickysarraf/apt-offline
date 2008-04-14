@@ -47,6 +47,12 @@ try:
 except ImportError:
     pass
 
+guiBool = True
+try:
+    from pyptofflinegui import pyptofflineguiForm
+except ImportError:
+    guiBool = False
+    
 WindowColor = True
 try:
     import WConio
@@ -228,13 +234,14 @@ class Log:
         
         if lock is None or lock != 1:
             self.DispLock = False
+            self.lock = False
         else:
             self.DispLock = threading.Lock()
             self.lock = True
             
         if os.name == 'posix':
-           self.platform = 'posix'
-           self.color = {'Red': '31m', 'Black': '30m',
+            self.platform = 'posix'
+            self.color = {'Red': '31m', 'Black': '30m',
                          'Green': '32m', 'Yellow': '33m',
                          'Blue': '34m', 'Magneta': '35m',
                          'Cyan': '36m', 'White': '37m',
@@ -436,11 +443,11 @@ class FetchBugReports(Archiver):
                 file_handle = open(Filename, 'a')
             except IOError:
                 sys.exit(1)
-        
-	try:
-	    (num_of_bugs, header, self.bugs_list) = debianbts.get_reports(PackageName)
-	except socket.timeout:
-	    return False
+                
+        try:
+            (num_of_bugs, header, self.bugs_list) = debianbts.get_reports(PackageName)
+        except socket.timeout:
+            return False
         
         if num_of_bugs:
             atleast_one_bug_report_downloaded = False
@@ -726,6 +733,9 @@ def get_pager_cmd(pager_cmd = None):
     
     return pager_cmd
 
+class GUI(pyptofflineguiForm):
+    pass
+
 class PagerCmd:
     """ Tries to automatically detect and set the pager on the running OS"""
     
@@ -823,7 +833,7 @@ def fetcher(ArgumentOptions, arg_type = None):
     FetchData = {}
     if ArgumentOptions.fetch_update:
         try:
-           raw_data_list = open(ArgumentOptions.fetch_update, 'r').readlines()
+            raw_data_list = open(ArgumentOptions.fetch_update, 'r').readlines()
         except IOError, (errno, strerror):
             log.err("%s %s\n" % (errno, strerror))
             errfunc(errno, '')
@@ -839,7 +849,7 @@ def fetcher(ArgumentOptions, arg_type = None):
             
     if ArgumentOptions.fetch_upgrade:
         try:
-           raw_data_list = open(ArgumentOptions.fetch_upgrade, 'r').readlines()
+            raw_data_list = open(ArgumentOptions.fetch_upgrade, 'r').readlines()
         except IOError, (errno, strerror):
             log.err("%s %s\n" % (errno, strerror))
             errfunc(errno, '')
@@ -905,8 +915,8 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 os.unlink(os.path.join(download_path, file))
                                 
                                 if bug_fetched:
-                                        if FetchBugReportsDebian.AddToArchive(zip_upgrade_file):
-                                            log.verbose("Archived bug reports for package %s to archive %s\n" % (PackageName, zip_upgrade_file) )
+                                    if FetchBugReportsDebian.AddToArchive(zip_upgrade_file):
+                                        log.verbose("Archived bug reports for package %s to archive %s\n" % (PackageName, zip_upgrade_file) )
                                             
                     else:
                         if find_first_match(cache_dir, file, download_path, checksum) == False:
@@ -1497,6 +1507,8 @@ def main():
     parser.add_option("", "--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.", action="store_true")
     parser.add_option("", "--socket-timeout", dest="socket_timeout", help="Set the socket timeout value. Default is 30s.",
                       action="store", type="int", metavar="30", default=30)
+    parser.add_option("", "--gui", dest="gui", help="Run in Graphical Mode",
+                      action="store_true")
        
     #INFO: Option zip is not enabled by default but is highly encouraged.
     parser.add_option("-z","--zip", dest="zip_it", help="Zip the downloaded files to a single zip file", action="store_true")
@@ -1544,6 +1556,18 @@ def main():
     (options, args) = parser.parse_args()
     
     try:
+        if options.gui and guiBool is True:
+            try:
+                from qt import *
+            except ImportError:
+                sys.exit(1)
+                
+            app = QApplication(sys.argv)
+            QObject.connect(app, SIGNAL("lastWindowClosed()"), app, SLOT("quit()") )
+            w = GUI()
+            app.setMainWidget(w)
+            w.show()
+            app.exec_loop()
         # The log implementation
         # Instantiate the class
         global log
@@ -1593,7 +1617,7 @@ def main():
                     log.verbose("Set environment variable for LANG back to its original from %s to %s.\n" % (os.environ['LANG'], old_environ) )
                     os.environ['LANG'] = old_environ
             else:
-                 parser.error("This argument is supported only on Unix like systems with apt installed\n")
+                parser.error("This argument is supported only on Unix like systems with apt installed\n")
             sys.exit(1)
      
         if options.set_upgrade or options.upgrade_type:
@@ -1662,7 +1686,7 @@ def main():
             	# Since we're in fetch_update, the download_type will be non-deb/rpm data
             	# 1 is for update packages 
             	# 2 is for upgrade packages
-            	fetcher(options, 1)
+                fetcher(options, 1)
                 sys.exit(0)
             else:
                 log.err("\nFile not present. Check path.\n")
@@ -1674,8 +1698,8 @@ def main():
             	# Since we're in fetch_update, the download_type will be non-deb/rpm data
             	# 1 is for update packages 
             	# 2 is for upgrade packages
-            	fetcher(options, 2)
-            	sys.exit(0)
+                fetcher(options, 2)
+                sys.exit(0)
             else:
                 log.err("\n%s file not present. Check path.\n" % (options.fetch_upgrade) )
                 sys.exit(1)
