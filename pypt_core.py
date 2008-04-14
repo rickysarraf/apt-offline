@@ -49,6 +49,7 @@ except ImportError:
 
 guiBool = True
 try:
+    from qt import *
     from pyptofflinegui import pyptofflineguiForm
 except ImportError:
     guiBool = False
@@ -1596,23 +1597,22 @@ def main():
     #global options, args
     (options, args) = parser.parse_args()
     
+    # The log implementation
+    # Instantiate the class
+    global log
+    log = Log(options.verbose, lock = True)
+    
     try:
-        if options.gui and guiBool is True:
-            try:
-                from qt import *
-            except ImportError:
-                sys.exit(1)
-                
-            app = QApplication(sys.argv)
-            QObject.connect(app, SIGNAL("lastWindowClosed()"), app, SLOT("quit()") )
-            w = GUI()
-            app.setMainWidget(w)
-            w.show()
-            app.exec_loop()
-        # The log implementation
-        # Instantiate the class
-        global log
-        log = Log(options.verbose, lock = True)
+        if options.gui:
+            if guiBool is True:
+                app = QApplication(sys.argv)
+                QObject.connect(app, SIGNAL("lastWindowClosed()"), app, SLOT("quit()") )
+                w = GUI()
+                app.setMainWidget(w)
+                w.show()
+                app.exec_loop()
+            else:
+                log.err("Incomplete installation. PyQT or pypt-offline GUI libraries not available.\n")
         
         log.msg("pypt-offline %s\n" % (version))
         log.msg("Copyright %s\n" % (copyright))
