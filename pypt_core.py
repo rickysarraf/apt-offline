@@ -247,10 +247,9 @@ class Log:
             if WindowColor is True:
                 self.platform = 'microsoft'
                 
-            self.color = {'Red': 4, 'Black': 0,
+                self.color = {'Red': 4, 'Black': 0,
                           'Green': 2, 'White': 15,
-                          'LightRed': 12, 'LightCyan': 11,
-                          'SwitchOffAttributes': 15}
+                          'Cyan': 11, 'SwitchOffAttributes': 15}
         else:
             self.platform = None
             self.color = None
