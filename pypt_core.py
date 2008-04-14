@@ -58,6 +58,15 @@ try:
     import WConio
 except ImportError:
     WindowColor = False
+    
+#INFO: Python 2.5 introduces hashlib.
+# This module supports many hash/digest algorithms
+# We do this check till Python 2.5 becomes widely used.
+Python_2_5 = True
+try:
+    import hashlib
+except ImportError:
+    Python_2_5 = False
 
 #INFO: Set the default timeout to 15 seconds for the packages that are being downloaded.
 socket.setdefaulttimeout(30)
@@ -88,18 +97,34 @@ LINE_OVERWRITE_FULL = " " * 60
 # How many times should we retry on socket timeouts
 SOCKET_TIMEOUT_RETRY = 5
        
-class MD5Check:
+class Checksum:
     
-    def md5_string(self, data):
-        hash = md5.new()
+    def HashMessageDigestAlgorithms(self, checksum, HashType, file):
+        data = open(file, 'rb')
+        if HashType == "sha256":
+            Hash = self.sha256(data)
+        elif HashType == "md5":
+            Hash = self.md5(data)
+        else: Hash = None
+        data.close()
+        
+        if Hash == checksum:
+            return True
+        return False
+    
+    def sha256(self, data):
+        hash = hashlib.sha256()
+        hash.update(data.read() )
+        return hash.hexdigest()
+    
+    def md5(self, data):
+        hash = hashlib.md5.new()
         hash.update(data.read())
         return hash.hexdigest() 
     
-    def md5_check(self, file, checksum):
-        data = open(file, 'rb')
-        if checksum == self.md5_string(data):
-            return True
-        return False
+    def CheckHashDigest(self, file, checksum):
+        checksum = checksum.split(":")[1]
+        return self.HashMessageDigestAlgorithms(checksum, "sha256", file)
         
 class ProgressBar(object):
     
@@ -635,7 +660,7 @@ def copy_first_match(cache_dir, filename, dest_dir, checksum): # aka new_walk_tr
             #INFO: md5check is compulsory here
             # There's no point in checking for the disable-md5 option because
             # copying a damaged file is of no use
-            if pypt_md5_check.md5_check(file, checksum, path) == True:
+            if pypt_md5_check.CheckHashDigest(file, checksum, path) == True:
                 try:
                     shutil.copy(os.path.join(path, file), dest_dir)
                 except shutil.Error:
@@ -785,7 +810,7 @@ def fetcher(ArgumentOptions, arg_type = None):
         if os.path.isdir(cache_dir) is False:
             log.verbose("WARNING: cache dir is incorrect. Did you give the full path ?\n")
     
-    class FetcherClass(DownloadFromWeb, Archiver, MD5Check):
+    class FetcherClass(DownloadFromWeb, Archiver, Checksum):
         def __init__(self, width, lock):
             DownloadFromWeb.__init__(self, width=width)
             #ProgressBar.__init__(self, width)
@@ -1040,7 +1065,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                         # We'll first check for its md5 checksum
                         if ArgumentOptions.disable_md5check is False:
                             
-                            if FetcherInstance.md5_check(full_file_path, checksum) is True:
+                            if FetcherInstance.CheckHashDigest(full_file_path, checksum) is True:
                                 log.verbose("md5checksum correct for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                 
                                 if ArgumentOptions.deb_bugs:
@@ -1152,7 +1177,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                             
                             #INFO: This block gets executed if md5checksum is allowed
                             if ArgumentOptions.disable_md5check is False:
-                                if FetcherInstance.md5_check(file, checksum) is True:
+                                if FetcherInstance.CheckHashDigest(file, checksum) is True:
                                             
                                     if ArgumentOptions.cache_dir:
                                         try:
@@ -1589,6 +1614,12 @@ def main():
             except AttributeError:
                 log.err("Incorrect value set for socket timeout.\n")
                 sys.exit(1)
+                
+        #INFO: Python 2.5 has hashlib which supports sha256
+        # If we don't have Python 2.5, disable MD5/SHA256 checksum
+        if Python_2_5 is False:
+            options.disable_md5check = True
+            log.verbose("\nMD5/SHA256 Checksum is being disabled. You need atleast Python 2.5 to do checksum verification.\n")
                 
         if options.test_windows:
             global apt_package_target_path
