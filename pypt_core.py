@@ -234,6 +234,7 @@ class Log:
         
         if lock is None or lock != 1:
             self.DispLock = False
+            self.lock = False
         else:
             self.DispLock = threading.Lock()
             self.lock = True
