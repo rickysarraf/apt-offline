@@ -1174,6 +1174,10 @@ def fetcher(ArgumentOptions, arg_type = None):
                                         else:
                                             log.verbose("%s added to archive %s.%s\n" % (file, zip_upgrade_file, LINE_OVERWRITE_SMALL) )
                                             os.unlink(os.path.join(download_path, file) )
+                                else:
+                                    #INFO MD5 Checksum is incorrect.
+                                    log.err("%s MD5 Checksum mismatch.\n" % (PackageName) )
+                                    errlist.append(PackageName)
                                             
                             else:
                                 if ArgumentOptions.deb_bugs:
