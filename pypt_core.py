@@ -69,6 +69,14 @@ try:
 except ImportError:
     Python_2_5 = False
 
+#INFO: Check if python-apt is installed
+PythonApt = True
+try:
+    import apt
+    import apt_pkg
+except ImportError:
+    PythonApt = False
+    
 #INFO: Set the default timeout to 15 seconds for the packages that are being downloaded.
 socket.setdefaulttimeout(30)
 
@@ -1640,6 +1648,12 @@ def main():
             global apt_update_target_path
             apt_package_target_path = 'C:\\temp'
             apt_update_target_path = 'C:\\temp'
+            
+        if PythonApt is True:
+            class AptPython:
+                def __init__(self):
+                    self.cache = apt.Cache()
+                    
         
         if options.set_update:
             if platform.system() in supported_platforms:
@@ -1676,12 +1690,43 @@ def main():
             if platform.system() in supported_platforms:
                 if os.geteuid() != 0:
                     parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
+                    
                 #TODO: Use a more Pythonic way for it
                 if options.upgrade_type == "upgrade":
-                    log.msg("\n\nGenerating database of files that are needed for an upgrade.\n")
-                    os.environ['__pypt_set_upgrade'] = options.set_upgrade
-                    if os.system('/usr/bin/apt-get -qq --print-uris upgrade > $__pypt_set_upgrade') != 0:
-                        log.err("FATAL: Something is wrong with the apt system.\n")
+                    
+                    if PythonApt is True:
+                        PythonAptQuery = AptPython()
+                        try:
+                            install_file = open(options.set_upgrade, 'w')
+                        except IOError:
+                            log.err("Cannot create file %s.\n" % (options.set_upgrade) )
+                            sys.exit(1)
+                            
+                        upgradable = filter(lambda p: p.isUpgradable, PythonAptQuery.cache)
+                        log.msg("\n\nGenerating database of files that are needed for an upgrade.\n")
+
+                        dup_records = []
+                        for pkg in upgradable:
+                                pkg._lookupRecord(True)
+                                path = apt_pkg.ParseSection(pkg._records.Record)['Filename']
+                                checksum = apt_pkg.ParseSection(pkg._records.Record)['SHA256']
+                                size = apt_pkg.ParseSection(pkg._records.Record)['Size']
+                                cand = pkg._depcache.GetCandidateVer(pkg._pkg)
+                                for (packagefile,i) in cand.FileList:
+                                        indexfile = PythonAptQuery.cache._list.FindIndex(packagefile)
+                                        if indexfile:
+                                                uri = indexfile.ArchiveURI(path)
+                                                file = uri.split('/')[-1]
+                                                if checksum.__str__() in dup_records:
+                                                    continue
+                                                install_file.write(uri + ' ' + file + ' ' + size + ' ' + checksum + "\n")
+                                                dup_records.append(checksum.__str__())
+
+                    else:
+                        log.msg("\n\nGenerating database of files that are needed for an upgrade.\n")
+                        os.environ['__pypt_set_upgrade'] = options.set_upgrade
+                        if os.system('/usr/bin/apt-get -qq --print-uris upgrade > $__pypt_set_upgrade') != 0:
+                            log.err("FATAL: Something is wrong with the apt system.\n")
                 elif options.upgrade_type == "dist-upgrade":
                     log.msg("\n\nGenerating database of files that are needed for a dist-upgrade.\n")
                     os.environ['__pypt_set_upgrade'] = options.set_upgrade
