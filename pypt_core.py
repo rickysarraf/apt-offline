@@ -30,22 +30,9 @@ import optparse
 import socket
 import tempfile
 
-import zipfile
-import bz2
-import gzip
-
 import debianbts
 
 import pypt_magic
-
-from array import array
-
-#INFO: They aren't on Windows
-try:
-    from fcntl import ioctl
-    import termios
-except ImportError:
-    pass
 
 guiBool = True
 try:
@@ -54,21 +41,6 @@ try:
 except ImportError:
     guiBool = False
     
-WindowColor = True
-try:
-    import WConio
-except ImportError:
-    WindowColor = False
-    
-#INFO: Python 2.5 introduces hashlib.
-# This module supports many hash/digest algorithms
-# We do this check till Python 2.5 becomes widely used.
-Python_2_5 = True
-try:
-    import hashlib
-except ImportError:
-    Python_2_5 = False
-
 #INFO: Check if python-apt is installed
 PythonApt = True
 try:
@@ -77,9 +49,19 @@ try:
 except ImportError:
     PythonApt = False
     
+try:
+    sys.path.append(os.path.dirname(__file__) + "/MyPythonLib")
+    print sys.path
+    import MyPythonLib
+except ImportError:
+    sys.stderr.write("MyPythonLib library not found. Check installation.\n")
+    sys.exit(1)
+
 #INFO: Set the default timeout to 15 seconds for the packages that are being downloaded.
 socket.setdefaulttimeout(30)
 
+# How many times should we retry on socket timeouts
+SOCKET_TIMEOUT_RETRY = 5
 
 '''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
@@ -103,362 +85,8 @@ LINE_OVERWRITE_SMALL = " " * 10
 LINE_OVERWRITE_MID = " " * 30
 LINE_OVERWRITE_FULL = " " * 60
 
-# How many times should we retry on socket timeouts
-SOCKET_TIMEOUT_RETRY = 5
        
-class Checksum:
-    
-    def HashMessageDigestAlgorithms(self, checksum, HashType, file):
-        data = open(file, 'rb')
-        if HashType == "sha256":
-            Hash = self.sha256(data)
-        elif HashType == "md5":
-            Hash = self.md5(data)
-        else: Hash = None
-        data.close()
-        
-        if Hash == checksum:
-            return True
-        return False
-    
-    def sha256(self, data):
-        hash = hashlib.sha256()
-        hash.update(data.read() )
-        return hash.hexdigest()
-    
-    def md5(self, data):
-        hash = hashlib.md5.new()
-        hash.update(data.read())
-        return hash.hexdigest() 
-    
-    def CheckHashDigest(self, file, checksum):
-        checksum = checksum.split(":")[1]
-        return self.HashMessageDigestAlgorithms(checksum, "sha256", file)
-        
-class ProgressBar(object):
-    
-    def __init__(self, minValue = 0, maxValue = 0, width = None, fd = sys.stderr):
-        #width does NOT include the two places for [] markers
-        self.min = minValue
-        self.max = maxValue
-        self.span = float(self.max - self.min)
-        self.fd = fd
-        self.signal_set = False
-        
-        if width is None:
-            
-            try:
-                self.handle_resize(None, None)
-                signal.signal(signal.SIGWINCH, self.handle_resize)
-                self.signal_set = True
-            except:
-                self.width = 79 #The standard
-                
-        else:
-            self.width = width
-            
-        self.value = self.min
-        self.items = 0 #count of items being tracked
-        self.complete = 0
-        
-    def handle_resize(self, signum, frame):
-        h,w=array('h', ioctl(self.fd,termios.TIOCGWINSZ,'\0'*8))[:2]
-        self.width = w
-    
-    def updateValue(self, newValue):
-        #require caller to supply a value! newValue is the increment from last call
-        self.value = max(self.min, min(self.max, self.value + newValue))
-        self.display()
-        
-    def completed(self):
-        self.complete = self.complete + 1
-        
-        if self.signal_set:
-            signal.signal(signal.SIGWINCH, signal.SIG_DFL)
-            
-        self.display()
-        
-    def addItem(self, maxValue):
-        self.max = self.max + maxValue
-        self.span = float(self.max - self.min)
-        self.items = self.items + 1
-        self.display()
-        
-    def display(self):
-        print "\r%3s/%3s items: %s\r" % (self.complete, self.items, str(self)),
-        
-    def __str__(self):
-        #compute display fraction
-        percentFilled = ((self.value - self.min) / self.span)
-        widthFilled = int(self.width * percentFilled + 0.5)
-        return ("[" + "#"*widthFilled + " "*(self.width - widthFilled) + "]" + " %5.1f%% of %d KB" % (percentFilled * 100.0, self.max/1024))
-    
-class Log:
-    
-    '''A OOP implementation for logging.
-    warnings is to tackle the warning option
-    verbose is to tackle the verbose option
-    color is if you want to colorize your output
-    
-    You should pass these options, taking it from optparse/getopt,
-    during instantiation'''
-    
-    ''' WConio can provide simple coloring mechanism for Microsoft Windows console
-    Color Codes:
-    Black = 0
-    Green = 2
-    Red = 4
-    White = 15
-    Light Red = 12
-    Light Cyan = 11
-    
-    #FIXME: The Windows Command Interpreter does support colors natively. I think that support has been since Win2k.
-    
-    That's all for Windows Command Interpreter.
-    
-    
-    As for ANSI Compliant Terminals (which most Linux/Unix Terminals are.).....
-    I think the ANSI Color Codes would be good enough for my requirements to print colored text on an ANSI compliant terminal.
-
-    The ANSI Terminal Specification gives programs the ability to change the text color or background color.
-    An ansi code begins with the ESC character [^ (ascii 27) followed by a number (or 2 or more separated by a semicolon) and a letter.
-    
-    In the case of colour codes, the trailing letter is "m"...
-    
-    So as an example, we have ESC[31m ... this will change the foreground colour to red.
-    
-    The codes are as follows:
-    
-    For Foreground Colors
-    1m - Hicolour (bold) mode
-    4m - Underline (doesn't seem to work)
-    5m - BLINK!!
-    8m - Hidden (same colour as bg)
-    30m - Black
-    31m - Red
-    32m - Green
-    33m - Yellow
-    34m - Blue
-    35m - Magenta
-    36m - Cyan
-    37m - White
-    
-    For Background Colors
-    
-    40m - Change Background to Black
-    41m - Red
-    42m - Green
-    43m - Yellow
-    44m - Blue
-    45m - Magenta
-    46m - Cyan
-    47m - White
-    
-    7m - Change to Black text on a White bg
-    0m - Turn off all attributes.
-    
-    Now for example, say I wanted blinking, yellow text on a magenta background... I'd type ESC[45;33;5m 
-    '''
-    
-    def __init__(self, verbose, lock = None):
-            
-        self.VERBOSE = bool(verbose)
-        
-        self.color_syntax = '\033[1;'
-        
-        if lock is None or lock != 1:
-            self.DispLock = False
-            self.lock = False
-        else:
-            self.DispLock = threading.Lock()
-            self.lock = True
-            
-        if os.name == 'posix':
-            self.platform = 'posix'
-            self.color = {'Red': '31m', 'Black': '30m',
-                         'Green': '32m', 'Yellow': '33m',
-                         'Blue': '34m', 'Magneta': '35m',
-                         'Cyan': '36m', 'White': '37m',
-                         'Bold_Text': '1m', 'Underline': '4m',
-                         'Blink': '5m', 'SwitchOffAttributes': '0m'}
-           
-        elif os.name in ['nt', 'dos']:
-            self.platform = None
-            
-            if WindowColor is True:
-                self.platform = 'microsoft'
-                
-                self.color = {'Red': 4, 'Black': 0,
-                          'Green': 2, 'White': 15,
-                          'Cyan': 11, 'SwitchOffAttributes': 15}
-        else:
-            self.platform = None
-            self.color = None
- 
-    def set_color(self, color):
-        '''Check the platform and set the color'''
-        
-        if self.platform == 'posix':
-            sys.stdout.write(self.color_syntax + self.color[color])
-            sys.stderr.write(self.color_syntax + self.color[color])
-        elif self.platform == 'microsoft':
-            WConio.textcolor(self.color[color])
-            
-    def msg(self, msg):
-        '''Print general messages. If locking is available use them.'''
-        
-        if self.lock:
-            self.DispLock.acquire(True)
-          
-        self.set_color('White')
-        sys.stdout.write(msg)
-        sys.stdout.flush()
-        self.set_color('SwitchOffAttributes')
-        
-        if self.lock:
-            self.DispLock.release()
-        
-    def err(self, msg):
-        '''Print messages with an error. If locking is available use them.'''
-        
-        if self.lock:
-            self.DispLock.acquire(True)
-            
-        self.set_color('Red')
-        sys.stderr.write("ERROR: " + msg)
-        sys.stderr.flush()
-        self.set_color('SwitchOffAttributes')
-        
-        if self.lock:
-            self.DispLock.release()
-        
-    def success(self, msg):
-        '''Print messages with a success. If locking is available use them.'''
-        
-        if self.lock:
-            self.DispLock.acquire(True)
-            
-        self.set_color('Green')
-        sys.stdout.write(msg)
-        sys.stdout.flush()
-        self.set_color('SwitchOffAttributes')
-        
-        if self.lock:
-            self.DispLock.release()
-    
-    # For the rest, we need to check the options also
-
-    def verbose(self, msg):
-        '''Print verbose messages. If locking is available use them.'''
-        
-        if self.lock:
-            self.DispLock.acquire(True)
-            
-        if self.VERBOSE is True:
-            
-            self.set_color('Cyan')
-            sys.stdout.write("VERBOSE: " + msg)
-            sys.stdout.flush()
-            self.set_color('SwitchOffAttributes')
-        
-        if self.lock:
-            self.DispLock.release()
-            
-            
-class Archiver:
-    def __init__(self, lock=None):
-        if lock is None or lock != 1:
-            self.ZipLock = False
-        else:
-            self.ZipLock = threading.Lock()
-            self.lock = True
-        
-    def TarGzipBZ2_Uncompress(self, SourceFileHandle, TargetFileHandle):
-        try:
-            TargetFileHandle.write(SourceFileHandle.read() )
-        except EOFError:
-            pass
-        return True
-        
-    def compress_the_file(self, zip_file_name, files_to_compress):
-        '''Condenses all the files into one single file for easy transfer'''
-        
-        try:
-            if self.lock:
-                self.ZipLock.acquire(True)
-            filename = zipfile.ZipFile(zip_file_name, "a")
-        except IOError:
-            #INFO: By design zipfile throws an IOError exception when you open
-            # in "append" mode and the file is not present.
-            filename = zipfile.ZipFile(zip_file_name, "w")
-        #except:
-            #TODO Handle the exception
-            #return False
-        filename.write(files_to_compress, os.path.basename(files_to_compress), zipfile.ZIP_DEFLATED)                        
-        filename.close()
-        
-        if self.lock:
-            self.ZipLock.release()
-            
-        return True
-        
-    def decompress_the_file(self, archive_file, path, target_file, archive_type):
-        '''Extracts all the files from a single condensed archive file'''
-        
-        
-        if archive_type is 1:
-            
-            try:
-                read_from = bz2.BZ2File(archive_file, 'r')
-            except IOError:
-                return False
-                            
-            try:
-                write_to = open (os.path.join(path, target_file), 'wb')
-            except IOError:
-                return False
-                            
-            if self.TarGzipBZ2_Uncompress(read_from, write_to) != True:
-                raise ArchiveError
-            write_to.close()
-            read_from.close()
-            return True
-            
-        elif archive_type is 2:
-            
-            try:
-                read_from = gzip.GzipFile(archive_file, 'r')
-            except IOError:
-                return False
-                            
-            try:
-                write_to = open(os.path.join(path,target_file), 'wb')
-            except IOError:
-                return False            
-            
-            if self.TarGzipBZ2_Uncompress(read_from, write_to) != True:
-                raise ArchiveError
-            write_to.close()
-            read_from.close()
-            return True
-            
-        elif archive_type is 3:
-            # FIXME: This looks odd. Where are we writing to a file ???
-            try:
-                zip_file = zipfile.ZipFile(file, 'rb')
-            except IOError:
-                return False
-                
-            for filename in zip_file.namelist():
-                data = zip_file.read()
-            zip_file.close()
-            return True
-        
-        else:
-            return False
-
-
-class FetchBugReports(Archiver):
+class FetchBugReports(MyPythonLib.Archiver):
     def __init__(self, pypt_bug_file_format, IgnoredBugTypes, ArchiveFile=None, lock=False):
         
         self.bugsList = []
@@ -467,7 +95,7 @@ class FetchBugReports(Archiver):
         self.pypt_bug = pypt_bug_file_format
         
         if self.lock:
-            Archiver.__init__(self, lock)
+            MyPythonLib.Archiver.__init__(self, lock)
             self.ArchiveFile = ArchiveFile
         
     def FetchBugsDebian(self, PackageName, Filename=None):
@@ -545,12 +173,11 @@ class FetchBugReports(Archiver):
             return True
         
         
-        
-    
 def files(root): 
     for path, folders, files in os.walk(root): 
         for file in files: 
             yield path, file 
+    
     
 def find_first_match(cache_dir=None, filename=None):
     '''Return the full path of the filename if a match is found
@@ -571,9 +198,7 @@ def find_first_match(cache_dir=None, filename=None):
         return False
         
         
-        
-            
-class DownloadFromWeb(ProgressBar):
+class DownloadFromWeb(MyPythonLib.ProgressBar):
     '''
     Class for DownloadFromWeb
     
@@ -585,7 +210,7 @@ class DownloadFromWeb(ProgressBar):
         '''
         width = Progress Bar width
         '''
-        ProgressBar.__init__(self, width=width)
+        MyPythonLib.ProgressBar.__init__(self, width=width)
     
     def download_from_web(self, url, file, download_dir):
         '''
@@ -659,6 +284,7 @@ class DownloadFromWeb(ProgressBar):
         except socket.timeout:
             errfunc(10054, "Socket timeout.\n", file)
 
+
 def copy_first_match(cache_dir, filename, dest_dir, checksum): # aka new_walk_tree_copy() 
     '''Walks into "reposiotry" looking for "filename".
     If found, copies it to "dest_dir" but first verifies their md5 "checksum".'''
@@ -683,6 +309,7 @@ def copy_first_match(cache_dir, filename, dest_dir, checksum): # aka new_walk_tr
                     log.verbose("%s already available in dest_dir. Skipping copy!!!\n" % (file))
                 return True
     return False
+
 
 def stripper(item):
     '''Strips extra characters from "item".
@@ -759,6 +386,7 @@ def errfunc(errno, errormsg, filename):
         log.err("I don't understand this errorcode\n" % (errno))
         sys.exit(errno)
         
+        
 def get_pager_cmd(pager_cmd = None):
     
     if os.name == 'posix':
@@ -773,6 +401,7 @@ def get_pager_cmd(pager_cmd = None):
             pager_cmd = default_pager_cmd
     
     return pager_cmd
+
 
 class PagerCmd:
     """ Tries to automatically detect and set the pager on the running OS"""
@@ -823,12 +452,12 @@ def fetcher(ArgumentOptions, arg_type = None):
         if os.path.isdir(cache_dir) is False:
             log.verbose("WARNING: cache dir is incorrect. Did you give the full path ?\n")
     
-    class FetcherClass(DownloadFromWeb, Archiver, Checksum):
+    class FetcherClass(DownloadFromWeb, MyPythonLib.Archiver, MyPythonLib.Checksum):
         def __init__(self, width, lock):
             DownloadFromWeb.__init__(self, width=width)
             #ProgressBar.__init__(self, width)
             #self.width = width
-            Archiver.__init__(self, lock=lock)
+            MyPythonLib.Archiver.__init__(self, lock=lock)
             #self.lock = lock
             
     #global FetcherInstance
@@ -1286,6 +915,7 @@ def fetcher(ArgumentOptions, arg_type = None):
         for error in errlist:
             log.err("%s failed.\n" % (error))
         
+        
 def syncer(install_file_path, target_path, path_type=None, bug_parse_required=None):
     '''
     Syncer does the work of syncing the downloaded files.
@@ -1299,7 +929,7 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
     2 => install_file_path is a Folder
     '''
     
-    archive = Archiver()
+    archive = MyPythonLib.Archiver()
                 
     def display_options():
         
@@ -1531,6 +1161,7 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
             log.err("Inappropriate argument sent to syncer during data fetch. Do you need to fetch bugs or not?\n")    
             sys.exit(1)
                 
+                
 def main():
     '''Here we basically do the sanity checks, some validations
     and then accordingly call the corresponding functions.'''
@@ -1605,7 +1236,7 @@ def main():
     # The log implementation
     # Instantiate the class
     global log
-    log = Log(options.verbose, lock = True)
+    log = MyPythonLib.Log(options.verbose, lock = True)
     
     try:
         if options.gui:
@@ -1639,7 +1270,7 @@ def main():
                 
         #INFO: Python 2.5 has hashlib which supports sha256
         # If we don't have Python 2.5, disable MD5/SHA256 checksum
-        if Python_2_5 is False:
+        if MyPythonLib.Python_2_5 is False:
             options.disable_md5check = True
             log.verbose("\nMD5/SHA256 Checksum is being disabled. You need atleast Python 2.5 to do checksum verification.\n")
                 
