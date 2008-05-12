@@ -17,7 +17,6 @@
 '''
 
 import os
-import md5
 import sys
 import shutil
 import platform
@@ -25,7 +24,6 @@ import string
 import urllib2
 import Queue
 import threading
-import signal
 import optparse
 import socket
 import tempfile
@@ -51,7 +49,6 @@ except ImportError:
     
 try:
     sys.path.append(os.path.dirname(__file__) + "/MyPythonLib")
-    print sys.path
     import MyPythonLib
 except ImportError:
     sys.stderr.write("MyPythonLib library not found. Check installation.\n")
