@@ -380,7 +380,7 @@ def errfunc(errno, errormsg, filename):
         sys.exit(errno)
         
     else:
-        log.err("I don't understand this errorcode\n" % (errno))
+        log.err("I don't understand this error code %s\n" % (errno))
         sys.exit(errno)
         
         
