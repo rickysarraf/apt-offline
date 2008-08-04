@@ -819,7 +819,11 @@ def fetcher(ArgumentOptions, arg_type = None):
                             
                             #INFO: This block gets executed if md5checksum is allowed
                             if ArgumentOptions.disable_md5check is False:
-                                if FetcherInstance.CheckHashDigest(file, checksum) is True:
+                                #INFO: Debian moved to SHA256. So we use that now. Older systems could have md5
+                                srcHash = checksum.split(":")[1]
+                                hashType = checksum.split(":")[0]
+                                log.verbose("srcHash is %s, hashType is %s\n" % (srcHash, hashType) )
+                                if FetcherInstance.CompareHashDigest(file, srcHash, hashType) is True:
                                             
                                     if ArgumentOptions.cache_dir and os.access(ArgumentOptions.cache_dir, os.W_OK) == True:
                                         try:
