@@ -28,7 +28,12 @@ import optparse
 import socket
 import tempfile
 
-import debianbts
+# On Debian, python-debianbts package provides this library
+DebianBTS = True
+try:
+    import debianbts
+except ImportError:
+    DebianBTS = False
 
 import pypt_magic
 
@@ -489,11 +494,14 @@ def fetcher(ArgumentOptions, arg_type = None):
     zip_upgrade_file = os.path.join(os.path.abspath(download_path), ArgumentOptions.zip_upgrade_file) 
     
     if ArgumentOptions.deb_bugs:
-        if ArgumentOptions.zip_it:
-            FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, IgnoredBugTypes, zip_upgrade_file, lock=True)
+        if DebianBTS is True:
+            if ArgumentOptions.zip_it:
+                FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, IgnoredBugTypes, zip_upgrade_file, lock=True)
+            else:
+                FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, IgnoredBugTypes)
         else:
-            FetchBugReportsDebian = FetchBugReports(pypt_bug_file_format, IgnoredBugTypes)
-    
+            log.err("Couldn't find debianbts module.\n Cannot fetch Bug Reports.\n")
+            
     FetchData = {}
     if ArgumentOptions.fetch_update:
         try:
