@@ -570,7 +570,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                 elif key == 'Upgrade':
                     PackageName = file.split("_")[0]
                     if cache_dir is None:
-                        log.msg("Downloading %s - %d KB%s\n" % (file, size/1024, LINE_OVERWRITE_FULL) )
+                        log.msg("Downloading %s - %s %s\n" % (file, size/1024, LINE_OVERWRITE_FULL) )
                         
                         if FetcherInstance.download_from_web(url, file, download_path) != True:
                             errlist.append(PackageName)
@@ -703,8 +703,28 @@ def fetcher(ArgumentOptions, arg_type = None):
                             errlist.append(file)
                                 
                 elif key == 'Upgrade':
-                    PackageName = file.split("_")[0]
-                    PackageVersion = file.split("_")[1]
+                    
+                    try:
+                        PackageName = file.split("_")[0]
+                    except IndexError:
+                        log.err("Not getting a package name here is problematic. Better bail out.\n")
+                        sys.exit(1)
+                    
+                    #INFO: For Package version, we don't want to fail
+                    try:
+                        PackageVersion = file.split("_")[1]
+                    except IndexError:
+                        PackageVersion = "NA"
+                        log.verbose("Weird!! Package version not present. Is it really a deb file?\n")
+                    
+                    def __numStr__( size):
+                        if size > 1024:
+                            size = size // 1024
+                            if size > 1024:
+                                size = size // 1024
+                                return ("%d gB" % (size) )
+                            return ("%d mB" % (size) )
+                        return ("%d kB" % (size) )
                     
                     response.put(func(cache_dir, file) ) 
                     #INFO: find_first_match() returns False or a file name with absolute path
@@ -755,7 +775,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                             # The file is corrupted and we need to download a new copy from the internet
                             else:
                                 log.verbose("%s checksum mismatch. Skipping file.%s\n" % (file, LINE_OVERWRITE_FULL) )
-                                log.msg("Downloading %s - %d KB%s\n" % (PackageName, download_size/1024, LINE_OVERWRITE_MID) )
+                                log.msg("Downloading %s - %s %s\n" % (PackageName, __numStr__(download_size/1024), LINE_OVERWRITE_MID) )
                                 if FetcherInstance.download_from_web(url, file, download_path) == True:
                                     log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                     
@@ -826,7 +846,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                         #INFO: This block gets executed if the file is not found in local cache_dir or cache_dir is None
                         # We go ahead and try to download it from the internet
                         log.verbose("%s not available in local cache %s.%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
-                        log.msg("Downloading %s %s - %d kB %s\n" % (PackageName, PackageVersion, download_size/1024, LINE_OVERWRITE_MID) )
+                        log.msg("Downloading %s %s - %s %s\n" % (PackageName, PackageVersion, __numStr__(download_size/1024), LINE_OVERWRITE_MID) )
                         if FetcherInstance.download_from_web(url, file, download_path) == True:
                             
                             #INFO: This block gets executed if md5checksum is allowed
