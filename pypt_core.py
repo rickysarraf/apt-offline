@@ -704,6 +704,8 @@ def fetcher(ArgumentOptions, arg_type = None):
                                 
                 elif key == 'Upgrade':
                     PackageName = file.split("_")[0]
+                    PackageVersion = file.split("_")[1]
+                    
                     response.put(func(cache_dir, file) ) 
                     #INFO: find_first_match() returns False or a file name with absolute path
                     full_file_path = response.get()
@@ -824,7 +826,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                         #INFO: This block gets executed if the file is not found in local cache_dir or cache_dir is None
                         # We go ahead and try to download it from the internet
                         log.verbose("%s not available in local cache %s.%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
-                        log.msg("Downloading %s - %d KB%s\n" % (PackageName, download_size/1024, LINE_OVERWRITE_MID) )
+                        log.msg("Downloading %s %s - %d kB %s\n" % (PackageName, PackageVersion, download_size/1024, LINE_OVERWRITE_MID) )
                         if FetcherInstance.download_from_web(url, file, download_path) == True:
                             
                             #INFO: This block gets executed if md5checksum is allowed
@@ -877,7 +879,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                                         log.verbose("%s added to archive %s.%s\n" % (file, zip_upgrade_file, LINE_OVERWRITE_SMALL) )
                                         os.unlink(os.path.join(download_path, file) )
                                             
-                            log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                            log.success("\r%s %s done.%s\n" % (PackageName, PackageVersion, LINE_OVERWRITE_FULL) )
                         else:
                             #log.err("Couldn't find %s\n" % (PackageName) )
                             errlist.append(PackageName)
