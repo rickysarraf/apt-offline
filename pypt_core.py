@@ -28,6 +28,8 @@ import optparse
 import socket
 import tempfile
 
+import zipfile
+
 # On Debian, python-debianbts package provides this library
 DebianBTS = True
 try:
@@ -983,6 +985,7 @@ def syncer(install_file_path, target_path, path_type=None, bug_parse_required=No
             log.msg("%s file synced.\n" % (filename))
         
     if path_type == 1:
+        # We are doing a deb sync. Input mostly will be a zip file or a directory path
             
         file = zipfile.ZipFile(install_file_path, "r")
         if bug_parse_required is True:
