@@ -717,15 +717,6 @@ def fetcher(ArgumentOptions, arg_type = None):
                         PackageVersion = "NA"
                         log.verbose("Weird!! Package version not present. Is it really a deb file?\n")
                     
-                    def __numStr__( size):
-                        if size > 1024:
-                            size = size // 1024
-                            if size > 1024:
-                                size = size // 1024
-                                return ("%d gB" % (size) )
-                            return ("%d mB" % (size) )
-                        return ("%d kB" % (size) )
-                    
                     response.put(func(cache_dir, file) ) 
                     #INFO: find_first_match() returns False or a file name with absolute path
                     full_file_path = response.get()
@@ -775,7 +766,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                             # The file is corrupted and we need to download a new copy from the internet
                             else:
                                 log.verbose("%s checksum mismatch. Skipping file.%s\n" % (file, LINE_OVERWRITE_FULL) )
-                                log.msg("Downloading %s - %s %s\n" % (PackageName, __numStr__(download_size/1024), LINE_OVERWRITE_MID) )
+                                log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
                                 if FetcherInstance.download_from_web(url, file, download_path) == True:
                                     log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                     
@@ -846,7 +837,7 @@ def fetcher(ArgumentOptions, arg_type = None):
                         #INFO: This block gets executed if the file is not found in local cache_dir or cache_dir is None
                         # We go ahead and try to download it from the internet
                         log.verbose("%s not available in local cache %s.%s\n" % (file, ArgumentOptions.cache_dir, LINE_OVERWRITE_MID) )
-                        log.msg("Downloading %s %s - %s %s\n" % (PackageName, PackageVersion, __numStr__(download_size/1024), LINE_OVERWRITE_MID) )
+                        log.msg("Downloading %s %s - %s %s\n" % (PackageName, PackageVersion, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
                         if FetcherInstance.download_from_web(url, file, download_path) == True:
                             
                             #INFO: This block gets executed if md5checksum is allowed
