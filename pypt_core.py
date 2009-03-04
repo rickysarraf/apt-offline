@@ -492,8 +492,8 @@ def fetcher(ArgumentOptions, arg_type = None):
                 log.err("I couldn't create a directory")
                 errfunc(1, '')
             
-    	    zip_update_file = os.path.join(os.path.abspath(download_path), ArgumentOptions.zip_update_file) 
-    	    zip_upgrade_file = os.path.join(os.path.abspath(download_path), ArgumentOptions.zip_upgrade_file) 
+    zip_update_file = os.path.join(os.path.abspath(download_path), ArgumentOptions.zip_update_file) 
+    zip_upgrade_file = os.path.join(os.path.abspath(download_path), ArgumentOptions.zip_upgrade_file) 
     
     if ArgumentOptions.deb_bugs:
         if DebianBTS is True:
