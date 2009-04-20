@@ -1118,6 +1118,8 @@ def main():
                                 #TODO: Use a more Pythonic way for it
                                 if options.upgrade_type == "upgrade":
                                         if PythonApt is True:
+                                                #FIXME: Adapt the new python-apt. Ideas from debdelta
+                                                log.verbose("Using the python-apt library to generate the database.\n")
                                                 PythonAptQuery = AptPython()
                                                 try:
                                                         install_file = open( options.set_upgrade, 'w' )
@@ -1130,9 +1132,11 @@ def main():
                                                 dup_records = []
                                                 for pkg in upgradable:
                                                         pkg._lookupRecord( True )
-                                                        path = apt_pkg.ParseSection( pkg._records.Record )['Filename']
-                                                        checksum = apt_pkg.ParseSection( pkg._records.Record )['SHA256']
-                                                        size = apt_pkg.ParseSection( pkg._records.Record )['Size']
+                                                        dpkg_params = apt_pkg.ParseSection(pkg._records.Record)
+                                                        arch = dpkg_params['Architecture']
+                                                        path = dpkg_params['Filename']
+                                                        checksum = dpkg_params['SHA256'] #FIXME: There can be multiple checksum types
+                                                        size = dpkg_params['Size']
                                                         cand = pkg._depcache.GetCandidateVer( pkg._pkg )
                                                         for ( packagefile, i ) in cand.FileList:
                                                                 indexfile = PythonAptQuery.cache._list.FindIndex( packagefile )
