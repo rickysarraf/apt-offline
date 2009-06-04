@@ -1211,7 +1211,7 @@ def main():
                 
                 if options.fetch_update:
                         if os.access( options.fetch_update, os.F_OK ):
-                                log.msg( "\nFetching packages which need upgradation\n\n" )
+                                log.msg( "\nFetching Requested Packages\n\n" )
                                 # Since we're in fetch_update, the download_type will be non-deb/rpm data
                                 # 1 is for update packages 
                                 # 2 is for upgrade packages
@@ -1223,7 +1223,7 @@ def main():
                 
                 if options.fetch_upgrade:
                         if os.access(options.fetch_upgrade, os.F_OK):
-                                log.msg("\nFetching packages which need upgradation\n\n")
+                                log.msg("\nFetching Requested Packages\n\n")
                                 # Since we're in fetch_update, the download_type will be non-deb/rpm data
                                 # 1 is for update packages 
                                 # 2 is for upgrade packages
