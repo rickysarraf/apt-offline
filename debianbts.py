@@ -857,6 +857,7 @@ def get_report(number, system='debian', mirrors=None,
             number = int(number)
     except ValueError:
             sys.stderr.write("%s couldn't be convered to integer.\nPlease report a bug" % (number) )
+            return False
     if SYSTEMS[system].get('cgiroot'):
         result = get_cgi_report(number, system, http_proxy, archived,
                                 followups)
