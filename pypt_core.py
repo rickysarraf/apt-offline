@@ -132,7 +132,7 @@ class FetchBugReports( MyPythonLib.Archiver ):
                                 
                                 if bug_flag:
                                         for x in sub_bugs_list:
-                                                break_bugs = x.split( ':' )
+                                                break_bugs = x.split( ' ' )
                                                 bug_num = string.lstrip( break_bugs[0], '#' )
                                                 try:
                                                         data = debianbts.get_report( bug_num, followups=True )
