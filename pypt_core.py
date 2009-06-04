@@ -493,8 +493,10 @@ def fetcher( ArgumentOptions, arg_type=None ):
         
         #INFO: Thread Support
         if ArgumentOptions.num_of_threads > 2:
-                log.msg("WARNING: If you are on a slow connection, it is good to limit the number of threads to a low number like 2.\n")
-                log.msg("WARNING: Else higher number of threads executed could cause network congestion and timeouts.\n\n")
+                log.msg("WARNING: If you are on a slow connection, it is good to\n")
+                log.msg("WARNING: limit the number of threads to a low number like 2.\n")
+                log.msg("WARNING: Else higher number of threads executed could cause\n")
+                log.msg("WARNING: network congestion and timeouts.\n\n")
         
         def run(request, response, func=find_first_match):
                 '''Get items from the request Queue, process them
