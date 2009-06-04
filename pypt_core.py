@@ -71,7 +71,7 @@ SOCKET_TIMEOUT_RETRY = 5
 
 
 version = "0.7.0"
-copyright = "(C) 2005 - 2007 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
+copyright = "(C) 2005 - 2009 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under certain conditions.\n\n\n"
         
