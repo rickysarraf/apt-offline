@@ -22,7 +22,7 @@
 ############################################################################
 
 
-from apt_offline_core_lib import main
+from AptOfflineCoreLib import main
 
 if __name__ == "__main__":
     main()
