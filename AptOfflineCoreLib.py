@@ -92,7 +92,7 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                 self.bugsList = []
                 self.IgnoredBugTypes = IgnoredBugTypes
                 self.lock = lock
-                self.pypt_bug = apt_bug_file_format
+                self.apt_bug = apt_bug_file_format
         
                 if self.lock:
                         AptOfflineLib.Archiver.__init__( self, lock )
@@ -136,7 +136,7 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                                 except socket.timeout:
                                                         return False
                                                 if Filename == None:
-                                                        self.fileName = PackageName + "." + bug_num + "." + self.pypt_bug
+                                                        self.fileName = PackageName + "." + bug_num + "." + self.apt_bug
                                                         file_handle = open( self.fileName, 'w' )
                                                 else:
                                                         file_handle = open( Filename, 'a' )
@@ -768,7 +768,7 @@ def syncer( install_file_path, target_path, path_type=None, bug_parse_required=N
         1 => install_file_path is a File
         2 => install_file_path is a Folder'''
         
-        archive = MyPythonLib.Archiver()
+        archive = AptOfflineLib.Archiver()
         
         def display_options():
                 log.msg( "(Y) Yes. Proceed with installation\n" )
@@ -790,13 +790,13 @@ def syncer( install_file_path, target_path, path_type=None, bug_parse_required=N
                         log.msg( "%s\t%s\n" % ( bug_num, bug_subject ) )
             
         def magic_check_and_uncompress( archive_file=None, target_path=None, filename=None, Mode=None ):
-                if pypt_magic.file( archive_file ) == "application/x-bzip2":
+                if AptOfflineMagicLib.file( archive_file ) == "application/x-bzip2":
                         retval = archive.decompress_the_file( archive_file, target_path, filename, 1 )
-                elif pypt_magic.file( archive_file ) == "application/x-gzip":
+                elif AptOfflineMagicLib.file( archive_file ) == "application/x-gzip":
                         retval = archive.decompress_the_file( archive_file, target_path, filename, 2 )
-                elif pypt_magic.file( archive_file ) == "application/zip":
+                elif AptOfflineMagicLib.file( archive_file ) == "application/zip":
                         retval = archive.decompress_the_file( os.path.join( install_file_path, eachfile ), target_path, eachfile, 3 )
-                elif pypt_magic.file( archive_file ) == "PGP armored data" or pypt_magic.file( archive_file ) == "application/x-dpkg":
+                elif AptOfflineMagicLib.file( archive_file ) == "PGP armored data" or AptOfflineMagicLib.file( archive_file ) == "application/x-dpkg":
                         if os.access( target_path, os.W_OK ):
                                 shutil.copy( archive_file, target_path + filename )
                                 retval = True
@@ -983,7 +983,7 @@ def main():
         parser = optparse.OptionParser( usage="%prog [OPTION1, OPTION2, ...]",
                                        version="%prog " + version + "\n" + copyright )
         parser.add_option( "-d", "--download-dir", dest="download_dir",
-                          help="Root directory path to save the downloaded files", action="store", type="string", metavar="pypt-downloads" )
+                          help="Root directory path to save the downloaded files", action="store", type="string", metavar="apt-downloads" )
         parser.add_option( "-s", "--cache-dir", dest="cache_dir",
                           help="Root directory path where the pre-downloaded files will be searched.Make sure you give the full path of the cache directory. If not, give a period '.'",
                           action="store", type="string", metavar="." )
@@ -1000,9 +1000,9 @@ def main():
         #INFO: Option zip is not enabled by default but is highly encouraged.
         parser.add_option( "-z", "--zip", dest="zip_it", help="Zip the downloaded files to a single zip file", action="store_true" )
         parser.add_option( "--zip-update-file", dest="zip_update_file", help="Default zip file for downloaded (update) data",
-                          action="store", type="string", metavar="pypt-offline-update.zip", default="pypt-offline-update.zip" )
+                          action="store", type="string", metavar="apt-offline-update.zip", default="apt-offline-update.zip" )
         parser.add_option( "--zip-upgrade-file", dest="zip_upgrade_file", help="Default zip file for downloaded (upgrade) data",
-                          action="store", type="string", metavar="pypt-offline-upgrade.zip", default="pypt-offline-upgrade.zip" )
+                          action="store", type="string", metavar="apt-offline-upgrade.zip", default="apt-offline-upgrade.zip" )
         
         #INFO: At the moment nargs cannot be set to something like * so that optparse could manipulate n number of args. This is a limitation in optparse at the moment. The author might add this feature in the future.
         # When fixed by the author, we'd be in a better shape to use the above mentioned line instead of relying on this improper way.
@@ -1010,32 +1010,32 @@ def main():
         #parser.add_option("", "--set-install-packages", dest="set_install_packages", help="Extract the list of uris which need to be fetched for installation of the given package and its dependencies", action="store", type="string", nargs=10, metavar="package_name")
         parser.add_option( "", "--set-install", dest="set_install",
                           help="Extract the list of uris which need to be fetched for installation of the given package and its dependencies",
-                          action="store", metavar="pypt-offline-install.dat" )
+                          action="store", metavar="apt-offline-install.dat" )
         parser.add_option( "", "--set-install-packages", dest="set_install_packages", help="Name of the packages which need to be fetched",
                           action="store_true", metavar="package_names" )
         parser.add_option( "", "--set-install-release", dest="set_install_release", help="Name of the release from which packages need to be fetched",
                           action="store", metavar="release_name" )
         parser.add_option( "", "--set-update", dest="set_update", help="Extract the list of uris which need to be fetched for updation",
-                          action="store", type="string", metavar="pypt-offline-update.dat" )
+                          action="store", type="string", metavar="apt-offline-update.dat" )
         parser.add_option( "", "--set-upgrade", dest="set_upgrade", help="Extract the list of uris which need to be fetched for _upgradation_",
-                          action="store", type="string", metavar="pypt-offline-upgrade.dat" )
+                          action="store", type="string", metavar="apt-offline-upgrade.dat" )
         parser.add_option( "", "--upgrade-type", dest="upgrade_type",
                           help="Type of upgrade to do. Use one of upgrade, dist-upgrade, dselect-ugprade",
                           action="store", type="string", metavar="upgrade" )
         parser.add_option( "", "--fetch-update", dest="fetch_update",
                           help="Fetch the list of uris which are needed for apt's databases _updation_. This command must be executed on the WITHNET machine",
-                          action="store", type="string", metavar="pypt-offline-update.dat" )
+                          action="store", type="string", metavar="apt-offline-update.dat" )
         parser.add_option( "", "--fetch-upgrade", dest="fetch_upgrade",
                           help="Fetch the list of uris which are needed for apt's databases _upgradation_. This command must be executed on the WITHNET machine",
-                          action="store", type="string", metavar="pypt-offline-upgrade.dat" )
+                          action="store", type="string", metavar="apt-offline-upgrade.dat" )
         parser.add_option( "", "--fetch-bug-reports", dest="deb_bugs",
                           help="Fetch bug reports from the BTS", action="store_true" )
         parser.add_option( "", "--install-update", dest="install_update",
                           help="Install the fetched database files to the  NONET machine and _update_ the apt database on the NONET machine. This command must be executed on the NONET machine",
-                          action="store", type="string", metavar="pypt-offline-update.zip" )
+                          action="store", type="string", metavar="apt-offline-update.zip" )
         parser.add_option( "", "--install-upgrade", dest="install_upgrade",
                           help="Install the fetched packages to the  NONET machine and _upgrade_ the packages on the NONET machine. This command must be executed on the NONET machine",
-                          action="store", type="string", metavar="pypt-offline-upgrade.zip" )
+                          action="store", type="string", metavar="apt-offline-upgrade.zip" )
         ( options, args ) = parser.parse_args()
         
         
@@ -1053,7 +1053,7 @@ def main():
                                 w.show()
                                 app.exec_loop()
                         else:
-                                log.err( "Incomplete installation. PyQT or pypt-offline GUI libraries not available.\n" )
+                                log.err( "Incomplete installation. PyQT or apt-offline GUI libraries not available.\n" )
                                 sys.exit( 1 )
                 
                 log.msg("%s - %s\n" % (app_name, version))
@@ -1097,14 +1097,14 @@ def main():
                                         # This is only a workaround.
                                         # When using locales, we get translation files. But apt doesn't extract the URI properly.
                                         # Once the extraction problem is root-caused, we can fix this easily.
-                                        os.environ['__pypt_set_update'] = options.set_update
+                                        os.environ['__apt_set_update'] = options.set_update
                                         try:
                                                 old_environ = os.environ['LANG']
                                         except KeyError:
                                                 old_environ = "C"
                                         os.environ['LANG'] = "C"
                                         log.verbose( "Set environment variable for LANG from %s to %s temporarily.\n" % ( old_environ, os.environ['LANG'] ) )
-                                        if os.system( '/usr/bin/apt-get -qq --print-uris update > $__pypt_set_update' ) != 0:
+                                        if os.system( '/usr/bin/apt-get -qq --print-uris update > $__apt_set_update' ) != 0:
                                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
                                         log.verbose( "Set environment variable for LANG back to its original from %s to %s.\n" % ( os.environ['LANG'], old_environ ) )
                                         os.environ['LANG'] = old_environ
@@ -1152,18 +1152,18 @@ def main():
                                                                         dup_records.append( checksum.__str__() )
                                         else:
                                                 log.msg( "\n\nGenerating database of files that are needed for an upgrade.\n" )
-                                                os.environ['__pypt_set_upgrade'] = options.set_upgrade
-                                                if os.system( '/usr/bin/apt-get -qq --print-uris upgrade > $__pypt_set_upgrade' ) != 0:
+                                                os.environ['__apt_set_upgrade'] = options.set_upgrade
+                                                if os.system( '/usr/bin/apt-get -qq --print-uris upgrade > $__apt_set_upgrade' ) != 0:
                                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                                 elif options.upgrade_type == "dist-upgrade":
                                         log.msg( "\n\nGenerating database of files that are needed for a dist-upgrade.\n" )
-                                        os.environ['__pypt_set_upgrade'] = options.set_upgrade
-                                        if os.system( '/usr/bin/apt-get -qq --print-uris dist-upgrade > $__pypt_set_upgrade' ) != 0:
+                                        os.environ['__apt_set_upgrade'] = options.set_upgrade
+                                        if os.system( '/usr/bin/apt-get -qq --print-uris dist-upgrade > $__apt_set_upgrade' ) != 0:
                                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
                                 elif options.upgrade_type == "dselect-upgrade":
                                         log.msg( "\n\nGenerating database of files that are needed for a dselect-upgrade.\n" )
-                                        os.environ['__pypt_set_upgrade'] = options.set_upgrade
-                                        if os.system( '/usr/bin/apt-get -qq --print-uris dselect-upgrade > $__pypt_set_upgrade' ) != 0:
+                                        os.environ['__apt_set_upgrade'] = options.set_upgrade
+                                        if os.system( '/usr/bin/apt-get -qq --print-uris dselect-upgrade > $__apt_set_upgrade' ) != 0:
                                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
                                 else:
                                         parser.error( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
@@ -1178,23 +1178,23 @@ def main():
                                 if os.geteuid() != 0:
                                         parser.error( "This option requires super-user privileges. Execute as root or use sudo/su" )
                                 log.msg( "\n\nGenerating database of the package and its dependencies.\n" )
-                                os.environ['__pypt_set_install'] = options.set_install
-                                os.environ['__pypt_set_install_packages'] = ''
+                                os.environ['__apt_set_install'] = options.set_install
+                                os.environ['__apt_set_install_packages'] = ''
                 
                                 #INFO: This is improper way of getting the args, the name of the packages.
                                 # But since optparse doesn't have the implementation in place at the moment, we're using it.
                                 # Once fixed, this will be changed.
                                 # For details look at the parser.add_option line above.
                                 for x in args:
-                                        os.environ['__pypt_set_install_packages'] += x + ' '
+                                        os.environ['__apt_set_install_packages'] += x + ' '
                                 
                                 if options.set_install_release:
-                                        os.environ['__pypt_set_install_release'] = options.set_install_release
-                                        if os.system( '/usr/bin/apt-get -qq --print-uris -t $__pypt_set_install_release install $__pypt_set_install_packages > $__pypt_set_install' ) != 0:
+                                        os.environ['__apt_set_install_release'] = options.set_install_release
+                                        if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release install $__apt_set_install_packages > $__apt_set_install' ) != 0:
                                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
                                 else:
                                         #FIXME: Find a more Pythonic implementation
-                                        if os.system( '/usr/bin/apt-get -qq --print-uris install $__pypt_set_install_packages > $__pypt_set_install' ) != 0:
+                                        if os.system( '/usr/bin/apt-get -qq --print-uris install $__apt_set_install_packages > $__apt_set_install' ) != 0:
                                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
                         else:
                                 parser.error( "This argument is supported only on Unix like systems with apt installed\n" )
