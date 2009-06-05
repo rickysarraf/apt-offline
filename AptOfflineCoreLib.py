@@ -33,16 +33,16 @@ import zipfile
 # On Debian, python-debianbts package provides this library
 DebianBTS = True
 try:
-        import apt_offline_debianbts_lib
+        import AptOfflineDebianBtsLib
 except ImportError:
         DebianBTS = False
 
-import apt_offline_magic_lib
+import AptOfflineMagicLib
 
 guiBool = True
 try:
         from qt import *
-        from apt_offline_gui import pyptofflineguiForm
+        from AptOfflieGUI import pyptofflineguiForm
 except ImportError:
         guiBool = False
     
@@ -54,7 +54,7 @@ try:
 except ImportError:
         PythonApt = False
     
-import apt_offline_lib
+import AptOfflineLib
 
 #INFO: Set the default timeout to 15 seconds for the packages that are being downloaded.
 socket.setdefaulttimeout(30)
@@ -66,6 +66,7 @@ SOCKET_TIMEOUT_RETRY = 5
 figuring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
 
+app_name = "apt-offline"
 version = "0.7.0"
 copyright = "(C) 2005 - 2009 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
@@ -86,7 +87,7 @@ LINE_OVERWRITE_MID = " " * 30
 LINE_OVERWRITE_FULL = " " * 60
 
        
-class FetchBugReports( apt_offline_lib.Archiver ):
+class FetchBugReports( AptOfflineLib.Archiver ):
         def __init__( self, apt_bug_file_format, IgnoredBugTypes, ArchiveFile=None, lock=False ):
                 self.bugsList = []
                 self.IgnoredBugTypes = IgnoredBugTypes
@@ -94,7 +95,7 @@ class FetchBugReports( apt_offline_lib.Archiver ):
                 self.pypt_bug = apt_bug_file_format
         
                 if self.lock:
-                        apt_offline_lib.Archiver.__init__( self, lock )
+                        AptOfflineLib.Archiver.__init__( self, lock )
                         self.ArchiveFile = ArchiveFile
         
         def FetchBugsDebian( self, PackageName, Filename=None ):
@@ -109,7 +110,7 @@ class FetchBugReports( apt_offline_lib.Archiver ):
                                 sys.exit( 1 )
                 
                 try:
-                        ( num_of_bugs, header, self.bugs_list ) = apt_offline_debianbts_lib.get_reports( PackageName )
+                        ( num_of_bugs, header, self.bugs_list ) = AptOfflineDebianBtsLib.get_reports( PackageName )
                 except socket.timeout:
                         return 0
                 
@@ -131,7 +132,7 @@ class FetchBugReports( apt_offline_lib.Archiver ):
                                                 break_bugs = x.split( ' ' )
                                                 bug_num = string.lstrip( break_bugs[0], '#' )
                                                 try:
-                                                        data = apt_offline_debianbts_lib.get_report( bug_num, followups=True )
+                                                        data = AptOfflineDebianBtsLib.get_report( bug_num, followups=True )
                                                 except socket.timeout:
                                                         return False
                                                 if Filename == None:
@@ -191,14 +192,14 @@ def find_first_match(cache_dir=None, filename=None):
                 return False
         
         
-class DownloadFromWeb(apt_offline_lib.ProgressBar):
+class DownloadFromWeb(AptOfflineLib.ProgressBar):
         '''Class for DownloadFromWeb
         This class also inherits progressbar functionalities from
         parent class, ProgressBar'''
         
         def __init__(self, width):
                 '''width = Progress Bar width'''
-                apt_offline_lib.ProgressBar.__init__(self, width=width)
+                AptOfflineLib.ProgressBar.__init__(self, width=width)
         
         def download_from_web(self, url, file, download_dir):
                 '''url = url to fetch
@@ -275,17 +276,21 @@ def copy_first_match(cache_dir, filename, dest_dir, checksum):
         if cache_dir is None:
                 return False
         
+        check = AptOfflineLib.Checksum()
         for path, file in files(cache_dir): 
                 if file == filename:
                         #INFO: md5check is compulsory here
                         # There's no point in checking for the disable-md5 option because
                         # copying a damaged file is of no use
-                        if pypt_md5_check.CheckHashDigest(file, checksum, path) == True:
+                        if check.CheckHashDigest(file, checksum, path) == True:
                                 try:
                                         shutil.copy(os.path.join(path, file), dest_dir)
                                 except shutil.Error:
                                         log.verbose("%s already available in dest_dir. Skipping copy!!!\n" % (file))
                                 return True
+                        else:
+                                log.verbose("Checksum mismatch for %s.\n" % (file) )
+                                return False
         return False
 
 def stripper(item):
@@ -410,12 +415,12 @@ def fetcher( ArgumentOptions, arg_type=None ):
                 if os.path.isdir( cache_dir ) is False:
                         log.verbose( "WARNING: cache dir is incorrect. Did you give the full path ?\n" )
         
-        class FetcherClass( DownloadFromWeb, MyPythonLib.Archiver, MyPythonLib.Checksum ):
+        class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum ):
                 def __init__( self, width, lock ):
                         DownloadFromWeb.__init__( self, width=width )
                         #ProgressBar.__init__(self, width)
                         #self.width = width
-                        MyPythonLib.Archiver.__init__( self, lock=lock )
+                        AptOfflineLib.Archiver.__init__( self, lock=lock )
                         #self.lock = lock
         
         #global FetcherInstance
@@ -424,13 +429,13 @@ def fetcher( ArgumentOptions, arg_type=None ):
         #progbar = ProgressBar(width = 30)
         
         if ArgumentOptions.download_dir is None:
-                if os.access( "pypt-downloads", os.W_OK ) is True:
-                        download_path = os.path.abspath( "pypt-downloads" )
+                if os.access( "apt-downloads", os.W_OK ) is True:
+                        download_path = os.path.abspath( "apt-downloads" )
                 else:
                         try:
                                 os.umask( 0002 )
-                                os.mkdir( "pypt-downloads" )
-                                download_path = os.path.abspath( "pypt-downloads" )
+                                os.mkdir( "apt-downloads" )
+                                download_path = os.path.abspath( "apt-downloads" )
                         except:
                                 log.err( "I couldn't create a directory" )
                                 errfunc( 1, '' )
@@ -1035,7 +1040,7 @@ def main():
         
         
         global log
-        log = MyPythonLib.Log( options.verbose, lock=True )
+        log = AptOfflineLib.Log( options.verbose, lock=True )
         try:
                 if options.gui:
                         if guiBool is True:
@@ -1051,7 +1056,7 @@ def main():
                                 log.err( "Incomplete installation. PyQT or pypt-offline GUI libraries not available.\n" )
                                 sys.exit( 1 )
                 
-                log.msg("pypt-offline %s\n" % (version))
+                log.msg("%s - %s\n" % (app_name, version))
                 log.msg("Copyright %s\n" % (copyright))
                 log.msg(terminal_license)
         
@@ -1066,7 +1071,7 @@ def main():
                 
                 #INFO: Python 2.5 has hashlib which supports sha256
                 # If we don't have Python 2.5, disable MD5/SHA256 checksum
-                if MyPythonLib.Python_2_5 is False:
+                if AptOfflineLib.Python_2_5 is False:
                         options.disable_md5check = True
                         log.verbose( "\nMD5/SHA256 Checksum is being disabled. You need atleast Python 2.5 to do checksum verification.\n" )
                 
