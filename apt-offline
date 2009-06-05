@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# pypt-offline.py
+# apt-offline
 #
 ############################################################################
-#    Copyright (C) 2005, 2006 Ritesh Raj Sarraf                            #
+#    Copyright (C) 2005, 2009 Ritesh Raj Sarraf                            #
 #    rrs@researchut.com                                                    #
 #                                                                          #
 #    This program is free software; you can redistribute it and#or modify  #
@@ -22,7 +22,7 @@
 ############################################################################
 
 
-from pypt_core import main
+from apt_offline_core_lib import main
 
 if __name__ == "__main__":
     main()
