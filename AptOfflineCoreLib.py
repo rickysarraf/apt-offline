@@ -1,5 +1,5 @@
 '''    
-    pypt-offline  -- An offline package manager for Debian and its derivatives
+    apt-offline  -- An offline package manager for Debian and its derivatives
     Copyright (C) 2007 - 2009  Ritesh Raj Sarraf
 
     This program is free software: you can redistribute it and/or modify
@@ -33,16 +33,16 @@ import zipfile
 # On Debian, python-debianbts package provides this library
 DebianBTS = True
 try:
-        import debianbts
+        import apt_offline_debianbts_lib
 except ImportError:
         DebianBTS = False
 
-import pypt_magic
+import apt_offline_magic_lib
 
 guiBool = True
 try:
         from qt import *
-        from pyptofflinegui import pyptofflineguiForm
+        from apt_offline_gui import pyptofflineguiForm
 except ImportError:
         guiBool = False
     
@@ -54,12 +54,7 @@ try:
 except ImportError:
         PythonApt = False
     
-try:
-        sys.path.append(os.path.dirname(__file__) + "/MyPythonLib")
-        import MyPythonLib
-except ImportError:
-        sys.stderr.write("MyPythonLib library not found. Check installation.\n")
-        sys.exit(1)
+import apt_offline_lib
 
 #INFO: Set the default timeout to 15 seconds for the packages that are being downloaded.
 socket.setdefaulttimeout(30)
@@ -67,7 +62,8 @@ socket.setdefaulttimeout(30)
 # How many times should we retry on socket timeouts
 SOCKET_TIMEOUT_RETRY = 5
 
-'''This is the core module. It does the main job of downloading packages/update packages,\nfiguring out if the packages are in the local cache, handling exceptions and many more stuff'''
+'''This is the core module. It does the main job of downloading packages/update packages,\n
+figuring out if the packages are in the local cache, handling exceptions and many more stuff'''
 
 
 version = "0.7.0"
@@ -80,7 +76,7 @@ supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
 apt_update_target_path = '/var/lib/apt/lists/'
 apt_package_target_path = '/var/cache/apt/archives/'
 
-pypt_bug_file_format = "__pypt__bug__report"
+apt_bug_file_format = "__apt__bug__report"
 IgnoredBugTypes = ["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"]
 
 
@@ -90,15 +86,15 @@ LINE_OVERWRITE_MID = " " * 30
 LINE_OVERWRITE_FULL = " " * 60
 
        
-class FetchBugReports( MyPythonLib.Archiver ):
-        def __init__( self, pypt_bug_file_format, IgnoredBugTypes, ArchiveFile=None, lock=False ):
+class FetchBugReports( apt_offline_lib.Archiver ):
+        def __init__( self, apt_bug_file_format, IgnoredBugTypes, ArchiveFile=None, lock=False ):
                 self.bugsList = []
                 self.IgnoredBugTypes = IgnoredBugTypes
                 self.lock = lock
-                self.pypt_bug = pypt_bug_file_format
+                self.pypt_bug = apt_bug_file_format
         
                 if self.lock:
-                        MyPythonLib.Archiver.__init__( self, lock )
+                        apt_offline_lib.Archiver.__init__( self, lock )
                         self.ArchiveFile = ArchiveFile
         
         def FetchBugsDebian( self, PackageName, Filename=None ):
@@ -113,7 +109,7 @@ class FetchBugReports( MyPythonLib.Archiver ):
                                 sys.exit( 1 )
                 
                 try:
-                        ( num_of_bugs, header, self.bugs_list ) = debianbts.get_reports( PackageName )
+                        ( num_of_bugs, header, self.bugs_list ) = apt_offline_debianbts_lib.get_reports( PackageName )
                 except socket.timeout:
                         return 0
                 
@@ -135,7 +131,7 @@ class FetchBugReports( MyPythonLib.Archiver ):
                                                 break_bugs = x.split( ' ' )
                                                 bug_num = string.lstrip( break_bugs[0], '#' )
                                                 try:
-                                                        data = debianbts.get_report( bug_num, followups=True )
+                                                        data = apt_offline_debianbts_lib.get_report( bug_num, followups=True )
                                                 except socket.timeout:
                                                         return False
                                                 if Filename == None:
@@ -195,14 +191,14 @@ def find_first_match(cache_dir=None, filename=None):
                 return False
         
         
-class DownloadFromWeb(MyPythonLib.ProgressBar):
+class DownloadFromWeb(apt_offline_lib.ProgressBar):
         '''Class for DownloadFromWeb
         This class also inherits progressbar functionalities from
         parent class, ProgressBar'''
         
         def __init__(self, width):
                 '''width = Progress Bar width'''
-                MyPythonLib.ProgressBar.__init__(self, width=width)
+                apt_offline_lib.ProgressBar.__init__(self, width=width)
         
         def download_from_web(self, url, file, download_dir):
                 '''url = url to fetch
@@ -455,9 +451,9 @@ def fetcher( ArgumentOptions, arg_type=None ):
         if ArgumentOptions.deb_bugs:
                 if DebianBTS is True:
                         if ArgumentOptions.zip_it:
-                                FetchBugReportsDebian = FetchBugReports( pypt_bug_file_format, IgnoredBugTypes, zip_upgrade_file, lock=True )
+                                FetchBugReportsDebian = FetchBugReports( apt_bug_file_format, IgnoredBugTypes, zip_upgrade_file, lock=True )
                         else:
-                                FetchBugReportsDebian = FetchBugReports( pypt_bug_file_format, IgnoredBugTypes )
+                                FetchBugReportsDebian = FetchBugReports( apt_bug_file_format, IgnoredBugTypes )
                 else:
                         log.err( "Couldn't find debianbts module.\n Cannot fetch Bug Reports.\n" )
         
@@ -587,7 +583,7 @@ def fetcher( ArgumentOptions, arg_type=None ):
                                                                 
                                                                 if bug_fetched == 1:
                                                                         for x in os.listdir(os.curdir):
-                                                                                if (x.startswith(PackageName) and x.endswith(pypt_bug_file_format) ):
+                                                                                if (x.startswith(PackageName) and x.endswith(apt_bug_file_format) ):
                                                                                         shutil.move(x, download_path)
                                                                                         log.verbose("Moved %s file to %s folder.%s\n" % (x, download_path, LINE_OVERWRITE_FULL) )
                                                 #INFO: Damn!! The md5chesum didn't match :-(
@@ -654,7 +650,7 @@ def fetcher( ArgumentOptions, arg_type=None ):
                                                         # And also the bug reports
                                                         if bug_fetched == 1:
                                                                 for x in os.listdir( os.curdir ):
-                                                                        if ( x.startswith( PackageName ) and x.endswith( pypt_bug_file_format ) ):
+                                                                        if ( x.startswith( PackageName ) and x.endswith( apt_bug_file_format ) ):
                                                                                 shutil.move( x, download_path )
                                                                                 log.verbose( "Moved %s file to %s folder.%s\n" % ( x, download_path, LINE_OVERWRITE_MID ) )
                                         
@@ -802,7 +798,7 @@ def syncer( install_file_path, target_path, path_type=None, bug_parse_required=N
                         else:
                                 log.err( "Cannot write to target path %s\n" % ( target_path ) )
                                 sys.exit( 1 )
-                elif filename.endswith( pypt_bug_file_format ):
+                elif filename.endswith( apt_bug_file_format ):
                         retval = False # We intentionally put the bug report files as not printed.
                 else:
                         log.err( "I couldn't understand file type %s.\n" % ( filename ) )
@@ -816,7 +812,7 @@ def syncer( install_file_path, target_path, path_type=None, bug_parse_required=N
                 if bug_parse_required is True:
                         bugs_number = {}
                         for filename in file.namelist():
-                                if filename.endswith( pypt_bug_file_format ):
+                                if filename.endswith( apt_bug_file_format ):
                                         temp = tempfile.NamedTemporaryFile()
                                         temp.file.write( file.read( filename ) )
                                         temp.file.flush()
@@ -907,7 +903,7 @@ def syncer( install_file_path, target_path, path_type=None, bug_parse_required=N
                 if bug_parse_required is True:
                         bugs_number = []
                         for filename in os.listdir( install_file_path ):
-                                if filename.endswith( pypt_bug_file_format ):
+                                if filename.endswith( apt_bug_file_format ):
                                         bugs_number.append( filename )
                         if bugs_number:
                                 #Give the choice to the user
