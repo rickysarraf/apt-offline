@@ -790,13 +790,16 @@ def syncer( install_file_path, target_path, path_type=None, bug_parse_required=N
                         log.msg( "%s\t%s\n" % ( bug_num, bug_subject ) )
             
         def magic_check_and_uncompress( archive_file=None, target_path=None, filename=None, Mode=None ):
+                retval = False
                 if AptOfflineMagicLib.file( archive_file ) == "application/x-bzip2":
                         retval = archive.decompress_the_file( archive_file, target_path, filename, 1 )
                 elif AptOfflineMagicLib.file( archive_file ) == "application/x-gzip":
                         retval = archive.decompress_the_file( archive_file, target_path, filename, 2 )
                 elif AptOfflineMagicLib.file( archive_file ) == "application/zip":
                         retval = archive.decompress_the_file( os.path.join( install_file_path, eachfile ), target_path, eachfile, 3 )
-                elif AptOfflineMagicLib.file( archive_file ) == "PGP armored data" or AptOfflineMagicLib.file( archive_file ) == "application/x-dpkg":
+                elif AptOfflineMagicLib.file( archive_file ) == "PGP armored data" or \
+                AptOfflineMagicLib.file( archive_file ) == "application/x-dpkg" or \
+                AptOfflineMagicLib.file( archive_file ) == "ASCII text":
                         if os.access( target_path, os.W_OK ):
                                 shutil.copy( archive_file, target_path + filename )
                                 retval = True
