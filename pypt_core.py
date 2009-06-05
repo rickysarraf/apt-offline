@@ -807,7 +807,7 @@ def syncer( install_file_path, target_path, path_type=None, bug_parse_required=N
                 else:
                         log.err( "I couldn't understand file type %s.\n" % ( filename ) )
                 
-                if retval is True:
+                if retval:
                         log.msg( "%s file synced.\n" % ( filename ) )
         
         if path_type == 1:
