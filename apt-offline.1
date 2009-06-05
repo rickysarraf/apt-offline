@@ -1,0 +1,149 @@
+.TH pypt-offline 1 "August 20, 2007" "version 0.7.0" "USER COMMANDS"
+.SH NAME
+pypt-offline \- Offline Package manager
+.SH SYNOPSIS
+.B pypt-offline
+[OPTIONS] [ARGUMENTS]
+.SH DESCRIPTION
+pypt-offline is an Offline Package Manager for Debian based systems. It bring offline package management functionality.
+It can download the required packages for a disconnected machine from a different connected machine running Windows or Linux or Mac OS X.
+.PP
+It can also fetch bug reports for packages which are downloaded.
+.PP
+Currently it supports only apt based systems but plans are there to support RPM based distros also.
+.SH OPTIONS
+.TP
+\-\-set\-update filename
+Specify the file to which the details about the update files with be written to
+.TP
+\-\-set\-upgrade filename
+Specify the file to which the details about the package files will be written to
+.TP
+\-\-upgrade\-type upgrade-type
+Specify the type of upgrade you want to do. Possible values are upgrade/dist-upgrade 
+.TP
+\-\-set\-install filename
+Specify the file to which the details about the packages to be installed will be written to
+.TP
+\-\-set\-install\-packages [package names]
+Specify the name of packages which you want to install
+.TP
+\-\-set\-install\-release [release name]
+Specify the name of the release from which you want to download the packages. Eg. testing/unstable/experimental
+.TP
+\-\-fetch\-update filename
+Specify the data file which contains the details about update files to be downloaded
+.TP
+\-\-fetch\-upgrade filename
+Specify the data file which contains the details about the package files to be downloaded
+.TP
+\-\-fetch\-bug\-reports
+Fetch bug reports for the packages which are to be downloaded. Currently works only with Debian BTS
+.TP
+\-\-install\-update filename
+Specify the archive file or folder path which contains the update data you downloaded
+.TP
+\-\-install\-upgrade filename
+Specify the archive file or folder path which contains the package data you downloaded
+.TP
+\-z/\-\-zip
+Zip the downloaded files to a single zip archive file
+.TP
+\-\-zip\-update\-file filename
+Specify a zip file name for the downloaded files to be archived to. Default: pypt-offline-update.zip
+.TP
+\-\-zip\-upgrade\-file filename
+Specify a zip file name for the downloaded files to be archived to. Default: pypt-offline-upgrade.zip
+.TP
+\-\-threads N
+Specifiy the number of threads to be spawned (Default: 1)
+.TP
+\-\-disable\-md5check
+Disable MD5 Checksum. Default: False
+.TP
+\-d/\-\-download\-dir path
+Path where the downloaded files will be saved to. Eg: C:\\debs or /var/tmp/debs
+.TP
+\-s/\-\-cache\-dir path
+Path to search for files before downloading from the web. Eg: C:\\debs or /var/tmp/debs
+.TP
+\-\-socket\-timeout N
+Set socket timeout value. Default: 30
+.TP
+\-\-verbose
+Enable verbose messages
+.TP
+\-\-test\-windows
+This switch is used while doing testing on Microsoft Windows
+.TP
+\-\-help
+display a short help text
+.TP
+\-\-version
+display the version of the progream
+
+.SH EXAMPLES
+.TP
+.B To keep your disconnected machine  up-to-date, here are the examples
+.TP
+.B pypt-offline \-\-set\-update update_uris
+This command will extract the details about the files that need to be fetched to update the package management database on the machine without internet connection.
+.TP
+.B pypt-offline \-\-fetch\-update update_uris
+This command will fetch the required data as defined in the update_uris file and create a zip archive if the \-z option is used
+.TP
+.B pypt-offline \-\-install\-update pypt-offline-update.zip
+This command will update your disconnected machine's package management database by extracting the data from the file pypt-offline-update.zip
+
+.TP
+.B To upgrade/install packages on your disconnected machine, here are the examples
+.TP
+.B pypt-offline \-\-set\-upgrade upgrade_uris
+This command will extract the details about the packages that need to be fetched to upgrade the softwares install on your machine without an internet connection.
+.TP
+.B pypt-offline \-\-fetch\-upgrade upgrade_uris
+This command will fetch the required data as defined in the upgrade_uris file and create a zip archive if the \-z option is used. Else it will download it into the folder you specify.
+.TP
+.B pypt-offline \-\-install\-upgrade pypt-offline-upgrade.zip
+This command will install packages to your disconnected machine's package management database by extracting the data from the file pypt-offlien-upgrade.zip. If you didn't use the \-z option, you will have to specify the directory path
+Once the packages are synced, you can do the installation as you usually do by using "apt-get install package_name" or "apt-get upgrade". apt will not ask you to download any additional byte.
+
+.TP
+.B Other important options to use with the above
+
+.TP
+.B -z / --zip
+This option, when used along with \-\-fetch\-up[date/grade], creates a archive file for the files which are downloaded. It becomes convenient to use a single zip archive file.
+This option is highly recommended to be used but is not enable by default.
+
+.TP
+.B --threads N
+This option allows multiple downloads to be enabled. It spawns multiple threads when downloading. Use this when you have a high speed internet connection.
+On a high speed internet connection, 5 is a good value to use.
+
+.TP
+.B --disable-md5check
+This option, if enabled, disables MD5 Checksum for the data which is downloaded. It is HIGHLY DISCOURAGED to use this option
+
+.TP
+.B --fetch-bug-reports
+This option, if enabled, fetched bug reports for packages which are being downloaded. Currently only Debian BTS is supported.
+Disabled by default but highly recommened to use it.
+
+.SH AUTHOR
+.B Ritesh Raj Sarraf (rrs@researchut.com)
+
+.SH BUGS
+Currently there is no way to break out from the application which it is fetching the required packages.
+This is because when multiple threads are spawned, the signal needs to be handled accordingly. This is in the TODO list.
+
+
+If you wish to report a bug in pypt-offline, please see 
+.B http://sf.net/projects/pypt-offline
+or send an email to me at
+.B rrs@researchut.com
+
+.SH SEE ALSO
+.SM apt-get(8)
+.SM apt-cache(8)
+.SM dpkg(8)
