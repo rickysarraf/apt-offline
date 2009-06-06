@@ -264,35 +264,6 @@ class DownloadFromWeb(AptOfflineLib.ProgressBar):
                         errfunc(10054, "Socket timeout.\n", file)
 
 
-def copy_first_match(cache_dir, filename, dest_dir, checksum):
-        '''Walks into "reposiotry" looking for "filename".
-        If found, copies it to "dest_dir" but first verifies their md5 "checksum".'''
-        
-        # If the repository is not given, we'll return None because the user wants to download
-        # it from the web
-        # There's no need to walk also because the user knows that he doesn't have any cache_dir
-        # Earlier implementation of having a default dir (os.curdir()) hit performance badly because
-        # at times it would start the walk from "C:\" or "/"
-        if cache_dir is None:
-                return False
-        
-        check = AptOfflineLib.Checksum()
-        for path, file in files(cache_dir): 
-                if file == filename:
-                        #INFO: md5check is compulsory here
-                        # There's no point in checking for the disable-md5 option because
-                        # copying a damaged file is of no use
-                        if check.CheckHashDigest(file, checksum, path) == True:
-                                try:
-                                        shutil.copy(os.path.join(path, file), dest_dir)
-                                except shutil.Error:
-                                        log.verbose("%s already available in dest_dir. Skipping copy!!!\n" % (file))
-                                return True
-                        else:
-                                log.verbose("Checksum mismatch for %s.\n" % (file) )
-                                return False
-        return False
-
 def stripper(item):
         '''Strips extra characters from "item".
         Breaks "item" into:
