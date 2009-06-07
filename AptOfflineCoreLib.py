@@ -30,6 +30,15 @@ import tempfile
 
 import zipfile
 
+# Given the merits of argparse, I hope it'll soon be part
+# of the Python Standard Library.
+# http://code.google.com/argparse
+# Till then we use it this way.
+try:
+        import argparse
+except ImportError:
+        import AptOffline_argparse as argparse
+
 # On Debian, python-debianbts package provides this library
 DebianBTS = True
 try:
@@ -68,9 +77,10 @@ figuring out if the packages are in the local cache, handling exceptions and man
 
 app_name = "apt-offline"
 version = "0.7.0"
-copyright = "(C) 2005 - 2009 Ritesh Raj Sarraf - RESEARCHUT (http://www.researchut.com/)"
+copyright = "(C) 2005 - 2009 Ritesh Raj Sarraf"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
-This is free software, and you are welcome to redistribute it under certain conditions.\n\n\n"
+This is free software, and you are welcome to redistribute it under\n\
+the GNU GPL License\n"
         
 errlist = []
 supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
@@ -946,6 +956,145 @@ def syncer( install_file_path, target_path, path_type=None, bug_parse_required=N
                         log.err( "Inappropriate argument sent to syncer during data fetch. Do you need to fetch bugs or not?\n" )    
                         sys.exit( 1 )
                 
+
+def setter(args):
+        Str_SetArg = args.set
+        List_SetInstallPackages = args.set_install_packages
+        Str_SetInstallRelease = args.set_install_release
+        Bool_SetUpdate = args.set_update
+        Bool_SetUpgrade = args.set_upgrade
+        Str_SetUpgradeType = args.upgrade_type
+        
+        if Bool_SetUpdate:
+                if platform.system() in supported_platforms:
+                        if os.geteuid() != 0:
+                                parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
+                        else:
+                                log.msg("\n\nGenerating database of files that are needed for an update.\n")
+                        
+                                #FIXME: Unicode Fix
+                                # This is only a workaround.
+                                # When using locales, we get translation files. But apt doesn't extract the URI properly.
+                                # Once the extraction problem is root-caused, we can fix this easily.
+                                os.environ['__apt_set_update'] = Str_SetArg
+                                try:
+                                        old_environ = os.environ['LANG']
+                                except KeyError:
+                                        old_environ = "C"
+                                os.environ['LANG'] = "C"
+                                log.verbose( "Set environment variable for LANG from %s to %s temporarily.\n" % ( old_environ, os.environ['LANG'] ) )
+                                if os.system( '/usr/bin/apt-get -qq --print-uris update > $__apt_set_update' ) != 0:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                log.verbose( "Set environment variable for LANG back to its original from %s to %s.\n" % ( os.environ['LANG'], old_environ ) )
+                                os.environ['LANG'] = old_environ
+                else:
+                        parser.error( "This argument is supported only on Unix like systems with apt installed\n" )
+                        sys.exit( 1 )
+        if Bool_SetUpgrade:
+                if platform.system() in supported_platforms:
+                        if os.geteuid() != 0:
+                                parser.error( "This option requires super-user privileges. Execute as root or use sudo/su" )
+                        #TODO: Use a more Pythonic way for it
+                        if Str_SetUpgradeType == "upgrade":
+                                if PythonApt is True:
+                                        #FIXME: Adapt the new python-apt. Ideas from debdelta
+                                        log.verbose("Using the python-apt library to generate the database.\n")
+                                        PythonAptQuery = AptPython()
+                                        try:
+                                                install_file = open( Str_SetArg, 'w' )
+                                        except IOError:
+                                                log.err( "Cannot create file %s.\n" % (Str_SetArg) )
+                                                sys.exit( 1 )
+                                        upgradable = filter( lambda p: p.isUpgradable, PythonAptQuery.cache )
+                                        log.msg( "\n\nGenerating database of files that are needed for an upgrade.\n" )
+                                        
+                                        dup_records = []
+                                        for pkg in upgradable:
+                                                pkg._lookupRecord( True )
+                                                dpkg_params = apt_pkg.ParseSection(pkg._records.Record)
+                                                arch = dpkg_params['Architecture']
+                                                path = dpkg_params['Filename']
+                                                checksum = dpkg_params['SHA256'] #FIXME: There can be multiple checksum types
+                                                size = dpkg_params['Size']
+                                                cand = pkg._depcache.GetCandidateVer( pkg._pkg )
+                                                for ( packagefile, i ) in cand.FileList:
+                                                        indexfile = PythonAptQuery.cache._list.FindIndex( packagefile )
+                                                        if indexfile:
+                                                                uri = indexfile.ArchiveURI( path )
+                                                                file = uri.split( '/' )[ - 1]
+                                                                if checksum.__str__() in dup_records:
+                                                                        continue
+                                                                install_file.write( uri + ' ' + file + ' ' + size + ' ' + checksum + "\n" )
+                                                                dup_records.append( checksum.__str__() )
+                                else:
+                                        log.msg( "\n\nGenerating database of files that are needed for an upgrade.\n" )
+                                        os.environ['__apt_set_upgrade'] = Str_SetArg
+                                        if os.system( '/usr/bin/apt-get -qq --print-uris upgrade > $__apt_set_upgrade' ) != 0:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        elif options.upgrade_type == "dist-upgrade":
+                                log.msg( "\n\nGenerating database of files that are needed for a dist-upgrade.\n" )
+                                os.environ['__apt_set_upgrade'] = Str_SetArg
+                                if os.system( '/usr/bin/apt-get -qq --print-uris dist-upgrade > $__apt_set_upgrade' ) != 0:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        elif options.upgrade_type == "dselect-upgrade":
+                                log.msg( "\n\nGenerating database of files that are needed for a dselect-upgrade.\n" )
+                                os.environ['__apt_set_upgrade'] = Str_SetArg
+                                if os.system( '/usr/bin/apt-get -qq --print-uris dselect-upgrade > $__apt_set_upgrade' ) != 0:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        else:
+                                parser.error( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
+                else:
+                        parser.error( "This argument is supported only on Unix like systems with apt installed\n" )
+                        sys.exit( 1 )
+                
+        if List_SetInstallPackages != None and List_SetInstallPackages != []:
+                if platform.system() in supported_platforms:
+                        if os.geteuid() != 0:
+                                parser.error( "This option requires super-user privileges. Execute as root or use sudo/su" )
+                        log.msg( "\n\nGenerating database of the package and its dependencies.\n" )
+                        os.environ['__apt_set_install'] = Str_SetArg
+                        os.environ['__apt_set_install_packages'] = ''
+        
+                        #INFO: This is improper way of getting the args, the name of the packages.
+                        # But since optparse doesn't have the implementation in place at the moment, we're using it.
+                        # Once fixed, this will be changed.
+                        # For details look at the parser.add_option line above.
+                        for x in List_SetInstallPackages:
+                                os.environ['__apt_set_install_packages'] += x + ' '
+                        
+                        if Str_SetInstallRelease:
+                                os.environ['__apt_set_install_release'] = Str_SetArg
+                                if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release install $__apt_set_install_packages > $__apt_set_install' ) != 0:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        else:
+                                #FIXME: Find a more Pythonic implementation
+                                if os.system( '/usr/bin/apt-get -qq --print-uris install $__apt_set_install_packages > $__apt_set_install' ) != 0:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                else:
+                        parser.error( "This argument is supported only on Unix like systems with apt installed\n" )
+                        sys.exit( 1 )
+        
+        
+                
+def getter(args):
+        # get opts
+        Str_GetArg = args.get
+        Int_SocketTimeout = args.socket_timeout
+        Str_DownloadDir = args.download_dir
+        Str_CacheDir = args.cache_dir
+        Bool_DisableMD5Check = args.disable_md5check
+        Int_NumOfThreads = args.num_of_threads
+        Str_BundleFile = args.bundle_file
+        Bool_GetUpdate = args.get_update
+        Bool_GetUpgrade = args.get_upgrade
+        Bool_BugReports = args.deb_bugs
+
+def installer(args):
+        # install opts
+        Str_InstallArg = args.install
+        Bool_InstallUpdate = args.install_update
+        Bool_InstallUpgrade = args.install_upgrade
+        
                 
 def main():
         '''Here we basically do the sanity checks, some validations
@@ -954,69 +1103,128 @@ def main():
         Contains most of the variables that are required by the application to run.
         Also does command-line option parsing and variable validation.'''
         
-        parser = optparse.OptionParser( usage="%prog [OPTION1, OPTION2, ...]",
-                                       version="%prog " + version + "\n" + copyright )
-        parser.add_option( "-d", "--download-dir", dest="download_dir",
-                          help="Root directory path to save the downloaded files", action="store", type="string", metavar="apt-downloads" )
-        parser.add_option( "-s", "--cache-dir", dest="cache_dir",
-                          help="Root directory path where the pre-downloaded files will be searched.Make sure you give the full path of the cache directory. If not, give a period '.'",
-                          action="store", type="string", metavar="." )
-        parser.add_option( "--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
-        parser.add_option( "", "--disable-md5check", dest="disable_md5check",
-                          help="Disable md5checksum validation on downloaded files", action="store_false", default=False )
-        parser.add_option( "", "--threads", dest="num_of_threads", help="Number of threads to spawn",
-                          action="store", type="int", metavar="1", default=1 )
-        parser.add_option( "", "--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.", action="store_true" )
-        parser.add_option( "", "--socket-timeout", dest="socket_timeout", help="Set the socket timeout value. Default is 30s.",
-                          action="store", type="int", metavar="30", default=30 )
-        parser.add_option( "", "--gui", dest="gui", help="Run in Graphical Mode", action="store_true" )
+        parser = argparse.ArgumentParser( prog=app_name, version=app_name + " - " + version,
+                                          description="Offline APT Package Manager",
+                                          epilog=copyright + " - " + terminal_license)
         
-        #INFO: Option zip is not enabled by default but is highly encouraged.
-        parser.add_option( "-z", "--zip", dest="zip_it", help="Zip the downloaded files to a single zip file", action="store_true" )
-        parser.add_option( "--zip-update-file", dest="zip_update_file", help="Default zip file for downloaded (update) data",
-                          action="store", type="string", metavar="apt-offline-update.zip", default="apt-offline-update.zip" )
-        parser.add_option( "--zip-upgrade-file", dest="zip_upgrade_file", help="Default zip file for downloaded (upgrade) data",
-                          action="store", type="string", metavar="apt-offline-upgrade.zip", default="apt-offline-upgrade.zip" )
+        # Global options
+        parser.add_argument("--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
+        parser.add_argument("--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.",
+                            action="store_true" )
+        parser.add_argument("--gui", dest="gui", help="Run in Graphical Mode", action="store_true" )
         
-        #INFO: At the moment nargs cannot be set to something like * so that optparse could manipulate n number of args. This is a limitation in optparse at the moment. The author might add this feature in the future.
-        # When fixed by the author, we'd be in a better shape to use the above mentioned line instead of relying on this improper way.
-        # With action="store_true", we are able to store all the arguments into the args variable from where it can be fetched later.
-        #parser.add_option("", "--set-install-packages", dest="set_install_packages", help="Extract the list of uris which need to be fetched for installation of the given package and its dependencies", action="store", type="string", nargs=10, metavar="package_name")
-        parser.add_option( "", "--set-install", dest="set_install",
-                          help="Extract the list of uris which need to be fetched for installation of the given package and its dependencies",
-                          action="store", metavar="apt-offline-install.dat" )
-        parser.add_option( "", "--set-install-packages", dest="set_install_packages", help="Name of the packages which need to be fetched",
-                          action="store_true", metavar="package_names" )
-        parser.add_option( "", "--set-install-release", dest="set_install_release", help="Name of the release from which packages need to be fetched",
-                          action="store", metavar="release_name" )
-        parser.add_option( "", "--set-update", dest="set_update", help="Extract the list of uris which need to be fetched for updation",
-                          action="store", type="string", metavar="apt-offline-update.dat" )
-        parser.add_option( "", "--set-upgrade", dest="set_upgrade", help="Extract the list of uris which need to be fetched for _upgradation_",
-                          action="store", type="string", metavar="apt-offline-upgrade.dat" )
-        parser.add_option( "", "--upgrade-type", dest="upgrade_type",
+        # We need subparsers for set/get/install
+        subparsers = parser.add_subparsers()
+        
+        # SET command options
+        #
+        parser_set = subparsers.add_parser('set')
+        parser_set.set_defaults(func=setter)
+        
+        parser_set.add_argument('set',
+                          help="Generat a signature file",
+                          action="store", type=str, metavar="apt-offline.sig",
+                          default="apt-offline.sig")
+        
+        #TODO: Handle nargs here.
+        parser_set.add_argument("--install-packages", dest="set_install_packages", help="Packages that need to be installed",
+                          action="store", type=str, nargs='*', metavar="PKG")
+        
+        parser_set.add_argument("--release", dest="set_install_release", help="Release target to install packages from",
+                          action="store", type=str, metavar="release_name" )
+        
+        parser_set.add_argument("--update", dest="set_update", help="Generate Signature to update APT Database",
+                          action="store_true")
+        
+        parser_set.add_argument("--upgrade", dest="set_upgrade", help="Generate Signature of packages to be upgraded",
+                          action="store_true")
+        
+        parser_set.add_argument("--upgrade-type", dest="upgrade_type",
                           help="Type of upgrade to do. Use one of upgrade, dist-upgrade, dselect-ugprade",
-                          action="store", type="string", metavar="upgrade" )
-        parser.add_option( "", "--fetch-update", dest="fetch_update",
-                          help="Fetch the list of uris which are needed for apt's databases _updation_. This command must be executed on the WITHNET machine",
-                          action="store", type="string", metavar="apt-offline-update.dat" )
-        parser.add_option( "", "--fetch-upgrade", dest="fetch_upgrade",
-                          help="Fetch the list of uris which are needed for apt's databases _upgradation_. This command must be executed on the WITHNET machine",
-                          action="store", type="string", metavar="apt-offline-upgrade.dat" )
-        parser.add_option( "", "--fetch-bug-reports", dest="deb_bugs",
-                          help="Fetch bug reports from the BTS", action="store_true" )
-        parser.add_option( "", "--install-update", dest="install_update",
-                          help="Install the fetched database files to the  NONET machine and _update_ the apt database on the NONET machine. This command must be executed on the NONET machine",
-                          action="store", type="string", metavar="apt-offline-update.zip" )
-        parser.add_option( "", "--install-upgrade", dest="install_upgrade",
-                          help="Install the fetched packages to the  NONET machine and _upgrade_ the packages on the NONET machine. This command must be executed on the NONET machine",
-                          action="store", type="string", metavar="apt-offline-upgrade.zip" )
-        ( options, args ) = parser.parse_args()
+                          action="store", type=str, metavar="upgrade", default="upgrade")
         
+        
+        # GET command options
+        parser_get = subparsers.add_parser('get')
+        parser_get.set_defaults(func=getter)
+        
+        parser_get.add_argument('get',
+                          help="Get apt-offline data",
+                          action="store", type=str, metavar="apt-offline.sig",
+                          default="apt-offline.sig")
+        
+        parser_get.add_argument("--socket-timeout", dest="socket_timeout", help="Set Socket Timeout",
+                          action="store", type=int, metavar="30", default=30)
+        
+        parser_get.add_argument("-d", "--download-dir", dest="download_dir",
+                          help="Folder path to save files", action="store",
+                          type=str, metavar="apt-downloads")
+        
+        parser_get.add_argument("-s", "--cache-dir", dest="cache_dir",
+                          help="Cache folder to search for",
+                          action="store", type=str, metavar=".")
+        
+        parser_get.add_argument("--disable-md5check", dest="disable_md5check",
+                          help="Disable md5checksum validation on downloaded files",
+                          action="store_true")
+        
+        parser_get.add_argument("-t", "--threads", dest="num_of_threads", help="Number of threads to spawn",
+                          action="store", type=int, metavar="1", default=1 )
+        
+        parser_get.add_argument("--bundle", dest="bundle_file", help="Bundle output data to a file",
+                                action="store", type=str, metavar="apt-offline-bundle.zip")
+        
+        parser_get.add_argument("--update", dest="get_update",
+                          help="Get data to update APT Database", action="store_true")
+        
+        parser_get.add_argument("--upgrade", dest="get_upgrade",
+                          help="Get data to upgrade Packages", action="store_true")
+        
+        parser_get.add_argument("--bug-reports", dest="deb_bugs",
+                          help="Fetch bug reports from the BTS", action="store_true" )
+        
+        # INSTALL command options
+        parser_install = subparsers.add_parser('install')
+        parser_install.set_defaults(func=installer)
+        
+        parser_install.add_argument('install',
+                          help="Install apt-offline data",
+                          action="store", type=str, metavar="apt-offline-bundle.zip",
+                          default="apt-offline-bundle.zip")
+        
+        parser_install.add_argument("--update", dest="install_update",
+                          help="Install the updates for APT Database.", action="store_true")
+        
+        parser_install.add_argument("--upgrade", dest="install_upgrade",
+                          help="Install the Package updates", action="store_true")
+        
+        args = parser.parse_args()
+        
+        # Sanitize the options/arguments
+        #
+        # Global opts
+        Bool_Verbose = args.verbose
+        Bool_TestWindows = args.test_windows
+        Bool_GUI = args.gui
         
         global log
-        log = AptOfflineLib.Log( options.verbose, lock=True )
+        log = AptOfflineLib.Log( Bool_Verbose, lock=True )
+        
+        print args
+        args.func(args)
+        
+        sys.exit()
+        
+        
+        
+        print Str_SetArgs
+        
+        
+        log.verbose(args)
+        
         try:
-                if options.gui:
+                # Check if we want to run the GUI interface
+                if Bool_GUI:
                         if guiBool is True:
                                 class GUI( pyptofflineguiForm ):
                                         pass
@@ -1030,14 +1238,15 @@ def main():
                                 log.err( "Incomplete installation. PyQT or apt-offline GUI libraries not available.\n" )
                                 sys.exit( 1 )
                 
+                # Let's start the CLI interface
                 log.msg("%s - %s\n" % (app_name, version))
                 log.msg("Copyright %s\n" % (copyright))
                 log.msg(terminal_license)
         
-                if options.socket_timeout:
+                if Int_SocketTimeout:
                         try:
                                 options.socket_timeout.__int__()
-                                socket.setdefaulttimeout( options.socket_timeout )
+                                socket.setdefaulttimeout( Int_SocketTimeout )
                                 log.verbose( "Default timeout now is: %d.\n" % ( socket.getdefaulttimeout() ) )
                         except AttributeError:
                                 log.err( "Incorrect value set for socket timeout.\n" )
@@ -1046,10 +1255,10 @@ def main():
                 #INFO: Python 2.5 has hashlib which supports sha256
                 # If we don't have Python 2.5, disable MD5/SHA256 checksum
                 if AptOfflineLib.Python_2_5 is False:
-                        options.disable_md5check = True
+                        Bool_DisableMD5Check = True
                         log.verbose( "\nMD5/SHA256 Checksum is being disabled. You need atleast Python 2.5 to do checksum verification.\n" )
                 
-                if options.test_windows:
+                if Bool_TestWindows:
                         global apt_package_target_path
                         global apt_update_target_path
                         apt_package_target_path = 'C:\\temp'
@@ -1060,7 +1269,7 @@ def main():
                                 def __init__( self ):
                                         self.cache = apt.Cache()
                 
-                if options.set_update:
+                if Bool_SetUpdate:
                         if platform.system() in supported_platforms:
                                 if os.geteuid() != 0:
                                         parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
