@@ -62,6 +62,7 @@ try:
         import apt_pkg
 except ImportError:
         PythonApt = False
+PythonApt = False #Remove it after porting to python-apt
     
 import AptOfflineLib
 
@@ -965,10 +966,27 @@ def setter(args):
         Bool_SetUpgrade = args.set_upgrade
         Str_SetUpgradeType = args.upgrade_type
         
+        #INFO: Don't run the default behavior, of SetUpdate and SetUpgrade, if the
+        # user requests only for Package Installs
+        if Bool_SetUpdate is False and Bool_SetUpgrade is False:
+                if List_SetInstallPackages != None and List_SetInstallPackages != []:
+                        pass
+                else:
+                        Bool_SetUpdate = True
+                        Bool_SetUpgrade = True
+        
+        #FIXME: We'll use python-apt library to make it cleaner.
+        # For now, we need to set markers using shell variables.
+        if os.path.isfile(Str_SetArg):
+                try:
+                        os.unlink(Str_SetArg)
+                except IOError:
+                        log.err("Cannot remove file %s.\n" % (Str_SetArg) )
+        
         if Bool_SetUpdate:
                 if platform.system() in supported_platforms:
                         if os.geteuid() != 0:
-                                parser.error("This option requires super-user privileges. Execute as root or use sudo/su")
+                                log.err("This option requires super-user privileges. Execute as root or use sudo/su\n")
                         else:
                                 log.msg("\n\nGenerating database of files that are needed for an update.\n")
                         
@@ -983,17 +1001,17 @@ def setter(args):
                                         old_environ = "C"
                                 os.environ['LANG'] = "C"
                                 log.verbose( "Set environment variable for LANG from %s to %s temporarily.\n" % ( old_environ, os.environ['LANG'] ) )
-                                if os.system( '/usr/bin/apt-get -qq --print-uris update > $__apt_set_update' ) != 0:
+                                if os.system( '/usr/bin/apt-get -qq --print-uris update >> $__apt_set_update' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                                 log.verbose( "Set environment variable for LANG back to its original from %s to %s.\n" % ( os.environ['LANG'], old_environ ) )
                                 os.environ['LANG'] = old_environ
                 else:
-                        parser.error( "This argument is supported only on Unix like systems with apt installed\n" )
+                        log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
         if Bool_SetUpgrade:
                 if platform.system() in supported_platforms:
                         if os.geteuid() != 0:
-                                parser.error( "This option requires super-user privileges. Execute as root or use sudo/su" )
+                                log.err( "This option requires super-user privileges. Execute as root or use sudo/su" )
                         #TODO: Use a more Pythonic way for it
                         if Str_SetUpgradeType == "upgrade":
                                 if PythonApt is True:
@@ -1001,7 +1019,7 @@ def setter(args):
                                         log.verbose("Using the python-apt library to generate the database.\n")
                                         PythonAptQuery = AptPython()
                                         try:
-                                                install_file = open( Str_SetArg, 'w' )
+                                                install_file = open( Str_SetArg, 'a' )
                                         except IOError:
                                                 log.err( "Cannot create file %s.\n" % (Str_SetArg) )
                                                 sys.exit( 1 )
@@ -1029,28 +1047,28 @@ def setter(args):
                                 else:
                                         log.msg( "\n\nGenerating database of files that are needed for an upgrade.\n" )
                                         os.environ['__apt_set_upgrade'] = Str_SetArg
-                                        if os.system( '/usr/bin/apt-get -qq --print-uris upgrade > $__apt_set_upgrade' ) != 0:
+                                        if os.system( '/usr/bin/apt-get -qq --print-uris upgrade >> $__apt_set_upgrade' ) != 0:
                                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
                         elif options.upgrade_type == "dist-upgrade":
                                 log.msg( "\n\nGenerating database of files that are needed for a dist-upgrade.\n" )
                                 os.environ['__apt_set_upgrade'] = Str_SetArg
-                                if os.system( '/usr/bin/apt-get -qq --print-uris dist-upgrade > $__apt_set_upgrade' ) != 0:
+                                if os.system( '/usr/bin/apt-get -qq --print-uris dist-upgrade >> $__apt_set_upgrade' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                         elif options.upgrade_type == "dselect-upgrade":
                                 log.msg( "\n\nGenerating database of files that are needed for a dselect-upgrade.\n" )
                                 os.environ['__apt_set_upgrade'] = Str_SetArg
-                                if os.system( '/usr/bin/apt-get -qq --print-uris dselect-upgrade > $__apt_set_upgrade' ) != 0:
+                                if os.system( '/usr/bin/apt-get -qq --print-uris dselect-upgrade >> $__apt_set_upgrade' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                         else:
-                                parser.error( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
+                                log.err( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
                 else:
-                        parser.error( "This argument is supported only on Unix like systems with apt installed\n" )
+                        log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
                 
         if List_SetInstallPackages != None and List_SetInstallPackages != []:
                 if platform.system() in supported_platforms:
                         if os.geteuid() != 0:
-                                parser.error( "This option requires super-user privileges. Execute as root or use sudo/su" )
+                                log.err( "This option requires super-user privileges. Execute as root or use sudo/su" )
                         log.msg( "\n\nGenerating database of the package and its dependencies.\n" )
                         os.environ['__apt_set_install'] = Str_SetArg
                         os.environ['__apt_set_install_packages'] = ''
@@ -1064,14 +1082,14 @@ def setter(args):
                         
                         if Str_SetInstallRelease:
                                 os.environ['__apt_set_install_release'] = Str_SetArg
-                                if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release install $__apt_set_install_packages > $__apt_set_install' ) != 0:
+                                if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release install $__apt_set_install_packages >> $__apt_set_install' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                         else:
                                 #FIXME: Find a more Pythonic implementation
-                                if os.system( '/usr/bin/apt-get -qq --print-uris install $__apt_set_install_packages > $__apt_set_install' ) != 0:
+                                if os.system( '/usr/bin/apt-get -qq --print-uris install $__apt_set_install_packages >> $__apt_set_install' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                 else:
-                        parser.error( "This argument is supported only on Unix like systems with apt installed\n" )
+                        log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
         
         
@@ -1088,13 +1106,100 @@ def getter(args):
         Bool_GetUpdate = args.get_update
         Bool_GetUpgrade = args.get_upgrade
         Bool_BugReports = args.deb_bugs
+        
+        if Int_SocketTimeout:
+                try:
+                        Int_SocketTimeout.__int__()
+                        socket.setdefaulttimeout( Int_SocketTimeout )
+                        log.verbose( "Default timeout now is: %d.\n" % ( socket.getdefaulttimeout() ) )
+                except AttributeError:
+                        log.err( "Incorrect value set for socket timeout.\n" )
+                        sys.exit( 1 )
+        
+        #INFO: Python 2.5 has hashlib which supports sha256
+        # If we don't have Python 2.5, disable MD5/SHA256 checksum
+        if AptOfflineLib.Python_2_5 is False:
+                Bool_DisableMD5Check = True
+                log.verbose( "\nMD5/SHA256 Checksum is being disabled. You need atleast Python 2.5 to do checksum verification.\n" )
+        
+        if Str_GetArg:
+                if os.access( Str_GetArg, os.F_OK):
+                        log.msg( "\nFetching uris which update apt's package database\n\n" )
+                        # Since we're in fetch_update, the download_type will be non-deb/rpm data
+                        # 1 is for update packages 
+                        # 2 is for upgrade packages
+                        fetcher( options, 1 )
+                        sys.exit( 0 )
+                else:
+                        log.err( "\nFile not present. Check path.\n" )
+                        sys.exit( 1 )
+        
+        if options.fetch_upgrade:
+                if os.access(options.fetch_upgrade, os.F_OK):
+                        log.msg("\nFetching Requested Packages\n\n")
+                        # Since we're in fetch_update, the download_type will be non-deb/rpm data
+                        # 1 is for update packages 
+                        # 2 is for upgrade packages
+                        fetcher(options, 2)
+                        sys.exit(0)
+                else:
+                        log.err("\n%s file not present. Check path.\n" % (options.fetch_upgrade) )
+                        sys.exit(1)
 
 def installer(args):
         # install opts
         Str_InstallArg = args.install
         Bool_InstallUpdate = args.install_update
         Bool_InstallUpgrade = args.install_upgrade
+        Bool_TestWindows = args.test_windows
         
+        if Str_InstallArg:
+                if Bool_TestWindows:
+                        pass
+                else:
+                        try:
+                                if os.geteuid() != 0:
+                                        log.err("\nYou need superuser privileges to execute this option\n")
+                                        sys.exit(1)
+                        except AttributeError:
+                                log.err("Are you really running the install command on a Debian box?\n")
+                                sys.exit(1)
+                
+                if os.path.isfile(Str_InstallArg) is True:
+                        # Okay! We're a file. It should be a zip file
+                        syncer(Str_InstallArg, apt_update_target_path, 1, bug_parse_required = False)
+                elif os.path.isdir(options.install_update) is True:
+                        # We're a directory
+                        syncer(options.install_update, apt_update_target_path, 2, bug_parse_required = False)
+                else:
+                        log.err("%s file not found\n" % (options.install_update))
+                        sys.exit(1)
+                        
+        if options.install_upgrade:
+                if options.test_windows:
+                        pass
+                else:
+                        try:
+                                if os.geteuid() != 0:
+                                        log.err("\nYou need superuser privileges to execute this option\n")
+                                        sys.exit(1)
+                        except AttributeError:
+                                log.err("Are you really running the install command on a Debian box?\n")
+                                sys.exit(1)
+                
+                if os.path.isfile(options.install_upgrade) is True:
+                        syncer(options.install_upgrade, apt_package_target_path, 1, bug_parse_required = True)
+                elif os.path.isdir(options.install_upgrade) is True:
+                        syncer(options.install_upgrade, apt_package_target_path, 2, bug_parse_required = True)
+                else:
+                        log.err("%s file not found\n" % (options.install_upgrade))
+                        sys.exit(1)
+        
+
+class AptPython:
+        def __init__( self ):
+                if PythonApt:
+                        self.cache = apt.Cache()
                 
 def main():
         '''Here we basically do the sanity checks, some validations
@@ -1213,14 +1318,7 @@ def main():
         print args
         args.func(args)
         
-        sys.exit()
-        
-        
-        
-        print Str_SetArgs
-        
-        
-        log.verbose(args)
+        log.verbose(str(args))
         
         try:
                 # Check if we want to run the GUI interface
@@ -1243,20 +1341,6 @@ def main():
                 log.msg("Copyright %s\n" % (copyright))
                 log.msg(terminal_license)
         
-                if Int_SocketTimeout:
-                        try:
-                                options.socket_timeout.__int__()
-                                socket.setdefaulttimeout( Int_SocketTimeout )
-                                log.verbose( "Default timeout now is: %d.\n" % ( socket.getdefaulttimeout() ) )
-                        except AttributeError:
-                                log.err( "Incorrect value set for socket timeout.\n" )
-                                sys.exit( 1 )
-                
-                #INFO: Python 2.5 has hashlib which supports sha256
-                # If we don't have Python 2.5, disable MD5/SHA256 checksum
-                if AptOfflineLib.Python_2_5 is False:
-                        Bool_DisableMD5Check = True
-                        log.verbose( "\nMD5/SHA256 Checksum is being disabled. You need atleast Python 2.5 to do checksum verification.\n" )
                 
                 if Bool_TestWindows:
                         global apt_package_target_path
@@ -1264,88 +1348,6 @@ def main():
                         apt_package_target_path = 'C:\\temp'
                         apt_update_target_path = 'C:\\temp'
             
-                if PythonApt is True:
-                        class AptPython:
-                                def __init__( self ):
-                                        self.cache = apt.Cache()
-                
-                
-                if options.fetch_update and options.fetch_upgrade:
-                        if os.access( options.fetch_update, os.F_OK ) and os.access( options.fetch_upgrade, os.F_OK ):
-                                log.msg( "\nFetching uris which update apt's package database\n\n" )
-                                # Since we're in fetch_update, the download_type will be non-deb/rpm data
-                                # 1 is for update packages 
-                                # 2 is for upgrade packages
-                                fetcher( options, 1 )
-                                sys.exit( 0 )
-                        else:
-                                log.err( "\nFile not present. Check path.\n" )
-                                sys.exit( 1 )
-                
-                if options.fetch_update:
-                        if os.access( options.fetch_update, os.F_OK ):
-                                log.msg( "\nFetching Requested Packages\n\n" )
-                                # Since we're in fetch_update, the download_type will be non-deb/rpm data
-                                # 1 is for update packages 
-                                # 2 is for upgrade packages
-                                fetcher( options, 2 )
-                                sys.exit( 0 )
-                        else:
-                                log.err( "\n%s file not present. Check path.\n" % ( options.fetch_upgrade ) )
-                                sys.exit( 1 )
-                
-                if options.fetch_upgrade:
-                        if os.access(options.fetch_upgrade, os.F_OK):
-                                log.msg("\nFetching Requested Packages\n\n")
-                                # Since we're in fetch_update, the download_type will be non-deb/rpm data
-                                # 1 is for update packages 
-                                # 2 is for upgrade packages
-                                fetcher(options, 2)
-                                sys.exit(0)
-                        else:
-                                log.err("\n%s file not present. Check path.\n" % (options.fetch_upgrade) )
-                                sys.exit(1)
-                
-                if options.install_update:
-                        if options.test_windows:
-                                pass
-                        else:
-                                try:
-                                        if os.geteuid() != 0:
-                                                log.err("\nYou need superuser privileges to execute this option\n")
-                                                sys.exit(1)
-                                except AttributeError:
-                                        log.err("Are you really running the install command on a Debian box?\n")
-                                        sys.exit(1)
-                        
-                        if os.path.isfile(options.install_update) is True:
-                                # Okay! We're a file. It should be a zip file
-                                syncer(options.install_update, apt_update_target_path, 1, bug_parse_required = False)
-                        elif os.path.isdir(options.install_update) is True:
-                                # We're a directory
-                                syncer(options.install_update, apt_update_target_path, 2, bug_parse_required = False)
-                        else:
-                                log.err("%s file not found\n" % (options.install_update))
-                                sys.exit(1)
-                if options.install_upgrade:
-                        if options.test_windows:
-                                pass
-                        else:
-                                try:
-                                        if os.geteuid() != 0:
-                                                log.err("\nYou need superuser privileges to execute this option\n")
-                                                sys.exit(1)
-                                except AttributeError:
-                                        log.err("Are you really running the install command on a Debian box?\n")
-                                        sys.exit(1)
-                        
-                        if os.path.isfile(options.install_upgrade) is True:
-                                syncer(options.install_upgrade, apt_package_target_path, 1, bug_parse_required = True)
-                        elif os.path.isdir(options.install_upgrade) is True:
-                                syncer(options.install_upgrade, apt_package_target_path, 2, bug_parse_required = True)
-                        else:
-                                log.err("%s file not found\n" % (options.install_upgrade))
-                                sys.exit(1)
         except KeyboardInterrupt:
                 log.err("\nInterrupted by user. Exiting!\n")
                 sys.exit(0)        
