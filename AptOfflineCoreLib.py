@@ -773,17 +773,29 @@ def fetcher( args ):
                 for error in errlist:
                         log.err("%s failed.\n" % (error))
         
-def syncer( install_file_path, target_path, path_type=None, bug_parse_required=None ):
-        '''Syncer does the work of syncing the downloaded files.
-        It syncs "install_file_path" which could be a valid file path
-        or a zip archive to "target_path"
-        path_type defines whether install_file_path is a zip file or a folder path
-    
-        # path_type
-        1 => install_file_path is a File
-        2 => install_file_path is a Folder'''
+def installer( args ):
         
+        # install opts
+        Str_InstallArg = args.install
+        Bool_TestWindows = args.test_windows
+        
+        # Old cruft. Needs clean-up
+        install_file_path = Str_InstallArg
+        
+        if Str_InstallArg:
+                if Bool_TestWindows:
+                        pass
+                else:
+                        try:
+                                if os.geteuid() != 0:
+                                        log.err("You need superuser privileges to execute this option\n")
+                                        sys.exit(1)
+                        except AttributeError:
+                                log.err("Are you really running the install command on a Debian box?\n")
+                                sys.exit(1)
+                                
         archive = AptOfflineLib.Archiver()
+        archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
         
         def display_options():
                 log.msg( "(Y) Yes. Proceed with installation\n" )
@@ -804,26 +816,32 @@ def syncer( install_file_path, target_path, path_type=None, bug_parse_required=N
                         bug_subject = bugs_number[each_bug]
                         log.msg( "%s\t%s\n" % ( bug_num, bug_subject ) )
             
-        def magic_check_and_uncompress( archive_file=None, target_path=None, filename=None, Mode=None ):
+        def magic_check_and_uncompress( archive_file=None, filename=None):
                 retval = False
                 if AptOfflineMagicLib.file( archive_file ) == "application/x-bzip2":
-                        retval = archive.decompress_the_file( archive_file, target_path, filename, 1 )
+                        retval = archive.decompress_the_file( archive_file, apt_update_target_path, filename, "bzip2" )
                 elif AptOfflineMagicLib.file( archive_file ) == "application/x-gzip":
-                        retval = archive.decompress_the_file( archive_file, target_path, filename, 2 )
+                        retval = archive.decompress_the_file( archive_file, apt_update_target_path, filename, "gzip" )
                 elif AptOfflineMagicLib.file( archive_file ) == "application/zip":
-                        retval = archive.decompress_the_file( os.path.join( install_file_path, eachfile ), target_path, eachfile, 3 )
+                        retval = archive.decompress_the_file( os.path.join( install_file_path, eachfile ), apt_update_target_path, eachfile, "zip" )
                 elif AptOfflineMagicLib.file( archive_file ) == "PGP armored data":
                     #TODO: Integrate it to apt-key
                     # We should handle update signatures using apt-key interface or
                     # similar ones
                     pass
-                elif AptOfflineMagicLib.file( archive_file ) == "application/x-dpkg" or \
-                AptOfflineMagicLib.file( archive_file ) == "ASCII text":
-                        if os.access( target_path, os.W_OK ):
-                                shutil.copy( archive_file, target_path + filename )
+                elif AptOfflineMagicLib.file( archive_file ) == "application/x-dpkg":
+                        if os.access( apt_package_target_path, os.W_OK ):
+                                shutil.copy( archive_file, apt_package_target_path + filename )
                                 retval = True
                         else:
-                                log.err( "Cannot write to target path %s\n" % ( target_path ) )
+                                log.err( "Cannot write to target path %s\n" % ( apt_package_target_path ) )
+                                sys.exit( 1 )
+                elif AptOfflineMagicLib.file( archive_file ) == "ASCII text":
+                        if os.access( apt_update_target_path, os.W_OK ):
+                                shutil.copy( archive_file, apt_update_target_path + filename )
+                                retval = True
+                        else:
+                                log.err( "Cannot write to target path %s\n" % ( apt_update_target_path ) )
                                 sys.exit( 1 )
                 elif filename.endswith( apt_bug_file_format ):
                         retval = False # We intentionally put the bug report files as not printed.
@@ -833,167 +851,148 @@ def syncer( install_file_path, target_path, path_type=None, bug_parse_required=N
                 if retval:
                         log.msg( "%s file synced.\n" % ( filename ) )
         
-        if path_type == 1:
-                # We are doing a deb sync. Input mostly will be a zip file or a directory path
+        if os.path.isfile(install_file_path):
+                #INFO: For now, we support zip bundles only
                 file = zipfile.ZipFile( install_file_path, "r" )
-                if bug_parse_required is True:
-                        bugs_number = {}
-                        for filename in file.namelist():
-                                if filename.endswith( apt_bug_file_format ):
-                                        temp = tempfile.NamedTemporaryFile()
-                                        temp.file.write( file.read( filename ) )
-                                        temp.file.flush()
-                                        temp.file.seek( 0 ) #Let's go back to the start of the file
-                                        for bug_subject_identifier in temp.file.readlines():
-                                                if bug_subject_identifier.startswith( '#' ):
-                                                        subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
-                                                        subject = subject.rstrip( "\n" )
-                                                        break
-                                        bugs_number[filename] = subject
-                                        temp.file.close()
-                        if bugs_number:
-                                # Display the list of bugs
-                                list_bugs()
-                                display_options()
-                                response = get_response()
-                                while True:
-                                        if response == "?":
-                                                display_options()
-                                                response = get_response()
-                                        elif response.startswith( 'y' ) or response.startswith( 'Y' ):
-                                                for filename in file.namelist():
-                                                        data = tempfile.NamedTemporaryFile()
-                                                        data.file.write( file.read( filename ) )
-                                                        data.file.flush()
-                                                        archive_file = data.name
-                                                        magic_check_and_uncompress( archive_file, target_path, filename )
-                                                        data.file.close()
-                                                sys.exit( 0 )
-                                        elif response.startswith( 'n' ) or response.startswith( 'N' ):
-                                                log.err( "Exiting gracefully on user request.\n\n" )
-                                                sys.exit( 0 )
-                                        elif response.isdigit() is True:
-                                                found = False
-                                                for full_bug_file_name in bugs_number:
-                                                        if response in full_bug_file_name:
-                                                                bug_file_to_display = full_bug_file_name
-                                                                found = True
-                                                                break
-                                                if found == False:
-                                                        log.err( "Incorrect bug number %s provided.\n" % ( response ) )
-                                                        response = get_response()
-                        
-                                                if found:
-                                                        display_pager = PagerCmd()
-                                                        retval = display_pager.send_to_pager( file.read( bug_file_to_display ) )
-                                                        if retval == 1:
-                                                                log.err( "Broken pager. Can't display the bug details.\n" )
-                                                        # Redisplay the menu
-                                                        # FIXME: See a pythonic possibility of cleaning the screen at this stage
-                                                        response = get_response()
-                        
-                                        elif response.startswith( 'r' ) or response.startswith( 'R' ):
-                                                list_bugs()
-                                                response = get_response()
-                                        else:
-                                                log.err( 'Incorrect choice. Exiting\n' )
-                                                sys.exit( 1 )
-                        else:
-                                log.msg( "Great!!! No bugs found for all the packages that were downloaded.\n" )
-                                response = raw_input( "Continue with Installation. Y/N ?" )
-                                response = response.rstrip( "\r" )
-                                if response.endswith( 'y' ) or response.endswith( 'Y' ):
-                                        log.verbose( "Continuing with syncing the files.\n" )
+                #if bug_parse_required is True:
+                bugs_number = {}
+                for filename in file.namelist():
+                        if filename.endswith( apt_bug_file_format ):
+                                temp = tempfile.NamedTemporaryFile()
+                                temp.file.write( file.read( filename ) )
+                                temp.file.flush()
+                                temp.file.seek( 0 ) #Let's go back to the start of the file
+                                for bug_subject_identifier in temp.file.readlines():
+                                        if bug_subject_identifier.startswith( '#' ):
+                                                subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
+                                                subject = subject.rstrip( "\n" )
+                                                break
+                                bugs_number[filename] = subject
+                                temp.file.close()
+                if bugs_number:
+                        # Display the list of bugs
+                        list_bugs()
+                        display_options()
+                        response = get_response()
+                        while True:
+                                if response == "?":
+                                        display_options()
+                                        response = get_response()
+                                elif response.startswith( 'y' ) or response.startswith( 'Y' ):
                                         for filename in file.namelist():
                                                 data = tempfile.NamedTemporaryFile()
                                                 data.file.write( file.read( filename ) )
                                                 data.file.flush()
                                                 archive_file = data.name
-                                                magic_check_and_uncompress( archive_file, target_path, filename )
+                                                magic_check_and_uncompress( archive_file, filename )
                                                 data.file.close()
-                                else:
-                                        log.msg( "Exiting gracefully on user request.\n" )
                                         sys.exit( 0 )
-                elif bug_parse_required is False:
+                                elif response.startswith( 'n' ) or response.startswith( 'N' ):
+                                        log.err( "Exiting gracefully on user request.\n\n" )
+                                        sys.exit( 0 )
+                                elif response.isdigit() is True:
+                                        found = False
+                                        for full_bug_file_name in bugs_number:
+                                                if response in full_bug_file_name:
+                                                        bug_file_to_display = full_bug_file_name
+                                                        found = True
+                                                        break
+                                        if found == False:
+                                                log.err( "Incorrect bug number %s provided.\n" % ( response ) )
+                                                response = get_response()
+                
+                                        if found:
+                                                display_pager = PagerCmd()
+                                                retval = display_pager.send_to_pager( file.read( bug_file_to_display ) )
+                                                if retval == 1:
+                                                        log.err( "Broken pager. Can't display the bug details.\n" )
+                                                # Redisplay the menu
+                                                # FIXME: See a pythonic possibility of cleaning the screen at this stage
+                                                response = get_response()
+                
+                                elif response.startswith( 'r' ) or response.startswith( 'R' ):
+                                        list_bugs()
+                                        response = get_response()
+                                else:
+                                        log.err( 'Incorrect choice. Exiting\n' )
+                                        sys.exit( 1 )
+                else:
+                        log.msg( "Great!!! No bugs found for all the packages that were downloaded.\n" )
+                        #response = raw_input( "Continue with Installation. Y/N ?" )
+                        #response = response.rstrip( "\r" )
+                        #if response.endswith( 'y' ) or response.endswith( 'Y' ):
+                        #        log.verbose( "Continuing with syncing the files.\n" )
                         for filename in file.namelist():
                                 data = tempfile.NamedTemporaryFile()
                                 data.file.write( file.read( filename ) )
                                 data.file.flush()
                                 archive_file = data.name
-                                magic_check_and_uncompress( archive_file, target_path, filename )
+                                magic_check_and_uncompress( archive_file, filename )
                                 data.file.close()
-                else:
-                        log.err( "Inappropriate argument sent to syncer during data fetch. Do you need to fetch bugs or not?\n" )    
-                        sys.exit( 1 )
-        elif path_type == 2:
-                archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
-                if bug_parse_required is True:
-                        bugs_number = []
-                        for filename in os.listdir( install_file_path ):
-                                if filename.endswith( apt_bug_file_format ):
-                                        bugs_number.append( filename )
-                        if bugs_number:
-                                #Give the choice to the user
-                                list_bugs()
-                                display_options()
-                                response = get_response()
+                        #else:
+                        #       log.msg( "Exiting gracefully on user request.\n" )
+                        #       sys.exit( 0 )
                                 
-                                while True:
-                                        if response == "?":
-                                                display_options()
-                                                response = get_response()
-                                        elif response.startswith( 'y' ) or response.startswith( 'Y' ):
-                                                for eachfile in os.listdir( install_file_path ):
-                                                        archive_type = None
-                                                        magic_check_and_uncompress( archive_file, target_path, filename )
-                                        elif response.startswith( 'n' ) or response.startswith( 'N' ):
-                                                log.err( "Exiting gracefully on user request.\n\n" )
-                                                sys.exit( 0 )
-                                        elif response.isdigit() is True:
-                                                found = False
-                                                for full_bug_file_name in bugs_number:
-                                                        if response in full_bug_file_name:
-                                                                bug_file_to_display = full_bug_file_name
-                                                                found = True
-                                                                break
-                                                if found == False:
-                                                        log.err( "Incorrect bug number %s provided.\n" % ( response ) )
-                                                        response = get_response()
-                                                if found:
-                                                        display_pager = PagerCmd()
-                                                        retval = display_pager.send_to_pager( file.read( bug_file_to_display ) )
-                                                        if retval == 1:
-                                                                log.err( "Broken pager. Can't display the bug details.\n" )
-                                                        # Redisplay the menu
-                                                        # FIXME: See a pythonic possibility of cleaning the screen at this stage
-                                                        response = get_response()
+        elif os.path.isdir(install_file_path):
+                archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
+                bugs_number = []
+                for filename in os.listdir( install_file_path ):
+                        if filename.endswith( apt_bug_file_format ):
+                                bugs_number.append( filename )
+                if bugs_number:
+                        #Give the choice to the user
+                        list_bugs()
+                        display_options()
+                        response = get_response()
                         
-                                        elif response.startswith( 'r' ) or response.startswith( 'R' ):
-                                                list_bugs()
-                                                response = get_response()
-                        
-                                        else:
-                                                log.err( 'Incorrect choice. Exiting\n' )
-                                                sys.exit( 1 )
-                        else:
-                                log.msg( "Great!!! No bugs found for all the packages that were downloaded.\n" )
-                                response = raw_input( "Continue with Installation. Y/N?" )
-                                response = response.rstrip( "\r" )
-                                if response.startswith( 'y' ) or response.startswith( 'Y' ):
+                        while True:
+                                if response == "?":
+                                        display_options()
+                                        response = get_response()
+                                elif response.startswith( 'y' ) or response.startswith( 'Y' ):
                                         for eachfile in os.listdir( install_file_path ):
                                                 archive_type = None
-                                                magic_check_and_uncompress( archive_file, target_path, filename )
-                                else:
-                                        log.msg( "Exiting gracefully on user request.\n" )
+                                                magic_check_and_uncompress( archive_file, filename )
+                                elif response.startswith( 'n' ) or response.startswith( 'N' ):
+                                        log.err( "Exiting gracefully on user request.\n\n" )
                                         sys.exit( 0 )
-                elif bug_parse_required is False:
+                                elif response.isdigit() is True:
+                                        found = False
+                                        for full_bug_file_name in bugs_number:
+                                                if response in full_bug_file_name:
+                                                        bug_file_to_display = full_bug_file_name
+                                                        found = True
+                                                        break
+                                        if found == False:
+                                                log.err( "Incorrect bug number %s provided.\n" % ( response ) )
+                                                response = get_response()
+                                        if found:
+                                                display_pager = PagerCmd()
+                                                retval = display_pager.send_to_pager( file.read( bug_file_to_display ) )
+                                                if retval == 1:
+                                                        log.err( "Broken pager. Can't display the bug details.\n" )
+                                                # Redisplay the menu
+                                                # FIXME: See a pythonic possibility of cleaning the screen at this stage
+                                                response = get_response()
+                
+                                elif response.startswith( 'r' ) or response.startswith( 'R' ):
+                                        list_bugs()
+                                        response = get_response()
+                
+                                else:
+                                        log.err( 'Incorrect choice. Exiting\n' )
+                                        sys.exit( 1 )
+                else:
+                        log.msg( "Great!!! No bugs found for all the packages that were downloaded.\n" )
+                        #response = raw_input( "Continue with Installation. Y/N?" )
+                        #response = response.rstrip( "\r" )
+                        #if response.startswith( 'y' ) or response.startswith( 'Y' ):
                         for eachfile in os.listdir( install_file_path ):
                                 archive_type = None
-                                magic_check_and_uncompress( archive_file, target_path, filename )
-                else:
-                        log.err( "Inappropriate argument sent to syncer during data fetch. Do you need to fetch bugs or not?\n" )    
-                        sys.exit( 1 )
-                
+                                magic_check_and_uncompress( archive_file, filename )
+                        #else:
+                        #        log.msg( "Exiting gracefully on user request.\n" )
+                        #        sys.exit( 0 )
 
 def setter(args):
         Str_SetArg = args.set
@@ -1130,56 +1129,6 @@ def setter(args):
                         sys.exit( 1 )
         
         
-def installer(args):
-        # install opts
-        Str_InstallArg = args.install
-        Bool_InstallUpdate = args.install_update
-        Bool_InstallUpgrade = args.install_upgrade
-        Bool_TestWindows = args.test_windows
-        
-        if Str_InstallArg:
-                if Bool_TestWindows:
-                        pass
-                else:
-                        try:
-                                if os.geteuid() != 0:
-                                        log.err("\nYou need superuser privileges to execute this option\n")
-                                        sys.exit(1)
-                        except AttributeError:
-                                log.err("Are you really running the install command on a Debian box?\n")
-                                sys.exit(1)
-                
-                if os.path.isfile(Str_InstallArg) is True:
-                        # Okay! We're a file. It should be a zip file
-                        syncer(Str_InstallArg, apt_update_target_path, 1, bug_parse_required = False)
-                elif os.path.isdir(options.install_update) is True:
-                        # We're a directory
-                        syncer(options.install_update, apt_update_target_path, 2, bug_parse_required = False)
-                else:
-                        log.err("%s file not found\n" % (options.install_update))
-                        sys.exit(1)
-                        
-        if options.install_upgrade:
-                if options.test_windows:
-                        pass
-                else:
-                        try:
-                                if os.geteuid() != 0:
-                                        log.err("\nYou need superuser privileges to execute this option\n")
-                                        sys.exit(1)
-                        except AttributeError:
-                                log.err("Are you really running the install command on a Debian box?\n")
-                                sys.exit(1)
-                
-                if os.path.isfile(options.install_upgrade) is True:
-                        syncer(options.install_upgrade, apt_package_target_path, 1, bug_parse_required = True)
-                elif os.path.isdir(options.install_upgrade) is True:
-                        syncer(options.install_upgrade, apt_package_target_path, 2, bug_parse_required = True)
-                else:
-                        log.err("%s file not found\n" % (options.install_upgrade))
-                        sys.exit(1)
-        
-
 class AptPython:
         def __init__( self ):
                 if PythonApt:
