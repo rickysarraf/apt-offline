@@ -779,8 +779,12 @@ def syncer( install_file_path, target_path, path_type=None, bug_parse_required=N
                         retval = archive.decompress_the_file( archive_file, target_path, filename, 2 )
                 elif AptOfflineMagicLib.file( archive_file ) == "application/zip":
                         retval = archive.decompress_the_file( os.path.join( install_file_path, eachfile ), target_path, eachfile, 3 )
-                elif AptOfflineMagicLib.file( archive_file ) == "PGP armored data" or \
-                AptOfflineMagicLib.file( archive_file ) == "application/x-dpkg" or \
+                elif AptOfflineMagicLib.file( archive_file ) == "PGP armored data":
+                    #TODO: Integrate it to apt-key
+                    # We should handle update signatures using apt-key interface or
+                    # similar ones
+                    pass
+                elif AptOfflineMagicLib.file( archive_file ) == "application/x-dpkg" or \
                 AptOfflineMagicLib.file( archive_file ) == "ASCII text":
                         if os.access( target_path, os.W_OK ):
                                 shutil.copy( archive_file, target_path + filename )
