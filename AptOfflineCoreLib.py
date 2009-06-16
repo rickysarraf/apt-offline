@@ -396,8 +396,8 @@ def fetcher( args ):
         Bool_DisableMD5Check = args.disable_md5check
         Int_NumOfThreads = args.num_of_threads
         Str_BundleFile = args.bundle_file
-        Bool_GetUpdate = args.get_update
-        Bool_GetUpgrade = args.get_upgrade
+        #Bool_GetUpdate = args.get_update
+        #Bool_GetUpgrade = args.get_upgrade
         Bool_BugReports = args.deb_bugs
         
         if Int_SocketTimeout:
@@ -1214,11 +1214,11 @@ def main():
         parser_get.add_argument("--bundle", dest="bundle_file", help="Bundle output data to a file",
                                 action="store", type=str, metavar="apt-offline-bundle.zip")
         
-        parser_get.add_argument("--update", dest="get_update",
-                          help="Get data to update APT Database", action="store_true")
+        #parser_get.add_argument("--update", dest="get_update",
+        #                  help="Get data to update APT Database", action="store_true")
         
-        parser_get.add_argument("--upgrade", dest="get_upgrade",
-                          help="Get data to upgrade Packages", action="store_true")
+        #parser_get.add_argument("--upgrade", dest="get_upgrade",
+        #                  help="Get data to upgrade Packages", action="store_true")
         
         parser_get.add_argument("--bug-reports", dest="deb_bugs",
                           help="Fetch bug reports from the BTS", action="store_true" )
@@ -1232,11 +1232,11 @@ def main():
                           action="store", type=str, metavar="apt-offline-bundle.zip",
                           default="apt-offline-bundle.zip")
         
-        parser_install.add_argument("--update", dest="install_update",
-                          help="Install the updates for APT Database.", action="store_true")
+        #parser_install.add_argument("--update", dest="install_update",
+        #                  help="Install the updates for APT Database.", action="store_true")
         
-        parser_install.add_argument("--upgrade", dest="install_upgrade",
-                          help="Install the Package updates", action="store_true")
+        #parser_install.add_argument("--upgrade", dest="install_upgrade",
+        #                  help="Install the Package updates", action="store_true")
         
         args = parser.parse_args()
         
