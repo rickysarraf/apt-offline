@@ -988,8 +988,9 @@ def installer( args ):
                         #response = response.rstrip( "\r" )
                         #if response.startswith( 'y' ) or response.startswith( 'Y' ):
                         for eachfile in os.listdir( install_file_path ):
-                                archive_type = None
-                                magic_check_and_uncompress( archive_file, filename )
+                                filename = eachfile
+                                eachfile = os.path.abspath(os.path.join(install_file_path, eachfile) )
+                                magic_check_and_uncompress( eachfile, filename )
                         #else:
                         #        log.msg( "Exiting gracefully on user request.\n" )
                         #        sys.exit( 0 )
