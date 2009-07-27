@@ -1024,6 +1024,7 @@ def setter(args):
                 if platform.system() in supported_platforms:
                         if os.geteuid() != 0:
                                 log.err("This option requires super-user privileges. Execute as root or use sudo/su\n")
+                                sys.exit(1)
                         else:
                                 log.msg("\nGenerating database of files that are needed for an update.\n")
                         
@@ -1049,6 +1050,7 @@ def setter(args):
                 if platform.system() in supported_platforms:
                         if os.geteuid() != 0:
                                 log.err( "This option requires super-user privileges. Execute as root or use sudo/su" )
+                                sys.exit(1)
                         #TODO: Use a more Pythonic way for it
                         if Str_SetUpgradeType == "upgrade":
                                 if PythonApt is True:
