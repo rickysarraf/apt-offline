@@ -1017,7 +1017,7 @@ def setter(args):
         if os.path.isfile(Str_SetArg):
                 try:
                         os.unlink(Str_SetArg)
-                except IOError:
+                except OSError:
                         log.err("Cannot remove file %s.\n" % (Str_SetArg) )
         
         if Bool_SetUpdate:
