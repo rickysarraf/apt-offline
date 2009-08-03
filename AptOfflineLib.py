@@ -294,7 +294,7 @@ class ProgressBar( object ):
                 #compute display fraction
                 percentFilled = ( ( self.value - self.min ) / self.span )
                 widthFilled = int( self.width * percentFilled + 0.5 )
-                return ( "[" + "#"*widthFilled + " " * ( self.width - widthFilled ) + "]" + " %5.1f%% of  %s" % ( percentFilled * 100.0, self.__numStr__( self.max / 1024 ) ) )
+                return ( "[" + "#"*widthFilled + " " * ( self.width - widthFilled ) + "]" + " %5.1f%% of %s" % ( percentFilled * 100.0, self.__numStr__( self.max / 1024 ) ) )
         
         def __numStr__( self, size ):
                 if size > 1024:
