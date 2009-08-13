@@ -1207,8 +1207,8 @@ def main():
                           help="Cache folder to search for",
                           action="store", type=str, metavar=".")
         
-        parser_get.add_argument("--disable-md5check", dest="disable_md5check",
-                          help="Disable md5checksum validation on downloaded files",
+        parser_get.add_argument("--no-check", dest="disable_md5check",
+                          help="Do not validate checksum of downloaded files",
                           action="store_true")
         
         parser_get.add_argument("-t", "--threads", dest="num_of_threads", help="Number of threads to spawn",
