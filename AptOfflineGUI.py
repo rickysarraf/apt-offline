@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'pyptofflinegui.ui'
+# Form implementation generated from reading ui file 'AptOfflineGUI.ui'
 #
-# Created: Fri Dec 28 18:18:28 2007
-#      by: The PyQt User Interface Compiler (pyuic) 3.17.3
+# Created: Thu Aug 13 20:54:52 2009
+#      by: The PyQt User Interface Compiler (pyuic) 3.17.6
 #
 # WARNING! All changes made in this file will be lost!
 

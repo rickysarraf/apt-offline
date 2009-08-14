@@ -1,5 +1,5 @@
 all:
-	pyuic pyptofflinegui.ui > pyptofflinegui.py
+	pyuic AptOfflineGUI.ui > AptOfflineGUI.py
 	
 clean:
-	rm -f pyptofflinegui.py
+	rm -f AptOfflineGUI.py
