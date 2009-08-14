@@ -51,7 +51,7 @@ import AptOfflineMagicLib
 guiBool = True
 try:
         from qt import *
-        from AptOfflieGUI import pyptofflineguiForm
+        from AptOfflineGUI import pyptofflineguiForm
 except ImportError:
         guiBool = False
     
@@ -1131,6 +1131,22 @@ def setter(args):
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
         
+def gui(args):
+        Bool_GUI = args.gui
+        log.msg("Graphical Interface is currently not ready.\n")
+        if Bool_GUI:
+                if guiBool is True:
+                        class GUI( pyptofflineguiForm ):
+                                pass
+                        app = QApplication( sys.argv )
+                        QObject.connect( app, SIGNAL( "lastWindowClosed()" ), app, SLOT( "quit()" ) )
+                        w = GUI()
+                        app.setMainWidget( w )
+                        w.show()
+                        app.exec_loop()
+                else:
+                        log.err( "Incomplete installation. PyQT or apt-offline GUI libraries not available.\n" )
+                        sys.exit( 1 )
         
 class AptPython:
         def __init__( self ):
@@ -1152,7 +1168,6 @@ def main():
         parser.add_argument("--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
         parser.add_argument("--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.",
                             action="store_true" )
-        parser.add_argument("--gui", dest="gui", help="Run in Graphical Mode", action="store_true" )
         
         # We need subparsers for set/get/install
         subparsers = parser.add_subparsers()
@@ -1217,12 +1232,6 @@ def main():
         parser_get.add_argument("--bundle", dest="bundle_file", help="Bundle output data to a file",
                                 action="store", type=str, metavar="apt-offline-bundle.zip")
         
-        #parser_get.add_argument("--update", dest="get_update",
-        #                  help="Get data to update APT Database", action="store_true")
-        
-        #parser_get.add_argument("--upgrade", dest="get_upgrade",
-        #                  help="Get data to upgrade Packages", action="store_true")
-        
         parser_get.add_argument("--bug-reports", dest="deb_bugs",
                           help="Fetch bug reports from the BTS", action="store_true" )
         
@@ -1235,50 +1244,34 @@ def main():
                           action="store", type=str, metavar="apt-offline-bundle.zip",
                           default="apt-offline-bundle.zip")
         
-        #parser_install.add_argument("--update", dest="install_update",
-        #                  help="Install the updates for APT Database.", action="store_true")
-        
-        #parser_install.add_argument("--upgrade", dest="install_upgrade",
-        #                  help="Install the Package updates", action="store_true")
+        # GUI options
+        parser_gui = subparsers.add_parser('gui')
+        parser_gui.set_defaults(func=gui)
+        parser_gui.add_argument('gui', help="Run apt-offline in Graphical mode", action="store_true")
         
         args = parser.parse_args()
         
-        # Sanitize the options/arguments
-        #
-        # Global opts
-        Bool_Verbose = args.verbose
-        Bool_TestWindows = args.test_windows
-        Bool_GUI = args.gui
-        
-        global log
-        log = AptOfflineLib.Log( Bool_Verbose, lock=True )
-        
-        print args
-        args.func(args)
-        
-        log.verbose(str(args))
-        
         try:
-                # Check if we want to run the GUI interface
-                if Bool_GUI:
-                        if guiBool is True:
-                                class GUI( pyptofflineguiForm ):
-                                        pass
-                                app = QApplication( sys.argv )
-                                QObject.connect( app, SIGNAL( "lastWindowClosed()" ), app, SLOT( "quit()" ) )
-                                w = GUI()
-                                app.setMainWidget( w )
-                                w.show()
-                                app.exec_loop()
-                        else:
-                                log.err( "Incomplete installation. PyQT or apt-offline GUI libraries not available.\n" )
-                                sys.exit( 1 )
+                # Sanitize the options/arguments
+                #
+        	# Global opts
+        	Bool_Verbose = args.verbose
+        	Bool_TestWindows = args.test_windows
+        	Bool_GUI = args.gui
                 
+                # On windows, we want to test
                 if Bool_TestWindows:
                         global apt_package_target_path
                         global apt_update_target_path
                         apt_package_target_path = 'C:\\temp'
                         apt_update_target_path = 'C:\\temp'
+                        
+                        
+        	global log
+        	log = AptOfflineLib.Log( Bool_Verbose, lock=True )
+        
+        	args.func(args)
+        	log.verbose(str(args))
             
         except KeyboardInterrupt:
                 log.err("\nInterrupted by user. Exiting!\n")
