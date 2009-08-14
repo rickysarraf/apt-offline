@@ -1,17 +1,42 @@
-.TH apt-offline 1 "August 20, 2007" "version 0.7.0" "USER COMMANDS"
+.TH apt-offline 1 "August, 2009" "version 1.0" "USER COMMANDS"
 .SH NAME
-apt-offline \- Offline Package manager
+apt-offline \- Offline APT Package manager
 .SH SYNOPSIS
 .B apt-offline
-[OPTIONS] [ARGUMENTS]
+[ARGUMENTS] [OPTIONS]
+
+.B This manpage is currently obsolete and irrelevant. Please use the -h/--help switch for the list of options.
 .SH DESCRIPTION
+This manpage is currently obsolete and irrelevant. Please use the -h/--help switch for the list of options.
+
 apt-offline is an Offline Package Manager for Debian based systems. It bring offline package management functionality.
-It can download the required packages for a disconnected machine from a different connected machine running Windows or Linux or Mac OS X.
+It can download the required packages for a disconnected machine from a different connected machine
 .PP
 It can also fetch bug reports for packages which are downloaded.
 .PP
-Currently it supports only apt based systems but plans are there to support RPM based distros also.
-.SH OPTIONS
+Unless the \-h or \-\-help option is given, one of the arguments below must be present.
+
+.SS set [-h] [--install-packages [PKG [PKG ...]]] [--release release_name] [--update] [--upgrade] [--upgrade-type upgrade] apt-offline.sig
+
+.PP
+.B set
+Generate a signautre file for the data to be required.
+
+.B FILENAME {apt-offline.sig}
+is the signature file generated on the machine. This file will contain all the details required for apt.
+
+.IP "\fB\-h, \-\-help\fP" 10
+Show this help message and exit
+.IP "\fB\-\-install\-packages [PKG [PKG ...]]\fP" 10
+Packages that need to be installed
+.IP "\fB\-\-release release_name\fP" 10
+Release target to install packages from
+
+
+
+
+
+.SH GLOBAL OPTIONS
 .TP
 \-\-set\-update filename
 Specify the file to which the details about the update files with be written to
