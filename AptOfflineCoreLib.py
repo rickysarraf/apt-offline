@@ -1257,7 +1257,6 @@ def main():
         	# Global opts
         	Bool_Verbose = args.verbose
         	Bool_TestWindows = args.test_windows
-        	Bool_GUI = args.gui
                 
                 # On windows, we want to test
                 if Bool_TestWindows:
