@@ -1268,9 +1268,9 @@ def main():
                         
         	global log
         	log = AptOfflineLib.Log( Bool_Verbose, lock=True )
+        	log.verbose(str(args + "\n"))
         
         	args.func(args)
-        	log.verbose(str(args))
             
         except KeyboardInterrupt:
                 log.err("\nInterrupted by user. Exiting!\n")
