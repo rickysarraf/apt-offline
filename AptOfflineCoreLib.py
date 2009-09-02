@@ -440,16 +440,13 @@ def fetcher( args ):
         #progbar = ProgressBar(width = 30)
         
         if Str_DownloadDir is None:
-                if os.access( "apt-downloads", os.W_OK ) is True:
-                        download_path = os.path.abspath( "apt-downloads" )
+                import tempfile
+                tempdir = tempfile.gettempdir()
+                if os.access( tempdir, os.W_OK ) is True:
+                        download_path = tempdir
                 else:
-                        try:
-                                os.umask( 0002 )
-                                os.mkdir( "apt-downloads" )
-                                download_path = os.path.abspath( "apt-downloads" )
-                        except:
-                                log.err( "I couldn't create directory %s\n" % (Str_DownloadDir) )
-                                errfunc( 1, '' )
+                        log.err( "%s is not writable\n" % (tempdir) ) 
+                        errfunc ( 1, '')
         else:
                 if os.access( Str_DownloadDir, os.W_OK ) is True:
                         download_path = os.path.abspath( Str_DownloadDir )
