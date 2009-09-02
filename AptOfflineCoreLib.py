@@ -243,8 +243,11 @@ class DownloadFromWeb(AptOfflineLib.ProgressBar):
                                         socket_counter += 1
                                 if socket_counter == SOCKET_TIMEOUT_RETRY:
                                         errfunc(101010, "Max timeout retry count reached. Discontinuing download.\n", url)
+                                        
+                                        # Clean the half downloaded file.
+                                        os.unlink(file)
                                         return False
-                                        #break
+                                
                                 if socket_timeout is True:
                                         errfunc(10054, "Socket Timeout. Retry - %d\n" % (socket_counter) , url)
                                         continue
