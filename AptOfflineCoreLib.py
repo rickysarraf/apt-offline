@@ -1243,6 +1243,9 @@ def main():
                           help="Install apt-offline data",
                           action="store", type=str, metavar="apt-offline-bundle.zip",
                           default="apt-offline-bundle.zip")
+
+        parser_install.add_argument("--skip-bug-reports", dest="skip_bug_reports",
+                        help="Skip the bug report check", action="store_false")
         
         # GUI options
         parser_gui = subparsers.add_parser('gui')
