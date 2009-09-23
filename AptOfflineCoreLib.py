@@ -778,6 +778,7 @@ def installer( args ):
         # install opts
         Str_InstallArg = args.install
         Bool_TestWindows = args.test_windows
+        Bool_SkipBugReports = args.skip_bug_reports
         
         # Old cruft. Needs clean-up
         install_file_path = Str_InstallArg
@@ -856,19 +857,22 @@ def installer( args ):
                 file = zipfile.ZipFile( install_file_path, "r" )
                 #if bug_parse_required is True:
                 bugs_number = {}
-                for filename in file.namelist():
-                        if filename.endswith( apt_bug_file_format ):
-                                temp = tempfile.NamedTemporaryFile()
-                                temp.file.write( file.read( filename ) )
-                                temp.file.flush()
-                                temp.file.seek( 0 ) #Let's go back to the start of the file
-                                for bug_subject_identifier in temp.file.readlines():
-                                        if bug_subject_identifier.startswith( '#' ):
-                                                subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
-                                                subject = subject.rstrip( "\n" )
-                                                break
-                                bugs_number[filename] = subject
-                                temp.file.close()
+                if Bool_SkipBugReports:
+                        log.verbose("Skipping bug report check as requested")
+                else:
+                        for filename in file.namelist():
+                                if filename.endswith( apt_bug_file_format ):
+                                        temp = tempfile.NamedTemporaryFile()
+                                        temp.file.write( file.read( filename ) )
+                                        temp.file.flush()
+                                        temp.file.seek( 0 ) #Let's go back to the start of the file
+                                        for bug_subject_identifier in temp.file.readlines():
+                                                if bug_subject_identifier.startswith( '#' ):
+                                                        subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
+                                                        subject = subject.rstrip( "\n" )
+                                                        break
+                                        bugs_number[filename] = subject
+                                        temp.file.close()
                 if bugs_number:
                         # Display the list of bugs
                         list_bugs()
@@ -934,11 +938,13 @@ def installer( args ):
                         #       sys.exit( 0 )
                                 
         elif os.path.isdir(install_file_path):
-                archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
                 bugs_number = []
-                for filename in os.listdir( install_file_path ):
-                        if filename.endswith( apt_bug_file_format ):
-                                bugs_number.append( filename )
+                if Bool_SkipBugReports:
+                        log.verbose("Skipping bug report check as requested")
+                else:
+                        for filename in os.listdir( install_file_path ):
+                                if filename.endswith( apt_bug_file_format ):
+                                        bugs_number.append( filename )
                 if bugs_number:
                         #Give the choice to the user
                         list_bugs()
@@ -1245,7 +1251,7 @@ def main():
                           default="apt-offline-bundle.zip")
 
         parser_install.add_argument("--skip-bug-reports", dest="skip_bug_reports",
-                        help="Skip the bug report check", action="store_false")
+                        help="Skip the bug report check", action="store_true")
         
         # GUI options
         parser_gui = subparsers.add_parser('gui')
