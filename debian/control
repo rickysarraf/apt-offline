@@ -1,13 +1,24 @@
 Source: apt-offline
-Section: unknown
+Section: utils
 Priority: extra
 Maintainer: Ritesh Raj Sarraf <rrs@researchut.com>
 Build-Depends: debhelper (>= 7)
 Standards-Version: 3.8.3
-Homepage: <insert the upstream URL, if relevant>
+Homepage: http://apt-offline.alioth.debian.org
 
 Package: apt-offline
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python
+Description: offline apt package manager
+ apt-offline is an Offline APT Package Manager
+ .
+ apt-offline can fully update and upgrade an APT based
+ distribution without connecting to the network, all 
+ transparent to apt
+ .
+ apt-offline is cross platform and can be run on all
+ major platform to download the packages without the user
+ worrying about package dependencies
+ .
+ apt-offline can also fetch bug reports and make them available
+ offline

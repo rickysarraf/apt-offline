@@ -2,17 +2,15 @@ This work was packaged for Debian by:
 
     Ritesh Raj Sarraf <rrs@researchut.com> on Wed, 23 Sep 2009 13:33:26 +0530
 
-It was downloaded from <url://example.com>
+It was downloaded from http://apt-offline.alioth.debian.org
 
 Upstream Author(s):
 
-    <put author's name and email here>
-    <likewise for another author>
+    Ritesh Raj Sarraf <rrs@researchut.com>
 
 Copyright:
 
-    <Copyright (C) YYYY Name OfAuthor>
-    <likewise for another author>
+    Copyright (C) 2009 Ritesh Raj Sarraf
 
 License:
 
@@ -21,15 +19,5 @@ License:
 The Debian packaging is:
 
     Copyright (C) 2009 Ritesh Raj Sarraf <rrs@researchut.com>
-
-# Please chose a license for your packaging work. If the program you package
-# uses a mainstream license, using the same license is the safest choice.
-# Please avoid to pick license terms that are more restrictive than the
-# packaged work, as it may make Debian's contributions unacceptable upstream.
-# If you just want it to be GPL version 3, leave the following lines in.
-
-and is licensed under the GPL version 3, 
-see `/usr/share/common-licenses/GPL-3'.
-
-# Please also look if there are files or directories which have a
-# different copyright/license attached and list them here.
+    and is licensed under the GPL version 3, 
+    see `/usr/share/common-licenses/GPL-3'.
