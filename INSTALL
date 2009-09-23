@@ -1,13 +1,18 @@
 ##  Under Linux
 
-chmod 755 apt-offline[.py]
-Execute the command with the proper options
-./apt-offline [OPTIONS]
+# To build
+python setup.py build
 
+# To Install (You might need to be root)
+python setup.py install
 
 ## Under Microsoft Windows
 
 # Execute the file using the python interpreter
 # Assuming python.exe is in your path
 
-C:\> python apt-offline [OPTIONS]
+# To build
+C:\> python setup.py build
+
+# To install
+C:\> python setup.py install
