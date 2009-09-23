@@ -1178,7 +1178,7 @@ def main():
         parser_set.set_defaults(func=setter)
         
         parser_set.add_argument('set',
-                          help="Generat a signature file",
+                          help="Generate a signature file",
                           action="store", type=str, metavar="apt-offline.sig",
                           default="apt-offline.sig")
         
