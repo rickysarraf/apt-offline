@@ -1215,7 +1215,7 @@ def main():
                         action="store", type=int, metavar="30", default=30)
         
         parser_get.add_argument("-d", "--download-dir", dest="download_dir",
-                          help="Folder path to save files", action="store",
+                          help="Folder path to save files to", action="store",
                           type=str, metavar="apt-downloads")
         
         parser_get.add_argument("-s", "--cache-dir", dest="cache_dir",
