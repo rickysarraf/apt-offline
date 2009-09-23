@@ -66,7 +66,7 @@ PythonApt = False #Remove it after porting to python-apt
     
 import AptOfflineLib
 
-#INFO: Set the default timeout to 15 seconds for the packages that are being downloaded.
+#INFO: Set the default timeout to 30 seconds for the packages that are being downloaded.
 socket.setdefaulttimeout(30)
 
 # How many times should we retry on socket timeouts
@@ -1212,7 +1212,7 @@ def main():
                           default="apt-offline.sig")
         
         parser_get.add_argument("--socket-timeout", dest="socket_timeout", help="Set Socket Timeout",
-                          action="store", type=int, metavar="30", default=30)
+                        action="store", type=int, metavar="30", default=30)
         
         parser_get.add_argument("-d", "--download-dir", dest="download_dir",
                           help="Folder path to save files", action="store",
