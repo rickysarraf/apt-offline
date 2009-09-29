@@ -446,6 +446,10 @@ def fetcher( args ):
                 import tempfile
                 tempdir = tempfile.gettempdir()
                 if os.access( tempdir, os.W_OK ) is True:
+                        pidname = os.getpid()
+                        tempdir = tempdir + "/apt-offline-downloads-" + str(pidname)
+                        os.mkdir(tempdir)
+                                
                         download_path = tempdir
                 else:
                         log.err( "%s is not writable\n" % (tempdir) ) 
@@ -768,11 +772,12 @@ def fetcher( args ):
                 
         # Print the failed files
         if len(errlist) == 0:
-                log.msg("\nAll files have been downloaded.\n")
+                log.msg("\nAll files have been downloaded to %s.\n" % (download_path) )
         else:
                 log.err("\n\nThe following files failed to be downloaded.\n")
                 for error in errlist:
                         log.err("%s failed.\n" % (error))
+                log.msg("Downloaded data to %s\n" % (download_path) )
         
 def installer( args ):
         
