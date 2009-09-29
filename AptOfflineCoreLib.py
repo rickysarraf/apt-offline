@@ -450,28 +450,28 @@ def fetcher( args ):
                         tempdir = tempdir + "/apt-offline-downloads-" + str(pidname)
                         os.mkdir(tempdir)
                                 
-                        download_path = tempdir
+                        Str_DownloadDir = os.path.abspath(tempdir)
                 else:
                         log.err( "%s is not writable\n" % (tempdir) ) 
                         errfunc ( 1, '')
         else:
                 if os.access( Str_DownloadDir, os.W_OK ) is True:
-                        download_path = os.path.abspath( Str_DownloadDir )
+                        Str_DownloadDir = os.path.abspath( Str_DownloadDir )
                 else:
                         #INFO: If the path is provided, but doesn't exist
                         # Create it.
                         try:
                                 os.umask( 0002 )
                                 os.mkdir( Str_DownloadDir )
-                                download_path = os.path.abspath( Str_DownloadDir )
+                                Str_DownloadDir = os.path.abspath( Str_DownloadDir )
                         except:
                                 log.err( "I couldn't create directory %s\n" % (Str_DownloadDir) )
                                 errfunc( 1, '' )
                                 
         if Str_BundleFile is not None:
-                bundle_file = os.path.join( os.path.abspath( download_path ), Str_BundleFile ) 
-                if os.access( bundle_file, os.F_OK ):
-                        log.err( "%s already present.\nRemove it first.\n" % ( bundle_file ) )
+                Str_BundleFile = os.path.abspath(Str_BundleFile)
+                if os.access(Str_BundleFile, os.F_OK ):
+                        log.err( "%s already present.\nRemove it first.\n" % ( Str_BundleFile ) )
                         sys.exit( 1 )
         
         if Bool_BugReports:
@@ -479,7 +479,7 @@ def fetcher( args ):
                         if Str_BundleFile is not None:
                                 #INFO: We are creating an archive then.
                                 # For now, we support zip archives
-                                FetchBugReportsDebian = FetchBugReports( apt_bug_file_format, IgnoredBugTypes, bundle_file, lock=True )
+                                FetchBugReportsDebian = FetchBugReports( apt_bug_file_format, IgnoredBugTypes, Str_BundleFile, lock=True )
                         else:
                                 #INFO: No bundle file to be created.
                                 # Data will be stored in the Str_DownloadDir folder
@@ -570,22 +570,22 @@ def fetcher( args ):
                                                         # along with the downloaded bug reports.
                                                         else:
                                                                 try:
-                                                                        shutil.copy(full_file_path, download_path)
+                                                                        shutil.copy(full_file_path, Str_DownloadDir)
                                                                         log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
                                                                 except shutil.Error:
-                                                                        log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (file, download_path, LINE_OVERWRITE_MID) )
+                                                                        log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (file, Str_DownloadDir, LINE_OVERWRITE_MID) )
                                                                 
                                                                 if bug_fetched == 1:
                                                                         for x in os.listdir(os.curdir):
                                                                                 if (x.startswith(PackageName) and x.endswith(apt_bug_file_format) ):
-                                                                                        shutil.move(x, download_path)
-                                                                                        log.verbose("Moved %s file to %s folder.%s\n" % (x, download_path, LINE_OVERWRITE_FULL) )
+                                                                                        shutil.move(x, Str_DownloadDir)
+                                                                                        log.verbose("Moved %s file to %s folder.%s\n" % (x, Str_DownloadDir, LINE_OVERWRITE_FULL) )
                                                 #INFO: Damn!! The md5chesum didn't match :-(
                                                 # The file is corrupted and we need to download a new copy from the internet
                                                 else:
                                                         log.verbose("%s checksum mismatch. Skipping file.%s\n" % (file, LINE_OVERWRITE_FULL) )
                                                         log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
-                                                        if FetcherInstance.download_from_web(url, file, download_path) == True:
+                                                        if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
                                                                 log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                                 
                                                                 #Add to Str_CacheDir if possible
@@ -611,7 +611,7 @@ def fetcher( args ):
                                                                                 sys.exit( 1 )
                                                                         else:
                                                                                 log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                                os.unlink( os.path.join( download_path, file ) )
+                                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
                                         #INFO: You're and idiot.
                                         # You should NOT disable md5checksum for any files
                                         else:
@@ -634,11 +634,11 @@ def fetcher( args ):
                                                                 sys.exit( 1 )
                                                         else:
                                                                 log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                os.unlink( os.path.join( download_path, file ) )
+                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
                                                 else:
                                                         # Since zip file option is not enabled let's copy the file to the target folder
                                                         try:
-                                                                shutil.copy( full_file_path, download_path )
+                                                                shutil.copy( full_file_path, Str_DownloadDir )
                                                                 log.success( "%s copied from local cache directory %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_SMALL ) )
                                                         except shutil.Error:
                                                                 log.verbose( "%s already available in dest_dir. Skipping copy!!!%s\n" % ( file, LINE_OVERWRITE_SMALL ) )
@@ -647,15 +647,15 @@ def fetcher( args ):
                                                         if bug_fetched == 1:
                                                                 for x in os.listdir( os.curdir ):
                                                                         if ( x.startswith( PackageName ) and x.endswith( apt_bug_file_format ) ):
-                                                                                shutil.move( x, download_path )
-                                                                                log.verbose( "Moved %s file to %s folder.%s\n" % ( x, download_path, LINE_OVERWRITE_MID ) )
+                                                                                shutil.move( x, Str_DownloadDir )
+                                                                                log.verbose( "Moved %s file to %s folder.%s\n" % ( x, Str_DownloadDir, LINE_OVERWRITE_MID ) )
                                         
                                 else:
                                         #INFO: This block gets executed if the file is not found in local Str_CacheDir or Str_CacheDir is None
                                         # We go ahead and try to download it from the internet
                                         log.verbose( "%s not available in local cache %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
                                         log.msg( "Downloading %s %s - %s %s\n" % ( PackageName, PackageVersion, log.calcSize( download_size / 1024 ), LINE_OVERWRITE_MID ) )
-                                        if FetcherInstance.download_from_web( url, file, download_path ) == True:
+                                        if FetcherInstance.download_from_web( url, file, Str_DownloadDir ) == True:
                                                 #INFO: This block gets executed if md5checksum is allowed
                                                 if Bool_DisableMD5Check is False:
                                                         #INFO: Debian moved to SHA256. So we use that now. Older systems could have md5
@@ -683,7 +683,7 @@ def fetcher( args ):
                                                                                 sys.exit( 1 )
                                                                         else:
                                                                                 log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                                os.unlink( os.path.join( download_path, file ) )
+                                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
                                                         else:
                                                                 #INFO MD5 Checksum is incorrect.
                                                                 log.err( "%s MD5 Checksum mismatch.\n" % ( PackageName ) )
@@ -702,7 +702,7 @@ def fetcher( args ):
                                                                         sys.exit( 1 )
                                                                 else:
                                                                         log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                        os.unlink( os.path.join( download_path, file ) )
+                                                                        os.unlink( os.path.join( Str_DownloadDir, file ) )
                                             
                                                 log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
                                         else:
@@ -723,7 +723,7 @@ def fetcher( args ):
                                 exit_status = response.get()
                                 if exit_status == False:
                                         log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
-                                        if FetcherInstance.download_from_web(url, file, download_path) == True:
+                                        if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
                                                 log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                 if Str_BundleFile:
                                                         if FetcherInstance.compress_the_file(Str_BundleFile, file) != True:
@@ -731,7 +731,7 @@ def fetcher( args ):
                                                                 sys.exit(1)
                                                         else:
                                                                 log.verbose("%s added to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_FULL) )
-                                                                os.unlink(os.path.join(download_path, file) )
+                                                                os.unlink(os.path.join(Str_DownloadDir, file) )
                                         else:
                                                 errlist.append(url)
                         else:
@@ -771,13 +771,14 @@ def fetcher( args ):
         for t in thread_pool: t.join()
                 
         # Print the failed files
-        if len(errlist) == 0:
-                log.msg("\nAll files have been downloaded to %s.\n" % (download_path) )
-        else:
+        if len(errlist) > 0:
                 log.err("\n\nThe following files failed to be downloaded.\n")
                 for error in errlist:
                         log.err("%s failed.\n" % (error))
-                log.msg("Downloaded data to %s\n" % (download_path) )
+        if args.bundle_file:
+                log.msg("Downloaded data to %s\n" % (Str_BundleFile) )
+        else:
+                log.msg("Downloaded data to %s\n" % (Str_DownloadDir) )
         
 def installer( args ):
         
