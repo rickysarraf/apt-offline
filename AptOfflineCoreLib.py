@@ -447,7 +447,7 @@ def fetcher( args ):
                 tempdir = tempfile.gettempdir()
                 if os.access( tempdir, os.W_OK ) is True:
                         pidname = os.getpid()
-                        tempdir = tempdir + "/apt-offline-downloads-" + str(pidname)
+                        tempdir = os.path.join(tempdir , "apt-offline-downloads-" + str(pidname) )
                         os.mkdir(tempdir)
                                 
                         Str_DownloadDir = os.path.abspath(tempdir)
