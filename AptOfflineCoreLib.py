@@ -1167,21 +1167,25 @@ def main():
         Contains most of the variables that are required by the application to run.
         Also does command-line option parsing and variable validation.'''
         
-        parser = argparse.ArgumentParser( prog=app_name, version=app_name + " - " + version,
-                                          description="Offline APT Package Manager",
-                                          epilog=copyright + " - " + terminal_license)
+        # INFO: One way to handle global options in argparse so that they are available to 
+        # subparsers also
         
         # Global options
-        parser.add_argument("--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
-        parser.add_argument("--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.",
+        global_options = argparse.ArgumentParser(add_help=False)
+        global_options.add_argument("--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
+        global_options.add_argument("--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.",
                             action="store_true" )
+        
+        parser = argparse.ArgumentParser( prog=app_name, version=app_name + " - " + version,
+                                          description="Offline APT Package Manager",
+                                          epilog=copyright + " - " + terminal_license, parents=[global_options])
         
         # We need subparsers for set/get/install
         subparsers = parser.add_subparsers()
         
         # SET command options
         #
-        parser_set = subparsers.add_parser('set')
+        parser_set = subparsers.add_parser('set', parents=[global_options])
         parser_set.set_defaults(func=setter)
         
         parser_set.add_argument('set',
@@ -1208,7 +1212,7 @@ def main():
         
         
         # GET command options
-        parser_get = subparsers.add_parser('get')
+        parser_get = subparsers.add_parser('get', parents=[global_options])
         
         #INFO: When get option is called, call the fetcher() function
         parser_get.set_defaults(func=fetcher)
@@ -1243,7 +1247,7 @@ def main():
                           help="Fetch bug reports from the BTS", action="store_true" )
         
         # INSTALL command options
-        parser_install = subparsers.add_parser('install')
+        parser_install = subparsers.add_parser('install', parents=[global_options])
         parser_install.set_defaults(func=installer)
         
         parser_install.add_argument('install',
@@ -1255,7 +1259,7 @@ def main():
                         help="Skip the bug report check", action="store_true")
         
         # GUI options
-        parser_gui = subparsers.add_parser('gui')
+        parser_gui = subparsers.add_parser('gui', parents=[global_options])
         parser_gui.set_defaults(func=gui)
         parser_gui.add_argument('gui', help="Run apt-offline in Graphical mode", action="store_true")
         
