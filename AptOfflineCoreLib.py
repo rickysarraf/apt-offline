@@ -772,13 +772,14 @@ def fetcher( args ):
                 
         # Print the failed files
         if len(errlist) > 0:
-                log.err("\n\nThe following files failed to be downloaded.\n")
+                log.msg("\n\n")
+                log.err("The following files failed to be downloaded.\n")
                 for error in errlist:
                         log.err("%s failed.\n" % (error))
         if args.bundle_file:
-                log.msg("Downloaded data to %s\n" % (Str_BundleFile) )
+                log.msg("\nDownloaded data to %s\n" % (Str_BundleFile) )
         else:
-                log.msg("Downloaded data to %s\n" % (Str_DownloadDir) )
+                log.msg("\nDownloaded data to %s\n" % (Str_DownloadDir) )
         
 def installer( args ):
         
