@@ -783,6 +783,38 @@ def fetcher( args ):
         
 def installer( args ):
         
+        class APTVerifySigs():
+                
+                def __init__(self, gpgv=None, keyring=None):
+                        if gpgv is None:
+                                self.gpgv="/usr/bin/gpgv"
+                        else:
+                                self.gpgv=gpgv
+                                
+                        if keyring is None:
+                                self.opts="--keyring /etc/apt/trusted.gpg --ignore-time-conflict"
+                        else:
+                                self.opts = "--keyring %s --ignore-time-conflict" % (keyring)
+                                
+                def VerifySig(self, signature_file, signed_file):
+                        
+                        if not os.F_OK(signature_file):
+                                log.err("%s is bad. Can't proceed.\n" % (signature_file) )
+                                return False
+                        if not os.F_OK(signed_file):
+                                log.err("%s is bad. Can't proceed.\n" % (signed_file) )
+                                return False
+                        
+                        x = os.system("%s %s %s %s" % (self.gpgv, self.opts, signature_file, signed_file) )
+                        #TODO: Find a way to redirect std[out|err]
+                        # look at subprocess module
+                        
+                        if x == 0:
+                                return True
+                        else:
+                                return False
+                
+        
         # install opts
         Str_InstallArg = args.install
         Bool_TestWindows = args.test_windows
@@ -1264,6 +1296,9 @@ def main():
 
         parser_install.add_argument("--skip-bug-reports", dest="skip_bug_reports",
                         help="Skip the bug report check", action="store_true")
+        
+        parser_install.add_argument("--allow-unauthenticated", dest="allow_unauthenticated",
+                                    help="Ignore apt gpg signatures mismatch", action="store_false")
         
         # GUI options
         parser_gui = subparsers.add_parser('gui', parents=[global_options])
