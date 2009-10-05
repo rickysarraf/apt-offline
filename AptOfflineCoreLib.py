@@ -85,7 +85,8 @@ the GNU GPL License\n"
         
 errlist = []
 supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
-apt_update_target_path = '/var/lib/apt/lists/'
+apt_update_target_path = '/var/lib/apt/lists/partial'
+apt_update_final_path = '/var/lib/apt/lists/'
 apt_package_target_path = '/var/cache/apt/archives/'
 
 apt_bug_file_format = "__apt__bug__report"
@@ -798,10 +799,10 @@ def installer( args ):
                                 
                 def VerifySig(self, signature_file, signed_file):
                         
-                        if not os.F_OK(signature_file):
+                        if not os.access(signature_file, os.F_OK):
                                 log.err("%s is bad. Can't proceed.\n" % (signature_file) )
                                 return False
-                        if not os.F_OK(signed_file):
+                        if not os.access(signed_file, os.F_OK):
                                 log.err("%s is bad. Can't proceed.\n" % (signed_file) )
                                 return False
                         
@@ -819,6 +820,7 @@ def installer( args ):
         Str_InstallArg = args.install
         Bool_TestWindows = args.test_windows
         Bool_SkipBugReports = args.skip_bug_reports
+        Bool_Untrusted = args.allow_unauthenticated
         
         # Old cruft. Needs clean-up
         install_file_path = Str_InstallArg
@@ -837,6 +839,17 @@ def installer( args ):
                                 
         archive = AptOfflineLib.Archiver()
         archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
+        
+        if not Bool_Untrusted:
+                AptSecure = APTVerifySigs()
+                
+        #INFO: Let's clean the partial database
+        for x in os.listdir(apt_update_target_path):
+                x = os.path.join(apt_update_target_path, x)
+                if os.access(x, os.W_OK):
+                        os.unlink(x)
+                        log.verbose("Cleaning old update data file %s.\n" % (x) )
+                
         
         def display_options():
                 log.msg( "(Y) Yes. Proceed with installation\n" )
@@ -866,20 +879,21 @@ def installer( args ):
                 elif AptOfflineMagicLib.file( archive_file ) == "application/zip":
                         retval = archive.decompress_the_file( os.path.join( install_file_path, eachfile ), apt_update_target_path, eachfile, "zip" )
                 elif AptOfflineMagicLib.file( archive_file ) == "PGP armored data":
-                    #TODO: Integrate it to apt-key
-                    # We should handle update signatures using apt-key interface or
-                    # similar ones
-                    pass
+                        filename = os.path.join(apt_update_target_path, filename)
+                        shutil.copy2(archive_file, filename)
                 elif AptOfflineMagicLib.file( archive_file ) == "application/x-dpkg":
+                        filename = os.path.join(apt_package_target_path, filename)
                         if os.access( apt_package_target_path, os.W_OK ):
-                                shutil.copy( archive_file, apt_package_target_path + filename )
+                                shutil.copy( archive_file, filename )
+                                log.msg("%s file synced.\n" % (filename) )
                                 retval = True
                         else:
                                 log.err( "Cannot write to target path %s\n" % ( apt_package_target_path ) )
                                 sys.exit( 1 )
                 elif AptOfflineMagicLib.file( archive_file ) == "ASCII text":
+                        filename = os.path.join(apt_update_target_path, filename)
                         if os.access( apt_update_target_path, os.W_OK ):
-                                shutil.copy( archive_file, apt_update_target_path + filename )
+                                shutil.copy( archive_file, filename )
                                 retval = True
                         else:
                                 log.err( "Cannot write to target path %s\n" % ( apt_update_target_path ) )
@@ -890,7 +904,7 @@ def installer( args ):
                         log.err( "I couldn't understand file type %s.\n" % ( filename ) )
                 
                 if retval:
-                        log.msg( "%s file synced.\n" % ( filename ) )
+                        log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
         
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
@@ -1040,6 +1054,41 @@ def installer( args ):
                         #else:
                         #        log.msg( "Exiting gracefully on user request.\n" )
                         #        sys.exit( 0 )
+        if Bool_Untrusted:
+                log.err("Disabling apt gpg check can risk your machine to compromise.\n")
+                for x in os.listdir(apt_update_target_path):
+                        x = os.path.join(apt_update_target_path, x)
+                        shutil.copy2(x, apt_update_final_path) # Do we do a move ??
+                        log.verbose("%s %s\n" % (x, apt_update_final_path) )
+                        log.msg("%s synced.\n" % (x) )
+        else:
+                lFileList= os.listdir(apt_update_target_path)
+                lFileList.sort()
+                lVerifiedWhitelist = []
+                for file in lFileList:
+                        file = os.path.join(apt_update_target_path, file)
+                        if file.endswith('.gpg'):
+                                log.verbose("%s\n" % (file) )
+                                file = os.path.abspath(file)
+                                if AptSecure.VerifySig(file, file.rstrip(".gpg") ):
+                                        file = file.rstrip("Release.gpg")
+                                        file = file[:-1] #Remove the trailing _ underscore
+                                        file = file.split("/")[-1]
+                                        lVerifiedWhitelist.append(file)
+                                        log.verbose("%s is gpg clean\n" % (file) )
+                                else:
+                                        # Bad sig.
+                                        log.err("%s bad signature. Not syncing because in strict mode.\n" % (file) )
+                if lVerifiedWhitelist != []:
+                        print lVerifiedWhitelist
+                        for whitelist_item in lVerifiedWhitelist:
+                                for final_item in lFileList:
+                                        #print whitelist_item, final_item
+                                        if whitelist_item in final_item:
+                                                final_item = os.path.join(apt_update_target_path, final_item)
+                                                shutil.copy2(final_item, apt_update_final_path)
+                                                log.msg("%s synced.\n" % (final_item) )
+                        
 
 def setter(args):
         Str_SetArg = args.set
@@ -1298,7 +1347,7 @@ def main():
                         help="Skip the bug report check", action="store_true")
         
         parser_install.add_argument("--allow-unauthenticated", dest="allow_unauthenticated",
-                                    help="Ignore apt gpg signatures mismatch", action="store_false")
+                                    help="Ignore apt gpg signatures mismatch", action="store_true")
         
         # GUI options
         parser_gui = subparsers.add_parser('gui', parents=[global_options])
