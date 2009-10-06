@@ -26,16 +26,11 @@ binary-indep: build install
 	dh_testdir
 	dh_testroot
 	dh_installdocs
-	#dh_installexamples test/*
 	dh_installchangelogs
-	#dh_link /usr/share/javascript/jquery/jquery.js \
-	/usr/share/doc/python-argparse-doc/html/_static/jquery.js
 	dh_pysupport
 	dh_compress -Xexamples
 	dh_fixperms
-	#dh_strip
 	dh_installdeb
-	#dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb

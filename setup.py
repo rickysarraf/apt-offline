@@ -10,7 +10,7 @@ import distutils.core
 import AptOfflineCoreLib
 import AptOfflineDebianBtsLib
 #import AptOfflineFetchBugs
-import AptOfflineGUI
+#import AptOfflineGUI
 import AptOfflineLib
 import AptOfflineMagicLib
 import reportbug_exceptions
