@@ -2,7 +2,8 @@ Source: apt-offline
 Section: utils
 Priority: extra
 Maintainer: Ritesh Raj Sarraf <rrs@researchut.com>
-Build-Depends: debhelper (>= 7), python-support, python
+Build-Depends: debhelper (>= 7), python
+Build-Depends-Indep: python-support
 Standards-Version: 3.8.3
 XS-Python-Version: >=2.4
 Homepage: http://apt-offline.alioth.debian.org
@@ -11,7 +12,7 @@ Vcs-Browser: http://git.debian.org/?p=apt-offline/apt-offline.git
 
 Package: apt-offline
 Architecture: all
-Depends: ${python:Depends}, python-argparse
+Depends: ${python:Depends}, python-argparse, python
 XB-Python-Version: ${python:Versions}
 Description: offline apt package manager
  apt-offline is an Offline APT Package Manager

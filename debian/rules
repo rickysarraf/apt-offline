@@ -11,6 +11,7 @@ clean:
 	dh_testroot
 
 	python setup.py clean
+	rm -f *.pyc
 
 	dh_clean
 
@@ -39,4 +40,3 @@ binary-arch: build install
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install get-orig-source
-
