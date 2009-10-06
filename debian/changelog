@@ -1,5 +1,5 @@
 apt-offline (0.9.3-1) unstable; urgency=low
 
-  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+  * Initial release (Closes: #531699)
 
- -- Ritesh Raj Sarraf <rrs@researchut.com>  Wed, 23 Sep 2009 13:33:26 +0530
+ -- Ritesh Raj Sarraf <rrs@researchut.com>  Tue, 06 Oct 2009 23:51:19 +0530
