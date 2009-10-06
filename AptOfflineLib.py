@@ -179,10 +179,10 @@ class Log:
                 if self.lock:
                         self.DispLock.acquire( True )
           
-                self.set_color( 'White' )
+                #self.set_color( 'White' )
                 sys.stdout.write( msg )
                 sys.stdout.flush()
-                self.set_color( 'SwitchOffAttributes' )
+                #self.set_color( 'SwitchOffAttributes' )
         
                 if self.lock:
                         self.DispLock.release()

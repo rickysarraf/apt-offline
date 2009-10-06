@@ -66,7 +66,7 @@ PythonApt = False #Remove it after porting to python-apt
     
 import AptOfflineLib
 
-#INFO: Set the default timeout to 15 seconds for the packages that are being downloaded.
+#INFO: Set the default timeout to 30 seconds for the packages that are being downloaded.
 socket.setdefaulttimeout(30)
 
 # How many times should we retry on socket timeouts
@@ -77,7 +77,7 @@ figuring out if the packages are in the local cache, handling exceptions and man
 
 
 app_name = "apt-offline"
-version = "0.9.0"
+version = "0.9.3"
 copyright = "(C) 2005 - 2009 Ritesh Raj Sarraf"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
@@ -85,7 +85,8 @@ the GNU GPL License\n"
         
 errlist = []
 supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
-apt_update_target_path = '/var/lib/apt/lists/'
+apt_update_target_path = '/var/lib/apt/lists/partial'
+apt_update_final_path = '/var/lib/apt/lists/'
 apt_package_target_path = '/var/cache/apt/archives/'
 
 apt_bug_file_format = "__apt__bug__report"
@@ -446,28 +447,32 @@ def fetcher( args ):
                 import tempfile
                 tempdir = tempfile.gettempdir()
                 if os.access( tempdir, os.W_OK ) is True:
-                        download_path = tempdir
+                        pidname = os.getpid()
+                        tempdir = os.path.join(tempdir , "apt-offline-downloads-" + str(pidname) )
+                        os.mkdir(tempdir)
+                                
+                        Str_DownloadDir = os.path.abspath(tempdir)
                 else:
                         log.err( "%s is not writable\n" % (tempdir) ) 
                         errfunc ( 1, '')
         else:
                 if os.access( Str_DownloadDir, os.W_OK ) is True:
-                        download_path = os.path.abspath( Str_DownloadDir )
+                        Str_DownloadDir = os.path.abspath( Str_DownloadDir )
                 else:
                         #INFO: If the path is provided, but doesn't exist
                         # Create it.
                         try:
                                 os.umask( 0002 )
                                 os.mkdir( Str_DownloadDir )
-                                download_path = os.path.abspath( Str_DownloadDir )
+                                Str_DownloadDir = os.path.abspath( Str_DownloadDir )
                         except:
                                 log.err( "I couldn't create directory %s\n" % (Str_DownloadDir) )
                                 errfunc( 1, '' )
                                 
         if Str_BundleFile is not None:
-                bundle_file = os.path.join( os.path.abspath( download_path ), Str_BundleFile ) 
-                if os.access( bundle_file, os.F_OK ):
-                        log.err( "%s already present.\nRemove it first.\n" % ( bundle_file ) )
+                Str_BundleFile = os.path.abspath(Str_BundleFile)
+                if os.access(Str_BundleFile, os.F_OK ):
+                        log.err( "%s already present.\nRemove it first.\n" % ( Str_BundleFile ) )
                         sys.exit( 1 )
         
         if Bool_BugReports:
@@ -475,7 +480,7 @@ def fetcher( args ):
                         if Str_BundleFile is not None:
                                 #INFO: We are creating an archive then.
                                 # For now, we support zip archives
-                                FetchBugReportsDebian = FetchBugReports( apt_bug_file_format, IgnoredBugTypes, bundle_file, lock=True )
+                                FetchBugReportsDebian = FetchBugReports( apt_bug_file_format, IgnoredBugTypes, Str_BundleFile, lock=True )
                         else:
                                 #INFO: No bundle file to be created.
                                 # Data will be stored in the Str_DownloadDir folder
@@ -523,6 +528,7 @@ def fetcher( args ):
                         #INFO: Everything
                         (url, file, download_size, checksum) = stripper(item)
                         thread_name = threading.currentThread().getName()
+                        log.verbose("Thread is %s\n" % (thread_name) )
                         
                         if url.endswith(".deb"):
                                 try:
@@ -565,22 +571,22 @@ def fetcher( args ):
                                                         # along with the downloaded bug reports.
                                                         else:
                                                                 try:
-                                                                        shutil.copy(full_file_path, download_path)
+                                                                        shutil.copy(full_file_path, Str_DownloadDir)
                                                                         log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
                                                                 except shutil.Error:
-                                                                        log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (file, download_path, LINE_OVERWRITE_MID) )
+                                                                        log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (file, Str_DownloadDir, LINE_OVERWRITE_MID) )
                                                                 
                                                                 if bug_fetched == 1:
                                                                         for x in os.listdir(os.curdir):
                                                                                 if (x.startswith(PackageName) and x.endswith(apt_bug_file_format) ):
-                                                                                        shutil.move(x, download_path)
-                                                                                        log.verbose("Moved %s file to %s folder.%s\n" % (x, download_path, LINE_OVERWRITE_FULL) )
+                                                                                        shutil.move(x, Str_DownloadDir)
+                                                                                        log.verbose("Moved %s file to %s folder.%s\n" % (x, Str_DownloadDir, LINE_OVERWRITE_FULL) )
                                                 #INFO: Damn!! The md5chesum didn't match :-(
                                                 # The file is corrupted and we need to download a new copy from the internet
                                                 else:
                                                         log.verbose("%s checksum mismatch. Skipping file.%s\n" % (file, LINE_OVERWRITE_FULL) )
                                                         log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
-                                                        if FetcherInstance.download_from_web(url, file, download_path) == True:
+                                                        if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
                                                                 log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                                 
                                                                 #Add to Str_CacheDir if possible
@@ -606,7 +612,7 @@ def fetcher( args ):
                                                                                 sys.exit( 1 )
                                                                         else:
                                                                                 log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                                os.unlink( os.path.join( download_path, file ) )
+                                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
                                         #INFO: You're and idiot.
                                         # You should NOT disable md5checksum for any files
                                         else:
@@ -629,11 +635,11 @@ def fetcher( args ):
                                                                 sys.exit( 1 )
                                                         else:
                                                                 log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                os.unlink( os.path.join( download_path, file ) )
+                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
                                                 else:
                                                         # Since zip file option is not enabled let's copy the file to the target folder
                                                         try:
-                                                                shutil.copy( full_file_path, download_path )
+                                                                shutil.copy( full_file_path, Str_DownloadDir )
                                                                 log.success( "%s copied from local cache directory %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_SMALL ) )
                                                         except shutil.Error:
                                                                 log.verbose( "%s already available in dest_dir. Skipping copy!!!%s\n" % ( file, LINE_OVERWRITE_SMALL ) )
@@ -642,15 +648,15 @@ def fetcher( args ):
                                                         if bug_fetched == 1:
                                                                 for x in os.listdir( os.curdir ):
                                                                         if ( x.startswith( PackageName ) and x.endswith( apt_bug_file_format ) ):
-                                                                                shutil.move( x, download_path )
-                                                                                log.verbose( "Moved %s file to %s folder.%s\n" % ( x, download_path, LINE_OVERWRITE_MID ) )
+                                                                                shutil.move( x, Str_DownloadDir )
+                                                                                log.verbose( "Moved %s file to %s folder.%s\n" % ( x, Str_DownloadDir, LINE_OVERWRITE_MID ) )
                                         
                                 else:
                                         #INFO: This block gets executed if the file is not found in local Str_CacheDir or Str_CacheDir is None
                                         # We go ahead and try to download it from the internet
                                         log.verbose( "%s not available in local cache %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
                                         log.msg( "Downloading %s %s - %s %s\n" % ( PackageName, PackageVersion, log.calcSize( download_size / 1024 ), LINE_OVERWRITE_MID ) )
-                                        if FetcherInstance.download_from_web( url, file, download_path ) == True:
+                                        if FetcherInstance.download_from_web( url, file, Str_DownloadDir ) == True:
                                                 #INFO: This block gets executed if md5checksum is allowed
                                                 if Bool_DisableMD5Check is False:
                                                         #INFO: Debian moved to SHA256. So we use that now. Older systems could have md5
@@ -678,7 +684,7 @@ def fetcher( args ):
                                                                                 sys.exit( 1 )
                                                                         else:
                                                                                 log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                                os.unlink( os.path.join( download_path, file ) )
+                                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
                                                         else:
                                                                 #INFO MD5 Checksum is incorrect.
                                                                 log.err( "%s MD5 Checksum mismatch.\n" % ( PackageName ) )
@@ -697,7 +703,7 @@ def fetcher( args ):
                                                                         sys.exit( 1 )
                                                                 else:
                                                                         log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                        os.unlink( os.path.join( download_path, file ) )
+                                                                        os.unlink( os.path.join( Str_DownloadDir, file ) )
                                             
                                                 log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
                                         else:
@@ -718,7 +724,7 @@ def fetcher( args ):
                                 exit_status = response.get()
                                 if exit_status == False:
                                         log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
-                                        if FetcherInstance.download_from_web(url, file, download_path) == True:
+                                        if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
                                                 log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                 if Str_BundleFile:
                                                         if FetcherInstance.compress_the_file(Str_BundleFile, file) != True:
@@ -726,7 +732,7 @@ def fetcher( args ):
                                                                 sys.exit(1)
                                                         else:
                                                                 log.verbose("%s added to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_FULL) )
-                                                                os.unlink(os.path.join(download_path, file) )
+                                                                os.unlink(os.path.join(Str_DownloadDir, file) )
                                         else:
                                                 errlist.append(url)
                         else:
@@ -766,18 +772,55 @@ def fetcher( args ):
         for t in thread_pool: t.join()
                 
         # Print the failed files
-        if len(errlist) == 0:
-                log.msg("\nAll files have been downloaded.\n")
-        else:
-                log.err("\n\nThe following files failed to be downloaded.\n")
+        if len(errlist) > 0:
+                log.msg("\n\n")
+                log.err("The following files failed to be downloaded.\n")
                 for error in errlist:
                         log.err("%s failed.\n" % (error))
+        if args.bundle_file:
+                log.msg("\nDownloaded data to %s\n" % (Str_BundleFile) )
+        else:
+                log.msg("\nDownloaded data to %s\n" % (Str_DownloadDir) )
         
 def installer( args ):
+        
+        class APTVerifySigs():
+                
+                def __init__(self, gpgv=None, keyring=None):
+                        if gpgv is None:
+                                self.gpgv="/usr/bin/gpgv"
+                        else:
+                                self.gpgv=gpgv
+                                
+                        if keyring is None:
+                                self.opts="--keyring /etc/apt/trusted.gpg --ignore-time-conflict"
+                        else:
+                                self.opts = "--keyring %s --ignore-time-conflict" % (keyring)
+                                
+                def VerifySig(self, signature_file, signed_file):
+                        
+                        if not os.access(signature_file, os.F_OK):
+                                log.err("%s is bad. Can't proceed.\n" % (signature_file) )
+                                return False
+                        if not os.access(signed_file, os.F_OK):
+                                log.err("%s is bad. Can't proceed.\n" % (signed_file) )
+                                return False
+                        
+                        x = os.system("%s %s %s %s" % (self.gpgv, self.opts, signature_file, signed_file) )
+                        #TODO: Find a way to redirect std[out|err]
+                        # look at subprocess module
+                        
+                        if x == 0:
+                                return True
+                        else:
+                                return False
+                
         
         # install opts
         Str_InstallArg = args.install
         Bool_TestWindows = args.test_windows
+        Bool_SkipBugReports = args.skip_bug_reports
+        Bool_Untrusted = args.allow_unauthenticated
         
         # Old cruft. Needs clean-up
         install_file_path = Str_InstallArg
@@ -796,6 +839,17 @@ def installer( args ):
                                 
         archive = AptOfflineLib.Archiver()
         archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
+        
+        if not Bool_Untrusted:
+                AptSecure = APTVerifySigs()
+                
+        #INFO: Let's clean the partial database
+        for x in os.listdir(apt_update_target_path):
+                x = os.path.join(apt_update_target_path, x)
+                if os.access(x, os.W_OK):
+                        os.unlink(x)
+                        log.verbose("Cleaning old update data file %s.\n" % (x) )
+                
         
         def display_options():
                 log.msg( "(Y) Yes. Proceed with installation\n" )
@@ -825,20 +879,21 @@ def installer( args ):
                 elif AptOfflineMagicLib.file( archive_file ) == "application/zip":
                         retval = archive.decompress_the_file( os.path.join( install_file_path, eachfile ), apt_update_target_path, eachfile, "zip" )
                 elif AptOfflineMagicLib.file( archive_file ) == "PGP armored data":
-                    #TODO: Integrate it to apt-key
-                    # We should handle update signatures using apt-key interface or
-                    # similar ones
-                    pass
+                        filename = os.path.join(apt_update_target_path, filename)
+                        shutil.copy2(archive_file, filename)
                 elif AptOfflineMagicLib.file( archive_file ) == "application/x-dpkg":
+                        filename = os.path.join(apt_package_target_path, filename)
                         if os.access( apt_package_target_path, os.W_OK ):
-                                shutil.copy( archive_file, apt_package_target_path + filename )
+                                shutil.copy( archive_file, filename )
+                                log.msg("%s file synced.\n" % (filename) )
                                 retval = True
                         else:
                                 log.err( "Cannot write to target path %s\n" % ( apt_package_target_path ) )
                                 sys.exit( 1 )
                 elif AptOfflineMagicLib.file( archive_file ) == "ASCII text":
+                        filename = os.path.join(apt_update_target_path, filename)
                         if os.access( apt_update_target_path, os.W_OK ):
-                                shutil.copy( archive_file, apt_update_target_path + filename )
+                                shutil.copy( archive_file, filename )
                                 retval = True
                         else:
                                 log.err( "Cannot write to target path %s\n" % ( apt_update_target_path ) )
@@ -849,26 +904,29 @@ def installer( args ):
                         log.err( "I couldn't understand file type %s.\n" % ( filename ) )
                 
                 if retval:
-                        log.msg( "%s file synced.\n" % ( filename ) )
+                        log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
         
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
                 file = zipfile.ZipFile( install_file_path, "r" )
                 #if bug_parse_required is True:
                 bugs_number = {}
-                for filename in file.namelist():
-                        if filename.endswith( apt_bug_file_format ):
-                                temp = tempfile.NamedTemporaryFile()
-                                temp.file.write( file.read( filename ) )
-                                temp.file.flush()
-                                temp.file.seek( 0 ) #Let's go back to the start of the file
-                                for bug_subject_identifier in temp.file.readlines():
-                                        if bug_subject_identifier.startswith( '#' ):
-                                                subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
-                                                subject = subject.rstrip( "\n" )
-                                                break
-                                bugs_number[filename] = subject
-                                temp.file.close()
+                if Bool_SkipBugReports:
+                        log.verbose("Skipping bug report check as requested")
+                else:
+                        for filename in file.namelist():
+                                if filename.endswith( apt_bug_file_format ):
+                                        temp = tempfile.NamedTemporaryFile()
+                                        temp.file.write( file.read( filename ) )
+                                        temp.file.flush()
+                                        temp.file.seek( 0 ) #Let's go back to the start of the file
+                                        for bug_subject_identifier in temp.file.readlines():
+                                                if bug_subject_identifier.startswith( '#' ):
+                                                        subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
+                                                        subject = subject.rstrip( "\n" )
+                                                        break
+                                        bugs_number[filename] = subject
+                                        temp.file.close()
                 if bugs_number:
                         # Display the list of bugs
                         list_bugs()
@@ -934,11 +992,13 @@ def installer( args ):
                         #       sys.exit( 0 )
                                 
         elif os.path.isdir(install_file_path):
-                archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
                 bugs_number = []
-                for filename in os.listdir( install_file_path ):
-                        if filename.endswith( apt_bug_file_format ):
-                                bugs_number.append( filename )
+                if Bool_SkipBugReports:
+                        log.verbose("Skipping bug report check as requested")
+                else:
+                        for filename in os.listdir( install_file_path ):
+                                if filename.endswith( apt_bug_file_format ):
+                                        bugs_number.append( filename )
                 if bugs_number:
                         #Give the choice to the user
                         list_bugs()
@@ -994,6 +1054,41 @@ def installer( args ):
                         #else:
                         #        log.msg( "Exiting gracefully on user request.\n" )
                         #        sys.exit( 0 )
+        if Bool_Untrusted:
+                log.err("Disabling apt gpg check can risk your machine to compromise.\n")
+                for x in os.listdir(apt_update_target_path):
+                        x = os.path.join(apt_update_target_path, x)
+                        shutil.copy2(x, apt_update_final_path) # Do we do a move ??
+                        log.verbose("%s %s\n" % (x, apt_update_final_path) )
+                        log.msg("%s synced.\n" % (x) )
+        else:
+                lFileList= os.listdir(apt_update_target_path)
+                lFileList.sort()
+                lVerifiedWhitelist = []
+                for file in lFileList:
+                        file = os.path.join(apt_update_target_path, file)
+                        if file.endswith('.gpg'):
+                                log.verbose("%s\n" % (file) )
+                                file = os.path.abspath(file)
+                                if AptSecure.VerifySig(file, file.rstrip(".gpg") ):
+                                        file = file.rstrip("Release.gpg")
+                                        file = file[:-1] #Remove the trailing _ underscore
+                                        file = file.split("/")[-1]
+                                        lVerifiedWhitelist.append(file)
+                                        log.verbose("%s is gpg clean\n" % (file) )
+                                else:
+                                        # Bad sig.
+                                        log.err("%s bad signature. Not syncing because in strict mode.\n" % (file) )
+                if lVerifiedWhitelist != []:
+                        print lVerifiedWhitelist
+                        for whitelist_item in lVerifiedWhitelist:
+                                for final_item in lFileList:
+                                        #print whitelist_item, final_item
+                                        if whitelist_item in final_item:
+                                                final_item = os.path.join(apt_update_target_path, final_item)
+                                                shutil.copy2(final_item, apt_update_final_path)
+                                                log.msg("%s synced.\n" % (final_item) )
+                        
 
 def setter(args):
         Str_SetArg = args.set
@@ -1160,25 +1255,29 @@ def main():
         Contains most of the variables that are required by the application to run.
         Also does command-line option parsing and variable validation.'''
         
-        parser = argparse.ArgumentParser( prog=app_name, version=app_name + " - " + version,
-                                          description="Offline APT Package Manager",
-                                          epilog=copyright + " - " + terminal_license)
+        # INFO: One way to handle global options in argparse so that they are available to 
+        # subparsers also
         
         # Global options
-        parser.add_argument("--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
-        parser.add_argument("--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.",
+        global_options = argparse.ArgumentParser(add_help=False)
+        global_options.add_argument("--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
+        global_options.add_argument("--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.",
                             action="store_true" )
+        
+        parser = argparse.ArgumentParser( prog=app_name, version=app_name + " - " + version,
+                                          description="Offline APT Package Manager",
+                                          epilog=copyright + " - " + terminal_license, parents=[global_options])
         
         # We need subparsers for set/get/install
         subparsers = parser.add_subparsers()
         
         # SET command options
         #
-        parser_set = subparsers.add_parser('set')
+        parser_set = subparsers.add_parser('set', parents=[global_options])
         parser_set.set_defaults(func=setter)
         
         parser_set.add_argument('set',
-                          help="Generat a signature file",
+                          help="Generate a signature file",
                           action="store", type=str, metavar="apt-offline.sig",
                           default="apt-offline.sig")
         
@@ -1201,7 +1300,7 @@ def main():
         
         
         # GET command options
-        parser_get = subparsers.add_parser('get')
+        parser_get = subparsers.add_parser('get', parents=[global_options])
         
         #INFO: When get option is called, call the fetcher() function
         parser_get.set_defaults(func=fetcher)
@@ -1212,10 +1311,10 @@ def main():
                           default="apt-offline.sig")
         
         parser_get.add_argument("--socket-timeout", dest="socket_timeout", help="Set Socket Timeout",
-                          action="store", type=int, metavar="30", default=30)
+                        action="store", type=int, metavar="30", default=30)
         
         parser_get.add_argument("-d", "--download-dir", dest="download_dir",
-                          help="Folder path to save files", action="store",
+                          help="Folder path to save files to", action="store",
                           type=str, metavar="apt-downloads")
         
         parser_get.add_argument("-s", "--cache-dir", dest="cache_dir",
@@ -1236,16 +1335,22 @@ def main():
                           help="Fetch bug reports from the BTS", action="store_true" )
         
         # INSTALL command options
-        parser_install = subparsers.add_parser('install')
+        parser_install = subparsers.add_parser('install', parents=[global_options])
         parser_install.set_defaults(func=installer)
         
         parser_install.add_argument('install',
                           help="Install apt-offline data",
                           action="store", type=str, metavar="apt-offline-bundle.zip",
                           default="apt-offline-bundle.zip")
+
+        parser_install.add_argument("--skip-bug-reports", dest="skip_bug_reports",
+                        help="Skip the bug report check", action="store_true")
+        
+        parser_install.add_argument("--allow-unauthenticated", dest="allow_unauthenticated",
+                                    help="Ignore apt gpg signatures mismatch", action="store_true")
         
         # GUI options
-        parser_gui = subparsers.add_parser('gui')
+        parser_gui = subparsers.add_parser('gui', parents=[global_options])
         parser_gui.set_defaults(func=gui)
         parser_gui.add_argument('gui', help="Run apt-offline in Graphical mode", action="store_true")
         
@@ -1268,7 +1373,7 @@ def main():
                         
         	global log
         	log = AptOfflineLib.Log( Bool_Verbose, lock=True )
-        	log.verbose(str(args + "\n"))
+        	log.verbose(str(args) + "\n")
         
         	args.func(args)
             
