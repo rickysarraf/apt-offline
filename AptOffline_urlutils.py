@@ -31,7 +31,7 @@ import socket
 import commands
 import os
 import sys
-from reportbug_exceptions import *
+from AptOffline_reportbug_exceptions import *
 try:
     import webbrowser
 except:
