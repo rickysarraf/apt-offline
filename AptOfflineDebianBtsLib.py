@@ -25,7 +25,7 @@
 # $Id: debianbts.py,v 1.24.2.7 2006/10/16 17:14:03 lawrencc Exp $
 
 import sgmllib, glob, os, re, rfc822, time, urllib
-from urlutils import open_url
+from AptOffline_urlutils import open_url
 import sys
 
 import mailbox
