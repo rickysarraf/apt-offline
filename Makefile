@@ -6,3 +6,4 @@ gui:
 	
 clean:
 	rm -f AptOfflineGUI.py
+	rm -f *.pyc
