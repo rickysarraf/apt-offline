@@ -1183,12 +1183,12 @@ def setter(args):
                                         os.environ['__apt_set_upgrade'] = Str_SetArg
                                         if os.system( '/usr/bin/apt-get -qq --print-uris upgrade >> $__apt_set_upgrade' ) != 0:
                                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
-                        elif options.upgrade_type == "dist-upgrade":
+                        elif Str_SetUpgradeType == "dist-upgrade":
                                 log.msg( "\nGenerating database of files that are needed for a dist-upgrade.\n" )
                                 os.environ['__apt_set_upgrade'] = Str_SetArg
                                 if os.system( '/usr/bin/apt-get -qq --print-uris dist-upgrade >> $__apt_set_upgrade' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
-                        elif options.upgrade_type == "dselect-upgrade":
+                        elif Str_SetUpgradeType == "dselect-upgrade":
                                 log.msg( "\nGenerating database of files that are needed for a dselect-upgrade.\n" )
                                 os.environ['__apt_set_upgrade'] = Str_SetArg
                                 if os.system( '/usr/bin/apt-get -qq --print-uris dselect-upgrade >> $__apt_set_upgrade' ) != 0:
