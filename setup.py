@@ -40,7 +40,7 @@ distutils.core.setup(
     py_modules=['AptOfflineCoreLib',
             'AptOfflineDebianBtsLib',
 #            'AptOfflineFetchBugs.py',
-            'AptOfflineGUI',
+#            'AptOfflineGUI',
             'AptOfflineLib',
             'AptOfflineMagicLib',
             'reportbug_exceptions',
