@@ -1183,12 +1183,12 @@ def setter(args):
                                         os.environ['__apt_set_upgrade'] = Str_SetArg
                                         if os.system( '/usr/bin/apt-get -qq --print-uris upgrade >> $__apt_set_upgrade' ) != 0:
                                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
-                        elif options.upgrade_type == "dist-upgrade":
+                        elif Str_SetUpgradeType == "dist-upgrade":
                                 log.msg( "\nGenerating database of files that are needed for a dist-upgrade.\n" )
                                 os.environ['__apt_set_upgrade'] = Str_SetArg
                                 if os.system( '/usr/bin/apt-get -qq --print-uris dist-upgrade >> $__apt_set_upgrade' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
-                        elif options.upgrade_type == "dselect-upgrade":
+                        elif Str_SetUpgradeType == "dselect-upgrade":
                                 log.msg( "\nGenerating database of files that are needed for a dselect-upgrade.\n" )
                                 os.environ['__apt_set_upgrade'] = Str_SetArg
                                 if os.system( '/usr/bin/apt-get -qq --print-uris dselect-upgrade >> $__apt_set_upgrade' ) != 0:
@@ -1321,7 +1321,7 @@ def main():
                           help="Cache folder to search for",
                           action="store", type=str, metavar=".")
         
-        parser_get.add_argument("--no-check", dest="disable_md5check",
+        parser_get.add_argument("--no-checksum", dest="disable_md5check",
                           help="Do not validate checksum of downloaded files",
                           action="store_true")
         
@@ -1339,9 +1339,8 @@ def main():
         parser_install.set_defaults(func=installer)
         
         parser_install.add_argument('install',
-                          help="Install apt-offline data",
-                          action="store", type=str, metavar="apt-offline-bundle.zip",
-                          default="apt-offline-bundle.zip")
+                          help="Install apt-offline data, a bundle file or a directory",
+                          action="store", type=str, metavar="apt-offline-download.zip | apt-offline-download/")
 
         parser_install.add_argument("--skip-bug-reports", dest="skip_bug_reports",
                         help="Skip the bug report check", action="store_true")

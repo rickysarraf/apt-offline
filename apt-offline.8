@@ -1,0 +1,159 @@
+.TH apt-offline 8 "October, 2009" "version 0.9.4" "USER COMMANDS"
+.SH NAME
+apt-offline \- Offline APT Package manager
+.SH SYNOPSIS
+.B apt-offline
+[ARGUMENTS] [OPTIONS]
+
+.SH DESCRIPTION
+apt-offline is an Offline Package Manager for Debian based systems. It bring offline package management functionality.
+It can download the required packages for a disconnected machine from a different connected machine
+.PP
+It can also fetch bug reports for packages which are downloaded.
+.PP
+Unless the \-h or \-\-help option is given, one of the arguments below must be present.
+
+.SS set [-h] [--install-packages [PKG [PKG ...]]] [--release release_name] [--update] [--upgrade] [--upgrade-type upgrade] apt-offline.sig
+
+.PP
+.B set
+Generate a signautre file for the data to be required.
+
+.B FILENAME {apt-offline.sig}
+is the signature file generated on the machine. This file will contain all the details required for apt.
+
+.IP "\fB\-\-install\-packages [PKG [PKG ...]]\fP" 10
+Packages that need to be installed
+
+.IP "\fB\-\-release release_name\fP" 10
+Release target to install packages from
+
+.IP "\fB\-\-update\fP" 10
+Generate APT Database update signature. This is the equivalent of using
+.B "apt-get update"
+
+.IP "\fB\-\-upgrade\fP" 10
+Generate APT Database package upgrade signature. This is the equivalent of using
+.B "apt-get upgrade"
+
+.IP "\fB\-\-upgrade\-type {upgrade_type}\fP" 10
+Type of upgrade you would like to perform. Defaults to
+.B "upgrade".
+Other valid types are
+.B "dist-upgrade" and "dselect-upgrade"
+
+
+
+.SS get [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] apt-offline.sig
+
+.PP
+.B get
+Download APT data
+
+.B FILENAME {apt-offline.sig}
+is the signature file required for details about data to be downloaded. This file will contain all the details required for apt.
+
+.IP "\fB\-d, \-\-download\-dir DIR_NAME\fP" 10
+Download data to the specified DIR_NAME folder. If no folder name is specified, data is downloaded to a folder in the TEMPDIR path in the format
+.B apt-offline-download-$PID
+
+.IP "\fB\-s, \-\-cache\-dir DIR_NAME\fP" 10
+Look for data in the cache before downloading it from the internet. If you are on a Debian box, you would want to specify
+.I /var/cache/apt/archives
+here. If the data is not available in the cache, the downloaded data is also copied to the cache.
+
+.IP "\fB\-\-no\-checksum\fP" 10
+Enabling this option will bypass the checksum verification of each downloaded file thus losing integrity of the package. Usage of this option is highly discouraged
+
+.IP "\fB\-t, \-\-threads NUM_OF_THREADS\fP" 10
+Number of threads to spawn for downloads. Default is 1. Using too many threads can overload the servers, hence it is advisable to keep the number low
+
+.IP "\fB\-\-bundle FILENAME\fP" 10
+Create an archive file FILENAME. The file is archived in zip format.
+
+.IP "\fB\-\-bug\-reports\fP" 10
+Download bug reports for packages that are being downloaded. Currently only support the Debian BTS
+
+
+
+.SS install [-h] [--skip-bug-reports ] [--allow-unauthenticated] FILE/FOLDER
+
+.PP
+.B install
+Install APT data
+
+.B FILE {archive_bundle_file}
+Install data from the archive (bundle) file.
+
+.B FOLDER
+Install data from the folder path.
+
+Either FILE or FOLDER argument can be provided to the
+.B install
+command.
+
+.IP "\fB\-\-skip\-bug\-reports\fP" 10
+Skip listing of downloaded bug reports, if any.
+
+.IP "\fB\-\-allow\-unauthenticated\fP" 10
+Don't verify GPG signatures for the data to be installed to APT. Usage of this option is highly discouraged.
+
+
+.SH GLOBAL OPTIONS
+.TP
+\-h, \-\-help
+Show help message
+
+.TP
+\-\-verbose
+Run in verbose mode
+
+.TP
+\-\-test\-windows
+Developer only. Used for testing on windows
+
+.TP
+\-v, \-\-version
+Display the version of the progream
+
+
+.SH EXAMPLES
+.TP
+.B To keep your disconnected machine  up-to-date, here are the examples
+
+.TP
+.B apt-offline set FILENAME
+This command will generate a signature file FILENAME for APT Package Database.
+To generate only the signature for updates, use the \-\-update option
+To generate only the signature for package upgrades, use the \-\-upgrade option
+Default behavior, when no options are specified, is to generate signature for both the operations.
+
+.TP
+.B apt-offline get FILENAME
+This command will fetch the data required for APT Package Database against the signature file FILENAME.
+To download bug reports also, the \-\-bug\-reports option needs to be used. Currently supported bug tracker is Debian BTS only.
+By default, if neither \-d not \-\-bundle option is specified, apt-offline downloads data into a folder inside the TEMPDIR environment folder in the format apt\-offline\-downloads\-PID, where PID is the PID of the running apt\-offline process. Example on a linux machine would be something like: /tmp/apt-offline-downloads-23242/
+
+.TP
+.B apt-offline install FILE|FOLDER
+This command will sync the data to the APT Package Database and update it.
+Depending on what format the data was downloaded, either the archive FILE or the absolute FOLDER path can be specified.
+
+
+.SH AUTHOR
+.B apt-offline is written by Ritesh Raj Sarraf (rrs@researchut.com)
+
+.SH BUGS
+Currently there is no way to break out from the application while it is fetching the required data.
+This is more a python gil problem. Google python + gil for more details
+
+If you wish to report a bug in apt-offline, please see 
+.B http://apt-offline.alioth.debian.org
+or send an email to me at
+.B rrs@researchut.com
+
+.SH SEE ALSO
+apt-get(8)
+apt-cache(8)
+dpkg(8)
+aptitude(8)
