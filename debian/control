@@ -1,0 +1,29 @@
+Source: apt-offline
+Section: utils
+Priority: extra
+Maintainer: Ritesh Raj Sarraf <rrs@researchut.com>
+Build-Depends: debhelper (>= 7), python
+Build-Depends-Indep: python-support
+Standards-Version: 3.8.3
+XS-Python-Version: >=2.4
+Homepage: http://apt-offline.alioth.debian.org
+Vcs-Git: git://git.debian.org/apt-offline/apt-offline.git
+Vcs-Browser: http://git.debian.org/?p=apt-offline/apt-offline.git
+
+Package: apt-offline
+Architecture: all
+Depends: ${python:Depends}, python-argparse, python
+XB-Python-Version: ${python:Versions}
+Description: offline apt package manager
+ apt-offline is an Offline APT Package Manager
+ .
+ apt-offline can fully update and upgrade an APT based
+ distribution without connecting to the network, all 
+ transparent to apt
+ .
+ apt-offline is cross platform and can be run on all
+ major platform to download the packages without the user
+ worrying about package dependencies
+ .
+ apt-offline can also fetch bug reports and make them available
+ offline

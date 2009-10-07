@@ -1,0 +1,7 @@
+apt-offline for Debian
+----------------------
+
+apt-offline was designed for distributions using APT (Advanced Packaging Tool)
+and thus should work with distributions like Ubuntu also
+
+ -- Ritesh Raj Sarraf <rrs@researchut.com>  Wed, 23 Sep 2009 13:33:26 +0530

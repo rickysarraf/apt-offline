@@ -1,0 +1,23 @@
+This work was packaged for Debian by:
+
+    Ritesh Raj Sarraf <rrs@researchut.com> on Wed, 23 Sep 2009 13:33:26 +0530
+
+It was downloaded from http://apt-offline.alioth.debian.org
+
+Upstream Author:
+
+    Ritesh Raj Sarraf <rrs@researchut.com>
+
+Copyright:
+
+    Copyright (C) 2009 Ritesh Raj Sarraf
+
+License:
+
+    <Put the license of the package here indented by 4 spaces>
+
+The Debian packaging is:
+
+    Copyright (C) 2009 Ritesh Raj Sarraf <rrs@researchut.com>
+    and is licensed under the GPL version 3, 
+    see `/usr/share/common-licenses/GPL-3'.
