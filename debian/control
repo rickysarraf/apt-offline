@@ -1,6 +1,6 @@
 Source: apt-offline
-Section: utils
-Priority: extra
+Section: admin
+Priority: optional
 Maintainer: Ritesh Raj Sarraf <rrs@researchut.com>
 Build-Depends: debhelper (>= 7), python
 Build-Depends-Indep: python-support
@@ -18,12 +18,12 @@ Description: offline apt package manager
  apt-offline is an Offline APT Package Manager
  .
  apt-offline can fully update and upgrade an APT based
- distribution without connecting to the network, all 
+ distribution without connecting to the network, all of it
  transparent to apt
  .
  apt-offline is cross platform and can be run on all
- major platform to download the packages without the user
- worrying about package dependencies
+ major platforms to download the packages without the user
+ having to worry about package dependencies
  .
  apt-offline can also fetch bug reports and make them available
  offline
