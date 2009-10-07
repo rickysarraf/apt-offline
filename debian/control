@@ -5,7 +5,7 @@ Maintainer: Ritesh Raj Sarraf <rrs@researchut.com>
 Build-Depends: debhelper (>= 7), python
 Build-Depends-Indep: python-support
 Standards-Version: 3.8.3
-XS-Python-Version: >=2.4
+XS-Python-Version: >=2.5
 Homepage: http://apt-offline.alioth.debian.org
 Vcs-Git: git://git.debian.org/apt-offline/apt-offline.git
 Vcs-Browser: http://git.debian.org/?p=apt-offline/apt-offline.git
