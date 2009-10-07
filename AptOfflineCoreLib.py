@@ -784,7 +784,7 @@ def fetcher( args ):
         
 def installer( args ):
         
-        class APTVerifySigs():
+        class APTVerifySigs:
                 
                 def __init__(self, gpgv=None, keyring=None):
                         if gpgv is None:
