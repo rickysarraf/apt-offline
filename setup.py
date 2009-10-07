@@ -13,8 +13,8 @@ import AptOfflineDebianBtsLib
 #import AptOfflineGUI
 import AptOfflineLib
 import AptOfflineMagicLib
-import reportbug_exceptions
-import urlutils
+import AptOffline_reportbug_exceptions
+import AptOffline_urlutils
 
 distutils.core.setup(
     name='apt-offline',
@@ -43,7 +43,7 @@ distutils.core.setup(
 #            'AptOfflineGUI',
             'AptOfflineLib',
             'AptOfflineMagicLib',
-            'reportbug_exceptions',
-            'urlutils',],
+            'AptOffline_reportbug_exceptions',
+            'AptOffline_urlutils',],
     scripts=['apt-offline'],
 )
