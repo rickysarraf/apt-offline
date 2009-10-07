@@ -1339,9 +1339,8 @@ def main():
         parser_install.set_defaults(func=installer)
         
         parser_install.add_argument('install',
-                          help="Install apt-offline data",
-                          action="store", type=str, metavar="apt-offline-bundle.zip",
-                          default="apt-offline-bundle.zip")
+                          help="Install apt-offline data, a bundle file or a directory",
+                          action="store", type=str, metavar="apt-offline-download.zip | apt-offline-download/")
 
         parser_install.add_argument("--skip-bug-reports", dest="skip_bug_reports",
                         help="Skip the bug report check", action="store_true")
