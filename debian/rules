@@ -28,6 +28,7 @@ binary-indep: build install
 	dh_testroot
 	dh_installdocs
 	dh_installchangelogs
+	dh_installman apt-offline.1
 	dh_pysupport
 	dh_compress -Xexamples
 	dh_fixperms
