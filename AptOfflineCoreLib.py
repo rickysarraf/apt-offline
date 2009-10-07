@@ -1321,7 +1321,7 @@ def main():
                           help="Cache folder to search for",
                           action="store", type=str, metavar=".")
         
-        parser_get.add_argument("--no-check", dest="disable_md5check",
+        parser_get.add_argument("--no-checksum", dest="disable_md5check",
                           help="Do not validate checksum of downloaded files",
                           action="store_true")
         
