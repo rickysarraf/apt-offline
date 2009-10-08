@@ -2,7 +2,7 @@
 
 # Copyright © 2009 Ritesh Raj Sarraf <rrs@researchut.com>
 #
-# Licensed under the GNU General Public License v3
+# Licensed under the GNU General Public License v2 and later
 
 import textwrap
 import distutils.core
