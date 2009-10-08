@@ -144,8 +144,9 @@ Depending on what format the data was downloaded, either the archive FILE or the
 .B apt-offline is written by Ritesh Raj Sarraf (rrs@researchut.com)
 
 .SH BUGS
-Currently there is no way to break out from the application while it is fetching the required data.
-This is more a python gil problem. Google python + gil for more details
+Signal hanling is executed only in the Main Thread, thus leading to CTRL + C not exiting during the
+.B get
+operation. This is more a python gil problem. Google python + gil for more details
 
 If you wish to report a bug in apt-offline, please see 
 .B http://apt-offline.alioth.debian.org
