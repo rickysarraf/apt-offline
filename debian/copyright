@@ -11,13 +11,62 @@ Upstream Author:
 Copyright:
 
     Copyright (C) 2009 Ritesh Raj Sarraf <rrs@researchut.com>
+    Copyright (C) 2009 Steven J. Bethard <steven.bethard@gmail.com>
+    Copyright (C) 2006 Chris Lawrence <lawrencec@debian.org>
+    Copyright (C) 2000 Jason Petrone <jp_py@demonseed.net>
 
 License:
 
-    <Put the license of the package here indented by 4 spaces>
+    This package is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This package is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this package; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+
 
 The Debian packaging is:
 
     Copyright (C) 2009 Ritesh Raj Sarraf <rrs@researchut.com>
-    and is licensed under the GPL version 3, 
-    see `/usr/share/common-licenses/GPL-3'.
+    and is licensed under the GPL version 2 or later, 
+    see `/usr/share/common-licenses/GPL-2'.
+
+AptOffline_argparse.py is license under:
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy
+    of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations
+    under the License.
+
+    On Debian, the full license can be seen at
+    `/usr/share/common-licenses/Apache-2.0`
+
+AptOfflineDebianBtsLib.py, AptOffline_urlutils.py and AptOffline_reportbug_exceptions.py
+are licensed under the following license:
+    
+    Permission to use, copy, modify, and distribute this software and its
+    documentation for any purpose and without fee is hereby granted,
+    provided that the above copyright notice appears in all copies and that
+    both that copyright notice and this permission notice appear in
+    supporting documentation.
+
+    I DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL I
+    BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY
+    DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+    WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+    ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+    SOFTWARE.
