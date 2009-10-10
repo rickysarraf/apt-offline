@@ -866,11 +866,16 @@ def installer( args ):
                 response = response.rstrip( "\r" )
                 return response
     
-        def list_bugs():
+        def list_bugs(dictList):
+                '''
+                Takes a dictionary of key,value pair where:
+                key => filename
+                value => subject string
+                '''
                 log.msg( "\n\nFollowing are the list of bugs present.\n" )
-                for each_bug in bugs_number.keys():
+                for each_bug in dictList.keys():
                         bug_num = each_bug.split( '.' )[1]
-                        bug_subject = bugs_number[each_bug]
+                        bug_subject = dictList[each_bug]
                         log.msg( "%s\t%s\n" % ( bug_num, bug_subject ) )
             
         def magic_check_and_uncompress( archive_file=None, filename=None):
@@ -887,7 +892,7 @@ def installer( args ):
                 elif AptOfflineMagicLib.file( archive_file ) == "application/x-dpkg":
                         filename = os.path.join(apt_package_target_path, filename)
                         if os.access( apt_package_target_path, os.W_OK ):
-                                shutil.copy( archive_file, filename )
+                                shutil.copy2( archive_file, filename )
                                 log.msg("%s file synced.\n" % (filename) )
                                 retval = True
                         else:
@@ -930,9 +935,10 @@ def installer( args ):
                                                         break
                                         bugs_number[filename] = subject
                                         temp.file.close()
+                log.verbose(str(bugs_number) )
                 if bugs_number:
                         # Display the list of bugs
-                        list_bugs()
+                        list_bugs(bugs_number)
                         display_options()
                         response = get_response()
                         while True:
@@ -972,7 +978,7 @@ def installer( args ):
                                                 response = get_response()
                 
                                 elif response.startswith( 'r' ) or response.startswith( 'R' ):
-                                        list_bugs()
+                                        list_bugs(bugs_number)
                                         response = get_response()
                                 else:
                                         log.err( 'Incorrect choice. Exiting\n' )
@@ -995,16 +1001,25 @@ def installer( args ):
                         #       sys.exit( 0 )
                                 
         elif os.path.isdir(install_file_path):
-                bugs_number = []
+                bugs_number = {}
                 if Bool_SkipBugReports:
                         log.verbose("Skipping bug report check as requested")
                 else:
                         for filename in os.listdir( install_file_path ):
                                 if filename.endswith( apt_bug_file_format ):
-                                        bugs_number.append( filename )
+                                        filename = os.path.join(install_file_path, filename)
+                                        temp = open(filename, 'r')
+                                        for bug_subject_identifier in temp.readlines():
+                                                if bug_subject_identifier.startswith( '#' ):
+                                                        subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
+                                                        subject = subject.rstrip( "\n" )
+                                                        break
+                                        bugs_number[filename] = subject
+                                        temp.close()
+                log.verbose(str(bugs_number) )
                 if bugs_number:
                         #Give the choice to the user
-                        list_bugs()
+                        list_bugs(bugs_number)
                         display_options()
                         response = get_response()
                         
@@ -1031,7 +1046,8 @@ def installer( args ):
                                                 response = get_response()
                                         if found:
                                                 display_pager = PagerCmd()
-                                                retval = display_pager.send_to_pager( file.read( bug_file_to_display ) )
+                                                file = open(bug_file_to_display, 'r')
+                                                retval = display_pager.send_to_pager(file.read())
                                                 if retval == 1:
                                                         log.err( "Broken pager. Can't display the bug details.\n" )
                                                 # Redisplay the menu
@@ -1039,7 +1055,7 @@ def installer( args ):
                                                 response = get_response()
                 
                                 elif response.startswith( 'r' ) or response.startswith( 'R' ):
-                                        list_bugs()
+                                        list_bugs(bugs_number)
                                         response = get_response()
                 
                                 else:
