@@ -712,7 +712,7 @@ def fetcher( args ):
                                         else:
                                                 errlist.append( PackageName )
                                                 
-                        elif url.endswith(".bz2") or url.endswith(".gpg") or url.endswith("Release"):
+                        elif url.endswith(".bz2") or url.endswith(".gpg") or url.endswith("Release") or url.endswith(".gz"):
                                 #INFO: We are a package update
                                 PackageName = url
                                 
