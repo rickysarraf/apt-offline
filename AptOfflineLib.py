@@ -364,30 +364,22 @@ class Archiver:
 
         def decompress_the_file( self, archive_file, path, target_file, archive_type ):
                 '''Extracts all the files from a single condensed archive file'''
-                if archive_type == "bzip2":
-                        try:
-                                read_from = bz2.BZ2File( archive_file, 'r' )
-                        except IOError:
+                if archive_type == "bzip2" or archive_type == "gzip":
+                        if archive_type == "bzip2":
+                                try:
+                                        read_from = bz2.BZ2File( archive_file, 'r' )
+                                except IOError:
+                                        return False
+                        elif archive_type == "gzip":
+                                try:
+                                        read_from = gzip.GzipFile( archive_file, 'r' )
+                                except IOError:
+                                        return False
+                        else:
                                 return False
                                     
                         try:
                                 write_to = open ( os.path.join( path, target_file ), 'wb' )
-                        except IOError:
-                                return False
-                        
-                        if self.TarGzipBZ2_Uncompress( read_from, write_to ) != True:
-                                #FIXME:
-                                raise ArchiveError
-                        write_to.close()
-                        read_from.close()
-                        return True
-                elif archive_type == "gzip":
-                        try:
-                                read_from = gzip.GzipFile( archive_file, 'r' )
-                        except IOError:
-                                return False
-                        try:
-                                write_to = open( os.path.join( path, target_file ), 'wb' )
                         except IOError:
                                 return False
                         
