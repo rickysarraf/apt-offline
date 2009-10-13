@@ -1099,10 +1099,9 @@ def installer( args ):
                                         # Bad sig.
                                         log.err("%s bad signature. Not syncing because in strict mode.\n" % (file) )
                 if lVerifiedWhitelist != []:
-                        print lVerifiedWhitelist
+                        log.verbose str(lVerifiedWhitelist)
                         for whitelist_item in lVerifiedWhitelist:
                                 for final_item in lFileList:
-                                        #print whitelist_item, final_item
                                         if whitelist_item in final_item:
                                                 final_item = os.path.join(apt_update_target_path, final_item)
                                                 shutil.copy2(final_item, apt_update_final_path)
