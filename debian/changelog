@@ -1,3 +1,9 @@
+apt-offline (0.9.5) UNRELEASED; urgency=low
+
+  * Update package description. Thanks to Imran Ebrahim.
+
+ -- Ritesh Raj Sarraf <rrs@researchut.com>  Thu, 15 Oct 2009 16:59:43 +0530
+
 apt-offline (0.9.4) unstable; urgency=low
 
   * Initial release (Closes: #531699)
