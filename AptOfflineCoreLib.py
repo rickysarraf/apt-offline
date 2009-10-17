@@ -1099,7 +1099,7 @@ def installer( args ):
                                         # Bad sig.
                                         log.err("%s bad signature. Not syncing because in strict mode.\n" % (file) )
                 if lVerifiedWhitelist != []:
-                        log.verbose str(lVerifiedWhitelist)
+                        log.verbose (str(lVerifiedWhitelist) )
                         for whitelist_item in lVerifiedWhitelist:
                                 for final_item in lFileList:
                                         if whitelist_item in final_item:
