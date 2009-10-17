@@ -263,7 +263,7 @@ class Log:
 
 class ProgressBar( object ):
         
-        def __init__( self, minValue=0, maxValue=0, width=None, fd=sys.stderr ):
+        def __init__( self, minValue=0, maxValue=0, width=None, total_items=None, fd=sys.stderr ):
                 #width does NOT include the two places for [] markers
                 self.min = minValue
                 self.max = maxValue
@@ -283,7 +283,12 @@ class ProgressBar( object ):
                         self.width = width
             
                 self.value = self.min
-                self.items = 0 #count of items being tracked
+                
+                if total_items is None:
+                        self.items = 0 #count of items being tracked
+                else:
+                        self.items = total_items
+                        
                 self.complete = 0
         
         def handle_resize( self, signum, frame ):
@@ -305,7 +310,7 @@ class ProgressBar( object ):
         def addItem( self, maxValue ):
                 self.max = self.max + maxValue
                 self.span = float( self.max - self.min )
-                self.items = self.items + 1
+                #self.items = self.items + 1
                 self.display()
         
         def display( self ):
