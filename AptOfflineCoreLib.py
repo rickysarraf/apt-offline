@@ -212,9 +212,9 @@ class DownloadFromWeb(AptOfflineLib.ProgressBar):
         This class also inherits progressbar functionalities from
         parent class, ProgressBar'''
         
-        def __init__(self, width):
+        def __init__(self, width, total_itmes):
                 '''width = Progress Bar width'''
-                AptOfflineLib.ProgressBar.__init__(self, width=width)
+                AptOfflineLib.ProgressBar.__init__(self, width=width, total_items)
         
         def download_from_web(self, url, file, download_dir):
                 '''url = url to fetch
@@ -434,17 +434,12 @@ def fetcher( args ):
                         log.verbose( "WARNING: cache dir %s is incorrect. Did you give the full path ?\n" % (Str_CacheDir) )
         
         class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum ):
-                def __init__( self, width, lock ):
-                        DownloadFromWeb.__init__( self, width=width )
+                def __init__( self, width, lock, total_items ):
+                        DownloadFromWeb.__init__( self, width=width, total_items )
                         #ProgressBar.__init__(self, width)
                         #self.width = width
                         AptOfflineLib.Archiver.__init__( self, lock=lock )
                         #self.lock = lock
-        
-        #global FetcherInstance
-        FetcherInstance = FetcherClass( width=30, lock=True )
-        #INFO: For the Progress Bar
-        #progbar = ProgressBar(width = 30)
         
         if Str_DownloadDir is None:
                 import tempfile
@@ -506,9 +501,14 @@ def fetcher( args ):
                 FetchData['Item'] = []
                 for item in raw_data_list:
                         FetchData['Item'].append( item )
-                
-        
         del raw_data_list
+        
+        # INFO: Let's get the total number of items. This will get the
+        # correct total count in the progress bar.
+        total_items = len(FetchData.keys() )
+        
+        #global FetcherInstance
+        FetcherInstance = FetcherClass( width=30, lock=True, total_items )
         
         #INFO: Thread Support
         if Int_NumOfThreads > 2:
