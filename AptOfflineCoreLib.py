@@ -212,9 +212,9 @@ class DownloadFromWeb(AptOfflineLib.ProgressBar):
         This class also inherits progressbar functionalities from
         parent class, ProgressBar'''
         
-        def __init__(self, width, total_itmes):
+        def __init__(self, width, total_items):
                 '''width = Progress Bar width'''
-                AptOfflineLib.ProgressBar.__init__(self, width=width, total_items)
+                AptOfflineLib.ProgressBar.__init__(self, width=width, total_items=total_items)
         
         def download_from_web(self, url, file, download_dir):
                 '''url = url to fetch
@@ -435,7 +435,7 @@ def fetcher( args ):
         
         class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum ):
                 def __init__( self, width, lock, total_items ):
-                        DownloadFromWeb.__init__( self, width=width, total_items )
+                        DownloadFromWeb.__init__( self, width=width, total_items=total_items )
                         #ProgressBar.__init__(self, width)
                         #self.width = width
                         AptOfflineLib.Archiver.__init__( self, lock=lock )
@@ -505,10 +505,10 @@ def fetcher( args ):
         
         # INFO: Let's get the total number of items. This will get the
         # correct total count in the progress bar.
-        total_items = len(FetchData.keys() )
+        total_items = len(FetchData['Item'])
         
         #global FetcherInstance
-        FetcherInstance = FetcherClass( width=30, lock=True, total_items )
+        FetcherInstance = FetcherClass( width=30, lock=True, total_items=total_items )
         
         #INFO: Thread Support
         if Int_NumOfThreads > 2:
