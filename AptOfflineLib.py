@@ -284,10 +284,12 @@ class ProgressBar( object ):
             
                 self.value = self.min
                 
-                if total_items is None:
+                if total_items is None or total_items <= 0:
                         self.items = 0 #count of items being tracked
+                        self.items_update = True
                 else:
                         self.items = total_items
+                        self.items_update = False
                         
                 self.complete = 0
         
@@ -310,7 +312,8 @@ class ProgressBar( object ):
         def addItem( self, maxValue ):
                 self.max = self.max + maxValue
                 self.span = float( self.max - self.min )
-                #self.items = self.items + 1
+                if self.items_update is True:
+                        self.items = self.items + 1
                 self.display()
         
         def display( self ):
