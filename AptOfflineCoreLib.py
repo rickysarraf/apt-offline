@@ -1222,7 +1222,10 @@ def setter(args):
                         if os.geteuid() != 0:
                                 log.err( "This option requires super-user privileges. Execute as root or use sudo/su\n" )
                                 sys.exit(1)
-                        log.msg( "\nGenerating database of the package and its dependencies.\n" )
+                        package_list = ''
+                        for pkg in List_SetInstallPackages:
+                                package_list += pkg + ', '
+                        log.msg( "\nGenerating database of package %s and its dependencies.\n" % (package_list) )
                         os.environ['__apt_set_install'] = Str_SetArg
                         os.environ['__apt_set_install_packages'] = ''
         
