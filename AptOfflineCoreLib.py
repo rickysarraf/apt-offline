@@ -1111,6 +1111,7 @@ def installer( args ):
 def setter(args):
         Str_SetArg = args.set
         List_SetInstallPackages = args.set_install_packages
+        List_SetInstallSrcPackages = args.set_install_src_packages
         Str_SetInstallRelease = args.set_install_release
         Bool_SetUpdate = args.set_update
         Bool_SetUpgrade = args.set_upgrade
@@ -1248,6 +1249,33 @@ def setter(args):
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
         
+        if List_SetInstallSrcPackages != None and List_SetInstallSrcPackages != []:
+                if platform.system() in supported_platforms:
+                        if os.geteuid() != 0:
+                                log.err( "This option requires super-user privileges. Execute as root or use sudo/su\n" )
+                                sys.exit(1)
+                        package_list = ''
+                        for pkg in List_SetInstallSrcPackages:
+                                package_list += pkg + ', '
+                        log.msg( "\nGenerating database of source packages %s.\n" % (package_list) )
+                        os.environ['__apt_set_install'] = Str_SetArg
+                        os.environ['__apt_set_install_src_packages'] = ''
+                        
+                        for x in List_SetInstallSrcPackages:
+                                os.environ['__apt_set_install_src_packages'] += x + ' '
+                                
+                        if Str_SetInstallRelease:
+                                os.environ['__apt_set_install_release'] = Str_SetArg
+                                if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release source $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        else:
+                                #FIXME: Find a more Pythonic implementation
+                                if os.system( '/usr/bin/apt-get -qq --print-uris source $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                else:
+                        log.err( "This argument is supported only on Unix like systems with apt installed\n" )
+                        sys.exit( 1 )
+        
 def gui(args):
         Bool_GUI = args.gui
         log.msg("Graphical Interface is currently not ready.\n")
@@ -1306,6 +1334,9 @@ def main():
         #TODO: Handle nargs here.
         parser_set.add_argument("--install-packages", dest="set_install_packages", help="Packages that need to be installed",
                           action="store", type=str, nargs='*', metavar="PKG")
+        
+        parser_set.add_argument("--install-src-packages", dest="set_install_src_packages", help="Source Packages that need to be installed",
+                          action="store", type=str, nargs='*', metavar="SOURCE PKG")
         
         parser_set.add_argument("--release", dest="set_install_release", help="Release target to install packages from",
                           action="store", type=str, metavar="release_name" )
