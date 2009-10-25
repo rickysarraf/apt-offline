@@ -442,7 +442,6 @@ def fetcher( args ):
                         #self.lock = lock
         
         if Str_DownloadDir is None:
-                import tempfile
                 tempdir = tempfile.gettempdir()
                 if os.access( tempdir, os.W_OK ) is True:
                         pidname = os.getpid()
@@ -811,10 +810,29 @@ def installer( args ):
         Bool_TestWindows = args.test_windows
         Bool_SkipBugReports = args.skip_bug_reports
         Bool_Untrusted = args.allow_unauthenticated
+        Str_InstallSrcPath = args.install_src_path
         
         # Old cruft. Needs clean-up
         install_file_path = Str_InstallArg
         
+        if Str_InstallSrcPath is None:
+                tempdir = tempfile.gettempdir()
+                if os.access( tempdir, os.W_OK ) is True:
+                        pidname = os.getpid()
+                        tempdir = os.path.join(tempdir , "apt-offline-src-downloads-" + str(pidname) )
+                        os.mkdir(tempdir)
+                                
+                        Str_InstallSrcPath = os.path.abspath(tempdir)
+                else:
+                        log.err( "%s is not writable\n" % (tempdir) ) 
+                        sys.exit(1)
+        if not os.path.isdir(Str_InstallSrcPath):
+                log.err("Not a folder.\n")
+                sys.exit(1)
+        if os.access(Str_InstallSrcPath, os.W_OK) is not True:
+                log.err("%s is not writable.\n" % (Str_InstallSrcPath))
+                sys.exit(1)
+                
         if Str_InstallArg:
                 if Bool_TestWindows:
                         pass
@@ -904,6 +922,26 @@ def installer( args ):
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
                 file = zipfile.ZipFile( install_file_path, "r" )
+                
+                SrcPkgDict = {}
+                for filename in file.namelist():
+                        if filename.endswith(".dsc"):
+                                SrcPkgName = filename.split('_')[0]
+                                temp = tempfile.NamedTemporaryFile()
+                                temp.file.write( file.read( filename ) )
+                                temp.file.flush()
+                                temp.file.seek( 0 ) #Let's go back to the start of the file
+                                SrcPkgDict[SrcPkgName] = []
+                                for SrcPkgIdentifier in temp.file.readlines():
+                                        if SrcPkgIdentifier.startswith(' ') and not SrcPkgIdentifier.isspace():
+                                                SrcPkgIdentifier = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
+                                                if SrcPkgIdentifier in SrcPkgDict[SrcPkgName]:
+                                                        break
+                                                else:
+                                                        SrcPkgDict[SrcPkgName].append(SrcPkgIdentifier)
+                                SrcPkgDict[SrcPkgName].append(filename)
+                                temp.file.close()
+                
                 #if bug_parse_required is True:
                 bugs_number = {}
                 if Bool_SkipBugReports:
@@ -922,6 +960,7 @@ def installer( args ):
                                                         break
                                         bugs_number[filename] = subject
                                         temp.file.close()
+                                        
                 log.verbose(str(bugs_number) )
                 if bugs_number:
                         # Display the list of bugs
@@ -934,10 +973,24 @@ def installer( args ):
                                         response = get_response()
                                 elif response.startswith( 'y' ) or response.startswith( 'Y' ):
                                         for filename in file.namelist():
+                                                
+                                                #INFO: Take care of Src Pkgs
+                                                found = False
+                                                for item in SrcPkgDict.keys():
+                                                        if filename in SrcPkgDict[item]:
+                                                                found = True
+                                                                break
+                                                        
                                                 data = tempfile.NamedTemporaryFile()
                                                 data.file.write( file.read( filename ) )
                                                 data.file.flush()
                                                 archive_file = data.name
+                                                
+                                                if found is True:
+                                                        shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
+                                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                                        continue
+                                                
                                                 magic_check_and_uncompress( archive_file, filename )
                                                 data.file.close()
                                         sys.exit( 0 )
@@ -977,10 +1030,24 @@ def installer( args ):
                         #if response.endswith( 'y' ) or response.endswith( 'Y' ):
                         #        log.verbose( "Continuing with syncing the files.\n" )
                         for filename in file.namelist():
+                                
+                                #INFO: Take care of Src Pkgs
+                                found = False
+                                for item in SrcPkgDict.keys():
+                                        if filename in SrcPkgDict[item]:
+                                                found = True
+                                                break
+                                        
                                 data = tempfile.NamedTemporaryFile()
                                 data.file.write( file.read( filename ) )
                                 data.file.flush()
                                 archive_file = data.name
+                                
+                                if found is True:
+                                        shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
+                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                        continue
+                                
                                 magic_check_and_uncompress( archive_file, filename )
                                 data.file.close()
                         #else:
@@ -988,6 +1055,24 @@ def installer( args ):
                         #       sys.exit( 0 )
                                 
         elif os.path.isdir(install_file_path):
+                
+                SrcPkgDict = {}
+                for filename in os.listdir( install_file_path ):
+                        if filename.endswith(".dsc"):
+                                SrcPkgName = filename.split('_')[0]
+                                SrcPkgDict[SrcPkgName] = []
+                                Tempfile = os.path.join(install_file_path, filename)
+                                temp = open(Tempfile, 'r')
+                                for SrcPkgIdentifier in temp.readlines():
+                                        if SrcPkgIdentifier.startswith(' ') and not SrcPkgIdentifier.isspace():
+                                                SrcPkgIdentifier = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
+                                                if SrcPkgIdentifier in SrcPkgDict[SrcPkgName]:
+                                                        break
+                                                else:
+                                                        SrcPkgDict[SrcPkgName].append(SrcPkgIdentifier)
+                                SrcPkgDict[SrcPkgName].append(filename)
+                                temp.close()
+                
                 bugs_number = {}
                 if Bool_SkipBugReports:
                         log.verbose("Skipping bug report check as requested")
@@ -1016,6 +1101,18 @@ def installer( args ):
                                         response = get_response()
                                 elif response.startswith( 'y' ) or response.startswith( 'Y' ):
                                         for eachfile in os.listdir( install_file_path ):
+                                                
+                                                #INFO: Take care of Src Pkgs
+                                                found = False
+                                                for item in SrcPkgDict.keys():
+                                                        if filename in SrcPkgDict[item]:
+                                                                found = True
+                                                                break
+                                                if found is True:
+                                                        shutil.copy2(filename, Str_InstallSrcPath)
+                                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                                        continue
+                                                
                                                 archive_type = None
                                                 magic_check_and_uncompress( archive_file, filename )
                                 elif response.startswith( 'n' ) or response.startswith( 'N' ):
@@ -1056,6 +1153,18 @@ def installer( args ):
                         for eachfile in os.listdir( install_file_path ):
                                 filename = eachfile
                                 eachfile = os.path.abspath(os.path.join(install_file_path, eachfile) )
+                                
+                                #INFO: Take care of Src Pkgs
+                                found = False
+                                for item in SrcPkgDict.keys():
+                                        if filename in SrcPkgDict[item]:
+                                                found = True
+                                                break
+                                if found is True:
+                                        shutil.copy2(eachfile, Str_InstallSrcPath)
+                                        log.msg("Installed src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                        continue
+                                
                                 magic_check_and_uncompress( eachfile, filename )
                         #else:
                         #        log.msg( "Exiting gracefully on user request.\n" )
@@ -1383,6 +1492,9 @@ def main():
                           help="Install apt-offline data, a bundle file or a directory",
                           action="store", type=str, metavar="apt-offline-download.zip | apt-offline-download/")
 
+        parser_install.add_argument("--install-src-path", dest="install_src_path",
+                                    help="Install src packages to specified path.", default=None)
+        
         parser_install.add_argument("--skip-bug-reports", dest="skip_bug_reports",
                         help="Skip the bug report check", action="store_true")
         
