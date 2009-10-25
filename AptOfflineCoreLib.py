@@ -1251,9 +1251,6 @@ def setter(args):
         
         if List_SetInstallSrcPackages != None and List_SetInstallSrcPackages != []:
                 if platform.system() in supported_platforms:
-                        if os.geteuid() != 0:
-                                log.err( "This option requires super-user privileges. Execute as root or use sudo/su\n" )
-                                sys.exit(1)
                         package_list = ''
                         for pkg in List_SetInstallSrcPackages:
                                 package_list += pkg + ', '
