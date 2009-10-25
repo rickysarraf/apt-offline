@@ -1213,6 +1213,7 @@ def setter(args):
         Bool_SetUpdate = args.set_update
         Bool_SetUpgrade = args.set_upgrade
         Str_SetUpgradeType = args.upgrade_type
+        Bool_SrcBuildDep = args.src_build_dep
         
         if Bool_SetUpdate is False and Bool_SetUpgrade is False and List_SetInstallPackages is None \
         and List_SetInstallSrcPackages is None:
@@ -1369,6 +1370,18 @@ def setter(args):
                                 #FIXME: Find a more Pythonic implementation
                                 if os.system( '/usr/bin/apt-get -qq --print-uris source $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        
+                        if Bool_SrcBuildDep:
+                                log.msg("Generating Build-Dependency for source packages %s.\n" % (package_list) )
+                                if Str_SetInstallRelease:
+                                        os.environ['__apt_set_install_release'] = Str_SetArg
+                                        if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                else:
+                                        #FIXME: Find a more Pythonic implementation
+                                        if os.system( '/usr/bin/apt-get -qq --print-uris build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                
                 else:
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
@@ -1434,6 +1447,9 @@ def main():
         
         parser_set.add_argument("--install-src-packages", dest="set_install_src_packages", help="Source Packages that need to be installed",
                           action="store", type=str, nargs='*', metavar="SOURCE PKG")
+        
+        parser_set.add_argument("--src-build-dep", dest="src_build_dep", help="Install Build Dependency packages for requested source packages",
+                                action="store_true")
         
         parser_set.add_argument("--release", dest="set_install_release", help="Release target to install packages from",
                           action="store", type=str, metavar="release_name" )
