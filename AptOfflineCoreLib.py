@@ -1109,6 +1109,7 @@ def installer( args ):
                         
 
 def setter(args):
+        log.verbose(str(args) )
         Str_SetArg = args.set
         List_SetInstallPackages = args.set_install_packages
         List_SetInstallSrcPackages = args.set_install_src_packages
@@ -1117,14 +1118,17 @@ def setter(args):
         Bool_SetUpgrade = args.set_upgrade
         Str_SetUpgradeType = args.upgrade_type
         
+        if Bool_SetUpdate is False and Bool_SetUpgrade is False and List_SetInstallPackages is None \
+        and List_SetInstallSrcPackages is None:
+                Default_Operation = True
+        else:
+                Default_Operation = False
+                
         #INFO: Don't run the default behavior, of SetUpdate and SetUpgrade, if the
         # user requests only for Package Installs
-        if Bool_SetUpdate is False and Bool_SetUpgrade is False:
-                if List_SetInstallPackages != None and List_SetInstallPackages != []:
-                        pass
-                else:
-                        Bool_SetUpdate = True
-                        Bool_SetUpgrade = True
+        if Default_Operation:
+                Bool_SetUpdate = True
+                Bool_SetUpgrade = True
         
         #FIXME: We'll use python-apt library to make it cleaner.
         # For now, we need to set markers using shell variables.
