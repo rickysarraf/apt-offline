@@ -712,34 +712,21 @@ def fetcher( args ):
                                         else:
                                                 errlist.append( PackageName )
                                                 
-                        elif url.endswith(".bz2") or url.endswith(".gpg") or url.endswith("Release") or url.endswith(".gz"):
+                        else:
                                 #INFO: We are a package update
                                 PackageName = url
-                                
-                                #INFO: We pass None as a filename here because we don't want to do a tree search of
-                                # update files. Update files are changed daily and there is no point in doing a search of
-                                # them in the Str_CacheDir
-                                response.put(func(Str_CacheDir, None) )
-                                
-                                #INFO: exit_status here would be False because for updates there's no need to do a
-                                # find_first_match
-                                # This is more with the above statement where None is passed as the filename
-                                exit_status = response.get()
-                                if exit_status == False:
-                                        log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
-                                        if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
-                                                log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                                if Str_BundleFile:
-                                                        if FetcherInstance.compress_the_file(Str_BundleFile, file) != True:
-                                                                log.err("Couldn't archive %s to file %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
-                                                                sys.exit(1)
-                                                        else:
-                                                                log.verbose("%s added to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_FULL) )
-                                                                os.unlink(os.path.join(Str_DownloadDir, file) )
-                                        else:
-                                                errlist.append(url)
-                        else:
-                                raise FetchDataKeyError
+                                log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
+                                if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
+                                        log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                        if Str_BundleFile:
+                                                if FetcherInstance.compress_the_file(Str_BundleFile, file) != True:
+                                                        log.err("Couldn't archive %s to file %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
+                                                        sys.exit(1)
+                                                else:
+                                                        log.verbose("%s added to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_FULL) )
+                                                        os.unlink(os.path.join(Str_DownloadDir, file) )
+                                else:
+                                        errlist.append(url)
                         
         # Create two Queues for the requests and responses
         requestQueue = Queue.Queue()
