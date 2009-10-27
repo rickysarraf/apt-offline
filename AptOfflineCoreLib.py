@@ -270,9 +270,16 @@ class DownloadFromWeb(AptOfflineLib.ProgressBar):
                 except urllib2.HTTPError, errstring:
                         errfunc(errstring.code, errstring.msg, url)
                 except urllib2.URLError, errstring:
-                        # URLErrors shouldn't be ignored, hence program termination
-                        if errstring.reason.args[0] == 10060:
-                                errfunc(errstring.reason.args[0], errstring.reason, url)
+                        #INFO: Weird. But in urllib2.URLError, I noticed that for
+                        # error type "timeouts", no errno was defined.
+                        # errstring.errno was listed as None 
+                        # In my tests, wget categorized this behavior as:
+                        # 504: gateway timeout
+                        # So I am doing the same here.
+                        if errstring.errno is None:
+                                errfunc(504, errstring.reason, url)
+                        else:
+                                errfunc(errstring.errno, errstring.reason, url)
                 except IOError, e:
                         if hasattr(e, 'reason'):
                                 log.err("%s\n" % (e.reason))
