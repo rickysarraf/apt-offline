@@ -1031,7 +1031,7 @@ def installer( args ):
                                         log.err( 'Incorrect choice. Exiting\n' )
                                         sys.exit( 1 )
                 else:
-                        log.msg( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
+                        log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
                         #response = raw_input( "Continue with Installation. Y/N ?" )
                         #response = response.rstrip( "\r" )
                         #if response.endswith( 'y' ) or response.endswith( 'Y' ):
@@ -1153,7 +1153,7 @@ def installer( args ):
                                         log.err( 'Incorrect choice. Exiting\n' )
                                         sys.exit( 1 )
                 else:
-                        log.msg( "Great!!! No bugs found for all the packages that were downloaded.\n" )
+                        log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n" )
                         #response = raw_input( "Continue with Installation. Y/N?" )
                         #response = response.rstrip( "\r" )
                         #if response.startswith( 'y' ) or response.startswith( 'Y' ):
