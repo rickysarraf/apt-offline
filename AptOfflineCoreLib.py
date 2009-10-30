@@ -212,9 +212,9 @@ class DownloadFromWeb(AptOfflineLib.ProgressBar):
         This class also inherits progressbar functionalities from
         parent class, ProgressBar'''
         
-        def __init__(self, width):
+        def __init__(self, width, total_items):
                 '''width = Progress Bar width'''
-                AptOfflineLib.ProgressBar.__init__(self, width=width)
+                AptOfflineLib.ProgressBar.__init__(self, width=width, total_items=total_items)
         
         def download_from_web(self, url, file, download_dir):
                 '''url = url to fetch
@@ -270,9 +270,16 @@ class DownloadFromWeb(AptOfflineLib.ProgressBar):
                 except urllib2.HTTPError, errstring:
                         errfunc(errstring.code, errstring.msg, url)
                 except urllib2.URLError, errstring:
-                        # URLErrors shouldn't be ignored, hence program termination
-                        if errstring.reason.args[0] == 10060:
-                                errfunc(errstring.reason.args[0], errstring.reason, url)
+                        #INFO: Weird. But in urllib2.URLError, I noticed that for
+                        # error type "timeouts", no errno was defined.
+                        # errstring.errno was listed as None 
+                        # In my tests, wget categorized this behavior as:
+                        # 504: gateway timeout
+                        # So I am doing the same here.
+                        if errstring.errno is None:
+                                errfunc(504, errstring.reason, url)
+                        else:
+                                errfunc(errstring.errno, errstring.reason, url)
                 except IOError, e:
                         if hasattr(e, 'reason'):
                                 log.err("%s\n" % (e.reason))
@@ -434,20 +441,14 @@ def fetcher( args ):
                         log.verbose( "WARNING: cache dir %s is incorrect. Did you give the full path ?\n" % (Str_CacheDir) )
         
         class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum ):
-                def __init__( self, width, lock ):
-                        DownloadFromWeb.__init__( self, width=width )
+                def __init__( self, width, lock, total_items ):
+                        DownloadFromWeb.__init__( self, width=width, total_items=total_items )
                         #ProgressBar.__init__(self, width)
                         #self.width = width
                         AptOfflineLib.Archiver.__init__( self, lock=lock )
                         #self.lock = lock
         
-        #global FetcherInstance
-        FetcherInstance = FetcherClass( width=30, lock=True )
-        #INFO: For the Progress Bar
-        #progbar = ProgressBar(width = 30)
-        
         if Str_DownloadDir is None:
-                import tempfile
                 tempdir = tempfile.gettempdir()
                 if os.access( tempdir, os.W_OK ) is True:
                         pidname = os.getpid()
@@ -506,9 +507,14 @@ def fetcher( args ):
                 FetchData['Item'] = []
                 for item in raw_data_list:
                         FetchData['Item'].append( item )
-                
-        
         del raw_data_list
+        
+        # INFO: Let's get the total number of items. This will get the
+        # correct total count in the progress bar.
+        total_items = len(FetchData['Item'])
+        
+        #global FetcherInstance
+        FetcherInstance = FetcherClass( width=30, lock=True, total_items=total_items )
         
         #INFO: Thread Support
         if Int_NumOfThreads > 2:
@@ -712,34 +718,21 @@ def fetcher( args ):
                                         else:
                                                 errlist.append( PackageName )
                                                 
-                        elif url.endswith(".bz2") or url.endswith(".gpg") or url.endswith("Release") or url.endswith(".gz"):
+                        else:
                                 #INFO: We are a package update
                                 PackageName = url
-                                
-                                #INFO: We pass None as a filename here because we don't want to do a tree search of
-                                # update files. Update files are changed daily and there is no point in doing a search of
-                                # them in the Str_CacheDir
-                                response.put(func(Str_CacheDir, None) )
-                                
-                                #INFO: exit_status here would be False because for updates there's no need to do a
-                                # find_first_match
-                                # This is more with the above statement where None is passed as the filename
-                                exit_status = response.get()
-                                if exit_status == False:
-                                        log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
-                                        if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
-                                                log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                                if Str_BundleFile:
-                                                        if FetcherInstance.compress_the_file(Str_BundleFile, file) != True:
-                                                                log.err("Couldn't archive %s to file %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
-                                                                sys.exit(1)
-                                                        else:
-                                                                log.verbose("%s added to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_FULL) )
-                                                                os.unlink(os.path.join(Str_DownloadDir, file) )
-                                        else:
-                                                errlist.append(url)
-                        else:
-                                raise FetchDataKeyError
+                                log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
+                                if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
+                                        log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                        if Str_BundleFile:
+                                                if FetcherInstance.compress_the_file(Str_BundleFile, file) != True:
+                                                        log.err("Couldn't archive %s to file %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
+                                                        sys.exit(1)
+                                                else:
+                                                        log.verbose("%s added to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_FULL) )
+                                                        os.unlink(os.path.join(Str_DownloadDir, file) )
+                                else:
+                                        errlist.append(url)
                         
         # Create two Queues for the requests and responses
         requestQueue = Queue.Queue()
@@ -824,10 +817,29 @@ def installer( args ):
         Bool_TestWindows = args.test_windows
         Bool_SkipBugReports = args.skip_bug_reports
         Bool_Untrusted = args.allow_unauthenticated
+        Str_InstallSrcPath = args.install_src_path
         
         # Old cruft. Needs clean-up
         install_file_path = Str_InstallArg
         
+        if Str_InstallSrcPath is None:
+                tempdir = tempfile.gettempdir()
+                if os.access( tempdir, os.W_OK ) is True:
+                        pidname = os.getpid()
+                        tempdir = os.path.join(tempdir , "apt-offline-src-downloads-" + str(pidname) )
+                        os.mkdir(tempdir)
+                                
+                        Str_InstallSrcPath = os.path.abspath(tempdir)
+                else:
+                        log.err( "%s is not writable\n" % (tempdir) ) 
+                        sys.exit(1)
+        if not os.path.isdir(Str_InstallSrcPath):
+                log.err("Not a folder.\n")
+                sys.exit(1)
+        if os.access(Str_InstallSrcPath, os.W_OK) is not True:
+                log.err("%s is not writable.\n" % (Str_InstallSrcPath))
+                sys.exit(1)
+                
         if Str_InstallArg:
                 if Bool_TestWindows:
                         pass
@@ -917,6 +929,26 @@ def installer( args ):
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
                 file = zipfile.ZipFile( install_file_path, "r" )
+                
+                SrcPkgDict = {}
+                for filename in file.namelist():
+                        if filename.endswith(".dsc"):
+                                SrcPkgName = filename.split('_')[0]
+                                temp = tempfile.NamedTemporaryFile()
+                                temp.file.write( file.read( filename ) )
+                                temp.file.flush()
+                                temp.file.seek( 0 ) #Let's go back to the start of the file
+                                SrcPkgDict[SrcPkgName] = []
+                                for SrcPkgIdentifier in temp.file.readlines():
+                                        if SrcPkgIdentifier.startswith(' ') and not SrcPkgIdentifier.isspace():
+                                                SrcPkgIdentifier = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
+                                                if SrcPkgIdentifier in SrcPkgDict[SrcPkgName]:
+                                                        break
+                                                else:
+                                                        SrcPkgDict[SrcPkgName].append(SrcPkgIdentifier)
+                                SrcPkgDict[SrcPkgName].append(filename)
+                                temp.file.close()
+                
                 #if bug_parse_required is True:
                 bugs_number = {}
                 if Bool_SkipBugReports:
@@ -935,6 +967,7 @@ def installer( args ):
                                                         break
                                         bugs_number[filename] = subject
                                         temp.file.close()
+                                        
                 log.verbose(str(bugs_number) )
                 if bugs_number:
                         # Display the list of bugs
@@ -947,10 +980,24 @@ def installer( args ):
                                         response = get_response()
                                 elif response.startswith( 'y' ) or response.startswith( 'Y' ):
                                         for filename in file.namelist():
+                                                
+                                                #INFO: Take care of Src Pkgs
+                                                found = False
+                                                for item in SrcPkgDict.keys():
+                                                        if filename in SrcPkgDict[item]:
+                                                                found = True
+                                                                break
+                                                        
                                                 data = tempfile.NamedTemporaryFile()
                                                 data.file.write( file.read( filename ) )
                                                 data.file.flush()
                                                 archive_file = data.name
+                                                
+                                                if found is True:
+                                                        shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
+                                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                                        continue
+                                                
                                                 magic_check_and_uncompress( archive_file, filename )
                                                 data.file.close()
                                         sys.exit( 0 )
@@ -984,16 +1031,30 @@ def installer( args ):
                                         log.err( 'Incorrect choice. Exiting\n' )
                                         sys.exit( 1 )
                 else:
-                        log.msg( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
+                        log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
                         #response = raw_input( "Continue with Installation. Y/N ?" )
                         #response = response.rstrip( "\r" )
                         #if response.endswith( 'y' ) or response.endswith( 'Y' ):
                         #        log.verbose( "Continuing with syncing the files.\n" )
                         for filename in file.namelist():
+                                
+                                #INFO: Take care of Src Pkgs
+                                found = False
+                                for item in SrcPkgDict.keys():
+                                        if filename in SrcPkgDict[item]:
+                                                found = True
+                                                break
+                                        
                                 data = tempfile.NamedTemporaryFile()
                                 data.file.write( file.read( filename ) )
                                 data.file.flush()
                                 archive_file = data.name
+                                
+                                if found is True:
+                                        shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
+                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                        continue
+                                
                                 magic_check_and_uncompress( archive_file, filename )
                                 data.file.close()
                         #else:
@@ -1001,6 +1062,24 @@ def installer( args ):
                         #       sys.exit( 0 )
                                 
         elif os.path.isdir(install_file_path):
+                
+                SrcPkgDict = {}
+                for filename in os.listdir( install_file_path ):
+                        if filename.endswith(".dsc"):
+                                SrcPkgName = filename.split('_')[0]
+                                SrcPkgDict[SrcPkgName] = []
+                                Tempfile = os.path.join(install_file_path, filename)
+                                temp = open(Tempfile, 'r')
+                                for SrcPkgIdentifier in temp.readlines():
+                                        if SrcPkgIdentifier.startswith(' ') and not SrcPkgIdentifier.isspace():
+                                                SrcPkgIdentifier = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
+                                                if SrcPkgIdentifier in SrcPkgDict[SrcPkgName]:
+                                                        break
+                                                else:
+                                                        SrcPkgDict[SrcPkgName].append(SrcPkgIdentifier)
+                                SrcPkgDict[SrcPkgName].append(filename)
+                                temp.close()
+                
                 bugs_number = {}
                 if Bool_SkipBugReports:
                         log.verbose("Skipping bug report check as requested")
@@ -1029,6 +1108,18 @@ def installer( args ):
                                         response = get_response()
                                 elif response.startswith( 'y' ) or response.startswith( 'Y' ):
                                         for eachfile in os.listdir( install_file_path ):
+                                                
+                                                #INFO: Take care of Src Pkgs
+                                                found = False
+                                                for item in SrcPkgDict.keys():
+                                                        if filename in SrcPkgDict[item]:
+                                                                found = True
+                                                                break
+                                                if found is True:
+                                                        shutil.copy2(filename, Str_InstallSrcPath)
+                                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                                        continue
+                                                
                                                 archive_type = None
                                                 magic_check_and_uncompress( archive_file, filename )
                                 elif response.startswith( 'n' ) or response.startswith( 'N' ):
@@ -1062,13 +1153,25 @@ def installer( args ):
                                         log.err( 'Incorrect choice. Exiting\n' )
                                         sys.exit( 1 )
                 else:
-                        log.msg( "Great!!! No bugs found for all the packages that were downloaded.\n" )
+                        log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n" )
                         #response = raw_input( "Continue with Installation. Y/N?" )
                         #response = response.rstrip( "\r" )
                         #if response.startswith( 'y' ) or response.startswith( 'Y' ):
                         for eachfile in os.listdir( install_file_path ):
                                 filename = eachfile
                                 eachfile = os.path.abspath(os.path.join(install_file_path, eachfile) )
+                                
+                                #INFO: Take care of Src Pkgs
+                                found = False
+                                for item in SrcPkgDict.keys():
+                                        if filename in SrcPkgDict[item]:
+                                                found = True
+                                                break
+                                if found is True:
+                                        shutil.copy2(eachfile, Str_InstallSrcPath)
+                                        log.msg("Installed src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                        continue
+                                
                                 magic_check_and_uncompress( eachfile, filename )
                         #else:
                         #        log.msg( "Exiting gracefully on user request.\n" )
@@ -1099,10 +1202,9 @@ def installer( args ):
                                         # Bad sig.
                                         log.err("%s bad signature. Not syncing because in strict mode.\n" % (file) )
                 if lVerifiedWhitelist != []:
-                        print lVerifiedWhitelist
+                        log.verbose (str(lVerifiedWhitelist) )
                         for whitelist_item in lVerifiedWhitelist:
                                 for final_item in lFileList:
-                                        #print whitelist_item, final_item
                                         if whitelist_item in final_item:
                                                 final_item = os.path.join(apt_update_target_path, final_item)
                                                 shutil.copy2(final_item, apt_update_final_path)
@@ -1110,21 +1212,27 @@ def installer( args ):
                         
 
 def setter(args):
+        log.verbose(str(args) )
         Str_SetArg = args.set
         List_SetInstallPackages = args.set_install_packages
+        List_SetInstallSrcPackages = args.set_install_src_packages
         Str_SetInstallRelease = args.set_install_release
         Bool_SetUpdate = args.set_update
         Bool_SetUpgrade = args.set_upgrade
         Str_SetUpgradeType = args.upgrade_type
+        Bool_SrcBuildDep = args.src_build_dep
         
+        if Bool_SetUpdate is False and Bool_SetUpgrade is False and List_SetInstallPackages is None \
+        and List_SetInstallSrcPackages is None:
+                Default_Operation = True
+        else:
+                Default_Operation = False
+                
         #INFO: Don't run the default behavior, of SetUpdate and SetUpgrade, if the
         # user requests only for Package Installs
-        if Bool_SetUpdate is False and Bool_SetUpgrade is False:
-                if List_SetInstallPackages != None and List_SetInstallPackages != []:
-                        pass
-                else:
-                        Bool_SetUpdate = True
-                        Bool_SetUpgrade = True
+        if Default_Operation:
+                Bool_SetUpdate = True
+                Bool_SetUpgrade = True
         
         #FIXME: We'll use python-apt library to make it cleaner.
         # For now, we need to set markers using shell variables.
@@ -1221,8 +1329,12 @@ def setter(args):
         if List_SetInstallPackages != None and List_SetInstallPackages != []:
                 if platform.system() in supported_platforms:
                         if os.geteuid() != 0:
-                                log.err( "This option requires super-user privileges. Execute as root or use sudo/su" )
-                        log.msg( "\nGenerating database of the package and its dependencies.\n" )
+                                log.err( "This option requires super-user privileges. Execute as root or use sudo/su\n" )
+                                sys.exit(1)
+                        package_list = ''
+                        for pkg in List_SetInstallPackages:
+                                package_list += pkg + ', '
+                        log.msg( "\nGenerating database of package %s and its dependencies.\n" % (package_list) )
                         os.environ['__apt_set_install'] = Str_SetArg
                         os.environ['__apt_set_install_packages'] = ''
         
@@ -1241,6 +1353,42 @@ def setter(args):
                                 #FIXME: Find a more Pythonic implementation
                                 if os.system( '/usr/bin/apt-get -qq --print-uris install $__apt_set_install_packages >> $__apt_set_install' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
+                else:
+                        log.err( "This argument is supported only on Unix like systems with apt installed\n" )
+                        sys.exit( 1 )
+        
+        if List_SetInstallSrcPackages != None and List_SetInstallSrcPackages != []:
+                if platform.system() in supported_platforms:
+                        package_list = ''
+                        for pkg in List_SetInstallSrcPackages:
+                                package_list += pkg + ', '
+                        log.msg( "\nGenerating database of source packages %s.\n" % (package_list) )
+                        os.environ['__apt_set_install'] = Str_SetArg
+                        os.environ['__apt_set_install_src_packages'] = ''
+                        
+                        for x in List_SetInstallSrcPackages:
+                                os.environ['__apt_set_install_src_packages'] += x + ' '
+                                
+                        if Str_SetInstallRelease:
+                                os.environ['__apt_set_install_release'] = Str_SetArg
+                                if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release source $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        else:
+                                #FIXME: Find a more Pythonic implementation
+                                if os.system( '/usr/bin/apt-get -qq --print-uris source $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        
+                        if Bool_SrcBuildDep:
+                                log.msg("Generating Build-Dependency for source packages %s.\n" % (package_list) )
+                                if Str_SetInstallRelease:
+                                        os.environ['__apt_set_install_release'] = Str_SetArg
+                                        if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                else:
+                                        #FIXME: Find a more Pythonic implementation
+                                        if os.system( '/usr/bin/apt-get -qq --print-uris build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                
                 else:
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
@@ -1304,6 +1452,12 @@ def main():
         parser_set.add_argument("--install-packages", dest="set_install_packages", help="Packages that need to be installed",
                           action="store", type=str, nargs='*', metavar="PKG")
         
+        parser_set.add_argument("--install-src-packages", dest="set_install_src_packages", help="Source Packages that need to be installed",
+                          action="store", type=str, nargs='*', metavar="SOURCE PKG")
+        
+        parser_set.add_argument("--src-build-dep", dest="src_build_dep", help="Install Build Dependency packages for requested source packages",
+                                action="store_true")
+        
         parser_set.add_argument("--release", dest="set_install_release", help="Release target to install packages from",
                           action="store", type=str, metavar="release_name" )
         
@@ -1361,6 +1515,9 @@ def main():
                           help="Install apt-offline data, a bundle file or a directory",
                           action="store", type=str, metavar="apt-offline-download.zip | apt-offline-download/")
 
+        parser_install.add_argument("--install-src-path", dest="install_src_path",
+                                    help="Install src packages to specified path.", default=None)
+        
         parser_install.add_argument("--skip-bug-reports", dest="skip_bug_reports",
                         help="Skip the bug report check", action="store_true")
         
