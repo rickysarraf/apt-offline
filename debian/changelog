@@ -1,4 +1,4 @@
-apt-offline (0.9.5) UNRELEASED; urgency=low
+apt-offline (0.9.5) unstable; urgency=low
 
   * New Feature Release
     + Add support for source packages along with their Build Dependencies
@@ -6,7 +6,7 @@ apt-offline (0.9.5) UNRELEASED; urgency=low
     + Many more bugfixes
   * Update package description. Thanks to Imran Ebrahim. (Closes: #550939)
 
- -- Ritesh Raj Sarraf <rrs@researchut.com>  Fri, 30 Oct 2009 12:20:10 +0530
+ -- Ritesh Raj Sarraf <rrs@researchut.com>  Fri, 30 Oct 2009 12:54:59 +0530
 
 apt-offline (0.9.4) unstable; urgency=low
 
