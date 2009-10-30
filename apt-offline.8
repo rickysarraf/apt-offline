@@ -1,4 +1,4 @@
-.TH apt-offline 8 "October, 2009" "version 0.9.4" "USER COMMANDS"
+.TH apt-offline 8 "October, 2009" "version 0.9.5" "USER COMMANDS"
 .SH NAME
 apt-offline \- Offline APT Package manager
 .SH SYNOPSIS
@@ -21,7 +21,7 @@ or
 .B install
 commands must be provided.
 
-.SS set [-h] [--install-packages [PKG [PKG ...]]] [--release release_name] [--update] [--upgrade] [--upgrade-type upgrade] apt-offline.sig
+.SS set [-h] [--install-packages PKG...PKG_N] [--install-src-packages PKG...PKG_N] --src-build-dep [--release release_name] [--update] [--upgrade] [--upgrade-type upgrade] apt-offline.sig
 
 .PP
 .B set
@@ -32,8 +32,14 @@ disconnected machine.
 is the signature file generated on the machine. This file will contain all the
 information necessary for apt.
 
-.IP "\fB\-\-install\-packages [PKG [PKG ...]]\fP" 10
+.IP "\fB\-\-install\-packages [PKG...PKG_N]\fP" 10
 Packages that need to be installed
+
+.IP "\fB\-\-install\-src\-packages [PKG...PKG_N]\fP" 10
+Source packages that need to be installed
+
+.IP "\fB\-\-src\-build\-dep\fP" 10
+Download Build Dependency packages for the source packages requested
 
 .IP "\fB\-\-release release_name\fP" 10
 Release target to install packages from
@@ -87,7 +93,7 @@ Create an archive file FILENAME. The file is archived in zip format
 Download bug reports for packages that are being downloaded. Currently only
 the Debian BTS is supported.
 
-.SS install [-h] [--skip-bug-reports ] [--allow-unauthenticated] FILE/FOLDER
+.SS install [-h] [--skip-bug-reports ] [--install-src-path PATH] [--allow-unauthenticated] FILE/FOLDER
 
 .PP
 
@@ -110,6 +116,8 @@ Skip listing of downloaded bug reports, if any.
 .IP "\fB\-\-allow\-unauthenticated\fP" 10
 Don't verify GPG signatures for the data to be installed to APT. Usage of this option is highly discouraged.
 
+.IP "\fB\-\-install\-src\-path PATH\fP" 10
+Path to filesystem where we want the source packages to be installed to. Default will be a folder in your TEMPDIR.
 
 .SH GLOBAL OPTIONS
 .TP
