@@ -348,6 +348,10 @@ class Archiver:
                         TargetFileHandle.write( SourceFileHandle.read() )
                 except EOFError:
                         pass
+                except IOError:
+                        #TODO: What constitutes an "IOError: invalid data stream" ???
+                        # Couldn't find much from the docs. Needs to be investigated.
+                        return False
                 return True
         
         def compress_the_file( self, zip_file_name, files_to_compress ):
