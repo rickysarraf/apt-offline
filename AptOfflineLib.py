@@ -407,10 +407,15 @@ class Archiver:
                                 zip_file = zipfile.ZipFile( archive_file, 'r' )
                         except IOError:
                                 return False
-                        
                         #FIXME:
                         for filename in zip_file.namelist():
-                                data = zip_file.read(filename)
+                                try:
+                                        write_to = open ( os.path.join( path, filename ), 'wb' )
+                                except IOError:
+                                        return False
+                                write_to.write(zip_file.read(filename) )
+                                write_to.flush()
+                                write_to.close()
                         zip_file.close()
                         return True
                 else:
