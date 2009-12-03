@@ -396,8 +396,8 @@ class Archiver:
                                 return False
                         
                         if self.TarGzipBZ2_Uncompress( read_from, write_to ) != True:
-                                #FIXME:
-                                raise ArchiveError
+                                #INFO: Return False for the stream that failed.
+                                return False
                         write_to.close()
                         read_from.close()
                         return True
