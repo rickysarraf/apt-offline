@@ -402,6 +402,11 @@ class Archiver:
                         read_from.close()
                         return True
                 elif archive_type == "zip":
+                        #INFO: We will never reach here.
+                        # Package data from Debian is usually served only in bz2 or gzip format
+                        # Plain zip is something we might never see.
+                        # Leaving it here just like that. Maybe we will use it in the future
+
                         # FIXME: This looks odd. Where are we writing to a file ???
                         try:
                                 zip_file = zipfile.ZipFile( archive_file, 'r' )
