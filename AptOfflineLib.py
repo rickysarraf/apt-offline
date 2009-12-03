@@ -380,7 +380,7 @@ class Archiver:
             
                         return True
 
-        def decompress_the_file( self, archive_file, path, target_file, archive_type ):
+        def decompress_the_file( self, archive_file, target_file, archive_type ):
                 '''Extracts all the files from a single condensed archive file'''
                 if archive_type == "bzip2" or archive_type == "gzip":
                         if archive_type == "bzip2":
@@ -397,7 +397,7 @@ class Archiver:
                                 return False
                                     
                         try:
-                                write_to = open ( os.path.join( path, target_file ), 'wb' )
+                                write_to = open ( target_file, 'wb' )
                         except IOError:
                                 return False
                         
@@ -421,7 +421,7 @@ class Archiver:
                         #FIXME:
                         for filename in zip_file.namelist():
                                 try:
-                                        write_to = open ( os.path.join( path, filename ), 'wb' )
+                                        write_to = open ( filename, 'wb' )
                                 except IOError:
                                         return False
                                 write_to.write(zip_file.read(filename) )
