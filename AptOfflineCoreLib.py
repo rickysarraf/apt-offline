@@ -896,12 +896,16 @@ def installer( args ):
         if not Bool_Untrusted:
                 AptSecure = APTVerifySigs()
                 
-        #INFO: Let's clean the partial database
-        for x in os.listdir(apt_update_target_path):
-                x = os.path.join(apt_update_target_path, x)
-                if os.access(x, os.W_OK):
-                        os.unlink(x)
-                        log.verbose("Cleaning old update data file %s.\n" % (x) )
+        try:
+                #INFO: Let's clean the partial database
+                for x in os.listdir(apt_update_target_path):
+                        x = os.path.join(apt_update_target_path, x)
+                        if os.access(x, os.W_OK):
+                                os.unlink(x)
+                                log.verbose("Cleaning old update data file %s.\n" % (x) )
+        except OSError:
+                log.err("Cannot file APT's partial cache dir %s\n" % (apt_update_target_path) )
+                sys.exit(1)
                 
         
         def display_options():
