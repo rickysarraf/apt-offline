@@ -410,7 +410,7 @@ class Archiver:
                         
                         #FIXME:
                         for filename in zip_file.namelist():
-                                data = zip_file.read()
+                                data = zip_file.read(filename)
                         zip_file.close()
                         return True
                 else:
