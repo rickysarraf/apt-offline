@@ -904,7 +904,7 @@ def installer( args ):
                                 os.unlink(x)
                                 log.verbose("Cleaning old update data file %s.\n" % (x) )
         except OSError:
-                log.err("Cannot file APT's partial cache dir %s\n" % (apt_update_target_path) )
+                log.err("Cannot find APT's partial cache dir %s\n" % (apt_update_target_path) )
                 sys.exit(1)
                 
         
