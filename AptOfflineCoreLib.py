@@ -901,6 +901,9 @@ def installer( args ):
                 elif AptOfflineMagicLib.file( archive_file ) == "PGP armored data":
                         filename = os.path.join(apt_update_target_path, filename)
                         shutil.copy2(archive_file, filename)
+                        # PGP armored data should be bypassed
+                        log.verbose("File is %s, hence 'True'.\n" % (filename) )
+                        retval = True
                 elif AptOfflineMagicLib.file( archive_file ) == "application/x-dpkg":
                         filename = os.path.join(apt_package_target_path, filename)
                         if os.access( apt_package_target_path, os.W_OK ):
@@ -925,6 +928,8 @@ def installer( args ):
                 
                 if retval:
                         log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
+                else:
+                        log.err("Failed to sync %s\n" % (filename) )
         
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
