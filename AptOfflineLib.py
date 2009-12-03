@@ -351,6 +351,12 @@ class Archiver:
                 except IOError:
                         #TODO: What constitutes an "IOError: invalid data stream" ???
                         # Couldn't find much from the docs. Needs to be investigated.
+                        
+                        # Answer:
+                        # A BZ2 file corruption is seen during file creation only.
+                        # Perhaps it has to do with the bad netowrk, loss of packets et cetera
+                        # The safest bet at the moment is to simply discard such files, which were
+                        # downloaded in damaged form.
                         return False
                 return True
         
