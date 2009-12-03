@@ -819,6 +819,7 @@ def installer( args ):
         Bool_Untrusted = args.allow_unauthenticated
         Str_InstallSrcPath = args.install_src_path
         
+        
         # Old cruft. Needs clean-up
         install_file_path = Str_InstallArg
         
@@ -842,7 +843,44 @@ def installer( args ):
                 
         if Str_InstallArg:
                 if Bool_TestWindows:
-                        pass
+                        global apt_package_target_path
+                        tempdir = tempfile.gettempdir()
+                        if os.access( tempdir, os.W_OK ) is True:
+                                pidname = os.getpid()
+                                tempdir = os.path.join(tempdir , "apt-package-target-path-" + str(pidname) )
+                                log.verbose("apt-package-target-path is %s\n" % (tempdir) )
+                                os.mkdir(tempdir)
+                                        
+                                apt_package_target_path = os.path.abspath(tempdir)
+                        else:
+                                log.err( "%s is not writable\n" % (tempdir) ) 
+                                sys.exit(1)
+                                
+                        global apt_update_target_path
+                        tempdir = tempfile.gettempdir()
+                        if os.access( tempdir, os.W_OK ) is True:
+                                pidname = os.getpid()
+                                tempdir = os.path.join(tempdir , "apt-update-target-path-" + str(pidname) )
+                                log.verbose("apt-update-target-path is %s\n" % (tempdir) )
+                                os.mkdir(tempdir)
+                                        
+                                apt_update_target_path = os.path.abspath(tempdir)
+                        else:
+                                log.err( "%s is not writable\n" % (tempdir) ) 
+                                sys.exit(1)
+                                
+                        global apt_update_final_path
+                        tempdir = tempfile.gettempdir()
+                        if os.access( tempdir, os.W_OK ) is True:
+                                pidname = os.getpid()
+                                tempdir = os.path.join(tempdir , "apt-update-final-path-" + str(pidname) )
+                                log.verbose("apt-update-final-path is %s\n" % (tempdir) )
+                                os.mkdir(tempdir)
+                                        
+                                apt_update_final_path = os.path.abspath(tempdir)
+                        else:
+                                log.err( "%s is not writable\n" % (tempdir) ) 
+                                sys.exit(1)
                 else:
                         try:
                                 if os.geteuid() != 0:
@@ -973,7 +1011,7 @@ def installer( args ):
                                         bugs_number[filename] = subject
                                         temp.file.close()
                                         
-                log.verbose(str(bugs_number) )
+                log.verbose(str(bugs_number) + "\n")
                 if bugs_number:
                         # Display the list of bugs
                         list_bugs(bugs_number)
@@ -1100,7 +1138,7 @@ def installer( args ):
                                                         break
                                         bugs_number[filename] = subject
                                         temp.close()
-                log.verbose(str(bugs_number) )
+                log.verbose(str(bugs_number) + "\n")
                 if bugs_number:
                         #Give the choice to the user
                         list_bugs(bugs_number)
@@ -1158,7 +1196,7 @@ def installer( args ):
                                         log.err( 'Incorrect choice. Exiting\n' )
                                         sys.exit( 1 )
                 else:
-                        log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n" )
+                        log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
                         #response = raw_input( "Continue with Installation. Y/N?" )
                         #response = response.rstrip( "\r" )
                         #if response.startswith( 'y' ) or response.startswith( 'Y' ):
@@ -1207,7 +1245,7 @@ def installer( args ):
                                         # Bad sig.
                                         log.err("%s bad signature. Not syncing because in strict mode.\n" % (file) )
                 if lVerifiedWhitelist != []:
-                        log.verbose (str(lVerifiedWhitelist) )
+                        log.verbose (str(lVerifiedWhitelist) + "\n")
                         for whitelist_item in lVerifiedWhitelist:
                                 for final_item in lFileList:
                                         if whitelist_item in final_item:
@@ -1543,14 +1581,6 @@ def main():
         	Bool_Verbose = args.verbose
         	Bool_TestWindows = args.test_windows
                 
-                # On windows, we want to test
-                if Bool_TestWindows:
-                        global apt_package_target_path
-                        global apt_update_target_path
-                        apt_package_target_path = 'C:\\temp'
-                        apt_update_target_path = 'C:\\temp'
-                        
-                        
         	global log
         	log = AptOfflineLib.Log( Bool_Verbose, lock=True )
         	log.verbose(str(args) + "\n")
