@@ -404,7 +404,7 @@ class Archiver:
                 elif archive_type == "zip":
                         # FIXME: This looks odd. Where are we writing to a file ???
                         try:
-                                zip_file = zipfile.ZipFile( archive_file, 'rb' )
+                                zip_file = zipfile.ZipFile( archive_file, 'r' )
                         except IOError:
                                 return False
                         
