@@ -295,7 +295,7 @@ def stripper(item):
         url - The URL
         file - The actual package file
         size - The file size
-        md5_text - The md5 checksum test
+        checksum - The checksum string
         and returns them.'''
     
         item = item.split(' ')
@@ -304,10 +304,10 @@ def stripper(item):
         size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
         #INFO: md5 ends up having '\n' with it.
         # That needs to be stripped too.
-        md5_text = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
-        md5_text = string.rstrip(md5_text, chars = "\n")
+        checksum = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
+        checksum = string.rstrip(checksum, chars = "\n")
     
-        return url, file, size, md5_text
+        return url, file, size, checksum
 
 
 def errfunc(errno, errormsg, filename):
