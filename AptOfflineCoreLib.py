@@ -561,7 +561,7 @@ def fetcher( args ):
                                         # We'll first check for its md5 checksum
                                         if Bool_DisableMD5Check is False:
                                                 if FetcherInstance.CheckHashDigest(full_file_path, checksum) is True:
-                                                        log.verbose("md5checksum correct for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                                        log.verbose("Checksum correct for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                         if Bool_BugReports:
                                                                 bug_fetched = 0
                                                                 log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
@@ -696,7 +696,7 @@ def fetcher( args ):
                                                                                 os.unlink( os.path.join( Str_DownloadDir, file ) )
                                                         else:
                                                                 #INFO MD5 Checksum is incorrect.
-                                                                log.err( "%s MD5 Checksum mismatch.\n" % ( PackageName ) )
+                                                                log.err( "%s Checksum mismatch.\n" % ( PackageName ) )
                                                                 errlist.append( PackageName )
                                                 else:
                                                         if Bool_BugReports:
