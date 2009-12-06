@@ -928,7 +928,7 @@ def installer( args ):
                 '''
                 log.msg( "\n\nFollowing are the list of bugs present.\n" )
                 for each_bug in dictList.keys():
-                        bug_num = each_bug.split( '.' )[1]
+                        bug_num = each_bug.split( '.' )[-2]
                         bug_subject = dictList[each_bug]
                         log.msg( "%s\t%s\n" % ( bug_num, bug_subject ) )
             
