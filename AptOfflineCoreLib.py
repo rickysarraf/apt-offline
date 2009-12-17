@@ -154,7 +154,8 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                                         self.fileName = PackageName + "." + bug_num + "." + self.apt_bug
                                                         file_handle = open( self.fileName, 'w' )
                                                 else:
-                                                        file_handle = open( Filename, 'a' )
+                                                        self.fileName = Filename
+                                                        file_handle = open( self.fileName, 'a' )
                             
                                                 file_handle.write( data[0] + "\n\n" )
                                                 for x in data[1]:
@@ -165,7 +166,7 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                                 file_handle.close()
                                                 #We're adding to an archive file here.
                                                 if self.lock:
-                                                        self.AddToArchive( self.ArchiveFile )
+                                                        self.AddToArchive( self.ArchiveFile, self.fileName )
                                                 atleast_one_bug_report_downloaded = True
                         if atleast_one_bug_report_downloaded:
                                 return 2
@@ -176,9 +177,9 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                         # We shouldn't be returning False
                         return 1
                 
-        def AddToArchive(self, ArchiveFile):
-                if self.compress_the_file(self.ArchiveFile, self.fileName):
-                        os.unlink(self.fileName)
+        def AddToArchive(self, ArchiveFile, fileName):
+                if self.compress_the_file(ArchiveFile, fileName):
+                        os.unlink(fileName)
                 return True
         
         
