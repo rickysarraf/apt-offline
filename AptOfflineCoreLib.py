@@ -80,7 +80,7 @@ figuring out if the packages are in the local cache, handling exceptions and man
 
 
 app_name = "apt-offline"
-version = "0.9.5"
+version = "0.9.6"
 copyright = "(C) 2005 - 2009 Ritesh Raj Sarraf"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
@@ -154,7 +154,8 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                                         self.fileName = PackageName + "." + bug_num + "." + self.apt_bug
                                                         file_handle = open( self.fileName, 'w' )
                                                 else:
-                                                        file_handle = open( Filename, 'a' )
+                                                        self.fileName = Filename
+                                                        file_handle = open( self.fileName, 'a' )
                             
                                                 file_handle.write( data[0] + "\n\n" )
                                                 for x in data[1]:
@@ -165,7 +166,7 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                                 file_handle.close()
                                                 #We're adding to an archive file here.
                                                 if self.lock:
-                                                        self.AddToArchive( self.ArchiveFile )
+                                                        self.AddToArchive( self.ArchiveFile, self.fileName )
                                                 atleast_one_bug_report_downloaded = True
                         if atleast_one_bug_report_downloaded:
                                 return 2
@@ -176,9 +177,9 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                         # We shouldn't be returning False
                         return 1
                 
-        def AddToArchive(self, ArchiveFile):
-                if self.compress_the_file(self.ArchiveFile, self.fileName):
-                        os.unlink(self.fileName)
+        def AddToArchive(self, ArchiveFile, fileName):
+                if self.compress_the_file(ArchiveFile, fileName):
+                        os.unlink(fileName)
                 return True
         
         
@@ -295,7 +296,7 @@ def stripper(item):
         url - The URL
         file - The actual package file
         size - The file size
-        md5_text - The md5 checksum test
+        checksum - The checksum string
         and returns them.'''
     
         item = item.split(' ')
@@ -304,10 +305,10 @@ def stripper(item):
         size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
         #INFO: md5 ends up having '\n' with it.
         # That needs to be stripped too.
-        md5_text = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
-        md5_text = string.rstrip(md5_text, chars = "\n")
+        checksum = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
+        checksum = string.rstrip(checksum, chars = "\n")
     
-        return url, file, size, md5_text
+        return url, file, size, checksum
 
 
 def errfunc(errno, errormsg, filename):
@@ -561,7 +562,7 @@ def fetcher( args ):
                                         # We'll first check for its md5 checksum
                                         if Bool_DisableMD5Check is False:
                                                 if FetcherInstance.CheckHashDigest(full_file_path, checksum) is True:
-                                                        log.verbose("md5checksum correct for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                                        log.verbose("Checksum correct for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                         if Bool_BugReports:
                                                                 bug_fetched = 0
                                                                 log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
@@ -696,7 +697,7 @@ def fetcher( args ):
                                                                                 os.unlink( os.path.join( Str_DownloadDir, file ) )
                                                         else:
                                                                 #INFO MD5 Checksum is incorrect.
-                                                                log.err( "%s MD5 Checksum mismatch.\n" % ( PackageName ) )
+                                                                log.err( "%s Checksum mismatch.\n" % ( PackageName ) )
                                                                 errlist.append( PackageName )
                                                 else:
                                                         if Bool_BugReports:
@@ -819,6 +820,7 @@ def installer( args ):
         Bool_Untrusted = args.allow_unauthenticated
         Str_InstallSrcPath = args.install_src_path
         
+        
         # Old cruft. Needs clean-up
         install_file_path = Str_InstallArg
         
@@ -842,7 +844,44 @@ def installer( args ):
                 
         if Str_InstallArg:
                 if Bool_TestWindows:
-                        pass
+                        global apt_package_target_path
+                        tempdir = tempfile.gettempdir()
+                        if os.access( tempdir, os.W_OK ) is True:
+                                pidname = os.getpid()
+                                tempdir = os.path.join(tempdir , "apt-package-target-path-" + str(pidname) )
+                                log.verbose("apt-package-target-path is %s\n" % (tempdir) )
+                                os.mkdir(tempdir)
+                                        
+                                apt_package_target_path = os.path.abspath(tempdir)
+                        else:
+                                log.err( "%s is not writable\n" % (tempdir) ) 
+                                sys.exit(1)
+                                
+                        global apt_update_target_path
+                        tempdir = tempfile.gettempdir()
+                        if os.access( tempdir, os.W_OK ) is True:
+                                pidname = os.getpid()
+                                tempdir = os.path.join(tempdir , "apt-update-target-path-" + str(pidname) )
+                                log.verbose("apt-update-target-path is %s\n" % (tempdir) )
+                                os.mkdir(tempdir)
+                                        
+                                apt_update_target_path = os.path.abspath(tempdir)
+                        else:
+                                log.err( "%s is not writable\n" % (tempdir) ) 
+                                sys.exit(1)
+                                
+                        global apt_update_final_path
+                        tempdir = tempfile.gettempdir()
+                        if os.access( tempdir, os.W_OK ) is True:
+                                pidname = os.getpid()
+                                tempdir = os.path.join(tempdir , "apt-update-final-path-" + str(pidname) )
+                                log.verbose("apt-update-final-path is %s\n" % (tempdir) )
+                                os.mkdir(tempdir)
+                                        
+                                apt_update_final_path = os.path.abspath(tempdir)
+                        else:
+                                log.err( "%s is not writable\n" % (tempdir) ) 
+                                sys.exit(1)
                 else:
                         try:
                                 if os.geteuid() != 0:
@@ -858,12 +897,16 @@ def installer( args ):
         if not Bool_Untrusted:
                 AptSecure = APTVerifySigs()
                 
-        #INFO: Let's clean the partial database
-        for x in os.listdir(apt_update_target_path):
-                x = os.path.join(apt_update_target_path, x)
-                if os.access(x, os.W_OK):
-                        os.unlink(x)
-                        log.verbose("Cleaning old update data file %s.\n" % (x) )
+        try:
+                #INFO: Let's clean the partial database
+                for x in os.listdir(apt_update_target_path):
+                        x = os.path.join(apt_update_target_path, x)
+                        if os.access(x, os.W_OK):
+                                os.unlink(x)
+                                log.verbose("Cleaning old update data file %s.\n" % (x) )
+        except OSError:
+                log.err("Cannot find APT's partial cache dir %s\n" % (apt_update_target_path) )
+                sys.exit(1)
                 
         
         def display_options():
@@ -886,21 +929,34 @@ def installer( args ):
                 '''
                 log.msg( "\n\nFollowing are the list of bugs present.\n" )
                 for each_bug in dictList.keys():
-                        bug_num = each_bug.split( '.' )[1]
+                        bug_num = each_bug.split( '.' )[-2]
                         bug_subject = dictList[each_bug]
                         log.msg( "%s\t%s\n" % ( bug_num, bug_subject ) )
             
         def magic_check_and_uncompress( archive_file=None, filename=None):
                 retval = False
-                if AptOfflineMagicLib.file( archive_file ) == "application/x-bzip2":
-                        retval = archive.decompress_the_file( archive_file, apt_update_target_path, filename, "bzip2" )
-                elif AptOfflineMagicLib.file( archive_file ) == "application/x-gzip":
-                        retval = archive.decompress_the_file( archive_file, apt_update_target_path, filename, "gzip" )
+                if AptOfflineMagicLib.file( archive_file ) == "application/x-bzip2" or \
+                AptOfflineMagicLib.file( archive_file ) == "application/x-gzip":
+                        temp_filename = os.path.join(apt_update_target_path, filename + app_name)
+                        filename = os.path.join(apt_update_target_path, filename)
+                        if AptOfflineMagicLib.file( archive_file ) == "application/x-bzip2":
+                                retval = archive.decompress_the_file( archive_file, temp_filename, "bzip2" )
+                        elif AptOfflineMagicLib.file( archive_file ) == "application/x-gzip":
+                                retval = archive.decompress_the_file( archive_file, temp_filename, "gzip" )
+                        else:
+                                retval = False
+                        if retval is True:
+                                os.rename(temp_filename, filename)
+                        else:
+                                os.unlink(temp_filename)
                 elif AptOfflineMagicLib.file( archive_file ) == "application/zip":
                         retval = archive.decompress_the_file( os.path.join( install_file_path, eachfile ), apt_update_target_path, eachfile, "zip" )
                 elif AptOfflineMagicLib.file( archive_file ) == "PGP armored data":
                         filename = os.path.join(apt_update_target_path, filename)
                         shutil.copy2(archive_file, filename)
+                        # PGP armored data should be bypassed
+                        log.verbose("File is %s, hence 'True'.\n" % (filename) )
+                        retval = True
                 elif AptOfflineMagicLib.file( archive_file ) == "application/x-dpkg":
                         filename = os.path.join(apt_package_target_path, filename)
                         if os.access( apt_package_target_path, os.W_OK ):
@@ -925,6 +981,8 @@ def installer( args ):
                 
                 if retval:
                         log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
+                else:
+                        log.err("Failed to sync %s\n" % (filename) )
         
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
@@ -968,7 +1026,7 @@ def installer( args ):
                                         bugs_number[filename] = subject
                                         temp.file.close()
                                         
-                log.verbose(str(bugs_number) )
+                log.verbose(str(bugs_number) + "\n")
                 if bugs_number:
                         # Display the list of bugs
                         list_bugs(bugs_number)
@@ -1095,7 +1153,7 @@ def installer( args ):
                                                         break
                                         bugs_number[filename] = subject
                                         temp.close()
-                log.verbose(str(bugs_number) )
+                log.verbose(str(bugs_number) + "\n")
                 if bugs_number:
                         #Give the choice to the user
                         list_bugs(bugs_number)
@@ -1153,7 +1211,7 @@ def installer( args ):
                                         log.err( 'Incorrect choice. Exiting\n' )
                                         sys.exit( 1 )
                 else:
-                        log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n" )
+                        log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
                         #response = raw_input( "Continue with Installation. Y/N?" )
                         #response = response.rstrip( "\r" )
                         #if response.startswith( 'y' ) or response.startswith( 'Y' ):
@@ -1202,7 +1260,7 @@ def installer( args ):
                                         # Bad sig.
                                         log.err("%s bad signature. Not syncing because in strict mode.\n" % (file) )
                 if lVerifiedWhitelist != []:
-                        log.verbose (str(lVerifiedWhitelist) )
+                        log.verbose (str(lVerifiedWhitelist) + "\n")
                         for whitelist_item in lVerifiedWhitelist:
                                 for final_item in lFileList:
                                         if whitelist_item in final_item:
@@ -1538,14 +1596,6 @@ def main():
         	Bool_Verbose = args.verbose
         	Bool_TestWindows = args.test_windows
                 
-                # On windows, we want to test
-                if Bool_TestWindows:
-                        global apt_package_target_path
-                        global apt_update_target_path
-                        apt_package_target_path = 'C:\\temp'
-                        apt_update_target_path = 'C:\\temp'
-                        
-                        
         	global log
         	log = AptOfflineLib.Log( Bool_Verbose, lock=True )
         	log.verbose(str(args) + "\n")

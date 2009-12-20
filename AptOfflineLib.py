@@ -348,6 +348,16 @@ class Archiver:
                         TargetFileHandle.write( SourceFileHandle.read() )
                 except EOFError:
                         pass
+                except IOError:
+                        #TODO: What constitutes an "IOError: invalid data stream" ???
+                        # Couldn't find much from the docs. Needs to be investigated.
+                        
+                        # Answer:
+                        # A BZ2 file corruption is seen during file creation only.
+                        # Perhaps it has to do with the bad netowrk, loss of packets et cetera
+                        # The safest bet at the moment is to simply discard such files, which were
+                        # downloaded in damaged form.
+                        return False
                 return True
         
         def compress_the_file( self, zip_file_name, files_to_compress ):
@@ -370,7 +380,7 @@ class Archiver:
             
                         return True
 
-        def decompress_the_file( self, archive_file, path, target_file, archive_type ):
+        def decompress_the_file( self, archive_file, target_file, archive_type ):
                 '''Extracts all the files from a single condensed archive file'''
                 if archive_type == "bzip2" or archive_type == "gzip":
                         if archive_type == "bzip2":
@@ -387,26 +397,36 @@ class Archiver:
                                 return False
                                     
                         try:
-                                write_to = open ( os.path.join( path, target_file ), 'wb' )
+                                write_to = open ( target_file, 'wb' )
                         except IOError:
                                 return False
                         
                         if self.TarGzipBZ2_Uncompress( read_from, write_to ) != True:
-                                #FIXME:
-                                raise ArchiveError
+                                #INFO: Return False for the stream that failed.
+                                return False
                         write_to.close()
                         read_from.close()
                         return True
                 elif archive_type == "zip":
+                        #INFO: We will never reach here.
+                        # Package data from Debian is usually served only in bz2 or gzip format
+                        # Plain zip is something we might never see.
+                        # Leaving it here just like that. Maybe we will use it in the future
+
                         # FIXME: This looks odd. Where are we writing to a file ???
                         try:
-                                zip_file = zipfile.ZipFile( file, 'rb' )
+                                zip_file = zipfile.ZipFile( archive_file, 'r' )
                         except IOError:
                                 return False
-                        
                         #FIXME:
                         for filename in zip_file.namelist():
-                                data = zip_file.read()
+                                try:
+                                        write_to = open ( filename, 'wb' )
+                                except IOError:
+                                        return False
+                                write_to.write(zip_file.read(filename) )
+                                write_to.flush()
+                                write_to.close()
                         zip_file.close()
                         return True
                 else:
