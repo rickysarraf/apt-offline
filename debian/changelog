@@ -1,3 +1,17 @@
+apt-offline (0.9.6) unstable; urgency=low
+
+  * New Bug Fix Release
+    + Show bug numbers correctly 
+    + Don't hardcode checksum type during checks
+    + Check for APT's partial directory
+    + Carefully update APT's Package cache data
+    + Discard damaged downloads
+    + Fix ZipFile.read()
+    + Don't report download failure for Release.gpg files
+    + Add html doc for the man page
+
+ -- Ritesh Raj Sarraf <rrs@researchut.com>  Sun, 20 Dec 2009 15:04:48 +0530
+
 apt-offline (0.9.5) unstable; urgency=low
 
   * New Feature Release
