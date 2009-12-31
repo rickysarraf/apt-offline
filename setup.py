@@ -44,6 +44,7 @@ distutils.core.setup(
             'AptOfflineLib',
             'AptOfflineMagicLib',
             'AptOffline_reportbug_exceptions',
+            'AptOffline_argparse',
             'AptOffline_urlutils',],
     scripts=['apt-offline'],
 )
