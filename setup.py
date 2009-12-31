@@ -15,6 +15,7 @@ import AptOfflineLib
 import AptOfflineMagicLib
 import AptOffline_reportbug_exceptions
 import AptOffline_urlutils
+import AptOffline_argparse
 
 distutils.core.setup(
     name='apt-offline',
