@@ -98,6 +98,54 @@
             <attribute name="title">
                 <string>Set</string>
             </attribute>
+            <widget class="QTextBrowser">
+                <property name="name">
+                    <cstring>textBrowser3</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>8</x>
+                        <y>249</y>
+                        <width>381</width>
+                        <height>140</height>
+                    </rect>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel3</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>8</x>
+                        <y>228</y>
+                        <width>191</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Console Output</string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>setStartButton</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>450</x>
+                        <y>340</y>
+                        <width>100</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Start</string>
+                </property>
+                <property name="accel">
+                    <string></string>
+                </property>
+            </widget>
             <widget class="QLayoutWidget">
                 <property name="name">
                     <cstring>layout20</cstring>
@@ -264,54 +312,6 @@
                         </property>
                     </widget>
                 </grid>
-            </widget>
-            <widget class="QPushButton">
-                <property name="name">
-                    <cstring>pushButton5</cstring>
-                </property>
-                <property name="geometry">
-                    <rect>
-                        <x>450</x>
-                        <y>350</y>
-                        <width>100</width>
-                        <height>20</height>
-                    </rect>
-                </property>
-                <property name="text">
-                    <string>Start</string>
-                </property>
-                <property name="accel">
-                    <string></string>
-                </property>
-            </widget>
-            <widget class="QTextBrowser">
-                <property name="name">
-                    <cstring>textBrowser3</cstring>
-                </property>
-                <property name="geometry">
-                    <rect>
-                        <x>8</x>
-                        <y>249</y>
-                        <width>381</width>
-                        <height>140</height>
-                    </rect>
-                </property>
-            </widget>
-            <widget class="QLabel">
-                <property name="name">
-                    <cstring>textLabel3</cstring>
-                </property>
-                <property name="geometry">
-                    <rect>
-                        <x>8</x>
-                        <y>228</y>
-                        <width>191</width>
-                        <height>21</height>
-                    </rect>
-                </property>
-                <property name="text">
-                    <string>textLabel3</string>
-                </property>
             </widget>
         </widget>
         <widget class="QWidget">
@@ -663,22 +663,6 @@
                     </property>
                 </widget>
             </widget>
-            <widget class="QPushButton">
-                <property name="name">
-                    <cstring>fetchStartButton</cstring>
-                </property>
-                <property name="geometry">
-                    <rect>
-                        <x>450</x>
-                        <y>350</y>
-                        <width>100</width>
-                        <height>20</height>
-                    </rect>
-                </property>
-                <property name="text">
-                    <string>Start</string>
-                </property>
-            </widget>
             <widget class="QTextBrowser">
                 <property name="name">
                     <cstring>fetchTextBrowser</cstring>
@@ -706,6 +690,22 @@
                 </property>
                 <property name="text">
                     <string>Console Output</string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>fetchStartButton</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>450</x>
+                        <y>340</y>
+                        <width>100</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Start</string>
                 </property>
             </widget>
         </widget>
@@ -803,14 +803,14 @@
             </widget>
             <widget class="QPushButton">
                 <property name="name">
-                    <cstring>installStartPushButton</cstring>
+                    <cstring>installStartButton</cstring>
                 </property>
                 <property name="geometry">
                     <rect>
                         <x>450</x>
-                        <y>350</y>
+                        <y>340</y>
                         <width>100</width>
-                        <height>20</height>
+                        <height>30</height>
                     </rect>
                 </property>
                 <property name="text">

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineGUI.ui'
 #
-# Created: Sun Jan 3 01:05:44 2010
+# Created: Sun Jan 3 01:32:19 2010
 #      by: The PyQt User Interface Compiler (pyuic) 3.18.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -42,6 +42,15 @@ class pyptofflineguiForm(QMainWindow):
         self.pyptTabWidget.insertTab(self.tab,QString.fromLatin1(""))
 
         self.tab_2 = QWidget(self.pyptTabWidget,"tab_2")
+
+        self.textBrowser3 = QTextBrowser(self.tab_2,"textBrowser3")
+        self.textBrowser3.setGeometry(QRect(8,249,381,140))
+
+        self.textLabel3 = QLabel(self.tab_2,"textLabel3")
+        self.textLabel3.setGeometry(QRect(8,228,191,21))
+
+        self.setStartButton = QPushButton(self.tab_2,"setStartButton")
+        self.setStartButton.setGeometry(QRect(450,340,100,30))
 
         LayoutWidget = QWidget(self.tab_2,"layout20")
         LayoutWidget.setGeometry(QRect(10,20,380,210))
@@ -89,15 +98,6 @@ class pyptofflineguiForm(QMainWindow):
         self.setInstallPackagesLineEdit.setAlignment(QLineEdit.AlignAuto)
 
         layout20.addWidget(self.setInstallPackagesLineEdit,2,1)
-
-        self.pushButton5 = QPushButton(self.tab_2,"pushButton5")
-        self.pushButton5.setGeometry(QRect(450,350,100,20))
-
-        self.textBrowser3 = QTextBrowser(self.tab_2,"textBrowser3")
-        self.textBrowser3.setGeometry(QRect(8,249,381,140))
-
-        self.textLabel3 = QLabel(self.tab_2,"textLabel3")
-        self.textLabel3.setGeometry(QRect(8,228,191,21))
         self.pyptTabWidget.insertTab(self.tab_2,QString.fromLatin1(""))
 
         self.TabPage = QWidget(self.pyptTabWidget,"TabPage")
@@ -175,14 +175,14 @@ class pyptofflineguiForm(QMainWindow):
         self.checkBox5.setGeometry(QRect(10,210,170,21))
         self.checkBox5.setChecked(1)
 
-        self.fetchStartButton = QPushButton(self.TabPage,"fetchStartButton")
-        self.fetchStartButton.setGeometry(QRect(450,350,100,20))
-
         self.fetchTextBrowser = QTextBrowser(self.TabPage,"fetchTextBrowser")
         self.fetchTextBrowser.setGeometry(QRect(20,181,340,160))
 
         self.fetchConsoleOutputTextLabel = QLabel(self.TabPage,"fetchConsoleOutputTextLabel")
         self.fetchConsoleOutputTextLabel.setGeometry(QRect(20,160,141,20))
+
+        self.fetchStartButton = QPushButton(self.TabPage,"fetchStartButton")
+        self.fetchStartButton.setGeometry(QRect(450,340,100,30))
         self.pyptTabWidget.insertTab(self.TabPage,QString.fromLatin1(""))
 
         self.TabPage_2 = QWidget(self.pyptTabWidget,"TabPage_2")
@@ -213,8 +213,8 @@ class pyptofflineguiForm(QMainWindow):
         self.installTextBrowser = QTextBrowser(self.TabPage_2,"installTextBrowser")
         self.installTextBrowser.setGeometry(QRect(28,184,331,201))
 
-        self.installStartPushButton = QPushButton(self.TabPage_2,"installStartPushButton")
-        self.installStartPushButton.setGeometry(QRect(450,350,100,20))
+        self.installStartButton = QPushButton(self.TabPage_2,"installStartButton")
+        self.installStartButton.setGeometry(QRect(450,340,100,30))
         self.pyptTabWidget.insertTab(self.TabPage_2,QString.fromLatin1(""))
 
         self.fileExitAction = QAction(self,"fileExitAction")
@@ -257,6 +257,9 @@ class pyptofflineguiForm(QMainWindow):
         self.textLabel1_2.setText(self.__tr("<p align=\"center\"><font><font size=\"+1\">Offline Package Manager</font></font></p>"))
         self.textLabel2.setText(self.__tr("<p align=\"center\"><font size=\"+1\">(C) Ritesh Raj Sarraf - RESEARCHUT</font></p>"))
         self.pyptTabWidget.changeTab(self.tab,self.__tr("Welcome"))
+        self.textLabel3.setText(self.__tr("Console Output"))
+        self.setStartButton.setText(self.__tr("Start"))
+        self.setStartButton.setAccel(QKeySequence(QString.null))
         self.setInstallPackageTextLabel.setText(self.__tr("Install Packages"))
         self.setUpgradeTypeComboBox.clear()
         self.setUpgradeTypeComboBox.insertItem(QString.null)
@@ -276,9 +279,6 @@ class pyptofflineguiForm(QMainWindow):
         self.setInstallationTypeComboBox.insertItem(self.__tr("Install"))
         QToolTip.add(self.setInstallationTypeComboBox,self.__tr("Select the type of installation you want to perform"))
         QToolTip.add(self.setInstallPackagesLineEdit,self.__tr("Package names separated by space"))
-        self.pushButton5.setText(self.__tr("Start"))
-        self.pushButton5.setAccel(QKeySequence(QString.null))
-        self.textLabel3.setText(self.__tr("textLabel3"))
         self.pyptTabWidget.changeTab(self.tab_2,self.__tr("Set"))
         self.fetchUpdateDataRadioButton.setText(self.__tr("Update Data"))
         QToolTip.add(self.fetchUpdateDataRadioButton,self.__tr("Select this if you want to fetch the package database updates"))
@@ -303,8 +303,8 @@ class pyptofflineguiForm(QMainWindow):
         QToolTip.add(self.fetchDisableMD5ChecksumCheckBox,self.__tr("Check this if you want to disable MD5 Checksum"))
         self.checkBox5.setText(self.__tr("Fetch Bug Reports"))
         QToolTip.add(self.checkBox5,self.__tr("Check this if you want to download the bug reports"))
-        self.fetchStartButton.setText(self.__tr("Start"))
         self.fetchConsoleOutputTextLabel.setText(self.__tr("Console Output"))
+        self.fetchStartButton.setText(self.__tr("Start"))
         self.pyptTabWidget.changeTab(self.TabPage,self.__tr("Fetch"))
         self.installUpdateDataRadioButton.setText(self.__tr("Update Data"))
         QToolTip.add(self.installUpdateDataRadioButton,self.__tr("Select this to install the package database update"))
@@ -313,7 +313,7 @@ class pyptofflineguiForm(QMainWindow):
         self.instalBrowsePushButton.setText(self.__tr("Browse"))
         QToolTip.add(self.installLineEdit,self.__tr("Specify the zip archive or full folder path which contains the downloaded data"))
         self.textLabel7.setText(self.__tr("Console Output"))
-        self.installStartPushButton.setText(self.__tr("Start"))
+        self.installStartButton.setText(self.__tr("Start"))
         self.pyptTabWidget.changeTab(self.TabPage_2,self.__tr("Install"))
         self.fileExitAction.setText(self.__tr("Exit"))
         self.fileExitAction.setMenuText(self.__tr("E&xit"))
