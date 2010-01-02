@@ -7,9 +7,8 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from qt import *
-
+from PyQt4 import *
 
 class pyptofflineguiForm(QMainWindow):
     def __init__(self,parent = None,name = None,fl = 0):
@@ -156,9 +155,9 @@ class pyptofflineguiForm(QMainWindow):
         self.fetchTargetDownloadFolderLineEdit.setGeometry(QRect(8,94,140,21))
         self.fetchTargetDownloadFolderLineEdit.setPaletteBackgroundColor(QColor(255,255,255))
 
-        self.lineEdit7 = QLineEdit(self.fetchOptionsButtonGroup,"lineEdit7")
-        self.lineEdit7.setGeometry(QRect(8,44,141,21))
-        self.lineEdit7.setPaletteBackgroundColor(QColor(255,255,255))
+        self.fetchZipFileLineEdit = QLineEdit(self.fetchOptionsButtonGroup,"fetchZipFileLineEdit")
+        self.fetchZipFileLineEdit.setGeometry(QRect(8,44,141,21))
+        self.fetchZipFileLineEdit.setPaletteBackgroundColor(QColor(255,255,255))
 
         self.fetchThreadsSpinBox = QSpinBox(self.fetchOptionsButtonGroup,"fetchThreadsSpinBox")
         self.fetchThreadsSpinBox.setGeometry(QRect(10,260,131,21))
@@ -199,9 +198,9 @@ class pyptofflineguiForm(QMainWindow):
 
         layout24.addWidget(self.installUpgradeDataRadioButton,1,0)
 
-        self.instalBrowsePushButton = QPushButton(LayoutWidget_3,"instalBrowsePushButton")
+        self.installBrowsePushButton = QPushButton(LayoutWidget_3,"installBrowsePushButton")
 
-        layout24.addWidget(self.instalBrowsePushButton,2,1)
+        layout24.addWidget(self.installBrowsePushButton,2,1)
 
         self.installLineEdit = QLineEdit(LayoutWidget_3,"installLineEdit")
 
@@ -251,10 +250,12 @@ class pyptofflineguiForm(QMainWindow):
         self.setFilePathTextLabel.setBuddy(self.setFilePathLineEdit)
         # -------------- END OF PYUIC GENERATED CODE --------------------------/
 
-        self.connect(self.setBrowsePushButton, SIGNAL("clicked()"), self.setBrowsedFile)
-
-
-
+        self.connect(self.setBrowsePushButton, SIGNAL("clicked()"), self.setBrowsePushButton_click)
+        self.connect(self.fetchBrowsePushButton, SIGNAL("clicked()"), self.fetchBrowsePushButton_click)
+        self.connect(self.fetchZipPushButton, SIGNAL("clicked()"), self.fetchZipPushButton_click)
+        self.connect(self.fetchTargetDownloadFolderPushButton, SIGNAL("clicked()"), self.fetchTargetDownloadFolderPushButton_click)
+        self.connect(self.fetchCacheDirectoryPushButton, SIGNAL("clicked()"), self.fetchCacheDirectoryPushButton_click)
+        self.connect(self.installBrowsePushButton,SIGNAL("clicked()"),self.installBrowsePushButton_click)
 
     def languageChange(self):
         self.setCaption(self.__tr("pypt-offline | Offline Package Manager | (C) Ritesh Raj Sarraf - RESEARCHUT"))
@@ -301,7 +302,7 @@ class pyptofflineguiForm(QMainWindow):
         self.fetchTargetDownloadFolderCheckbox.setText(self.__tr("Target Download Folder"))
         QToolTip.add(self.fetchCacheDirectoryLineEdit,self.__tr("Check this and specify the cache directory which contains pre-downloaded packages"))
         QToolTip.add(self.fetchTargetDownloadFolderLineEdit,self.__tr("Check this and specify the target download folder where the downloaded data will be saved"))
-        QToolTip.add(self.lineEdit7,self.__tr("Check this and specify the full path for zip archive"))
+        QToolTip.add(self.fetchZipFileLineEdit,self.__tr("Check this and specify the full path for zip archive"))
         QToolTip.add(self.fetchThreadsSpinBox,self.__tr("Number of threads you want to spawn"))
         self.fetchThreadsTextLabel.setText(self.__tr("Threads"))
         self.fetchDisableMD5ChecksumCheckBox.setText(self.__tr("Disable MD5 Checksum"))
@@ -315,7 +316,7 @@ class pyptofflineguiForm(QMainWindow):
         QToolTip.add(self.installUpdateDataRadioButton,self.__tr("Select this to install the package database update"))
         self.installUpgradeDataRadioButton.setText(self.__tr("Upgrade Data"))
         QToolTip.add(self.installUpgradeDataRadioButton,self.__tr("Select this to install/upgrade the packages"))
-        self.instalBrowsePushButton.setText(self.__tr("Browse"))
+        self.installBrowsePushButton.setText(self.__tr("Browse"))
         QToolTip.add(self.installLineEdit,self.__tr("Specify the zip archive or full folder path which contains the downloaded data"))
         self.textLabel7.setText(self.__tr("Console Output"))
         self.installStartButton.setText(self.__tr("Start"))
@@ -362,7 +363,32 @@ class pyptofflineguiForm(QMainWindow):
     def __tr(self,s,c = None):
         return qApp.translate("pyptofflineguiForm",s,c)
     # -------------- END OF PYUIC GENERATED DEFs ------------------------------/
-    
-    def setBrowsedFile(self):
-        filename = QFileDialog.getSaveFileName("", "*.sig", self, "Save signature as")
+
+    # ------------------------------------------------  begin SET tab's code
+    def setBrowsePushButton_click(self):
+        filename = QFileDialog.getSaveFileName("", "*.sig", self)
         self.setFilePathLineEdit.setText(filename)
+
+
+    # ------------------------------------------------  begin FETCH tab's code
+    def fetchBrowsePushButton_click(self):
+        filename = QFileDialog.getOpenFileName("","*.sig",self)
+        self.fetchBrowseLineEdit.setText(filename)
+
+    def fetchZipPushButton_click(self):
+        filename = QFileDialog.getSaveFileName("", "*.zip", self)
+        self.fetchZipFileLineEdit.setText(filename)
+
+    def fetchTargetDownloadFolderPushButton_click(self):
+        foldername = QFileDialog.getExistingDirectory("",self)
+        self.fetchTargetDownloadFolderLineEdit.setText(foldername)
+
+    def fetchCacheDirectoryPushButton_click(self):
+        foldername = QFileDialog.getExistingDirectory("",self)
+        self.fetchCacheDirectoryLineEdit.setText(foldername)
+
+        
+    # ------------------------------------------------  begin INSTALL tab's code
+    def installBrowsePushButton_click(self):
+        foldername = QFileDialog.getExistingDirectory("",self)
+        self.installLineEdit.setText(directory)
