@@ -221,7 +221,7 @@
                     </widget>
                     <widget class="QPushButton" row="3" column="2">
                         <property name="name">
-                            <cstring>pushButton6</cstring>
+                            <cstring>setBrowsePushButton</cstring>
                         </property>
                         <property name="text">
                             <string>Browse</string>

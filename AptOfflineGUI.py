@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineGUI.ui'
 #
-# Created: Sun Jan 3 01:32:19 2010
+# Created: Sun Jan 3 01:34:00 2010
 #      by: The PyQt User Interface Compiler (pyuic) 3.18.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -70,9 +70,9 @@ class pyptofflineguiForm(QMainWindow):
 
         layout20.addWidget(self.setFilePathLineEdit,3,1)
 
-        self.pushButton6 = QPushButton(LayoutWidget,"pushButton6")
+        self.setBrowsePushButton = QPushButton(LayoutWidget,"setBrowsePushButton")
 
-        layout20.addWidget(self.pushButton6,3,2)
+        layout20.addWidget(self.setBrowsePushButton,3,2)
 
         self.setUpgradeTypeTextLabel = QLabel(LayoutWidget,"setUpgradeTypeTextLabel")
 
@@ -249,6 +249,11 @@ class pyptofflineguiForm(QMainWindow):
         self.setInstallPackageTextLabel.setBuddy(self.setInstallPackagesLineEdit)
         self.setUpgradeTypeTextLabel.setBuddy(self.setUpgradeTypeComboBox)
         self.setFilePathTextLabel.setBuddy(self.setFilePathLineEdit)
+        # -------------- END OF PYUIC GENERATED CODE --------------------------/
+
+        self.connect(self.setBrowsePushButton, SIGNAL("clicked()"), self.setBrowsedFile)
+
+
 
 
     def languageChange(self):
@@ -268,7 +273,7 @@ class pyptofflineguiForm(QMainWindow):
         self.setUpgradeTypeComboBox.insertItem(self.__tr("dselect-upgrade"))
         QToolTip.add(self.setUpgradeTypeComboBox,self.__tr("Select the type of upgrade you want to perform"))
         QToolTip.add(self.setFilePathLineEdit,self.__tr("Full path to a file you want to write to"))
-        self.pushButton6.setText(self.__tr("Browse"))
+        self.setBrowsePushButton.setText(self.__tr("Browse"))
         self.setUpgradeTypeTextLabel.setText(self.__tr("Upgrade Type"))
         self.setInstallationTypeTextLabel.setText(self.__tr("Installation Type"))
         self.setFilePathTextLabel.setText(self.__tr("File Path"))
@@ -325,7 +330,7 @@ class pyptofflineguiForm(QMainWindow):
             self.MenuBar.findItem(1).setText(self.__tr("&File"))
         if self.MenuBar.findItem(2):
             self.MenuBar.findItem(2).setText(self.__tr("&Help"))
-
+        # -------------- END OF PYUIC GENERATED CODE --------------------------/
 
     def fileNew(self):
         print "pyptofflineguiForm.fileNew(): Not implemented yet"
@@ -356,3 +361,8 @@ class pyptofflineguiForm(QMainWindow):
 
     def __tr(self,s,c = None):
         return qApp.translate("pyptofflineguiForm",s,c)
+    # -------------- END OF PYUIC GENERATED DEFs ------------------------------/
+    
+    def setBrowsedFile(self):
+        filename = QFileDialog.getSaveFileName("", "*.sig", self, "Save signature as")
+        self.setFilePathLineEdit.setText(filename)
