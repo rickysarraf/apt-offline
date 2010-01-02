@@ -695,6 +695,7 @@ def fetcher( args ):
                                                                         else:
                                                                                 log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                                                 os.unlink( os.path.join( Str_DownloadDir, file ) )
+                                                                log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
                                                         else:
                                                                 #INFO MD5 Checksum is incorrect.
                                                                 log.err( "%s Checksum mismatch.\n" % ( PackageName ) )
@@ -715,7 +716,7 @@ def fetcher( args ):
                                                                         log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                                         os.unlink( os.path.join( Str_DownloadDir, file ) )
                                             
-                                                log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
+                                                        log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
                                         else:
                                                 errlist.append( PackageName )
                                                 
