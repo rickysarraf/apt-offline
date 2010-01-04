@@ -2,13 +2,14 @@
 
 # Form implementation generated from reading ui file 'AptOfflineGUI.ui'
 #
-# Created: Sun Jan 3 01:34:00 2010
+# Created: Sun Jan 3 20:12:41 2010
 #      by: The PyQt User Interface Compiler (pyuic) 3.18.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from qt import *
-from PyQt4 import *
+
 
 class pyptofflineguiForm(QMainWindow):
     def __init__(self,parent = None,name = None,fl = 0):
@@ -23,7 +24,7 @@ class pyptofflineguiForm(QMainWindow):
         self.setCentralWidget(QWidget(self,"qt_central_widget"))
 
         self.pyptTabWidget = QTabWidget(self.centralWidget(),"pyptTabWidget")
-        self.pyptTabWidget.setGeometry(QRect(10,0,600,430))
+        self.pyptTabWidget.setGeometry(QRect(0,0,600,430))
 
         self.tab = QWidget(self.pyptTabWidget,"tab")
 
@@ -122,24 +123,12 @@ class pyptofflineguiForm(QMainWindow):
 
         layout22.addWidget(self.fetchBrowsePushButton,2,1)
 
-        self.fetchProgressBar = QProgressBar(self.TabPage,"fetchProgressBar")
-        self.fetchProgressBar.setGeometry(QRect(20,350,340,20))
-
         self.fetchOptionsButtonGroup = QButtonGroup(self.TabPage,"fetchOptionsButtonGroup")
         self.fetchOptionsButtonGroup.setGeometry(QRect(380,20,190,290))
 
         self.fetchZipCheckBox = QCheckBox(self.fetchOptionsButtonGroup,"fetchZipCheckBox")
         self.fetchZipCheckBox.setGeometry(QRect(8,23,91,20))
         self.fetchZipCheckBox.setChecked(1)
-
-        self.fetchTargetDownloadFolderPushButton = QPushButton(self.fetchOptionsButtonGroup,"fetchTargetDownloadFolderPushButton")
-        self.fetchTargetDownloadFolderPushButton.setGeometry(QRect(150,94,30,21))
-
-        self.fetchZipPushButton = QPushButton(self.fetchOptionsButtonGroup,"fetchZipPushButton")
-        self.fetchZipPushButton.setGeometry(QRect(150,44,30,20))
-
-        self.fetchCacheDirectoryPushButton = QPushButton(self.fetchOptionsButtonGroup,"fetchCacheDirectoryPushButton")
-        self.fetchCacheDirectoryPushButton.setGeometry(QRect(151,140,30,21))
 
         self.fetchCacheDirectoryCheckBox = QCheckBox(self.fetchOptionsButtonGroup,"fetchCacheDirectoryCheckBox")
         self.fetchCacheDirectoryCheckBox.setGeometry(QRect(8,119,170,21))
@@ -155,9 +144,9 @@ class pyptofflineguiForm(QMainWindow):
         self.fetchTargetDownloadFolderLineEdit.setGeometry(QRect(8,94,140,21))
         self.fetchTargetDownloadFolderLineEdit.setPaletteBackgroundColor(QColor(255,255,255))
 
-        self.fetchZipFileLineEdit = QLineEdit(self.fetchOptionsButtonGroup,"fetchZipFileLineEdit")
-        self.fetchZipFileLineEdit.setGeometry(QRect(8,44,141,21))
-        self.fetchZipFileLineEdit.setPaletteBackgroundColor(QColor(255,255,255))
+        self.lineEdit7 = QLineEdit(self.fetchOptionsButtonGroup,"lineEdit7")
+        self.lineEdit7.setGeometry(QRect(8,44,141,21))
+        self.lineEdit7.setPaletteBackgroundColor(QColor(255,255,255))
 
         self.fetchThreadsSpinBox = QSpinBox(self.fetchOptionsButtonGroup,"fetchThreadsSpinBox")
         self.fetchThreadsSpinBox.setGeometry(QRect(10,260,131,21))
@@ -174,6 +163,15 @@ class pyptofflineguiForm(QMainWindow):
         self.checkBox5.setGeometry(QRect(10,210,170,21))
         self.checkBox5.setChecked(1)
 
+        self.fetchZipPushButton = QPushButton(self.fetchOptionsButtonGroup,"fetchZipPushButton")
+        self.fetchZipPushButton.setGeometry(QRect(150,44,30,20))
+
+        self.fetchTargetDownloadFolderPushButton = QPushButton(self.fetchOptionsButtonGroup,"fetchTargetDownloadFolderPushButton")
+        self.fetchTargetDownloadFolderPushButton.setGeometry(QRect(150,94,30,21))
+
+        self.fetchCacheDirectoryPushButton = QPushButton(self.fetchOptionsButtonGroup,"fetchCacheDirectoryPushButton")
+        self.fetchCacheDirectoryPushButton.setGeometry(QRect(151,140,30,21))
+
         self.fetchTextBrowser = QTextBrowser(self.TabPage,"fetchTextBrowser")
         self.fetchTextBrowser.setGeometry(QRect(20,181,340,160))
 
@@ -182,38 +180,45 @@ class pyptofflineguiForm(QMainWindow):
 
         self.fetchStartButton = QPushButton(self.TabPage,"fetchStartButton")
         self.fetchStartButton.setGeometry(QRect(450,340,100,30))
+
+        self.fetchProgressBar = QProgressBar(self.TabPage,"fetchProgressBar")
+        self.fetchProgressBar.setGeometry(QRect(20,350,340,23))
         self.pyptTabWidget.insertTab(self.TabPage,QString.fromLatin1(""))
 
         self.TabPage_2 = QWidget(self.pyptTabWidget,"TabPage_2")
 
-        LayoutWidget_3 = QWidget(self.TabPage_2,"layout24")
-        LayoutWidget_3.setGeometry(QRect(30,20,330,130))
-        layout24 = QGridLayout(LayoutWidget_3,1,1,11,6,"layout24")
+        self.installStartButton = QPushButton(self.TabPage_2,"installStartButton")
+        self.installStartButton.setGeometry(QRect(450,340,100,30))
 
-        self.installUpdateDataRadioButton = QRadioButton(LayoutWidget_3,"installUpdateDataRadioButton")
-
-        layout24.addWidget(self.installUpdateDataRadioButton,0,0)
+        LayoutWidget_3 = QWidget(self.TabPage_2,"layout4")
+        LayoutWidget_3.setGeometry(QRect(20,30,330,150))
+        layout4 = QGridLayout(LayoutWidget_3,1,1,11,6,"layout4")
 
         self.installUpgradeDataRadioButton = QRadioButton(LayoutWidget_3,"installUpgradeDataRadioButton")
 
-        layout24.addWidget(self.installUpgradeDataRadioButton,1,0)
+        layout4.addMultiCellWidget(self.installUpgradeDataRadioButton,1,1,0,1)
 
-        self.installBrowsePushButton = QPushButton(LayoutWidget_3,"installBrowsePushButton")
+        self.installBrowseFolderPushButton = QPushButton(LayoutWidget_3,"installBrowseFolderPushButton")
 
-        layout24.addWidget(self.installBrowsePushButton,2,1)
+        layout4.addWidget(self.installBrowseFolderPushButton,3,1)
+
+        self.installUpdateDataRadioButton = QRadioButton(LayoutWidget_3,"installUpdateDataRadioButton")
+
+        layout4.addMultiCellWidget(self.installUpdateDataRadioButton,0,0,0,1)
 
         self.installLineEdit = QLineEdit(LayoutWidget_3,"installLineEdit")
 
-        layout24.addWidget(self.installLineEdit,2,0)
+        layout4.addMultiCellWidget(self.installLineEdit,2,2,0,1)
+
+        self.installBrowsePushButton = QPushButton(LayoutWidget_3,"installBrowsePushButton")
+
+        layout4.addWidget(self.installBrowsePushButton,3,0)
 
         self.textLabel7 = QLabel(self.TabPage_2,"textLabel7")
-        self.textLabel7.setGeometry(QRect(30,150,171,31))
+        self.textLabel7.setGeometry(QRect(20,190,171,31))
 
         self.installTextBrowser = QTextBrowser(self.TabPage_2,"installTextBrowser")
-        self.installTextBrowser.setGeometry(QRect(28,184,331,201))
-
-        self.installStartButton = QPushButton(self.TabPage_2,"installStartButton")
-        self.installStartButton.setGeometry(QRect(450,340,100,30))
+        self.installTextBrowser.setGeometry(QRect(20,220,331,160))
         self.pyptTabWidget.insertTab(self.TabPage_2,QString.fromLatin1(""))
 
         self.fileExitAction = QAction(self,"fileExitAction")
@@ -257,6 +262,7 @@ class pyptofflineguiForm(QMainWindow):
         self.connect(self.fetchCacheDirectoryPushButton, SIGNAL("clicked()"), self.fetchCacheDirectoryPushButton_click)
         self.connect(self.installBrowsePushButton,SIGNAL("clicked()"),self.installBrowsePushButton_click)
 
+
     def languageChange(self):
         self.setCaption(self.__tr("pypt-offline | Offline Package Manager | (C) Ritesh Raj Sarraf - RESEARCHUT"))
         self.textLabel1.setText(self.__tr("<p align=\"center\">pypt-offline</p>"))
@@ -292,34 +298,35 @@ class pyptofflineguiForm(QMainWindow):
         QToolTip.add(self.fetchUpgradeDataRadioButton,self.__tr("Select this if you want to fetch the packages which need to be upgraded/installed"))
         QToolTip.add(self.fetchBrowseLineEdit,self.__tr("Path to the data file that was generated on the disconnected machine"))
         self.fetchBrowsePushButton.setText(self.__tr("Browse"))
-        QToolTip.add(self.fetchProgressBar,self.__tr("Not Implemented Yet"))
         self.fetchOptionsButtonGroup.setTitle(self.__tr("Options"))
         self.fetchZipCheckBox.setText(self.__tr("Zip"))
-        self.fetchTargetDownloadFolderPushButton.setText(self.__tr("..."))
-        self.fetchZipPushButton.setText(self.__tr("..."))
-        self.fetchCacheDirectoryPushButton.setText(self.__tr("..."))
         self.fetchCacheDirectoryCheckBox.setText(self.__tr("Cache Directory"))
         self.fetchTargetDownloadFolderCheckbox.setText(self.__tr("Target Download Folder"))
         QToolTip.add(self.fetchCacheDirectoryLineEdit,self.__tr("Check this and specify the cache directory which contains pre-downloaded packages"))
         QToolTip.add(self.fetchTargetDownloadFolderLineEdit,self.__tr("Check this and specify the target download folder where the downloaded data will be saved"))
-        QToolTip.add(self.fetchZipFileLineEdit,self.__tr("Check this and specify the full path for zip archive"))
+        QToolTip.add(self.lineEdit7,self.__tr("Check this and specify the full path for zip archive"))
         QToolTip.add(self.fetchThreadsSpinBox,self.__tr("Number of threads you want to spawn"))
         self.fetchThreadsTextLabel.setText(self.__tr("Threads"))
         self.fetchDisableMD5ChecksumCheckBox.setText(self.__tr("Disable MD5 Checksum"))
         QToolTip.add(self.fetchDisableMD5ChecksumCheckBox,self.__tr("Check this if you want to disable MD5 Checksum"))
         self.checkBox5.setText(self.__tr("Fetch Bug Reports"))
         QToolTip.add(self.checkBox5,self.__tr("Check this if you want to download the bug reports"))
+        self.fetchZipPushButton.setText(self.__tr("..."))
+        self.fetchTargetDownloadFolderPushButton.setText(self.__tr("..."))
+        self.fetchCacheDirectoryPushButton.setText(self.__tr("..."))
         self.fetchConsoleOutputTextLabel.setText(self.__tr("Console Output"))
         self.fetchStartButton.setText(self.__tr("Start"))
+        QToolTip.add(self.fetchProgressBar,self.__tr("Not Implemented Yet"))
         self.pyptTabWidget.changeTab(self.TabPage,self.__tr("Fetch"))
-        self.installUpdateDataRadioButton.setText(self.__tr("Update Data"))
-        QToolTip.add(self.installUpdateDataRadioButton,self.__tr("Select this to install the package database update"))
+        self.installStartButton.setText(self.__tr("Start"))
         self.installUpgradeDataRadioButton.setText(self.__tr("Upgrade Data"))
         QToolTip.add(self.installUpgradeDataRadioButton,self.__tr("Select this to install/upgrade the packages"))
-        self.installBrowsePushButton.setText(self.__tr("Browse"))
+        self.installBrowseFolderPushButton.setText(self.__tr("from Folder"))
+        self.installUpdateDataRadioButton.setText(self.__tr("Update Data"))
+        QToolTip.add(self.installUpdateDataRadioButton,self.__tr("Select this to install the package database update"))
         QToolTip.add(self.installLineEdit,self.__tr("Specify the zip archive or full folder path which contains the downloaded data"))
+        self.installBrowsePushButton.setText(self.__tr("from Archive"))
         self.textLabel7.setText(self.__tr("Console Output"))
-        self.installStartButton.setText(self.__tr("Start"))
         self.pyptTabWidget.changeTab(self.TabPage_2,self.__tr("Install"))
         self.fileExitAction.setText(self.__tr("Exit"))
         self.fileExitAction.setMenuText(self.__tr("E&xit"))
@@ -331,7 +338,7 @@ class pyptofflineguiForm(QMainWindow):
             self.MenuBar.findItem(1).setText(self.__tr("&File"))
         if self.MenuBar.findItem(2):
             self.MenuBar.findItem(2).setText(self.__tr("&Help"))
-        # -------------- END OF PYUIC GENERATED CODE --------------------------/
+
 
     def fileNew(self):
         print "pyptofflineguiForm.fileNew(): Not implemented yet"
@@ -372,7 +379,7 @@ class pyptofflineguiForm(QMainWindow):
 
     # ------------------------------------------------  begin FETCH tab's code
     def fetchBrowsePushButton_click(self):
-        filename = QFileDialog.getOpenFileName("","*.sig",self)
+        filename = QFileDialog.getOpenFileName("", "*.sig", self)
         self.fetchBrowseLineEdit.setText(filename)
 
     def fetchZipPushButton_click(self):
@@ -387,8 +394,12 @@ class pyptofflineguiForm(QMainWindow):
         foldername = QFileDialog.getExistingDirectory("",self)
         self.fetchCacheDirectoryLineEdit.setText(foldername)
 
-        
+
     # ------------------------------------------------  begin INSTALL tab's code
     def installBrowsePushButton_click(self):
+        filename = QFileDialog.getOpenFileName("", "*.zip", self)
+        self.installLineEdit.setText(filename)
+
+    def installBrowseFolderPushButton_click(self):
         foldername = QFileDialog.getExistingDirectory("",self)
-        self.installLineEdit.setText(directory)
+        self.installLineEdit.setText(foldername)
