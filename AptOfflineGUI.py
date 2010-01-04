@@ -260,8 +260,8 @@ class pyptofflineguiForm(QMainWindow):
         self.connect(self.fetchZipPushButton, SIGNAL("clicked()"), self.fetchZipPushButton_click)
         self.connect(self.fetchTargetDownloadFolderPushButton, SIGNAL("clicked()"), self.fetchTargetDownloadFolderPushButton_click)
         self.connect(self.fetchCacheDirectoryPushButton, SIGNAL("clicked()"), self.fetchCacheDirectoryPushButton_click)
-        self.connect(self.installBrowsePushButton,SIGNAL("clicked()"),self.installBrowsePushButton_click)
-
+        self.connect(self.installBrowsePushButton, SIGNAL("clicked()"), self.installBrowsePushButton_click)
+        self.connect(self.installBrowseFolderPushButton, SIGNAL("clicked()"), self.installBrowseFolderPushButton_click)
 
     def languageChange(self):
         self.setCaption(self.__tr("pypt-offline | Offline Package Manager | (C) Ritesh Raj Sarraf - RESEARCHUT"))
