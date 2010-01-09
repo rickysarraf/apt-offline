@@ -9,7 +9,7 @@
 
 
 from qt import *
-
+import sys
 
 class pyptofflineguiForm(QMainWindow):
     def __init__(self,parent = None,name = None,fl = 0):
@@ -403,3 +403,11 @@ class pyptofflineguiForm(QMainWindow):
     def installBrowseFolderPushButton_click(self):
         foldername = QFileDialog.getExistingDirectory("",self)
         self.installLineEdit.setText(foldername)
+
+if __name__=="__main__":
+    app = QApplication(sys.argv)
+    gui = pyptofflineguiForm()
+    gui.showMaximized()
+    gui.show()
+#    sys.exit(app.exec_loop())
+    app.exec_loop()
