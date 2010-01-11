@@ -27,7 +27,6 @@ import string
 import urllib2
 import Queue
 import threading
-import optparse
 import socket
 import tempfile
 
