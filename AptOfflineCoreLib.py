@@ -1323,6 +1323,24 @@ def setter(args):
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                                 log.verbose( "Set environment variable for LANG back to its original from %s to %s.\n" % ( os.environ['LANG'], old_environ ) )
                                 os.environ['LANG'] = old_environ
+                                
+                                #INFO: Handle *.reverify commands that get created during an `apt-get update` command execution
+                                # This would especially happen on apt installations where --simulate is not yet supported.
+                                # For details: See Debian BTS: #565918
+                                
+                                # Background:
+                                # When running the `apt-get update` command, apt turns all signature files to partial/*.gpg.reverify files
+                                # and expects new gpg signatures to be brought for verification.
+                                # As part of apt-offline, what we will do here is to revert back the *.reverify files
+                                # that were created during simulation (but apt up till now has not supported it here).
+                                # Again, see Debian BTS $565918 for more details.
+                                
+                                for file in os.listdir(apt_update_target_path):
+                                        if file.endswith(".gpg.reverify"):
+                                                sig_file = file.rstrip(".reverify")
+                                                file = os.path.abspath(file)
+                                                log.verbose("Recovering gpg signature %s.\n" % (file) )
+                                                os.rename(file, os.path.join(apt_update_final_path + sig_file) )
                 else:
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
