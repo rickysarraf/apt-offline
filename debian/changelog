@@ -1,3 +1,9 @@
+apt-offline (0.9.7) unstable; urgency=low
+
+  * Add DM-Upload field 
+
+ -- Ritesh Raj Sarraf <rrs@researchut.com>  Tue, 26 Jan 2010 22:57:14 +0530
+
 apt-offline (0.9.6) unstable; urgency=low
 
   * New Bug Fix Release
