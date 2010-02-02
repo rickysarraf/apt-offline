@@ -55,8 +55,8 @@
     <string>Install</string>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>icons/dialog-ok-apply.png</normaloff>icons/dialog-ok-apply.png</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/dialog-ok-apply.png</normaloff>:/icons/icons/dialog-ok-apply.png</iconset>
    </property>
   </widget>
   <widget class="QPushButton" name="cancelButton">
@@ -72,8 +72,8 @@
     <string>Cancel</string>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>icons/dialog-cancel.png</normaloff>icons/dialog-cancel.png</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/dialog-cancel.png</normaloff>:/icons/icons/dialog-cancel.png</iconset>
    </property>
   </widget>
   <widget class="QProgressBar" name="statusProgressBar">
@@ -154,6 +154,8 @@
    </property>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

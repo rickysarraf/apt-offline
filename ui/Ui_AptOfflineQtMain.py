@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtMain.ui'
 #
-# Created: Tue Feb  2 23:59:46 2010
+# Created: Wed Feb  3 01:01:08 2010
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ class Ui_MainWindow(object):
         font.setPointSize(12)
         self.createProfileButton.setFont(font)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("icons/contact-new.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/icons/icons/contact-new.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.createProfileButton.setIcon(icon)
         self.createProfileButton.setObjectName("createProfileButton")
         self.downloadButton = QtGui.QPushButton(self.centralwidget)
@@ -34,7 +34,7 @@ class Ui_MainWindow(object):
         font.setBold(False)
         self.downloadButton.setFont(font)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("icons/go-down.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/go-down.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.downloadButton.setIcon(icon1)
         self.downloadButton.setObjectName("downloadButton")
         self.restoreButton = QtGui.QPushButton(self.centralwidget)
@@ -43,7 +43,7 @@ class Ui_MainWindow(object):
         font.setPointSize(12)
         self.restoreButton.setFont(font)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("icons/install.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap(":/icons/icons/install.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.restoreButton.setIcon(icon2)
         self.restoreButton.setObjectName("restoreButton")
         self.frame = QtGui.QFrame(self.centralwidget)
@@ -67,7 +67,7 @@ class Ui_MainWindow(object):
         font.setPointSize(10)
         self.exitButton.setFont(font)
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("icons/dialog-cancel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap(":/icons/icons/dialog-cancel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.exitButton.setIcon(icon3)
         self.exitButton.setObjectName("exitButton")
         self.label_2 = QtGui.QLabel(self.centralwidget)
@@ -102,7 +102,7 @@ class Ui_MainWindow(object):
         self.menuExit.setObjectName("menuExit")
         self.menuHelp_2 = QtGui.QAction(MainWindow)
         icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap("icons/help-contents.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon4.addPixmap(QtGui.QPixmap(":/icons/icons/help-contents.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.menuHelp_2.setIcon(icon4)
         self.menuHelp_2.setObjectName("menuHelp_2")
         self.menuAbout = QtGui.QAction(MainWindow)
@@ -110,9 +110,6 @@ class Ui_MainWindow(object):
         self.menuOperations.addAction(self.menuCreateProfile)
         self.menuOperations.addAction(self.menuDownload)
         self.menuOperations.addAction(self.menuInstall)
-        self.menuOperations.addSeparator()
-        self.menuOperations.addSeparator()
-        self.menuOperations.addSeparator()
         self.menuOperations.addSeparator()
         self.menuOperations.addAction(self.menuExit)
         self.menuHelp.addAction(self.menuHelp_2)
@@ -145,3 +142,4 @@ class Ui_MainWindow(object):
         self.menuHelp_2.setShortcut(QtGui.QApplication.translate("MainWindow", "F1", None, QtGui.QApplication.UnicodeUTF8))
         self.menuAbout.setText(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
 
+import resources_rc

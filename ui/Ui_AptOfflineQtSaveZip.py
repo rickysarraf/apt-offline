@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtSaveZip.ui'
 #
-# Created: Tue Feb  2 23:58:56 2010
+# Created: Wed Feb  3 01:00:39 2010
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,13 +27,13 @@ class Ui_SaveZipFile(object):
         self.saveButton = QtGui.QPushButton(SaveZipFile)
         self.saveButton.setGeometry(QtCore.QRect(90, 120, 121, 31))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("icons/document-save.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/icons/icons/document-save.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.saveButton.setIcon(icon)
         self.saveButton.setObjectName("saveButton")
         self.cancelButton = QtGui.QPushButton(SaveZipFile)
         self.cancelButton.setGeometry(QtCore.QRect(240, 120, 121, 31))
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("icons/dialog-cancel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/dialog-cancel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.cancelButton.setIcon(icon1)
         self.cancelButton.setObjectName("cancelButton")
 
@@ -47,3 +47,4 @@ class Ui_SaveZipFile(object):
         self.saveButton.setText(QtGui.QApplication.translate("SaveZipFile", "Save", None, QtGui.QApplication.UnicodeUTF8))
         self.cancelButton.setText(QtGui.QApplication.translate("SaveZipFile", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
 
+import resources_rc

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>420</width>
-    <height>365</height>
+    <width>464</width>
+    <height>373</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>10</x>
      <y>10</y>
      <width>401</width>
-     <height>301</height>
+     <height>309</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -59,21 +59,21 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
-           <widget class="QCheckBox" name="chkUpdate">
+           <widget class="QCheckBox" name="updateCheckBox">
             <property name="text">
              <string>Update</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioButton">
+           <widget class="QRadioButton" name="upgradePackagesRadioBox">
             <property name="text">
              <string>Upgrade Packages</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioButton_2">
+           <widget class="QRadioButton" name="installPackagesRadioBox">
             <property name="text">
              <string>Install Packages</string>
             </property>
@@ -136,11 +136,17 @@ p, li { white-space: pre-wrap; }
       </item>
       <item>
        <widget class="QLineEdit" name="packageList">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="minimumSize">
          <size>
           <width>0</width>
           <height>30</height>
          </size>
+        </property>
+        <property name="readOnly">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -222,7 +228,7 @@ p, li { white-space: pre-wrap; }
         <item>
          <widget class="QLabel" name="lblConsoleOutput">
           <property name="text">
-           <string>Console Output</string>
+           <string>Console Output:</string>
           </property>
          </widget>
         </item>
@@ -342,9 +348,6 @@ p, li { white-space: pre-wrap; }
     </item>
    </layout>
   </widget>
-  <zorder>verticalLayoutWidget</zorder>
-  <zorder>horizontalLayoutWidget</zorder>
-  <zorder>horizontalSpacer_4</zorder>
  </widget>
  <resources>
   <include location="resources.qrc"/>

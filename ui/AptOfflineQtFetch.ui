@@ -55,15 +55,8 @@
     <string>Download</string>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>icons/go-down.png</normaloff>
-     <normalon>icons/go-down.png</normalon>
-     <disabledoff>icons/go-down.png</disabledoff>
-     <disabledon>icons/go-down.png</disabledon>
-     <activeoff>icons/go-down.png</activeoff>
-     <activeon>icons/go-down.png</activeon>
-     <selectedoff>icons/go-down.png</selectedoff>
-     <selectedon>icons/go-down.png</selectedon>icons/go-down.png</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/go-down.png</normaloff>:/icons/icons/go-down.png</iconset>
    </property>
    <property name="shortcut">
     <string notr="true"/>
@@ -91,8 +84,8 @@
     <string>Cancel</string>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>icons/dialog-cancel.png</normaloff>icons/dialog-cancel.png</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/dialog-cancel.png</normaloff>:/icons/icons/dialog-cancel.png</iconset>
    </property>
   </widget>
   <widget class="QLabel" name="label">
@@ -173,6 +166,8 @@
    </property>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

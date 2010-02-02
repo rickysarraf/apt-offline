@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtInstall.ui'
 #
-# Created: Tue Feb  2 23:59:58 2010
+# Created: Wed Feb  3 01:00:58 2010
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -24,13 +24,13 @@ class Ui_QAptOfflineInstall(object):
         self.startInstallButton.setEnabled(False)
         self.startInstallButton.setGeometry(QtCore.QRect(90, 110, 130, 30))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("icons/dialog-ok-apply.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/icons/icons/dialog-ok-apply.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.startInstallButton.setIcon(icon)
         self.startInstallButton.setObjectName("startInstallButton")
         self.cancelButton = QtGui.QPushButton(QAptOfflineInstall)
         self.cancelButton.setGeometry(QtCore.QRect(240, 110, 140, 30))
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("icons/dialog-cancel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/dialog-cancel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.cancelButton.setIcon(icon1)
         self.cancelButton.setObjectName("cancelButton")
         self.statusProgressBar = QtGui.QProgressBar(QAptOfflineInstall)
@@ -71,3 +71,4 @@ class Ui_QAptOfflineInstall(object):
         self.label_2.setText(QtGui.QApplication.translate("QAptOfflineInstall", "Status:", None, QtGui.QApplication.UnicodeUTF8))
         self.progressStatusDescription.setText(QtGui.QApplication.translate("QAptOfflineInstall", "Ready", None, QtGui.QApplication.UnicodeUTF8))
 
+import resources_rc
