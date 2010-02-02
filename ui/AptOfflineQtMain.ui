@@ -38,8 +38,8 @@
      <string>Create Profile</string>
     </property>
     <property name="icon">
-     <iconset>
-      <normaloff>icons/contact-new.png</normaloff>icons/contact-new.png</iconset>
+     <iconset resource="resources.qrc">
+      <normaloff>:/icons/icons/contact-new.png</normaloff>:/icons/icons/contact-new.png</iconset>
     </property>
    </widget>
    <widget class="QPushButton" name="downloadButton">
@@ -62,8 +62,8 @@
      <string>Download Packages or Upgrades</string>
     </property>
     <property name="icon">
-     <iconset>
-      <normaloff>icons/go-down.png</normaloff>icons/go-down.png</iconset>
+     <iconset resource="resources.qrc">
+      <normaloff>:/icons/icons/go-down.png</normaloff>:/icons/icons/go-down.png</iconset>
     </property>
    </widget>
    <widget class="QPushButton" name="restoreButton">
@@ -84,8 +84,8 @@
      <string>Restore Packages or Upgrades</string>
     </property>
     <property name="icon">
-     <iconset>
-      <normaloff>icons/install.png</normaloff>icons/install.png</iconset>
+     <iconset resource="resources.qrc">
+      <normaloff>:/icons/icons/install.png</normaloff>:/icons/icons/install.png</iconset>
     </property>
    </widget>
    <widget class="QFrame" name="frame">
@@ -152,8 +152,8 @@
      <string>Exit</string>
     </property>
     <property name="icon">
-     <iconset>
-      <normaloff>icons/dialog-cancel.png</normaloff>icons/dialog-cancel.png</iconset>
+     <iconset resource="resources.qrc">
+      <normaloff>:/icons/icons/dialog-cancel.png</normaloff>:/icons/icons/dialog-cancel.png</iconset>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
@@ -193,9 +193,6 @@
     <addaction name="menuDownload"/>
     <addaction name="menuInstall"/>
     <addaction name="separator"/>
-    <addaction name="separator"/>
-    <addaction name="separator"/>
-    <addaction name="separator"/>
     <addaction name="menuExit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -210,8 +207,8 @@
   </widget>
   <action name="menuCreateProfile">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/contact-new.png</normaloff>icons/contact-new.png</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/contact-new.png</normaloff>:/icons/icons/contact-new.png</iconset>
    </property>
    <property name="text">
     <string>Create Profile</string>
@@ -222,8 +219,8 @@
   </action>
   <action name="menuDownload">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/go-down.png</normaloff>icons/go-down.png</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/go-down.png</normaloff>:/icons/icons/go-down.png</iconset>
    </property>
    <property name="text">
     <string>Fetch Packages or Upgrades</string>
@@ -234,8 +231,8 @@
   </action>
   <action name="menuInstall">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/install.png</normaloff>icons/install.png</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/install.png</normaloff>:/icons/icons/install.png</iconset>
    </property>
    <property name="text">
     <string>Restore Packages or Upgrades</string>
@@ -246,8 +243,8 @@
   </action>
   <action name="menuExit">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/dialog-cancel.png</normaloff>icons/dialog-cancel.png</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/dialog-cancel.png</normaloff>:/icons/icons/dialog-cancel.png</iconset>
    </property>
    <property name="text">
     <string>Exit</string>
@@ -258,8 +255,8 @@
   </action>
   <action name="menuHelp_2">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/help-contents.png</normaloff>icons/help-contents.png</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/help-contents.png</normaloff>:/icons/icons/help-contents.png</iconset>
    </property>
    <property name="text">
     <string>Help</string>
@@ -274,6 +271,8 @@
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetch.ui'
 #
-# Created: Tue Feb  2 23:59:26 2010
+# Created: Wed Feb  3 01:00:52 2010
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -24,14 +24,7 @@ class Ui_QAptOfflineFetch(object):
         self.startDownloadButton.setEnabled(False)
         self.startDownloadButton.setGeometry(QtCore.QRect(90, 110, 130, 30))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("icons/go-down.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        icon.addPixmap(QtGui.QPixmap("icons/go-down.png"), QtGui.QIcon.Active, QtGui.QIcon.Off)
-        icon.addPixmap(QtGui.QPixmap("icons/go-down.png"), QtGui.QIcon.Selected, QtGui.QIcon.Off)
-        icon.addPixmap(QtGui.QPixmap("icons/go-down.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon.addPixmap(QtGui.QPixmap("icons/go-down.png"), QtGui.QIcon.Disabled, QtGui.QIcon.On)
-        icon.addPixmap(QtGui.QPixmap("icons/go-down.png"), QtGui.QIcon.Disabled, QtGui.QIcon.Off)
-        icon.addPixmap(QtGui.QPixmap("icons/go-down.png"), QtGui.QIcon.Selected, QtGui.QIcon.On)
-        icon.addPixmap(QtGui.QPixmap("icons/go-down.png"), QtGui.QIcon.Active, QtGui.QIcon.On)
+        icon.addPixmap(QtGui.QPixmap(":/icons/icons/go-down.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.startDownloadButton.setIcon(icon)
         self.startDownloadButton.setCheckable(False)
         self.startDownloadButton.setChecked(False)
@@ -40,7 +33,7 @@ class Ui_QAptOfflineFetch(object):
         self.cancelButton = QtGui.QPushButton(QAptOfflineFetch)
         self.cancelButton.setGeometry(QtCore.QRect(240, 110, 140, 30))
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("icons/dialog-cancel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/dialog-cancel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.cancelButton.setIcon(icon1)
         self.cancelButton.setObjectName("cancelButton")
         self.label = QtGui.QLabel(QAptOfflineFetch)
@@ -81,3 +74,4 @@ class Ui_QAptOfflineFetch(object):
         self.label_2.setText(QtGui.QApplication.translate("QAptOfflineFetch", "Status:", None, QtGui.QApplication.UnicodeUTF8))
         self.progressStatusDescription.setText(QtGui.QApplication.translate("QAptOfflineFetch", "Ready", None, QtGui.QApplication.UnicodeUTF8))
 
+import resources_rc

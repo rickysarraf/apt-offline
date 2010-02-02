@@ -68,8 +68,8 @@
     <string>Save</string>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>icons/document-save.png</normaloff>icons/document-save.png</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/document-save.png</normaloff>:/icons/icons/document-save.png</iconset>
    </property>
   </widget>
   <widget class="QPushButton" name="cancelButton">
@@ -85,11 +85,13 @@
     <string>Cancel</string>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>icons/dialog-cancel.png</normaloff>icons/dialog-cancel.png</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/dialog-cancel.png</normaloff>:/icons/icons/dialog-cancel.png</iconset>
    </property>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
