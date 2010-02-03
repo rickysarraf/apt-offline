@@ -16,7 +16,7 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
                         
         # Connect the clicked signal of the Save to it's Slot - accept
         QtCore.QObject.connect(self.ui.createProfileButton, QtCore.SIGNAL("clicked()"),
-                        self.accept )
+                        self.CreateProfile )
                         
         # Connect the clicked signal of the Cancel to it's Slot - reject
         QtCore.QObject.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
@@ -32,6 +32,10 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
         isFieldChecked = self.ui.installPackagesRadioBox.isChecked()
         print isFieldChecked
         self.ui.packageList.setReadOnly(isFieldChecked)
+    
+    def CreateProfile(self):
+        # Create the proifile here and then exit
+        self.accept()
     
     def popupDirectoryDialog(self):
         # Popup a Directory selection box

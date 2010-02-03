@@ -1,13 +1,15 @@
 import sys
 from PyQt4 import QtCore, QtGui
 
-from Ui_AptOfflineQtMain import Ui_MainWindow
+from Ui_AptOfflineQtMain import Ui_AptOfflineMain
 
+from AptOfflineQtCreateProfile import AptOfflineQtCreateProfile
+from AptOfflineQtFetch import AptOfflineQtFetch
 
 class AptOfflineQtMain(QtGui.QMainWindow):
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
-        self.ui = Ui_MainWindow()
+        self.ui = Ui_AptOfflineMain()
         self.ui.setupUi(self)
         
         # Configure the various actions
@@ -22,10 +24,14 @@ class AptOfflineQtMain(QtGui.QMainWindow):
     def ConfigureCreateProfile(self):
         QtCore.QObject.connect(self.ui.menuCreateProfile, QtCore.SIGNAL("triggered()"), self.CreateProfile)
         QtCore.QObject.connect(self.ui.createProfileButton,QtCore.SIGNAL("clicked()"), self.CreateProfile)
+        # Create an object and do not show it
+        self.createProfileDialog = AptOfflineQtCreateProfile()
         
     def ConfigureDownload(self):
         QtCore.QObject.connect(self.ui.menuDownload, QtCore.SIGNAL("triggered()"), self.DownloadPackagesUpgrades)
         QtCore.QObject.connect(self.ui.downloadButton, QtCore.SIGNAL("clicked()"), self.DownloadPackagesUpgrades)
+        # Create an object for download dialog
+        self.createDownloadDialog = AptOfflineQtFetch()
     
     def ConfigureInstall(self):
         QtCore.QObject.connect(self.ui.menuInstall, QtCore.SIGNAL("triggered()"), self.InstallPackagesUpgrades)
@@ -39,11 +45,11 @@ class AptOfflineQtMain(QtGui.QMainWindow):
     
     def CreateProfile(self):
         # Code for creating Modal Dialog for Create Profile
-        print "Create New Profile"
+        self.createDownloadDialog.show()
 
     def DownloadPackagesUpgrades(self):
         # Code for creating Modal Dialog for Downloading Packages/Upgrades
-        print "Download packages or upgrades"
+        self.createDownloadDialog.show()
 
     def InstallPackagesUpgrades(self):
         # Code for creating Modal Dialog for Installing Packages/Upgrades

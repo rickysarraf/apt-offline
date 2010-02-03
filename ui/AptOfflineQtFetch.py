@@ -16,7 +16,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
                         
         # Connect the clicked signal of the Save to it's Slot - accept
         QtCore.QObject.connect(self.ui.startDownloadButton, QtCore.SIGNAL("clicked()"),
-                        self.accept )
+                        self.StartDownload )
                         
         # Connect the clicked signal of the Cancel to it's Slot - reject
         QtCore.QObject.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
@@ -33,7 +33,9 @@ class AptOfflineQtFetch(QtGui.QDialog):
         
         self.ControlStartDownloadBox()
         
-        
+    def StartDownload(self):
+        # Do all the download related work here and then close
+        self.accept()
     
     def ControlStartDownloadBox(self):
         if self.ui.profileFilePath.text().isEmpty():
