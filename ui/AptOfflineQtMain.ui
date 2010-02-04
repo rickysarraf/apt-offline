@@ -153,7 +153,7 @@
     </property>
     <property name="icon">
      <iconset resource="resources.qrc">
-      <normaloff>:/icons/icons/dialog-cancel.png</normaloff>:/icons/icons/dialog-cancel.png</iconset>
+      <normaloff>:/icons/icons/application-exit.png</normaloff>:/icons/icons/application-exit.png</iconset>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
@@ -244,7 +244,7 @@
   <action name="menuExit">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/icons/icons/dialog-cancel.png</normaloff>:/icons/icons/dialog-cancel.png</iconset>
+     <normaloff>:/icons/icons/application-exit.png</normaloff>:/icons/icons/application-exit.png</iconset>
    </property>
    <property name="text">
     <string>Exit</string>
