@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtCreateProfile.ui'
 #
-# Created: Wed Feb  3 01:40:38 2010
+# Created: Thu Feb  4 01:28:54 2010
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PyQt4 import QtCore, QtGui
 class Ui_CreateProfile(object):
     def setupUi(self, CreateProfile):
         CreateProfile.setObjectName("CreateProfile")
-        CreateProfile.resize(464, 373)
+        CreateProfile.resize(420, 368)
         self.verticalLayoutWidget = QtGui.QWidget(CreateProfile)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 401, 309))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
@@ -87,10 +87,10 @@ class Ui_CreateProfile(object):
         self.profileFilePath.setMinimumSize(QtCore.QSize(0, 30))
         self.profileFilePath.setObjectName("profileFilePath")
         self.horizontalLayout_3.addWidget(self.profileFilePath)
-        self.browserFilePathButton = QtGui.QPushButton(self.verticalLayoutWidget)
-        self.browserFilePathButton.setMinimumSize(QtCore.QSize(0, 30))
-        self.browserFilePathButton.setObjectName("browserFilePathButton")
-        self.horizontalLayout_3.addWidget(self.browserFilePathButton)
+        self.browseFilePathButton = QtGui.QPushButton(self.verticalLayoutWidget)
+        self.browseFilePathButton.setMinimumSize(QtCore.QSize(0, 30))
+        self.browseFilePathButton.setObjectName("browseFilePathButton")
+        self.horizontalLayout_3.addWidget(self.browseFilePathButton)
         self.horizontalLayout_2.addLayout(self.horizontalLayout_3)
         self.verticalLayout_5.addLayout(self.horizontalLayout_2)
         self.verticalLayout_8 = QtGui.QVBoxLayout()
@@ -141,7 +141,7 @@ class Ui_CreateProfile(object):
         QtCore.QMetaObject.connectSlotsByName(CreateProfile)
 
     def retranslateUi(self, CreateProfile):
-        CreateProfile.setWindowTitle(QtGui.QApplication.translate("CreateProfile", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
+        CreateProfile.setWindowTitle(QtGui.QApplication.translate("CreateProfile", "Create Profile", None, QtGui.QApplication.UnicodeUTF8))
         self.lblInstallType.setText(QtGui.QApplication.translate("CreateProfile", "Installation Type", None, QtGui.QApplication.UnicodeUTF8))
         self.updateCheckBox.setText(QtGui.QApplication.translate("CreateProfile", "Update", None, QtGui.QApplication.UnicodeUTF8))
         self.upgradePackagesRadioBox.setText(QtGui.QApplication.translate("CreateProfile", "Upgrade Packages", None, QtGui.QApplication.UnicodeUTF8))
@@ -153,7 +153,7 @@ class Ui_CreateProfile(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Install these packages</p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:7pt;\">separate by comma</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.lblSaveProfile.setText(QtGui.QApplication.translate("CreateProfile", "Save Profile As ", None, QtGui.QApplication.UnicodeUTF8))
-        self.browserFilePathButton.setText(QtGui.QApplication.translate("CreateProfile", "Browse", None, QtGui.QApplication.UnicodeUTF8))
+        self.browseFilePathButton.setText(QtGui.QApplication.translate("CreateProfile", "Browse", None, QtGui.QApplication.UnicodeUTF8))
         self.lblConsoleOutput.setText(QtGui.QApplication.translate("CreateProfile", "Console Output:", None, QtGui.QApplication.UnicodeUTF8))
         self.createProfileButton.setText(QtGui.QApplication.translate("CreateProfile", "Create", None, QtGui.QApplication.UnicodeUTF8))
         self.cancelButton.setText(QtGui.QApplication.translate("CreateProfile", "Cancel", None, QtGui.QApplication.UnicodeUTF8))

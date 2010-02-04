@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>QAptOfflineFetch</class>
- <widget class="QDialog" name="QAptOfflineFetch">
+ <class>AptOfflineQtFetch</class>
+ <widget class="QDialog" name="AptOfflineQtFetch">
   <property name="windowModality">
    <enum>Qt::WindowModal</enum>
   </property>
