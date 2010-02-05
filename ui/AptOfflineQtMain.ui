@@ -266,8 +266,12 @@
    </property>
   </action>
   <action name="menuAbout">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/help-about.png</normaloff>:/icons/icons/help-about.png</iconset>
+   </property>
    <property name="text">
-    <string>About</string>
+    <string>About apt-offline</string>
    </property>
   </action>
  </widget>

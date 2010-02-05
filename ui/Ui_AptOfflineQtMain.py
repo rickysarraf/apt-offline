@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtMain.ui'
 #
-# Created: Wed Feb  3 23:46:31 2010
+# Created: Fri Feb  5 01:18:11 2010
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -106,6 +106,9 @@ class Ui_AptOfflineMain(object):
         self.menuHelp_2.setIcon(icon4)
         self.menuHelp_2.setObjectName("menuHelp_2")
         self.menuAbout = QtGui.QAction(AptOfflineMain)
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap(":/icons/icons/help-about.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.menuAbout.setIcon(icon5)
         self.menuAbout.setObjectName("menuAbout")
         self.menuOperations.addAction(self.menuCreateProfile)
         self.menuOperations.addAction(self.menuDownload)
@@ -140,6 +143,6 @@ class Ui_AptOfflineMain(object):
         self.menuExit.setShortcut(QtGui.QApplication.translate("AptOfflineMain", "Ctrl+Q", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp_2.setText(QtGui.QApplication.translate("AptOfflineMain", "Help", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp_2.setShortcut(QtGui.QApplication.translate("AptOfflineMain", "F1", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuAbout.setText(QtGui.QApplication.translate("AptOfflineMain", "About", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuAbout.setText(QtGui.QApplication.translate("AptOfflineMain", "About apt-offline", None, QtGui.QApplication.UnicodeUTF8))
 
 import resources_rc

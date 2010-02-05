@@ -5,6 +5,7 @@ from Ui_AptOfflineQtMain import Ui_AptOfflineMain
 
 from AptOfflineQtCreateProfile import AptOfflineQtCreateProfile
 from AptOfflineQtFetch import AptOfflineQtFetch
+from AptOfflineQtInstall import AptOfflineQtInstall
 
 class AptOfflineQtMain(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -36,6 +37,8 @@ class AptOfflineQtMain(QtGui.QMainWindow):
     def ConfigureInstall(self):
         QtCore.QObject.connect(self.ui.menuInstall, QtCore.SIGNAL("triggered()"), self.InstallPackagesUpgrades)
         QtCore.QObject.connect(self.ui.restoreButton, QtCore.SIGNAL("clicked()"), self.InstallPackagesUpgrades)
+        # Create an object for Install dialog
+        self.createInstallDialog = AptOfflineQtInstall()
         
     def ConfigureMenuExit(self):
         QtCore.QObject.connect(self.ui.menuExit, QtCore.SIGNAL("triggered()"), self.ExitApp)
@@ -53,7 +56,7 @@ class AptOfflineQtMain(QtGui.QMainWindow):
 
     def InstallPackagesUpgrades(self):
         # Code for creating Modal Dialog for Installing Packages/Upgrades
-        print "Installing packages or upgrades"
+        self.createInstallDialog.show()
 
     def CreateButtonHoverHelp(self):
         pass
