@@ -7,18 +7,17 @@
 import textwrap
 import distutils.core
 
-import AptOfflineCoreLib
-import AptOfflineDebianBtsLib
-#import AptOfflineFetchBugs
-#import AptOfflineGUI
-import AptOfflineLib
-import AptOfflineMagicLib
-import AptOffline_reportbug_exceptions
-import AptOffline_urlutils
+import apt_offline_core.AptOfflineDebianBtsLib
+import apt_offline_core.AptOffline_argparse
+import apt_offline_core.AptOfflineLib
+import apt_offline_core.AptOfflineMagicLib
+import apt_offline_core.AptOffline_reportbug_exceptions
+import apt_offline_core.AptOffline_urlutils
+import apt_offline_core.AptOfflineCoreLib
 
 distutils.core.setup(
     name='apt-offline',
-    version=AptOfflineCoreLib.version,
+    version=apt_offline_core.AptOfflineCoreLib.version,
     author='Ritesh Raj Sarraf',
     author_email='rrs@researchut.com',
     url='http://apt-offline.alioth.debian.org',
@@ -37,13 +36,14 @@ distutils.core.setup(
         'Programming Language :: Python',
         'Topic :: Package Management',
     ],
-    py_modules=['AptOfflineCoreLib',
-            'AptOfflineDebianBtsLib',
-#            'AptOfflineFetchBugs.py',
-#            'AptOfflineGUI',
-            'AptOfflineLib',
-            'AptOfflineMagicLib',
-            'AptOffline_reportbug_exceptions',
-            'AptOffline_urlutils',],
+    py_modules=[
+            'apt_offline_core.AptOfflineDebianBtsLib',
+            'apt_offline_core.AptOffline_argparse',
+            'apt_offline_core.AptOfflineLib',
+            'apt_offline_core.AptOfflineMagicLib',
+            'apt_offline_core.AptOffline_reportbug_exceptions',
+            'apt_offline_core.AptOffline_urlutils',
+            'apt_offline_core.AptOfflineCoreLib'
+            ],
     scripts=['apt-offline'],
 )
