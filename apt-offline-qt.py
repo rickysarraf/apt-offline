@@ -20,3 +20,13 @@
 #    Free Software Foundation, Inc.,                                       #
 #    59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ############################################################################
+
+import sys
+from PyQt4 import QtCore, QtGui
+from apt_offline_gui.AptOfflineQtMain import AptOfflineQtMain
+
+if __name__ == "__main__":
+    app = QtGui.QApplication(sys.argv)
+    myapp = AptOfflineQtMain()
+    myapp.show()
+    sys.exit(app.exec_())

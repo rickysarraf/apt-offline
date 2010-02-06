@@ -1,7 +1,7 @@
 import sys
 from PyQt4 import QtCore, QtGui
 
-from Ui_AptOfflineQtCreateProfile import Ui_CreateProfile
+from apt_offline_gui.Ui_AptOfflineQtCreateProfile import Ui_CreateProfile
 
 
 class AptOfflineQtCreateProfile(QtGui.QDialog):
@@ -23,18 +23,16 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
                         self.reject )
         
         # Disable or Enable the Package List field
-        QtCore.QObject.connect(self.ui.installPackagesRadioBox, QtCore.SIGNAL("toggled()"),
+        QtCore.QObject.connect(self.ui.installPackagesRadioBox, QtCore.SIGNAL("toggled(bool)"),
                         self.PackageListFieldStatus )
         
     def PackageListFieldStatus(self):
         # If Install Packages Box is selected
-        print "Hello"
-        isFieldChecked = self.ui.installPackagesRadioBox.isChecked()
-        print isFieldChecked
-        self.ui.packageList.setReadOnly(isFieldChecked)
+        self.isFieldChecked = self.ui.installPackagesRadioBox.isChecked()
+        self.ui.packageList.setEnabled(self.isFieldChecked)
     
     def CreateProfile(self):
-        # Create the proifile here and then exit
+        # Create the profile here and then exit
         self.accept()
     
     def popupDirectoryDialog(self):

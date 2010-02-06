@@ -1,7 +1,7 @@
 import sys
 from PyQt4 import QtCore, QtGui
 
-from Ui_AptOfflineQtSaveZip import Ui_SaveZipFile
+from apt_offline_gui.Ui_AptOfflineQtSaveZip import Ui_SaveZipFile
 
 
 class AptOfflineQtSaveZip(QtGui.QDialog):
