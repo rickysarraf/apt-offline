@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtMain.ui'
 #
-# Created: Fri Feb  5 01:18:11 2010
+# Created: Fri Feb  5 02:52:22 2010
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -67,7 +67,7 @@ class Ui_AptOfflineMain(object):
         font.setPointSize(10)
         self.exitButton.setFont(font)
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(":/icons/icons/dialog-cancel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap(":/icons/icons/application-exit.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.exitButton.setIcon(icon3)
         self.exitButton.setObjectName("exitButton")
         self.label_2 = QtGui.QLabel(self.centralwidget)

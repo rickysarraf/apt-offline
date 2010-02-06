@@ -6,6 +6,7 @@ from Ui_AptOfflineQtMain import Ui_AptOfflineMain
 from AptOfflineQtCreateProfile import AptOfflineQtCreateProfile
 from AptOfflineQtFetch import AptOfflineQtFetch
 from AptOfflineQtInstall import AptOfflineQtInstall
+from AptOfflineQtAbout import AptOfflineQtAbout
 
 class AptOfflineQtMain(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -17,6 +18,7 @@ class AptOfflineQtMain(QtGui.QMainWindow):
         self.ConfigureCreateProfile()
         self.ConfigureDownload()
         self.ConfigureInstall()
+        self.ConfigureAbout()
         self.ConfigureMenuExit()
         
         # Configure Hover over Buttons for Help
@@ -39,6 +41,11 @@ class AptOfflineQtMain(QtGui.QMainWindow):
         QtCore.QObject.connect(self.ui.restoreButton, QtCore.SIGNAL("clicked()"), self.InstallPackagesUpgrades)
         # Create an object for Install dialog
         self.createInstallDialog = AptOfflineQtInstall()
+
+    def ConfigureAbout(self):
+        QtCore.QObject.connect(self.ui.menuAbout, QtCore.SIGNAL("triggered()"), self.ShowAbout)
+        # Create an object for About Dialog
+        self.createAboutDialog = AptOfflineQtAbout()
         
     def ConfigureMenuExit(self):
         QtCore.QObject.connect(self.ui.menuExit, QtCore.SIGNAL("triggered()"), self.ExitApp)
@@ -57,6 +64,10 @@ class AptOfflineQtMain(QtGui.QMainWindow):
     def InstallPackagesUpgrades(self):
         # Code for creating Modal Dialog for Installing Packages/Upgrades
         self.createInstallDialog.show()
+    
+    def ShowAbout(self):
+        # Code for showing Model Dialog for About Application
+        self.createAboutDialog.show()
 
     def CreateButtonHoverHelp(self):
         pass
