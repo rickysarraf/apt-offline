@@ -1,4 +1,4 @@
-import sys
+import sys,os
 from PyQt4 import QtCore, QtGui
 
 from apt_offline_gui.Ui_AptOfflineQtCreateProfile import Ui_CreateProfile
@@ -37,7 +37,8 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
     
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
-        directory = QtGui.QFileDialog.getExistingDirectory(self, u'Open Directory')
+        signatureFilePath = os.path.expanduser("~")+"/Desktop/"+"apt-offline.sig"
+        directory = QtGui.QFileDialog.getSaveFileName(self, u'Select a filename to save the signature', signatureFilePath, "apt-offline Signatures (*.sig)")
         # Show the selected file path in the field marked for showing directory path
         self.ui.profileFilePath.setText(directory)
 
