@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtMain.ui'
 #
-# Created: Fri Feb  5 02:52:22 2010
+# Created: Sun Feb  7 15:40:12 2010
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -81,7 +81,7 @@ class Ui_AptOfflineMain(object):
         self.statusbar.setObjectName("statusbar")
         AptOfflineMain.setStatusBar(self.statusbar)
         self.menubar = QtGui.QMenuBar(AptOfflineMain)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 432, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 432, 21))
         self.menubar.setObjectName("menubar")
         self.menuOperations = QtGui.QMenu(self.menubar)
         self.menuOperations.setObjectName("menuOperations")
@@ -125,9 +125,9 @@ class Ui_AptOfflineMain(object):
 
     def retranslateUi(self, AptOfflineMain):
         AptOfflineMain.setWindowTitle(QtGui.QApplication.translate("AptOfflineMain", "APT Offline", None, QtGui.QApplication.UnicodeUTF8))
-        self.createProfileButton.setText(QtGui.QApplication.translate("AptOfflineMain", "Create Profile", None, QtGui.QApplication.UnicodeUTF8))
+        self.createProfileButton.setText(QtGui.QApplication.translate("AptOfflineMain", "Create Signature", None, QtGui.QApplication.UnicodeUTF8))
         self.downloadButton.setText(QtGui.QApplication.translate("AptOfflineMain", "Download Packages or Upgrades", None, QtGui.QApplication.UnicodeUTF8))
-        self.restoreButton.setText(QtGui.QApplication.translate("AptOfflineMain", "Restore Packages or Upgrades", None, QtGui.QApplication.UnicodeUTF8))
+        self.restoreButton.setText(QtGui.QApplication.translate("AptOfflineMain", "Install Packages or Upgrades", None, QtGui.QApplication.UnicodeUTF8))
         self.descriptionField.setText(QtGui.QApplication.translate("AptOfflineMain", "Hover your mouse over the buttons to get the description", None, QtGui.QApplication.UnicodeUTF8))
         self.exitButton.setText(QtGui.QApplication.translate("AptOfflineMain", "Exit", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("AptOfflineMain", "Description", None, QtGui.QApplication.UnicodeUTF8))
