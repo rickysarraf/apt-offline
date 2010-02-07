@@ -81,7 +81,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Restore Packages or Upgrades</string>
+     <string>Install Packages or Upgrades</string>
     </property>
     <property name="icon">
      <iconset resource="resources.qrc">
