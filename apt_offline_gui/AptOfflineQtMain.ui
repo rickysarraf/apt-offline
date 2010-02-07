@@ -35,7 +35,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Create Profile</string>
+     <string>Create Signature</string>
     </property>
     <property name="icon">
      <iconset resource="resources.qrc">
@@ -182,7 +182,7 @@
      <x>0</x>
      <y>0</y>
      <width>432</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOperations">
