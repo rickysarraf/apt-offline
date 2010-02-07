@@ -182,7 +182,7 @@
      <x>0</x>
      <y>0</y>
      <width>432</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOperations">
@@ -211,7 +211,7 @@
      <normaloff>:/icons/icons/contact-new.png</normaloff>:/icons/icons/contact-new.png</iconset>
    </property>
    <property name="text">
-    <string>Create Profile</string>
+    <string>Create Signature</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
@@ -223,7 +223,7 @@
      <normaloff>:/icons/icons/go-down.png</normaloff>:/icons/icons/go-down.png</iconset>
    </property>
    <property name="text">
-    <string>Fetch Packages or Upgrades</string>
+    <string>Download Packages or Upgrades</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -235,7 +235,7 @@
      <normaloff>:/icons/icons/install.png</normaloff>:/icons/icons/install.png</iconset>
    </property>
    <property name="text">
-    <string>Restore Packages or Upgrades</string>
+    <string>Install Packages or Upgrades</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>

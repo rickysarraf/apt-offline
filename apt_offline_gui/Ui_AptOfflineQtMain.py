@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtMain.ui'
 #
-# Created: Sun Feb  7 15:40:12 2010
+# Created: Sun Feb  7 16:26:57 2010
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -81,7 +81,7 @@ class Ui_AptOfflineMain(object):
         self.statusbar.setObjectName("statusbar")
         AptOfflineMain.setStatusBar(self.statusbar)
         self.menubar = QtGui.QMenuBar(AptOfflineMain)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 432, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 432, 20))
         self.menubar.setObjectName("menubar")
         self.menuOperations = QtGui.QMenu(self.menubar)
         self.menuOperations.setObjectName("menuOperations")
@@ -133,11 +133,11 @@ class Ui_AptOfflineMain(object):
         self.label_2.setText(QtGui.QApplication.translate("AptOfflineMain", "Description", None, QtGui.QApplication.UnicodeUTF8))
         self.menuOperations.setTitle(QtGui.QApplication.translate("AptOfflineMain", "Operations", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp.setTitle(QtGui.QApplication.translate("AptOfflineMain", "Help", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuCreateProfile.setText(QtGui.QApplication.translate("AptOfflineMain", "Create Profile", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuCreateProfile.setText(QtGui.QApplication.translate("AptOfflineMain", "Create Signature", None, QtGui.QApplication.UnicodeUTF8))
         self.menuCreateProfile.setShortcut(QtGui.QApplication.translate("AptOfflineMain", "Ctrl+N", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuDownload.setText(QtGui.QApplication.translate("AptOfflineMain", "Fetch Packages or Upgrades", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuDownload.setText(QtGui.QApplication.translate("AptOfflineMain", "Download Packages or Upgrades", None, QtGui.QApplication.UnicodeUTF8))
         self.menuDownload.setShortcut(QtGui.QApplication.translate("AptOfflineMain", "Ctrl+O", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuInstall.setText(QtGui.QApplication.translate("AptOfflineMain", "Restore Packages or Upgrades", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuInstall.setText(QtGui.QApplication.translate("AptOfflineMain", "Install Packages or Upgrades", None, QtGui.QApplication.UnicodeUTF8))
         self.menuInstall.setShortcut(QtGui.QApplication.translate("AptOfflineMain", "Ctrl+I", None, QtGui.QApplication.UnicodeUTF8))
         self.menuExit.setText(QtGui.QApplication.translate("AptOfflineMain", "Exit", None, QtGui.QApplication.UnicodeUTF8))
         self.menuExit.setShortcut(QtGui.QApplication.translate("AptOfflineMain", "Ctrl+Q", None, QtGui.QApplication.UnicodeUTF8))
