@@ -1,7 +1,7 @@
 import sys
 from PyQt4 import QtCore, QtGui
 
-from Ui_AptOfflineQtFetch import Ui_AptOfflineQtFetch
+from apt_offline_gui.Ui_AptOfflineQtFetch import Ui_AptOfflineQtFetch
 
 
 class AptOfflineQtFetch(QtGui.QDialog):

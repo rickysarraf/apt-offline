@@ -1,7 +1,7 @@
 import sys
 from PyQt4 import QtCore, QtGui
 
-from Ui_AptOfflineQtInstall import Ui_AptOfflineQtInstall
+from apt_offline_gui.Ui_AptOfflineQtInstall import Ui_AptOfflineQtInstall
 
 
 class AptOfflineQtInstall(QtGui.QDialog):

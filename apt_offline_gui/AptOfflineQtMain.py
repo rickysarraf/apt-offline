@@ -1,12 +1,12 @@
 import sys
 from PyQt4 import QtCore, QtGui
 
-from Ui_AptOfflineQtMain import Ui_AptOfflineMain
+from apt_offline_gui.Ui_AptOfflineQtMain import Ui_AptOfflineMain
 
-from AptOfflineQtCreateProfile import AptOfflineQtCreateProfile
-from AptOfflineQtFetch import AptOfflineQtFetch
-from AptOfflineQtInstall import AptOfflineQtInstall
-from AptOfflineQtAbout import AptOfflineQtAbout
+from apt_offline_gui.AptOfflineQtCreateProfile import AptOfflineQtCreateProfile
+from apt_offline_gui.AptOfflineQtFetch import AptOfflineQtFetch
+from apt_offline_gui.AptOfflineQtInstall import AptOfflineQtInstall
+from apt_offline_gui.AptOfflineQtAbout import AptOfflineQtAbout
 
 class AptOfflineQtMain(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -55,7 +55,7 @@ class AptOfflineQtMain(QtGui.QMainWindow):
     
     def CreateProfile(self):
         # Code for creating Modal Dialog for Create Profile
-        self.createDownloadDialog.show()
+        self.createProfileDialog.show()
 
     def DownloadPackagesUpgrades(self):
         # Code for creating Modal Dialog for Downloading Packages/Upgrades
@@ -74,9 +74,4 @@ class AptOfflineQtMain(QtGui.QMainWindow):
 
     def ExitApp(self):
         self.close()
-    
-if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
-    myapp = AptOfflineQtMain()
-    myapp.show()
-    sys.exit(app.exec_())
+
