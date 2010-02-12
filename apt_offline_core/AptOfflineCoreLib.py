@@ -101,6 +101,11 @@ LINE_OVERWRITE_SMALL = " " * 10
 LINE_OVERWRITE_MID = " " * 30
 LINE_OVERWRITE_FULL = " " * 60
 
+Bool_Verbose = False
+#Bool_TestWindows = True
+                
+log = AptOfflineLib.Log( Bool_Verbose, lock=True )
+
        
 class FetchBugReports( AptOfflineLib.Archiver ):
         def __init__( self, apt_bug_file_format, IgnoredBugTypes, ArchiveFile=None, lock=False ):
@@ -1270,8 +1275,8 @@ def installer( args ):
                         
 
 def setter(args):
-        log.verbose(str(args) )
-        Str_SetArg = args.set
+        #log.verbose(str(args) )
+        Str_SetArg = args.set.__str__()
         List_SetInstallPackages = args.set_install_packages
         List_SetInstallSrcPackages = args.set_install_src_packages
         Str_SetInstallRelease = args.set_install_release
@@ -1450,6 +1455,9 @@ def setter(args):
                 else:
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
+                        
+        log.msg("Completed")
+        return True
         
 def gui(args):
         Bool_GUI = args.gui
@@ -1593,11 +1601,7 @@ def main():
                 # Sanitize the options/arguments
                 #
         	# Global opts
-        	Bool_Verbose = args.verbose
-        	Bool_TestWindows = args.test_windows
-                
-        	global log
-        	log = AptOfflineLib.Log( Bool_Verbose, lock=True )
+        	
         	log.verbose(str(args) + "\n")
         
         	args.func(args)
