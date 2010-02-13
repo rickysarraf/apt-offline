@@ -51,7 +51,7 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
         # If atleast one is requested
         if self.updateChecked or self.upgradeChecked or self.installChecked:
             if self.installChecked:
-                self.packageList = self.ui.packageList.text().split(",")
+                self.packageList = str(self.ui.packageList.text()).split(",")
             else:
                 self.packageList = None
 
