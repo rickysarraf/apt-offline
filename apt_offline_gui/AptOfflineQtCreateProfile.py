@@ -42,19 +42,22 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
         # Is Install Requested
         self.installChecked = self.ui.installPackagesRadioBox.isChecked()
 
-        filename = str(self.ui.profileFilePath.text())
+        self.filepath = str(self.ui.profileFilePath.text())
         
-        if os.path.exists(os.path.dirname(filename)) == False:
+        if os.path.exists(os.path.dirname(self.filepath)) == False:
             print "Wrong file"
             return
         
         # If atleast one is requested
         if self.updateChecked or self.upgradeChecked or self.installChecked:
-            self.filepath=self.ui.profileFilePath.text()
             if self.installChecked:
-                self.packageList = self.ui.packageList.split(",")
+                self.packageList = self.ui.packageList.text().split(",")
             else:
                 self.packageList = None
+
+            # setup i/o redirects before call
+            sys.stdout = self
+            
             args = SetterArgs(filename=self.filepath, update=self.updateChecked, upgrade=self.upgradeChecked, install_packages=self.packageList)
             returnStatus = apt_offline_core.AptOfflineCoreLib.setter(args)
             
@@ -69,11 +72,17 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
     
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
-        signatureFilePath = os.path.expanduser("~")+"/Desktop/"+"apt-offline.sig"
+        signatureFilePath = os.path.join (os.path.expanduser("~"), "/Desktop/"+"apt-offline.sig")
         directory = QtGui.QFileDialog.getSaveFileName(self, u'Select a filename to save the signature', signatureFilePath, "apt-offline Signatures (*.sig)")
         # Show the selected file path in the field marked for showing directory path
         self.ui.profileFilePath.setText(directory)
 
+    def write(self, text):
+        # redirects console output to our consoleOutputHolder
+        self.ui.consoleOutputHolder.append (text)
+
+    def flush(self):
+        ''' '''
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
