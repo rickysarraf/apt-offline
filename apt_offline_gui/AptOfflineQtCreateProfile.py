@@ -43,10 +43,14 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
         # Is Install Requested
         self.installChecked = self.ui.installPackagesRadioBox.isChecked()
 
+        # Clear the consoleOutputHolder
+        self.ui.consoleOutputHolder.setText("")
+        
         self.filepath = str(self.ui.profileFilePath.text())
         
         if os.path.exists(os.path.dirname(self.filepath)) == False:
-            print "Wrong file"
+            self.ui.consoleOutputHolder.append ( \
+                                    guicommon.style("Wrong file",'red'))
             return
         
         # If atleast one is requested

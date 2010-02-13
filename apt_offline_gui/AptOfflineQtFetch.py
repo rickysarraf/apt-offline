@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 from PyQt4 import QtCore, QtGui
 
@@ -35,7 +36,14 @@ class AptOfflineQtFetch(QtGui.QDialog):
         
     def StartDownload(self):
         # Do all the download related work here and then close
-        self.accept()
+        self.filepath = str(self.ui.profileFilePath.text())
+
+        if os.path.exists(os.path.dirname(self.filepath)) == False:
+            print "Wrong file"
+            return
+        
+        # TODO to be implemented later
+        # self.accept()
     
     def ControlStartDownloadBox(self):
         if self.ui.profileFilePath.text().isEmpty():
