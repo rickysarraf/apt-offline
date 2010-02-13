@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, sys
+import os, sys, thread
 from PyQt4 import QtCore, QtGui
 
 from apt_offline_gui.Ui_AptOfflineQtFetch import Ui_AptOfflineQtFetch
@@ -58,13 +58,18 @@ class AptOfflineQtFetch(QtGui.QDialog):
         
         # TODO: generate a unique zipfile name
         self.zipfilepath = '/tmp/foozz.zip'
-        
         args = GetterArgs(filename=self.filepath, bundle_file= self.zipfilepath)
         
-        returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
+        # setup i/o redirects before call
+        sys.stdout = self
+        sys.stderr = self
+        
+        # returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
+        # TODO: deal with return status laters
+        thread.start_new_thread (apt_offline_core.AptOfflineCoreLib.fetcher, (args,))
 
-        if (returnStatus):
-            ''' TODO: do something with self.zipfilepath '''
+        #if (returnStatus):
+        ''' TODO: do something with self.zipfilepath '''
             
         # TODO to be implemented later
         # self.accept()
@@ -74,6 +79,14 @@ class AptOfflineQtFetch(QtGui.QDialog):
             self.ui.startDownloadButton.setEnabled(False)
         else:
             self.ui.startDownloadButton.setEnabled(True)
+
+    def write(self, text):
+        # redirects console output to our consoleOutputHolder
+        guicommon.updateInto (self.ui.rawLogHolder,text)
+
+    def flush(self):
+        ''' nothing to do :D '''
+        
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)

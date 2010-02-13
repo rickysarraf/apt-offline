@@ -88,17 +88,7 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
 
     def write(self, text):
         # redirects console output to our consoleOutputHolder
-        # sanitize coloring
-        if ('[1;' in text):
-            return
-
-        if ("ERROR" in text or "FATAL" in text):
-            text = guicommon.style(text,'red')
-            
-        if ("Completed" in text):
-            text = guicommon.style(text,'green_fin')
-            
-        self.ui.consoleOutputHolder.append (text)
+        guicommon.updateInto(self.ui.consoleOutputHolder,text)
 
     def flush(self):
         ''' nothing to do :D '''
