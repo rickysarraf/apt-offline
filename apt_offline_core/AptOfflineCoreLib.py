@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 ############################################################################
 #    Copyright (C) 2005, 2009 Ritesh Raj Sarraf                            #
@@ -51,13 +52,8 @@ except ImportError:
 
 import AptOfflineMagicLib
 
-guiBool = True
-try:
-        from qt import *
-        from AptOfflineGUI import pyptofflineguiForm
-except ImportError:
-        guiBool = False
-    
+guiBool = False
+
 #INFO: Check if python-apt is installed
 PythonApt = True
 try:

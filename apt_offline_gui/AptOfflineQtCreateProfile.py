@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys,os
 from PyQt4 import QtCore, QtGui
 
@@ -40,8 +41,10 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
         self.upgradeChecked = self.ui.upgradePackagesRadioBox.isChecked()
         # Is Install Requested
         self.installChecked = self.ui.installPackagesRadioBox.isChecked()
+
+        filename = str(self.ui.profileFilePath.text())
         
-        if os.path.exists(self.ui.profileFilePath.text()) == False:
+        if os.path.exists(os.path.dirname(filename)) == False:
             print "Wrong file"
             return
         
