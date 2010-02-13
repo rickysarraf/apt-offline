@@ -57,6 +57,7 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
 
             # setup i/o redirects before call
             sys.stdout = self
+            sys.stderr = self
             
             args = SetterArgs(filename=self.filepath, update=self.updateChecked, upgrade=self.upgradeChecked, install_packages=self.packageList)
             returnStatus = apt_offline_core.AptOfflineCoreLib.setter(args)
@@ -65,7 +66,6 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
                 self.ui.createProfileButton.setEnabled(False)
                 self.ui.cancelButton.setText("Finish")
                 self.ui.cancelButton.setIcon(QtGui.QIcon())
-                
         else:
             pass
         
@@ -79,10 +79,17 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
 
     def write(self, text):
         # redirects console output to our consoleOutputHolder
+        # sanitize coloring
+        if ('[1;' in text):
+            return
+        
+        if ("ERROR" in text):
+            text = "<span style='color:red;'>" + text + "</span>" 
         self.ui.consoleOutputHolder.append (text)
 
     def flush(self):
-        ''' '''
+        ''' nothing to do :D '''
+
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
