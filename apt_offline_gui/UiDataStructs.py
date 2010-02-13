@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from PyQt4 import QtCore, QtGui
+
 class SetterArgs():
     
     def __init__(self, filename, update, upgrade, install_packages):
@@ -45,7 +47,10 @@ class GetterArgs():
         self.deb_bugs = deb_bugs
         self.download_dir = download_dir
         self.cache_dir = cache_dir
+        
         self.qt_gui = True
+        self.progress_bar = QtGui.QProgressBar()
+        self.progress_label = QtGui.QLabel()
 
     def __str__(self):
         print "self.get=",self.get
@@ -60,3 +65,27 @@ class GetterArgs():
         
         return ""
 
+'''
+# install opts
+        Str_InstallArg = args.install
+        Bool_TestWindows = args.test_windows
+        Bool_SkipBugReports = args.skip_bug_reports
+        Bool_Untrusted = args.allow_unauthenticated
+        Str_InstallSrcPath = args.install_src_path
+'''
+
+class InstallerArgs():
+
+    def __init__(self, filename=None, test_windows=False, skip_bug_reports=True, allow_unauthenticated=False, install_src_path=None):
+
+        self.install = filename
+
+        # TODO: to be implemented in next revision
+        self.test_windows = test_windows
+        self.skip_bug_reports = skip_bug_reports
+        self.allow_unauthenticated = allow_unauthenticated
+        self.install_src_path = install_src_path
+        
+        self.qt_gui = True
+        self.progress_bar = QtGui.QProgressBar()
+        self.progress_label = QtGui.QLabel()

@@ -1,8 +1,11 @@
-import sys
+# -*- coding: utf-8 -*-
+import os,sys, thread
 from PyQt4 import QtCore, QtGui
 
 from apt_offline_gui.Ui_AptOfflineQtInstall import Ui_AptOfflineQtInstall
-
+from apt_offline_gui.UiDataStructs import InstallerArgs
+from apt_offline_gui import AptOfflineQtCommon as guicommon
+import apt_offline_core.AptOfflineCoreLib
 
 class AptOfflineQtInstall(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -24,9 +27,39 @@ class AptOfflineQtInstall(QtGui.QDialog):
         
         QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("editingFinished()"),
                         self.ControlStartInstallBox )
+
+        QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
+                        self.ControlStartInstallBox )
         
     def StartInstall(self):
-        self.accept()
+        # gui validation
+        # Clear the consoleOutputHolder
+        self.ui.rawLogHolder.setText("")
+
+        self.filepath = str(self.ui.zipFilePath.text())
+
+        if os.path.isfile(self.filepath) == False:
+            if (len(self.filepath) == 0):
+                self.ui.rawLogHolder.setText ( \
+                    guicommon.style("Please select a zip file!",'red'))
+            else:
+                self.ui.rawLogHolder.setText ( \
+                    guicommon.style("%s does not exist." % self.filepath,'red'))
+            return
+
+        # parse args
+        args = InstallerArgs(filename=self.filepath, )
+
+        # setup i/o redirects before call
+        sys.stdout = self
+        sys.stderr = self
+
+        # returnStatus = apt_offline_core.AptOfflineCoreLib.installer(args)
+        # TODO: deal with return status laters
+        thread.start_new_thread (apt_offline_core.AptOfflineCoreLib.installer, (args,))
+
+        # TODO to be implemented later
+        # self.accept()
 
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
@@ -41,6 +74,12 @@ class AptOfflineQtInstall(QtGui.QDialog):
         else:
             self.ui.startInstallButton.setEnabled(True)
 
+    def write(self, text):
+        # redirects console output to our consoleOutputHolder
+        guicommon.updateInto (self.ui.rawLogHolder,text)
+
+    def flush(self):
+        ''' nothing to do :D '''
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)

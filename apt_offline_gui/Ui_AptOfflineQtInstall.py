@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtInstall.ui'
 #
-# Created: Thu Feb  4 02:23:01 2010
-#      by: PyQt4 UI code generator 4.4.4
+# Created: Sun Feb 14 01:20:20 2010
+#      by: PyQt4 UI code generator 4.7
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -35,11 +35,8 @@ class Ui_AptOfflineQtInstall(object):
         self.cancelButton.setObjectName("cancelButton")
         self.statusProgressBar = QtGui.QProgressBar(AptOfflineQtInstall)
         self.statusProgressBar.setGeometry(QtCore.QRect(30, 190, 410, 20))
-        self.statusProgressBar.setProperty("value", QtCore.QVariant(0))
+        self.statusProgressBar.setProperty("value", 0)
         self.statusProgressBar.setObjectName("statusProgressBar")
-        self.rawLogHolder = QtGui.QPlainTextEdit(AptOfflineQtInstall)
-        self.rawLogHolder.setGeometry(QtCore.QRect(30, 230, 410, 210))
-        self.rawLogHolder.setObjectName("rawLogHolder")
         self.label = QtGui.QLabel(AptOfflineQtInstall)
         self.label.setGeometry(QtCore.QRect(30, 30, 200, 30))
         font = QtGui.QFont()
@@ -58,6 +55,9 @@ class Ui_AptOfflineQtInstall(object):
         font.setPointSize(10)
         self.progressStatusDescription.setFont(font)
         self.progressStatusDescription.setObjectName("progressStatusDescription")
+        self.rawLogHolder = QtGui.QTextEdit(AptOfflineQtInstall)
+        self.rawLogHolder.setGeometry(QtCore.QRect(30, 230, 411, 221))
+        self.rawLogHolder.setObjectName("rawLogHolder")
 
         self.retranslateUi(AptOfflineQtInstall)
         QtCore.QMetaObject.connectSlotsByName(AptOfflineQtInstall)
