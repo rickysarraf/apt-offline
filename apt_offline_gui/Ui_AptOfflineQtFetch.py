@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetch.ui'
 #
-# Created: Sat Feb 13 21:24:22 2010
-#      by: PyQt4 UI code generator 4.7-snapshot-20091231
+# Created: Sat Feb 13 21:31:52 2010
+#      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -44,7 +44,7 @@ class Ui_AptOfflineQtFetch(object):
         self.label.setObjectName("label")
         self.statusProgressBar = QtGui.QProgressBar(AptOfflineQtFetch)
         self.statusProgressBar.setGeometry(QtCore.QRect(30, 190, 410, 20))
-        self.statusProgressBar.setProperty("value", 0)
+        self.statusProgressBar.setProperty("value", QtCore.QVariant(0))
         self.statusProgressBar.setObjectName("statusProgressBar")
         self.label_2 = QtGui.QLabel(AptOfflineQtFetch)
         self.label_2.setGeometry(QtCore.QRect(40, 170, 70, 16))
