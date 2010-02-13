@@ -89,16 +89,6 @@
     <number>0</number>
    </property>
   </widget>
-  <widget class="QPlainTextEdit" name="rawLogHolder">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>230</y>
-     <width>410</width>
-     <height>210</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
@@ -151,6 +141,16 @@
    </property>
    <property name="text">
     <string>Ready</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="rawLogHolder">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>230</y>
+     <width>411</width>
+     <height>221</height>
+    </rect>
    </property>
   </widget>
  </widget>
