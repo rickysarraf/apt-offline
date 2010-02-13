@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-import sys
+import os, sys
 from PyQt4 import QtCore, QtGui
 
 from apt_offline_gui.Ui_AptOfflineQtFetch import Ui_AptOfflineQtFetch
-
+from apt_offline_gui.UiDataStructs import GetterArgs
+from apt_offline_gui import AptOfflineQtCommon as guicommon
+import apt_offline_core.AptOfflineCoreLib
 
 class AptOfflineQtFetch(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -25,6 +27,9 @@ class AptOfflineQtFetch(QtGui.QDialog):
                         
         QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("editingFinished()"),
                         self.ControlStartDownloadBox )
+
+        QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
+                        self.ControlStartDownloadBox )
         
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
@@ -36,12 +41,31 @@ class AptOfflineQtFetch(QtGui.QDialog):
         
     def StartDownload(self):
         # Do all the download related work here and then close
+
+        # Clear the consoleOutputHolder
+        self.ui.rawLogHolder.setText("")
+        
         self.filepath = str(self.ui.profileFilePath.text())
 
-        if os.path.exists(os.path.dirname(self.filepath)) == False:
-            print "Wrong file"
+        if os.path.isfile(self.filepath) == False:
+            if (len(self.filepath) == 0):
+                self.ui.rawLogHolder.setText ( \
+                    guicommon.style("Please select a signature file!",'red'))
+            else:
+                self.ui.rawLogHolder.setText ( \
+                    guicommon.style("%s does not exist." % self.filepath,'red'))
             return
         
+        # TODO: generate a unique zipfile name
+        self.zipfilepath = '/tmp/foozz.zip'
+        
+        args = GetterArgs(filename=self.filepath, bundle_file= self.zipfilepath)
+        
+        returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
+
+        if (returnStatus):
+            ''' TODO: do something with self.zipfilepath '''
+            
         # TODO to be implemented later
         # self.accept()
     

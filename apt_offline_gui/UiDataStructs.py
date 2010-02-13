@@ -31,7 +31,7 @@ class SetterArgs():
 class GetterArgs():
 
     def __init__(self, filename=None, bundle_file=None, socket_timeout=30, \
-                    num_of_threads=1, disable_md5_check=True, deb_bugs=False,
+                    num_of_threads=1, disable_md5check=True, deb_bugs=False,
                         download_dir=None, cache_dir=None):
 
         self.get = filename
@@ -41,11 +41,11 @@ class GetterArgs():
         self.num_of_threads = num_of_threads
 
         self.bundle_file = bundle_file
-        self.disable_md5_check = disable_md5_check
+        self.disable_md5check = disable_md5check
         self.deb_bugs = deb_bugs
         self.download_dir = download_dir
         self.cache_dir = cache_dir
-
+        self.qt_gui = True
 
     def __str__(self):
         print "self.get=",self.get
@@ -53,7 +53,7 @@ class GetterArgs():
         print "self.bundle_file=",self.bundle_file
         print "self.socket_timeout=",self.socket_timeout
         print "self.num_of_threads=",self.num_of_threads
-        print "self.disable_md5_check=",self.disable_md5_check
+        print "self.disable_md5_check=",self.disable_md5check
         print "self.deb_bugs=",self.deb_bugs
         print "self.download_dir=",self.download_dir
         print "self.cache_dir=",self.cache_dir

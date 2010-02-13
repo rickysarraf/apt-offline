@@ -49,8 +49,12 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
         self.filepath = str(self.ui.profileFilePath.text())
         
         if os.path.exists(os.path.dirname(self.filepath)) == False:
-            self.ui.consoleOutputHolder.append ( \
-                                    guicommon.style("Wrong file",'red'))
+            if (len(self.filepath) == 0):
+                self.ui.consoleOutputHolder.setText ( \
+                    guicommon.style("Please select a file to store the signature!",'red'))
+            else:
+                self.ui.consoleOutputHolder.setText ( \
+                    guicommon.style("Could not access  %s" % self.filepath,'red'))
             return
         
         # If atleast one is requested
