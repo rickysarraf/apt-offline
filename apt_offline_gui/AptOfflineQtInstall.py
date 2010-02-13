@@ -48,7 +48,7 @@ class AptOfflineQtInstall(QtGui.QDialog):
             return
 
         # parse args
-        args = InstallerArgs(filename=self.filepath, )
+        args = InstallerArgs(filename=self.filepath, progress_bar=self.ui.statusProgressBar, progress_label=self.ui.progressStatusDescription )
 
         # setup i/o redirects before call
         sys.stdout = self

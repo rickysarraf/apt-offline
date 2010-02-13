@@ -58,7 +58,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
         
         # TODO: generate a unique zipfile name
         self.zipfilepath = '/tmp/foozz.zip'
-        args = GetterArgs(filename=self.filepath, bundle_file= self.zipfilepath)
+        args = GetterArgs(filename=self.filepath, bundle_file= self.zipfilepath, progress_bar=self.ui.statusProgressBar, progress_label=self.ui.progressStatusDescription)
         
         # setup i/o redirects before call
         sys.stdout = self

@@ -34,7 +34,7 @@ class GetterArgs():
 
     def __init__(self, filename=None, bundle_file=None, socket_timeout=30, \
                     num_of_threads=1, disable_md5check=True, deb_bugs=False,
-                        download_dir=None, cache_dir=None):
+                        download_dir=None, cache_dir=None, progress_bar=None, progress_label=None):
 
         self.get = filename
 
@@ -49,8 +49,8 @@ class GetterArgs():
         self.cache_dir = cache_dir
         
         self.qt_gui = True
-        self.progress_bar = QtGui.QProgressBar()
-        self.progress_label = QtGui.QLabel()
+        self.progress_bar = progress_bar
+        self.progress_label = progress_label
 
     def __str__(self):
         print "self.get=",self.get
@@ -76,7 +76,7 @@ class GetterArgs():
 
 class InstallerArgs():
 
-    def __init__(self, filename=None, test_windows=False, skip_bug_reports=True, allow_unauthenticated=False, install_src_path=None):
+    def __init__(self, filename=None, test_windows=False, skip_bug_reports=True, allow_unauthenticated=False, install_src_path=None, progress_bar=None, progress_label=None):
 
         self.install = filename
 
@@ -87,5 +87,5 @@ class InstallerArgs():
         self.install_src_path = install_src_path
         
         self.qt_gui = True
-        self.progress_bar = QtGui.QProgressBar()
-        self.progress_label = QtGui.QLabel()
+        self.progress_bar = progress_bar
+        self.progress_label = progress_label
