@@ -1,8 +1,11 @@
-import sys
+# -*- coding: utf-8 -*-
+import os, sys, thread
 from PyQt4 import QtCore, QtGui
 
 from apt_offline_gui.Ui_AptOfflineQtFetch import Ui_AptOfflineQtFetch
-
+from apt_offline_gui.UiDataStructs import GetterArgs
+from apt_offline_gui import AptOfflineQtCommon as guicommon
+import apt_offline_core.AptOfflineCoreLib
 
 class AptOfflineQtFetch(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -24,6 +27,9 @@ class AptOfflineQtFetch(QtGui.QDialog):
                         
         QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("editingFinished()"),
                         self.ControlStartDownloadBox )
+
+        QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
+                        self.ControlStartDownloadBox )
         
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
@@ -35,13 +41,52 @@ class AptOfflineQtFetch(QtGui.QDialog):
         
     def StartDownload(self):
         # Do all the download related work here and then close
-        self.accept()
+
+        # Clear the consoleOutputHolder
+        self.ui.rawLogHolder.setText("")
+        
+        self.filepath = str(self.ui.profileFilePath.text())
+
+        if os.path.isfile(self.filepath) == False:
+            if (len(self.filepath) == 0):
+                self.ui.rawLogHolder.setText ( \
+                    guicommon.style("Please select a signature file!",'red'))
+            else:
+                self.ui.rawLogHolder.setText ( \
+                    guicommon.style("%s does not exist." % self.filepath,'red'))
+            return
+        
+        # TODO: generate a unique zipfile name
+        self.zipfilepath = '/tmp/foozz.zip'
+        args = GetterArgs(filename=self.filepath, bundle_file= self.zipfilepath)
+        
+        # setup i/o redirects before call
+        sys.stdout = self
+        sys.stderr = self
+        
+        # returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
+        # TODO: deal with return status laters
+        thread.start_new_thread (apt_offline_core.AptOfflineCoreLib.fetcher, (args,))
+
+        #if (returnStatus):
+        ''' TODO: do something with self.zipfilepath '''
+            
+        # TODO to be implemented later
+        # self.accept()
     
     def ControlStartDownloadBox(self):
         if self.ui.profileFilePath.text().isEmpty():
             self.ui.startDownloadButton.setEnabled(False)
         else:
             self.ui.startDownloadButton.setEnabled(True)
+
+    def write(self, text):
+        # redirects console output to our consoleOutputHolder
+        guicommon.updateInto (self.ui.rawLogHolder,text)
+
+    def flush(self):
+        ''' nothing to do :D '''
+        
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)

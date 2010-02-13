@@ -43,10 +43,18 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
         # Is Install Requested
         self.installChecked = self.ui.installPackagesRadioBox.isChecked()
 
+        # Clear the consoleOutputHolder
+        self.ui.consoleOutputHolder.setText("")
+        
         self.filepath = str(self.ui.profileFilePath.text())
         
         if os.path.exists(os.path.dirname(self.filepath)) == False:
-            print "Wrong file"
+            if (len(self.filepath) == 0):
+                self.ui.consoleOutputHolder.setText ( \
+                    guicommon.style("Please select a file to store the signature!",'red'))
+            else:
+                self.ui.consoleOutputHolder.setText ( \
+                    guicommon.style("Could not access  %s" % self.filepath,'red'))
             return
         
         # If atleast one is requested
@@ -80,17 +88,7 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
 
     def write(self, text):
         # redirects console output to our consoleOutputHolder
-        # sanitize coloring
-        if ('[1;' in text):
-            return
-
-        if ("ERROR" in text or "FATAL" in text):
-            text = guicommon.style(text,'red')
-            
-        if ("Completed" in text):
-            text = guicommon.style(text,'green_fin')
-            
-        self.ui.consoleOutputHolder.append (text)
+        guicommon.updateInto(self.ui.consoleOutputHolder,text)
 
     def flush(self):
         ''' nothing to do :D '''

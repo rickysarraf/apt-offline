@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetch.ui'
 #
-# Created: Sat Feb 13 18:08:53 2010
+# Created: Sat Feb 13 19:31:24 2010
 #      by: PyQt4 UI code generator 4.7-snapshot-20091231
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ class Ui_AptOfflineQtFetch(object):
     def setupUi(self, AptOfflineQtFetch):
         AptOfflineQtFetch.setObjectName("AptOfflineQtFetch")
         AptOfflineQtFetch.setWindowModality(QtCore.Qt.WindowModal)
-        AptOfflineQtFetch.resize(466, 463)
+        AptOfflineQtFetch.resize(466, 454)
         self.profileFilePath = QtGui.QLineEdit(AptOfflineQtFetch)
         self.profileFilePath.setGeometry(QtCore.QRect(30, 60, 270, 30))
         self.profileFilePath.setObjectName("profileFilePath")
@@ -46,9 +46,6 @@ class Ui_AptOfflineQtFetch(object):
         self.statusProgressBar.setGeometry(QtCore.QRect(30, 190, 410, 20))
         self.statusProgressBar.setProperty("value", 0)
         self.statusProgressBar.setObjectName("statusProgressBar")
-        self.rawLogHolder = QtGui.QPlainTextEdit(AptOfflineQtFetch)
-        self.rawLogHolder.setGeometry(QtCore.QRect(30, 230, 410, 210))
-        self.rawLogHolder.setObjectName("rawLogHolder")
         self.label_2 = QtGui.QLabel(AptOfflineQtFetch)
         self.label_2.setGeometry(QtCore.QRect(40, 170, 70, 16))
         font = QtGui.QFont()
@@ -61,6 +58,9 @@ class Ui_AptOfflineQtFetch(object):
         font.setPointSize(10)
         self.progressStatusDescription.setFont(font)
         self.progressStatusDescription.setObjectName("progressStatusDescription")
+        self.rawLogHolder = QtGui.QTextEdit(AptOfflineQtFetch)
+        self.rawLogHolder.setGeometry(QtCore.QRect(30, 230, 411, 211))
+        self.rawLogHolder.setObjectName("rawLogHolder")
 
         self.retranslateUi(AptOfflineQtFetch)
         QtCore.QMetaObject.connectSlotsByName(AptOfflineQtFetch)

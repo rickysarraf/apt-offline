@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>466</width>
-    <height>463</height>
+    <height>454</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -119,16 +119,6 @@
     <number>0</number>
    </property>
   </widget>
-  <widget class="QPlainTextEdit" name="rawLogHolder">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>230</y>
-     <width>410</width>
-     <height>210</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
@@ -163,6 +153,16 @@
    </property>
    <property name="text">
     <string>Ready</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="rawLogHolder">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>230</y>
+     <width>411</width>
+     <height>211</height>
+    </rect>
    </property>
   </widget>
  </widget>
