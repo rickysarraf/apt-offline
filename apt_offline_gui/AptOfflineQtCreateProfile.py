@@ -4,6 +4,7 @@ from PyQt4 import QtCore, QtGui
 
 from apt_offline_gui.Ui_AptOfflineQtCreateProfile import Ui_CreateProfile
 from apt_offline_gui.UiDataStructs import SetterArgs
+from apt_offline_gui import AptOfflineQtCommon as guicommon
 import apt_offline_core.AptOfflineCoreLib
 
 
@@ -51,12 +52,13 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
         # If atleast one is requested
         if self.updateChecked or self.upgradeChecked or self.installChecked:
             if self.installChecked:
-                self.packageList = self.ui.packageList.text().split(",")
+                self.packageList = str(self.ui.packageList.text()).split(",")
             else:
                 self.packageList = None
 
             # setup i/o redirects before call
             sys.stdout = self
+            sys.stderr = self
             
             args = SetterArgs(filename=self.filepath, update=self.updateChecked, upgrade=self.upgradeChecked, install_packages=self.packageList)
             returnStatus = apt_offline_core.AptOfflineCoreLib.setter(args)
@@ -65,7 +67,6 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
                 self.ui.createProfileButton.setEnabled(False)
                 self.ui.cancelButton.setText("Finish")
                 self.ui.cancelButton.setIcon(QtGui.QIcon())
-                
         else:
             pass
         
@@ -79,10 +80,21 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
 
     def write(self, text):
         # redirects console output to our consoleOutputHolder
+        # sanitize coloring
+        if ('[1;' in text):
+            return
+
+        if ("ERROR" in text or "FATAL" in text):
+            text = guicommon.style(text,'red')
+            
+        if ("Completed" in text):
+            text = guicommon.style(text,'green_fin')
+            
         self.ui.consoleOutputHolder.append (text)
 
     def flush(self):
-        ''' '''
+        ''' nothing to do :D '''
+
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
