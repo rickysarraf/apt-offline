@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetch.ui'
 #
-# Created: Sat Feb 13 19:31:24 2010
+# Created: Sat Feb 13 21:24:22 2010
 #      by: PyQt4 UI code generator 4.7-snapshot-20091231
 #
 # WARNING! All changes made in this file will be lost!
