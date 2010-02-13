@@ -103,7 +103,7 @@
     </font>
    </property>
    <property name="text">
-    <string>Select the profile file</string>
+    <string>Select the signature file</string>
    </property>
   </widget>
   <widget class="QProgressBar" name="statusProgressBar">

@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetch.ui'
 #
-# Created: Thu Feb  4 01:36:22 2010
-#      by: PyQt4 UI code generator 4.4.4
+# Created: Sat Feb 13 18:08:53 2010
+#      by: PyQt4 UI code generator 4.7-snapshot-20091231
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -44,7 +44,7 @@ class Ui_AptOfflineQtFetch(object):
         self.label.setObjectName("label")
         self.statusProgressBar = QtGui.QProgressBar(AptOfflineQtFetch)
         self.statusProgressBar.setGeometry(QtCore.QRect(30, 190, 410, 20))
-        self.statusProgressBar.setProperty("value", QtCore.QVariant(0))
+        self.statusProgressBar.setProperty("value", 0)
         self.statusProgressBar.setObjectName("statusProgressBar")
         self.rawLogHolder = QtGui.QPlainTextEdit(AptOfflineQtFetch)
         self.rawLogHolder.setGeometry(QtCore.QRect(30, 230, 410, 210))
@@ -70,7 +70,7 @@ class Ui_AptOfflineQtFetch(object):
         self.browseFilePathButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Browse", None, QtGui.QApplication.UnicodeUTF8))
         self.startDownloadButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Download", None, QtGui.QApplication.UnicodeUTF8))
         self.cancelButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Select the profile file", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Select the signature file", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Status:", None, QtGui.QApplication.UnicodeUTF8))
         self.progressStatusDescription.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Ready", None, QtGui.QApplication.UnicodeUTF8))
 
