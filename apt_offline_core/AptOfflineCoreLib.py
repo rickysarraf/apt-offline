@@ -64,6 +64,7 @@ except ImportError:
 PythonApt = False #Remove it after porting to python-apt
     
 import AptOfflineLib
+import apt_offline_gui.QtProgressBar
 
 #INFO: Set the default timeout to 30 seconds for the packages that are being downloaded.
 socket.setdefaulttimeout(30)
@@ -291,7 +292,14 @@ class DownloadFromWeb(AptOfflineLib.ProgressBar, GenericDownloadFunction):
                 '''width = Progress Bar width'''
                 AptOfflineLib.ProgressBar.__init__(self, width=width, total_items=total_items)
         
+class QtDownloadFromWeb(apt_offline_gui.QtProgressBar.QtProgressBar, GenericDownloadFunction):
+        '''Class for DownloadFromWeb
+        This class also inherits progressbar functionalities from
+        parent class, ProgressBar'''
         
+        def __init__(self,progressbar,label, total_items):
+                '''width = Progress Bar width'''
+                apt_offline_gui.QtProgressBar.QtProgressBar.__init__(self,progressbar=progressbar,label=label, total_items=total_items)
 
 
 def stripper(item):
@@ -453,6 +461,14 @@ def fetcher( args ):
                         AptOfflineLib.Archiver.__init__( self, lock=lock )
                         #self.lock = lock
         
+        class QtFetcherClass( QtDownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum ):
+            def __init__( self, progress_bar, progress_label ,lock, total_items ):
+                        QtDownloadFromWeb.__init__( self, progressbar=progress_bar, label=progress_label, total_items=total_items )
+                        #ProgressBar.__init__(self, width)
+                        #self.width = width
+                        AptOfflineLib.Archiver.__init__( self, lock=lock )
+                        #self.lock = lock
+        
         if Str_DownloadDir is None:
                 tempdir = tempfile.gettempdir()
                 if os.access( tempdir, os.W_OK ) is True:
@@ -519,7 +535,14 @@ def fetcher( args ):
         total_items = len(FetchData['Item'])
         
         #global FetcherInstance
-        FetcherInstance = FetcherClass( width=30, lock=True, total_items=total_items )
+        try:
+            gui = args.qt_gui
+            progress = args.progress_bar
+            progressLabel = args.progress_label
+            FetcherInstance = QtFetcherClass(progress=progress, progressLabel=progressLabel, lock=True, total_items=total_items )
+        except AttributeError:
+            FetcherInstance = FetcherClass( width=30, lock=True, total_items=total_items )
+        
         
         #INFO: Thread Support
         if Int_NumOfThreads > 2:
