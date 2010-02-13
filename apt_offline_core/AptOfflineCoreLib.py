@@ -1280,6 +1280,7 @@ def setter(args):
         Bool_SetUpgrade = args.set_upgrade
         Str_SetUpgradeType = args.upgrade_type
         Bool_SrcBuildDep = args.src_build_dep
+        Bool_SetterErrors = False
         
         if Bool_SetUpdate is False and Bool_SetUpgrade is False and List_SetInstallPackages is None \
         and List_SetInstallSrcPackages is None:
@@ -1322,6 +1323,7 @@ def setter(args):
                                 log.verbose( "Set environment variable for LANG from %s to %s temporarily.\n" % ( old_environ, os.environ['LANG'] ) )
                                 if os.system( '/usr/bin/apt-get -qq --print-uris update >> $__apt_set_update' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                        Bool_SetterErrors = True
                                 log.verbose( "Set environment variable for LANG back to its original from %s to %s.\n" % ( os.environ['LANG'], old_environ ) )
                                 os.environ['LANG'] = old_environ
                 else:
@@ -1369,16 +1371,19 @@ def setter(args):
                                         os.environ['__apt_set_upgrade'] = Str_SetArg
                                         if os.system( '/usr/bin/apt-get -qq --print-uris upgrade >> $__apt_set_upgrade' ) != 0:
                                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                                Bool_SetterErrors = True
                         elif Str_SetUpgradeType == "dist-upgrade":
                                 log.msg( "\nGenerating database of files that are needed for a dist-upgrade.\n" )
                                 os.environ['__apt_set_upgrade'] = Str_SetArg
                                 if os.system( '/usr/bin/apt-get -qq --print-uris dist-upgrade >> $__apt_set_upgrade' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                        Bool_SetterErrors = True
                         elif Str_SetUpgradeType == "dselect-upgrade":
                                 log.msg( "\nGenerating database of files that are needed for a dselect-upgrade.\n" )
                                 os.environ['__apt_set_upgrade'] = Str_SetArg
                                 if os.system( '/usr/bin/apt-get -qq --print-uris dselect-upgrade >> $__apt_set_upgrade' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                        Bool_SetterErrors = True
                         else:
                                 log.err( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
                 else:
@@ -1408,10 +1413,12 @@ def setter(args):
                                 os.environ['__apt_set_install_release'] = Str_SetArg
                                 if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release install $__apt_set_install_packages >> $__apt_set_install' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                        Bool_SetterErrors = True
                         else:
                                 #FIXME: Find a more Pythonic implementation
                                 if os.system( '/usr/bin/apt-get -qq --print-uris install $__apt_set_install_packages >> $__apt_set_install' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                        Bool_SetterErrors = True
                 else:
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
@@ -1432,10 +1439,12 @@ def setter(args):
                                 os.environ['__apt_set_install_release'] = Str_SetArg
                                 if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release source $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                        Bool_SetterErrors = True
                         else:
                                 #FIXME: Find a more Pythonic implementation
                                 if os.system( '/usr/bin/apt-get -qq --print-uris source $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                        Bool_SetterErrors = True
                         
                         if Bool_SrcBuildDep:
                                 log.msg("Generating Build-Dependency for source packages %s.\n" % (package_list) )
@@ -1443,6 +1452,7 @@ def setter(args):
                                         os.environ['__apt_set_install_release'] = Str_SetArg
                                         if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
                                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                                Bool_SetterErrors = True
                                 else:
                                         #FIXME: Find a more Pythonic implementation
                                         if os.system( '/usr/bin/apt-get -qq --print-uris build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
@@ -1452,8 +1462,12 @@ def setter(args):
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
                         
-        log.msg("Completed")
-        return True
+        if (not Bool_SetterErrors):
+            log.msg("Completed\n")
+            return True
+        else:
+            log.msg("FATAL: Incomplete\n")
+            return False
         
 def gui(args):
         Bool_GUI = args.gui

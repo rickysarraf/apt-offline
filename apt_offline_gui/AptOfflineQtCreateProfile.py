@@ -4,6 +4,7 @@ from PyQt4 import QtCore, QtGui
 
 from apt_offline_gui.Ui_AptOfflineQtCreateProfile import Ui_CreateProfile
 from apt_offline_gui.UiDataStructs import SetterArgs
+from apt_offline_gui import AptOfflineQtCommon as guicommon
 import apt_offline_core.AptOfflineCoreLib
 
 
@@ -82,9 +83,13 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
         # sanitize coloring
         if ('[1;' in text):
             return
-        
-        if ("ERROR" in text):
-            text = "<span style='color:red;'>" + text + "</span>" 
+
+        if ("ERROR" in text or "FATAL" in text):
+            text = guicommon.style(text,'red')
+            
+        if ("Completed" in text):
+            text = guicommon.style(text,'green_fin')
+            
         self.ui.consoleOutputHolder.append (text)
 
     def flush(self):
