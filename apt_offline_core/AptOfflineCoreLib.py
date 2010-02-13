@@ -208,17 +208,9 @@ def find_first_match(cache_dir=None, filename=None):
                                 return os.path.join(path, file)
                 return False
         
-        
-class DownloadFromWeb(AptOfflineLib.ProgressBar):
-        '''Class for DownloadFromWeb
-        This class also inherits progressbar functionalities from
-        parent class, ProgressBar'''
-        
-        def __init__(self, width, total_items):
-                '''width = Progress Bar width'''
-                AptOfflineLib.ProgressBar.__init__(self, width=width, total_items=total_items)
-        
-        def download_from_web(self, url, file, download_dir):
+
+class GenericDownloadFunction():
+    def download_from_web(self, url, file, download_dir):
                 '''url = url to fetch
                 file = file to save to
                 donwload_dir = download path'''
@@ -289,6 +281,17 @@ class DownloadFromWeb(AptOfflineLib.ProgressBar):
                                 errfunc(e.code, e.reason, file)
                 except socket.timeout:
                         errfunc(10054, "Socket timeout.\n", url)
+     
+class DownloadFromWeb(AptOfflineLib.ProgressBar, GenericDownloadFunction):
+        '''Class for DownloadFromWeb
+        This class also inherits progressbar functionalities from
+        parent class, ProgressBar'''
+        
+        def __init__(self, width, total_items):
+                '''width = Progress Bar width'''
+                AptOfflineLib.ProgressBar.__init__(self, width=width, total_items=total_items)
+        
+        
 
 
 def stripper(item):
