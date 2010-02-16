@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import os, sys, thread
+import os, sys
+from threading import Thread
 from PyQt4 import QtCore, QtGui
 
 from apt_offline_gui.Ui_AptOfflineQtFetch import Ui_AptOfflineQtFetch
@@ -64,10 +65,10 @@ class AptOfflineQtFetch(QtGui.QDialog):
         sys.stdout = self
         sys.stderr = self
         
-        # returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
+        #returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
         # TODO: deal with return status laters
-        thread.start_new_thread (apt_offline_core.AptOfflineCoreLib.fetcher, (args,))
-
+        t = Thread(target=apt_offline_core.AptOfflineCoreLib.fetcher, args=(args,))
+        t.start()
         #if (returnStatus):
         ''' TODO: do something with self.zipfilepath '''
             
@@ -82,6 +83,18 @@ class AptOfflineQtFetch(QtGui.QDialog):
 
     def write(self, text):
         # redirects console output to our consoleOutputHolder
+
+        # extract chinese whisper from text
+        '''
+        # threading issues cropped up again
+        if ("@@" in text):
+            try:
+                snippets = [float(x) for x in text.split("@@",1)[1].split("@@")[0].split("/",1) ]
+                percentage = int((snippets[0] / snippets[1]) * 100)
+                self.ui.statusProgressBar.setValue (percentage)
+            except:
+                print "Fuck"
+        '''
         guicommon.updateInto (self.ui.rawLogHolder,text)
 
     def flush(self):
@@ -93,3 +106,5 @@ if __name__ == "__main__":
     myapp = AptOfflineQtFetch()
     myapp.show()
     sys.exit(app.exec_())
+
+
