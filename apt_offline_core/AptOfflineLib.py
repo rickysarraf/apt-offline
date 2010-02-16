@@ -319,8 +319,6 @@ class ProgressBar( object ):
         
         def display( self ):
                 print "\r%3s /%3s items: %s\r" % ( self.complete, self.items, str( self ) ),
-                # dirty cheap hack to hide my thread-n00bness -- ideamonk
-                print "@@%s/%s@@" % ( self.complete, self.items ),
         
         def __str__( self ):
                 #compute display fraction
