@@ -1,12 +1,51 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from threading import Thread
 from PyQt4 import QtCore, QtGui
 
 from apt_offline_gui.Ui_AptOfflineQtFetch import Ui_AptOfflineQtFetch
 from apt_offline_gui.UiDataStructs import GetterArgs
 from apt_offline_gui import AptOfflineQtCommon as guicommon
 import apt_offline_core.AptOfflineCoreLib
+
+
+class Worker(QtCore.QThread):
+    def __init__(self, parent = None):
+        QtCore.QThread.__init__(self, parent)
+        self.parent = parent
+        self.exiting = False
+
+    def __del__(self):
+        self.exiting = True
+        self.wait()
+
+    def run(self):
+        # setup i/o redirects before call
+        sys.stdout = self
+        sys.stderr = self
+        
+        apt_offline_core.AptOfflineCoreLib.fetcher(self.args)
+
+    def setArgs (self,args):
+        self.args = args
+
+    def write(self, text):
+        # redirects console output to our consoleOutputHolder
+        # extract chinese whisper from text
+      
+        if (" / " in text):
+            try:
+                progress,total = text.split(" / ",1)
+                progress = progress.strip()
+                total = total.split(" ",1)[0].strip()
+                self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
+            except:
+                ''' nothing to do '''
+        
+        self.emit (QtCore.SIGNAL('output(QString)'), text)
+
+    def flush(self):
+        ''' nothing to do :D '''
+
 
 class AptOfflineQtFetch(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -31,6 +70,12 @@ class AptOfflineQtFetch(QtGui.QDialog):
 
         QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
                         self.ControlStartDownloadBox )
+
+        self.worker = Worker(parent=self)
+        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("output(QString)"),
+                        self.updateLog )
+        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("progress(QString,QString)"),
+                        self.updateProgress )
         
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
@@ -61,44 +106,32 @@ class AptOfflineQtFetch(QtGui.QDialog):
         self.zipfilepath = '/tmp/foozz.zip'
         args = GetterArgs(filename=self.filepath, bundle_file= self.zipfilepath, progress_bar=self.ui.statusProgressBar, progress_label=self.ui.progressStatusDescription)
         
-        # setup i/o redirects before call
-        sys.stdout = self
-        sys.stderr = self
-        
         #returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
         # TODO: deal with return status laters
-        t = Thread(target=apt_offline_core.AptOfflineCoreLib.fetcher, args=(args,))
-        t.start()
+        self.worker.setArgs (args)
+        self.worker.start()
         #if (returnStatus):
         ''' TODO: do something with self.zipfilepath '''
             
         # TODO to be implemented later
         # self.accept()
-    
+
+    def updateLog(self,text):
+        guicommon.updateInto (self.ui.rawLogHolder,text)
+
+    def updateProgress(self,progress,total):
+        try:
+            # try parsing numbers and updating progressBar
+            percent = (float(progress)/float(total))*100
+            self.ui.statusProgressBar.setValue (percent)
+        except:
+            ''' nothing to do '''
+
     def ControlStartDownloadBox(self):
         if self.ui.profileFilePath.text().isEmpty():
             self.ui.startDownloadButton.setEnabled(False)
         else:
             self.ui.startDownloadButton.setEnabled(True)
-
-    def write(self, text):
-        # redirects console output to our consoleOutputHolder
-
-        # extract chinese whisper from text
-        '''
-        # threading issues cropped up again
-        if ("@@" in text):
-            try:
-                snippets = [float(x) for x in text.split("@@",1)[1].split("@@")[0].split("/",1) ]
-                percentage = int((snippets[0] / snippets[1]) * 100)
-                self.ui.statusProgressBar.setValue (percentage)
-            except:
-                print "Fuck"
-        '''
-        guicommon.updateInto (self.ui.rawLogHolder,text)
-
-    def flush(self):
-        ''' nothing to do :D '''
         
 
 if __name__ == "__main__":
