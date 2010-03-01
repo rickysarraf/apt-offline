@@ -1,11 +1,6 @@
-apt-offline (0.9.7) unstable; urgency=low
+apt-offline (0.9.6.1) unstable; urgency=low
 
-  * Add DM-Upload field 
-
- -- Ritesh Raj Sarraf <rrs@researchut.com>  Tue, 26 Jan 2010 22:57:14 +0530
-
-apt-offline (0.9.6) unstable; urgency=low
-
+  [ Ritesh Raj Sarraf ]
   * New Bug Fix Release
     + Show bug numbers correctly 
     + Don't hardcode checksum type during checks
@@ -15,8 +10,12 @@ apt-offline (0.9.6) unstable; urgency=low
     + Fix ZipFile.read()
     + Don't report download failure for Release.gpg files
     + Add html doc for the man page
+  * Add DM-Upload field 
 
- -- Ritesh Raj Sarraf <rrs@researchut.com>  Sun, 20 Dec 2009 15:04:48 +0530
+  [ Y Giridhar Appaji Nag ]
+  * Change Debian package version to 0.9.6.1 for Dm-Upload-Allowed: yes
+
+ -- Y Giridhar Appaji Nag <appaji@debian.org>  Mon, 01 Mar 2010 16:05:40 +0530
 
 apt-offline (0.9.5) unstable; urgency=low
 
