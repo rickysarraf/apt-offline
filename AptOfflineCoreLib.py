@@ -430,10 +430,10 @@ def fetcher( args ):
                 log.verbose( "\nMD5/SHA256 Checksum is being disabled. You need atleast Python 2.5 to do checksum verification.\n" )
         
         if Str_GetArg:
-                if os.access( Str_GetArg, os.F_OK):
+                if os.path.isfile(Str_GetArg):
                         log.msg( "\nFetching APT Data\n\n" )
                 else:
-                        log.err( "\nFile not present. Check path.\n" )
+                        log.err( "File not present. Check path.\n" )
                         sys.exit( 1 )
                         
         if Str_CacheDir is not None:
