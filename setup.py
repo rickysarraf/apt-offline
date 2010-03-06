@@ -2,35 +2,27 @@
 
 # -*- coding: utf-8 -*-
 
-# Copyright © 2009 Ritesh Raj Sarraf <rrs@researchut.com>
+# Copyright 2009 Ritesh Raj Sarraf <rrs@researchut.com>
 #
 # Licensed under the GNU General Public License v3 and later
 
 import textwrap
 import distutils.core
 
-import AptOfflineCoreLib
-import AptOfflineDebianBtsLib
-#import AptOfflineFetchBugs
-#import AptOfflineGUI
-import AptOfflineLib
-import AptOfflineMagicLib
-import AptOffline_reportbug_exceptions
-import AptOffline_urlutils
-import AptOffline_argparse
-
 distutils.core.setup(
     name='apt-offline',
-    version=AptOfflineCoreLib.version,
+    version='0.9.6',
     author='Ritesh Raj Sarraf',
     author_email='rrs@researchut.com',
     url='http://apt-offline.alioth.debian.org',
+    #packages = [ 'apt_offline_core' ],
     description='Offline APT Package Manager',
     long_description = textwrap.dedent("""\
         apt-offline is an Offline APT Package Manager
         for Debian and derivatives
         """),
     license='GPL',
+    platforms = 'Posix; MacOS X; Windows',
     classifiers=[
         'Development Status :: 3 - Testing/Beta',
         'Environment :: Console',
@@ -40,15 +32,15 @@ distutils.core.setup(
         'Programming Language :: Python',
         'Topic :: Package Management',
     ],
-    py_modules=['AptOfflineCoreLib',
-            'AptOfflineDebianBtsLib',
-#            'AptOfflineFetchBugs.py',
-#            'AptOfflineGUI',
-            'AptOfflineLib',
-            'AptOfflineMagicLib',
-            'AptOffline_reportbug_exceptions',
-            'AptOffline_argparse',
-            'AptOffline_urlutils',],
+    py_modules=['apt_offline_core.AptOfflineCoreLib',
+            'apt_offline_core.AptOfflineDebianBtsLib',
+#            'apt_offline_core.AptOfflineFetchBugs.py',
+#            'apt_offline_core.AptOfflineGUI',
+            'apt_offline_core.AptOfflineLib',
+            'apt_offline_core.AptOfflineMagicLib',
+            'apt_offline_core.AptOffline_reportbug_exceptions',
+            'apt_offline_core.AptOffline_argparse',
+            'apt_offline_core.AptOffline_urlutils',],
     scripts=['apt-offline'],
     data_files = [('share/man/man8',['apt-offline.8']),
             ('share/doc/apt-offline',['apt-offline.html',
