@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, sys
 from PyQt4 import QtCore, QtGui
+from PyQt4.QtGui import QMessageBox
 
 from apt_offline_gui.Ui_AptOfflineQtFetch import Ui_AptOfflineQtFetch
 from apt_offline_gui.UiDataStructs import GetterArgs
@@ -53,10 +54,14 @@ class AptOfflineQtFetch(QtGui.QDialog):
         self.ui = Ui_AptOfflineQtFetch()
         self.ui.setupUi(self)
         
-        # Connect the clicked signal of the Browse button to it's slot
+        # Connect the clicked signal of the Signature File Browse button to it's slot
         QtCore.QObject.connect(self.ui.browseFilePathButton, QtCore.SIGNAL("clicked()"),
                         self.popupDirectoryDialog )
-                        
+        
+        # Connect the clicked signal of the Zip File Browse button to it's slot
+        QtCore.QObject.connect(self.ui.browseZipFileButton, QtCore.SIGNAL("clicked()"),
+                        self.popupZipFileDialog )
+                                                
         # Connect the clicked signal of the Save to it's Slot - accept
         QtCore.QObject.connect(self.ui.startDownloadButton, QtCore.SIGNAL("clicked()"),
                         self.StartDownload )
@@ -79,9 +84,17 @@ class AptOfflineQtFetch(QtGui.QDialog):
         
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
-        directory = QtGui.QFileDialog.getOpenFileName(self, u'Select the file')
+        directory = QtGui.QFileDialog.getOpenFileName(self, u'Select the signature file')
         # Show the selected file path in the field marked for showing directory path
         self.ui.profileFilePath.setText(directory)
+        
+        self.ControlStartDownloadBox()
+    
+    def popupZipFileDialog(self):
+        # Popup a Zip File selection box
+        filename = QtGui.QFileDialog.getSaveFileName(self, u'Select the zip file to save downloads')
+        # Show the selected file path in the field marked for showing directory path
+        self.ui.zipFilePath.setText(filename)
         
         self.ControlStartDownloadBox()
         
@@ -102,8 +115,36 @@ class AptOfflineQtFetch(QtGui.QDialog):
                     guicommon.style("%s does not exist." % self.filepath,'red'))
             return
         
-        # TODO: generate a unique zipfile name
-        self.zipfilepath = '/tmp/foozz.zip'
+        # TODO: check for zip file's presense
+        self.zipfilepath = str(self.ui.zipFilePath.text())
+        
+        # if file has write permission
+        if os.access(os.path.dirname(self.zipfilepath), os.W_OK) == False:
+            if (len(self.filepath) == 0):
+                self.ui.rawLogHolder.setText ( \
+                    guicommon.style("Please select a zip file to create archive!",'red'))
+            else:
+                self.ui.rawLogHolder.setText ( \
+                    guicommon.style("%s does not have write access." % self.zipfilepath,'red'))
+            return
+        
+        # if file already exists
+        if os.path.isfile(self.filepath):
+                ret = QMessageBox.warning(self, "Replace archive file?",
+                   "The file %s already exists.\n"
+                      "Do you want to overwrite it?" % self.zipfilepath,
+                           QMessageBox.Yes | QMessageBox.No
+                           , QMessageBox.Yes)
+                if ret == QMessageBox.Yes:
+                    # delete the file
+                    try:
+                        os.remove(self.zipfilepath)
+                    except:
+                        self.ui.rawLogHolder.setText ( \
+                            guicommon.style("Could'nt write to %s!" % self.zipfilepath,'red'))
+                else:
+                    return
+                   
         args = GetterArgs(filename=self.filepath, bundle_file= self.zipfilepath, progress_bar=self.ui.statusProgressBar, progress_label=self.ui.progressStatusDescription)
         
         #returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
