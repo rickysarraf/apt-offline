@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtCreateProfile.ui'
 #
-# Created: Thu Feb  4 01:28:54 2010
-#      by: PyQt4 UI code generator 4.4.4
+# Created: Sat Mar  6 13:27:14 2010
+#      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,9 +12,9 @@ from PyQt4 import QtCore, QtGui
 class Ui_CreateProfile(object):
     def setupUi(self, CreateProfile):
         CreateProfile.setObjectName("CreateProfile")
-        CreateProfile.resize(420, 368)
+        CreateProfile.resize(443, 374)
         self.verticalLayoutWidget = QtGui.QWidget(CreateProfile)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 401, 309))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 427, 321))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtGui.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -45,7 +45,7 @@ class Ui_CreateProfile(object):
         self.installPackagesRadioBox.setObjectName("installPackagesRadioBox")
         self.verticalLayout_4.addWidget(self.installPackagesRadioBox)
         self.horizontalLayout.addLayout(self.verticalLayout_4)
-        spacerItem = QtGui.QSpacerItem(150, 20, QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Minimum)
+        spacerItem = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
         self.verticalLayout.addLayout(self.verticalLayout_2)
