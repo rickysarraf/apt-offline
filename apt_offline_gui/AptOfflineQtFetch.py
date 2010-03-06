@@ -70,12 +70,18 @@ class AptOfflineQtFetch(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
                         self.reject )
                         
-        QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("editingFinished()"),
+        QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
                         self.ControlStartDownloadBox )
 
         QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
                         self.ControlStartDownloadBox )
-
+                        
+        QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
+                        self.ControlStartDownloadBox )
+        
+        QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
+                        self.ControlStartDownloadBox )
+                        
         self.worker = Worker(parent=self)
         QtCore.QObject.connect(self.worker, QtCore.SIGNAL("output(QString)"),
                         self.updateLog )
@@ -120,11 +126,11 @@ class AptOfflineQtFetch(QtGui.QDialog):
         
         # if file has write permission
         if os.access(os.path.dirname(self.zipfilepath), os.W_OK) == False:
-            if (len(self.filepath) == 0):
-                self.ui.rawLogHolder.setText ( \
-                    guicommon.style("Please select a zip file to create archive!",'red'))
+            if (len(self.zipfilepath) == 0):
+                guicommon.updateInto (self.ui.rawLogHolder, 
+                            guicommon.style("Please select a zip file to create archive!",'red'))
             else:
-                self.ui.rawLogHolder.setText ( \
+                guicommon.updateInto (self.ui.rawLogHolder, 
                     guicommon.style("%s does not have write access." % self.zipfilepath,'red'))
             return
         
@@ -140,7 +146,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
                     try:
                         os.remove(self.zipfilepath)
                     except:
-                        self.ui.rawLogHolder.setText ( \
+                        guicommon.updateInto (self.ui.rawLogHolder, 
                             guicommon.style("Could'nt write to %s!" % self.zipfilepath,'red'))
                 else:
                     return
@@ -158,7 +164,12 @@ class AptOfflineQtFetch(QtGui.QDialog):
         # self.accept()
 
     def updateLog(self,text):
-        guicommon.updateInto (self.ui.rawLogHolder,text)
+        if not ('[' in text and ']' in text):
+            if ('Downloaded data ' in text):
+                guicommon.updateInto (self.ui.rawLogHolder,
+                                    guicommon.style(text,'green_fin'))
+            else:
+                guicommon.updateInto (self.ui.rawLogHolder,text)
 
     def updateProgress(self,progress,total):
         try:
@@ -170,6 +181,8 @@ class AptOfflineQtFetch(QtGui.QDialog):
 
     def ControlStartDownloadBox(self):
         if self.ui.profileFilePath.text().isEmpty():
+            self.ui.startDownloadButton.setEnabled(False)
+        if self.ui.zipFilePath.text().isEmpty():
             self.ui.startDownloadButton.setEnabled(False)
         else:
             self.ui.startDownloadButton.setEnabled(True)
