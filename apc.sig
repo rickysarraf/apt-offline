@@ -44,3 +44,4 @@
 'http://ppa.launchpad.net/rvm/mplayer/ubuntu/dists/karmic/main/source/Sources.bz2' ppa.launchpad.net_rvm_mplayer_ubuntu_dists_karmic_main_source_Sources 0 :
 'http://ppa.launchpad.net/rvm/mplayer/ubuntu/dists/karmic/Release' ppa.launchpad.net_rvm_mplayer_ubuntu_dists_karmic_Release 0 
 'http://ppa.launchpad.net/rvm/mplayer/ubuntu/dists/karmic/Release.gpg' ppa.launchpad.net_rvm_mplayer_ubuntu_dists_karmic_Release.gpg 0 
+'http://ubuntuarchive.hnsdc.com/pool/universe/g/giggle/giggle_0.4.91-1_i386.deb' giggle_0.4.91-1_i386.deb 225826 SHA256:dfe8abc5b8e49a094003760d95cb4b187bc0b3129008918966efa7761939b061

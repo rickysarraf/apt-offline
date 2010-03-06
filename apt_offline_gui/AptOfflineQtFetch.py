@@ -32,7 +32,14 @@ class Worker(QtCore.QThread):
     def write(self, text):
         # redirects console output to our consoleOutputHolder
         # extract chinese whisper from text
-        if (" / " in text):
+        if ("MSG_START" in text):
+            self.emit (QtCore.SIGNAL('status(QString)'), "Fetching missing meta data ...")
+            return
+        if ("MSG_END" in text):
+            self.emit (QtCore.SIGNAL('status(QString)'), "Downloading packages ...")
+            return
+            
+        if ("[" in text and "]" in text):
             try:
                 # no more splits, we know the exact byte count now
                 progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
@@ -41,19 +48,6 @@ class Worker(QtCore.QThread):
                 return
             except:
                 ''' nothing to do '''
-        
-        if " _META_ " in text:
-            progress = str(apt_offline_core.AptOfflineCoreLib.totalUrls[1])
-            total = str(apt_offline_core.AptOfflineCoreLib.totalUrls[0])
-            self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
-            return
-            
-        if "META_START" in text:
-            self.emit (QtCore.SIGNAL('status(QString)'), 'Fetching metadata...')
-            return
-        if "META_END" in text:
-            self.emit (QtCore.SIGNAL('status(QString)'), 'Downloading packages...')
-            return
             
         self.emit (QtCore.SIGNAL('output(QString)'), text)
 
