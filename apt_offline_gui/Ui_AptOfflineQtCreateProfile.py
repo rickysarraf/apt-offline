@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtCreateProfile.ui'
 #
-# Created: Sat Mar  6 16:58:10 2010
+# Created: Sat Mar  6 21:04:20 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,6 +12,7 @@ from PyQt4 import QtCore, QtGui
 class Ui_CreateProfile(object):
     def setupUi(self, CreateProfile):
         CreateProfile.setObjectName("CreateProfile")
+        CreateProfile.setWindowModality(QtCore.Qt.ApplicationModal)
         CreateProfile.resize(443, 374)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)

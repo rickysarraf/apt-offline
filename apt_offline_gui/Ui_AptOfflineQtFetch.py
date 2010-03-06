@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetch.ui'
 #
-# Created: Sat Mar  6 19:22:40 2010
+# Created: Sat Mar  6 21:04:20 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PyQt4 import QtCore, QtGui
 class Ui_AptOfflineQtFetch(object):
     def setupUi(self, AptOfflineQtFetch):
         AptOfflineQtFetch.setObjectName("AptOfflineQtFetch")
-        AptOfflineQtFetch.setWindowModality(QtCore.Qt.WindowModal)
+        AptOfflineQtFetch.setWindowModality(QtCore.Qt.ApplicationModal)
         AptOfflineQtFetch.resize(468, 495)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
