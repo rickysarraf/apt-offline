@@ -29,18 +29,24 @@ class AptOfflineQtMain(QtGui.QMainWindow):
         QtCore.QObject.connect(self.ui.createProfileButton,QtCore.SIGNAL("clicked()"), self.CreateProfile)
         # Create an object and do not show it
         self.createProfileDialog = AptOfflineQtCreateProfile()
+        # setup hover hack
+        self.ui.createProfileButton.installEventFilter(self)
         
     def ConfigureDownload(self):
         QtCore.QObject.connect(self.ui.menuDownload, QtCore.SIGNAL("triggered()"), self.DownloadPackagesUpgrades)
         QtCore.QObject.connect(self.ui.downloadButton, QtCore.SIGNAL("clicked()"), self.DownloadPackagesUpgrades)
         # Create an object for download dialog
         self.createDownloadDialog = AptOfflineQtFetch()
+        # setup hover hack
+        self.ui.downloadButton.installEventFilter(self)
     
     def ConfigureInstall(self):
         QtCore.QObject.connect(self.ui.menuInstall, QtCore.SIGNAL("triggered()"), self.InstallPackagesUpgrades)
         QtCore.QObject.connect(self.ui.restoreButton, QtCore.SIGNAL("clicked()"), self.InstallPackagesUpgrades)
         # Create an object for Install dialog
         self.createInstallDialog = AptOfflineQtInstall()
+        # setup hover hack
+        self.ui.restoreButton.installEventFilter(self)
 
     def ConfigureAbout(self):
         QtCore.QObject.connect(self.ui.menuAbout, QtCore.SIGNAL("triggered()"), self.ShowAbout)
@@ -51,7 +57,20 @@ class AptOfflineQtMain(QtGui.QMainWindow):
         QtCore.QObject.connect(self.ui.menuExit, QtCore.SIGNAL("triggered()"), self.ExitApp)
         QtCore.QObject.connect(self.ui.exitButton, QtCore.SIGNAL("clicked()"), self.ExitApp)
 
-    
+    def eventFilter(self,target,event):
+        # hover hack for 3 buttons
+        if event.type() == QtCore.QEvent.HoverEnter:
+            if target.objectName() == 'createProfileButton':
+                self.ui.descriptionField.setText("Click here to generate a signature of this machine.")
+            if target.objectName() == 'downloadButton':
+                self.ui.descriptionField.setText("Once you are on a internet connected machine, use this to download packages as per your signature file.")
+            if target.objectName() == 'restoreButton':
+                self.ui.descriptionField.setText("Once you've downloaded all the packages, click here to install them on the offline machine.")
+                
+        if event.type() == QtCore.QEvent.HoverLeave:
+            self.ui.descriptionField.setText("Hover your mouse over the buttons to get the description.")
+        return False
+        
     
     def CreateProfile(self):
         # Code for creating Modal Dialog for Create Profile

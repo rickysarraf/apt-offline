@@ -52,6 +52,9 @@
       <pointsize>12</pointsize>
      </font>
     </property>
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
     <property name="text">
      <string>Create Signature</string>
     </property>

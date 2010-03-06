@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtMain.ui'
 #
-# Created: Sat Mar  6 21:04:20 2010
+# Created: Sat Mar  6 21:25:05 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -29,6 +29,7 @@ class Ui_AptOfflineMain(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.createProfileButton.setFont(font)
+        self.createProfileButton.setMouseTracking(True)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/icons/contact-new.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.createProfileButton.setIcon(icon)
