@@ -135,7 +135,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
             return
         
         # if file already exists
-        if os.path.isfile(self.filepath):
+        if os.path.exists(self.zipfilepath):
                 ret = QMessageBox.warning(self, "Replace archive file?",
                    "The file %s already exists.\n"
                       "Do you want to overwrite it?" % self.zipfilepath,
