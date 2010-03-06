@@ -1291,7 +1291,103 @@ def setter(args):
         if Default_Operation:
                 Bool_SetUpdate = True
                 Bool_SetUpgrade = True
-        
+                
+        class AptManip:
+                def __init__(self, OutputFile, AptType="apt"):
+                        
+                        self.WriteTo = OutputFile
+                        
+                        if AptType == "apt":
+                                self.apt = "apt-get"
+                        elif AptType == "aptitude":
+                                self.apt = "aptitude"
+                        elif AptType == "python-apt":
+                                #TODO:
+                                pass
+                        else:
+                                self.apt = "apt-get"
+                                
+                def Update(self):
+                        if self.apt == "apt-get":
+                                self.__AptGetUpdate()
+                        elif self.apt == "aptitude":
+                                pass
+                        else:
+                                log.err("Method not supported")
+                                sys.exit(1)
+                                
+                                
+                def Upgrade(self, UpgradeType="upgrade"):
+                        if self.apt == "apt-get":
+                                self.__AptGetUpgrade(UpgradeType)
+                        elif self.apt == "aptitude":
+                                pass
+                        else:
+                                log.err("Method not supported")
+                                sys.exit(1)
+                        
+                        
+                def __FixAptSigs(self):
+                        for file in os.listdir(apt_update_target_path):
+                                if file.endswith(".gpg.reverify"):
+                                        sig_file = file.rstrip(".reverify")
+                                        log.verbose("Recovering gpg signature %s.\n" % (file) )
+                                        file = os.path.join(apt_update_target_path, file)
+                                        os.rename(file, os.path.join(apt_update_final_path + sig_file) )
+                                        
+                                        
+                def __AptGetUpdate(self):
+                        log.msg("\nGenerating database of files that are needed for an update.\n")
+                
+                        #FIXME: Unicode Fix
+                        # This is only a workaround.
+                        # When using locales, we get translation files. But apt doesn't extract the URI properly.
+                        # Once the extraction problem is root-caused, we can fix this easily.
+                        os.environ['__apt_set_update'] = self.WriteTo
+                        try:
+                                old_environ = os.environ['LANG']
+                        except KeyError:
+                                old_environ = "C"
+                        os.environ['LANG'] = "C"
+                        log.verbose( "Set environment variable for LANG from %s to %s temporarily.\n" % ( old_environ, os.environ['LANG'] ) )
+                        if os.system( '/usr/bin/apt-get -qq --print-uris --simulate update >> $__apt_set_update' ) != 0:
+                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        log.verbose( "Set environment variable for LANG back to its original from %s to %s.\n" % ( os.environ['LANG'], old_environ ) )
+                        os.environ['LANG'] = old_environ
+                        
+                        log.verbose("Calling __FixAptSigs to fix the apt sig problem")
+                        self.__FixAptSigs()
+                                
+                def __AptitudeUpdate(self):
+                        pass
+                
+                def __PythonAptUpdate(self):
+                        pass
+                
+                def __AptGetUpgrade(self, UpgradeType="upgrade"):
+                        
+                        os.environ['__apt_set_upgrade'] = self.WriteTo
+                        
+                        if UpgradeType == "upgrade":
+                                log.msg( "\nGenerating database of files that are needed for an upgrade.\n" )
+                                
+                                if os.system( '/usr/bin/apt-get -qq --print-uris upgrade >> $__apt_set_upgrade' ) != 0:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                                
+                        elif Str_SetUpgradeType == "dist-upgrade":
+                                log.msg( "\nGenerating database of files that are needed for a dist-upgrade.\n" )
+                                if os.system( '/usr/bin/apt-get -qq --print-uris dist-upgrade >> $__apt_set_upgrade' ) != 0:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                        
+                        elif Str_SetUpgradeType == "dselect-upgrade":
+                                log.msg( "\nGenerating database of files that are needed for a dselect-upgrade.\n" )
+                                if os.system( '/usr/bin/apt-get -qq --print-uris dselect-upgrade >> $__apt_set_upgrade' ) != 0:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        else:
+                                log.err( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
+                
+                
+                                
         #FIXME: We'll use python-apt library to make it cleaner.
         # For now, we need to set markers using shell variables.
         if os.path.isfile(Str_SetArg):
@@ -1300,50 +1396,21 @@ def setter(args):
                 except OSError:
                         log.err("Cannot remove file %s.\n" % (Str_SetArg) )
         
+        
+        #Instantiate Apt based on what we have. For now, fall to apt only
+        AptInst = AptManip(Str_SetArg, "apt")
+        
         if Bool_SetUpdate:
                 if platform.system() in supported_platforms:
                         if os.geteuid() != 0:
                                 log.err("This option requires super-user privileges. Execute as root or use sudo/su\n")
                                 sys.exit(1)
                         else:
-                                log.msg("\nGenerating database of files that are needed for an update.\n")
-                        
-                                #FIXME: Unicode Fix
-                                # This is only a workaround.
-                                # When using locales, we get translation files. But apt doesn't extract the URI properly.
-                                # Once the extraction problem is root-caused, we can fix this easily.
-                                os.environ['__apt_set_update'] = Str_SetArg
-                                try:
-                                        old_environ = os.environ['LANG']
-                                except KeyError:
-                                        old_environ = "C"
-                                os.environ['LANG'] = "C"
-                                log.verbose( "Set environment variable for LANG from %s to %s temporarily.\n" % ( old_environ, os.environ['LANG'] ) )
-                                if os.system( '/usr/bin/apt-get -qq --print-uris --simulate update >> $__apt_set_update' ) != 0:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
-                                log.verbose( "Set environment variable for LANG back to its original from %s to %s.\n" % ( os.environ['LANG'], old_environ ) )
-                                os.environ['LANG'] = old_environ
-                                
-                                #INFO: Handle *.reverify commands that get created during an `apt-get update` command execution
-                                # This would especially happen on apt installations where --simulate is not yet supported.
-                                # For details: See Debian BTS: #565918
-                                
-                                # Background:
-                                # When running the `apt-get update` command, apt turns all signature files to partial/*.gpg.reverify files
-                                # and expects new gpg signatures to be brought for verification.
-                                # As part of apt-offline, what we will do here is to revert back the *.reverify files
-                                # that were created during simulation (but apt up till now has not supported it here).
-                                # Again, see Debian BTS $565918 for more details.
-                                
-                                for file in os.listdir(apt_update_target_path):
-                                        if file.endswith(".gpg.reverify"):
-                                                sig_file = file.rstrip(".reverify")
-                                                file = os.path.abspath(file)
-                                                log.verbose("Recovering gpg signature %s.\n" % (file) )
-                                                os.rename(file, os.path.join(apt_update_final_path + sig_file) )
+                                AptInst.Update()
                 else:
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
+                        
         if Bool_SetUpgrade:
                 if platform.system() in supported_platforms:
                         if os.geteuid() != 0:
@@ -1382,20 +1449,11 @@ def setter(args):
                                                                 install_file.write( uri + ' ' + file + ' ' + size + ' ' + checksum + "\n" )
                                                                 dup_records.append( checksum.__str__() )
                                 else:
-                                        log.msg( "\nGenerating database of files that are needed for an upgrade.\n" )
-                                        os.environ['__apt_set_upgrade'] = Str_SetArg
-                                        if os.system( '/usr/bin/apt-get -qq --print-uris upgrade >> $__apt_set_upgrade' ) != 0:
-                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                        AptInst.Upgrade("upgrade")
                         elif Str_SetUpgradeType == "dist-upgrade":
-                                log.msg( "\nGenerating database of files that are needed for a dist-upgrade.\n" )
-                                os.environ['__apt_set_upgrade'] = Str_SetArg
-                                if os.system( '/usr/bin/apt-get -qq --print-uris dist-upgrade >> $__apt_set_upgrade' ) != 0:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                AptInst.Upgrade("dist-upgrade")
                         elif Str_SetUpgradeType == "dselect-upgrade":
-                                log.msg( "\nGenerating database of files that are needed for a dselect-upgrade.\n" )
-                                os.environ['__apt_set_upgrade'] = Str_SetArg
-                                if os.system( '/usr/bin/apt-get -qq --print-uris dselect-upgrade >> $__apt_set_upgrade' ) != 0:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                AptInst.Upgrade("dselect-upgrade")
                         else:
                                 log.err( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
                 else:
