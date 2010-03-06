@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtCreateProfile.ui'
 #
-# Created: Sat Mar  6 13:27:14 2010
+# Created: Sat Mar  6 16:58:10 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,6 +13,13 @@ class Ui_CreateProfile(object):
     def setupUi(self, CreateProfile):
         CreateProfile.setObjectName("CreateProfile")
         CreateProfile.resize(443, 374)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(CreateProfile.sizePolicy().hasHeightForWidth())
+        CreateProfile.setSizePolicy(sizePolicy)
+        CreateProfile.setMinimumSize(QtCore.QSize(443, 374))
+        CreateProfile.setMaximumSize(QtCore.QSize(443, 374))
         self.verticalLayoutWidget = QtGui.QWidget(CreateProfile)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 427, 321))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
@@ -111,7 +118,7 @@ class Ui_CreateProfile(object):
         self.verticalLayout_5.addLayout(self.verticalLayout_8)
         self.verticalLayout.addLayout(self.verticalLayout_5)
         self.horizontalLayoutWidget = QtGui.QWidget(CreateProfile)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(11, 320, 401, 40))
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(25, 325, 401, 40))
         self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
         self.horizontalLayout_4 = QtGui.QHBoxLayout(self.horizontalLayoutWidget)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
