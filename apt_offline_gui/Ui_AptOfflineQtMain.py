@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtMain.ui'
 #
-# Created: Sun Feb  7 16:26:57 2010
-#      by: PyQt4 UI code generator 4.4.4
+# Created: Sat Mar  6 20:49:34 2010
+#      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,6 +13,13 @@ class Ui_AptOfflineMain(object):
     def setupUi(self, AptOfflineMain):
         AptOfflineMain.setObjectName("AptOfflineMain")
         AptOfflineMain.resize(432, 544)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(AptOfflineMain.sizePolicy().hasHeightForWidth())
+        AptOfflineMain.setSizePolicy(sizePolicy)
+        AptOfflineMain.setMinimumSize(QtCore.QSize(432, 544))
+        AptOfflineMain.setMaximumSize(QtCore.QSize(432, 544))
         AptOfflineMain.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
         AptOfflineMain.setUnifiedTitleAndToolBarOnMac(True)
         self.centralwidget = QtGui.QWidget(AptOfflineMain)
@@ -81,7 +88,7 @@ class Ui_AptOfflineMain(object):
         self.statusbar.setObjectName("statusbar")
         AptOfflineMain.setStatusBar(self.statusbar)
         self.menubar = QtGui.QMenuBar(AptOfflineMain)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 432, 20))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 432, 25))
         self.menubar.setObjectName("menubar")
         self.menuOperations = QtGui.QMenu(self.menubar)
         self.menuOperations.setObjectName("menuOperations")
