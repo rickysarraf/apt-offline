@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtAbout.ui'
 #
-# Created: Sun Mar  7 00:11:59 2010
+# Created: Sun Mar  7 00:22:12 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -81,12 +81,12 @@ class Ui_AboutAptOffline(object):
         self.tabWidget.addTab(self.thanksTab, "")
         self.licenseTab = QtGui.QWidget()
         self.licenseTab.setObjectName("licenseTab")
-        self.plainTextEdit = QtGui.QPlainTextEdit(self.licenseTab)
-        self.plainTextEdit.setGeometry(QtCore.QRect(4, 4, 490, 203))
+        self.licenseText = QtGui.QPlainTextEdit(self.licenseTab)
+        self.licenseText.setGeometry(QtCore.QRect(4, 4, 490, 203))
         font = QtGui.QFont()
         font.setPointSize(8)
-        self.plainTextEdit.setFont(font)
-        self.plainTextEdit.setObjectName("plainTextEdit")
+        self.licenseText.setFont(font)
+        self.licenseText.setObjectName("licenseText")
         self.tabWidget.addTab(self.licenseTab, "")
         self.label_2 = QtGui.QLabel(AboutAptOffline)
         self.label_2.setGeometry(QtCore.QRect(10, 60, 511, 16))
@@ -124,7 +124,7 @@ class Ui_AboutAptOffline(object):
         self.label_12.setText(QtGui.QApplication.translate("AboutAptOffline", "Dennis Lee Bieber", None, QtGui.QApplication.UnicodeUTF8))
         self.label_13.setText(QtGui.QApplication.translate("AboutAptOffline", "The awesome Directi people for their office space required for the mini hackfests", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.thanksTab), QtGui.QApplication.translate("AboutAptOffline", "Thanks To", None, QtGui.QApplication.UnicodeUTF8))
-        self.plainTextEdit.setPlainText(QtGui.QApplication.translate("AboutAptOffline", "LICENSE not found. Please contact the developers immediately.", None, QtGui.QApplication.UnicodeUTF8))
+        self.licenseText.setPlainText(QtGui.QApplication.translate("AboutAptOffline", "LICENSE not found. Please contact the developers immediately.", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.licenseTab), QtGui.QApplication.translate("AboutAptOffline", "License", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("AboutAptOffline", "A GUI for apt-offline - an offline APT Package Manager", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton.setText(QtGui.QApplication.translate("AboutAptOffline", "Close", None, QtGui.QApplication.UnicodeUTF8))

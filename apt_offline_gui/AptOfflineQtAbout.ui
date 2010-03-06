@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>AboutAptOffline</class>
  <widget class="QDialog" name="AboutAptOffline">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -253,7 +256,7 @@ This is a Graphical User Interface which exposes the functionality of apt-offlin
     <attribute name="title">
      <string>License</string>
     </attribute>
-    <widget class="QPlainTextEdit" name="plainTextEdit">
+    <widget class="QPlainTextEdit" name="licenseText">
      <property name="geometry">
       <rect>
        <x>4</x>
