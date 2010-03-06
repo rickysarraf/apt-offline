@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtInstall.ui'
 #
-# Created: Sun Feb 14 01:20:20 2010
-#      by: PyQt4 UI code generator 4.7
+# Created: Sat Mar  6 20:52:23 2010
+#      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -14,6 +14,13 @@ class Ui_AptOfflineQtInstall(object):
         AptOfflineQtInstall.setObjectName("AptOfflineQtInstall")
         AptOfflineQtInstall.setWindowModality(QtCore.Qt.WindowModal)
         AptOfflineQtInstall.resize(466, 463)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(AptOfflineQtInstall.sizePolicy().hasHeightForWidth())
+        AptOfflineQtInstall.setSizePolicy(sizePolicy)
+        AptOfflineQtInstall.setMinimumSize(QtCore.QSize(466, 463))
+        AptOfflineQtInstall.setMaximumSize(QtCore.QSize(466, 463))
         self.zipFilePath = QtGui.QLineEdit(AptOfflineQtInstall)
         self.zipFilePath.setGeometry(QtCore.QRect(30, 60, 270, 30))
         self.zipFilePath.setObjectName("zipFilePath")
