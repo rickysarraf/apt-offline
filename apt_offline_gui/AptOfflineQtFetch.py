@@ -32,16 +32,29 @@ class Worker(QtCore.QThread):
     def write(self, text):
         # redirects console output to our consoleOutputHolder
         # extract chinese whisper from text
-      
         if (" / " in text):
             try:
-                progress,total = text.split(" / ",1)
-                progress = progress.strip()
-                total = total.split(" ",1)[0].strip()
+                # no more splits, we know the exact byte count now
+                progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
+                total = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
                 self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
+                return
             except:
                 ''' nothing to do '''
         
+        if " _META_ " in text:
+            progress = str(apt_offline_core.AptOfflineCoreLib.totalUrls[1])
+            total = str(apt_offline_core.AptOfflineCoreLib.totalUrls[0])
+            self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
+            return
+            
+        if "META_START" in text:
+            self.emit (QtCore.SIGNAL('status(QString)'), 'Fetching metadata...')
+            return
+        if "META_END" in text:
+            self.emit (QtCore.SIGNAL('status(QString)'), 'Downloading packages...')
+            return
+            
         self.emit (QtCore.SIGNAL('output(QString)'), text)
 
     def flush(self):
@@ -87,6 +100,11 @@ class AptOfflineQtFetch(QtGui.QDialog):
                         self.updateLog )
         QtCore.QObject.connect(self.worker, QtCore.SIGNAL("progress(QString,QString)"),
                         self.updateProgress )
+        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("status(QString)"),
+                        self.updateStatus )
+                        
+        #INFO: inform CLI that it's a gui app
+        apt_offline_core.AptOfflineCoreLib.guiBool = True
         
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
@@ -168,8 +186,12 @@ class AptOfflineQtFetch(QtGui.QDialog):
             if ('Downloaded data ' in text):
                 guicommon.updateInto (self.ui.rawLogHolder,
                                     guicommon.style(text,'green_fin'))
+                self.ui.progressStatusDescription.setText('Finished.')
             else:
                 guicommon.updateInto (self.ui.rawLogHolder,text)
+
+    def updateStatus(self,text):
+        self.ui.progressStatusDescription.setText(text)
 
     def updateProgress(self,progress,total):
         try:
