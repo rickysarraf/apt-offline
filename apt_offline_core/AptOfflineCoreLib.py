@@ -1332,9 +1332,9 @@ def setter(args):
                                 sys.exit(1)
                                 
                                 
-                def Upgrade(self, UpgradeType="upgrade"):
+                def Upgrade(self, UpgradeType="upgrade", ReleaseType=None):
                         if self.apt == "apt-get":
-                                self.__AptGetUpgrade(UpgradeType)
+                                self.__AptGetUpgrade(UpgradeType, ReleaseType)
                         elif self.apt == "aptitude":
                                 pass
                         else:
@@ -1394,28 +1394,52 @@ def setter(args):
                 def __PythonAptUpdate(self):
                         pass
                 
-                def __AptGetUpgrade(self, UpgradeType="upgrade"):
+                def __AptGetUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
+                        self.ReleaseType = ReleaseType
                         
                         os.environ['__apt_set_upgrade'] = self.WriteTo
                         
-                        if UpgradeType == "upgrade":
-                                log.msg( "\nGenerating database of files that are needed for an upgrade.\n" )
-                                
-                                if self.__ExecSystemCmd('/usr/bin/apt-get -qq --print-uris upgrade >> $__apt_set_upgrade') is False:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
-                                                
-                        elif Str_SetUpgradeType == "dist-upgrade":
-                                log.msg( "\nGenerating database of files that are needed for a dist-upgrade.\n" )
-                                
-                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris dist-upgrade >> $__apt_set_upgrade' ) is False:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        if ReleaseType is not None:
+                                os.environ['__apt_set_install_release'] = self.ReleaseType
+                                if UpgradeType == "upgrade":
+                                        log.msg( "\nGenerating database of files that are needed for an upgrade.\n" )
                                         
-                        elif Str_SetUpgradeType == "dselect-upgrade":
-                                log.msg( "\nGenerating database of files that are needed for a dselect-upgrade.\n" )
-                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris dselect-upgrade >> $__apt_set_upgrade' )  is False:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                        if self.__ExecSystemCmd('/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release upgrade >> $__apt_set_upgrade') is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                                        
+                                elif Str_SetUpgradeType == "dist-upgrade":
+                                        log.msg( "\nGenerating database of files that are needed for a dist-upgrade.\n" )
+                                        
+                                        if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release dist-upgrade >> $__apt_set_upgrade' ) is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                                
+                                elif Str_SetUpgradeType == "dselect-upgrade":
+                                        log.msg( "\nGenerating database of files that are needed for a dselect-upgrade.\n" )
+                                        if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release dselect-upgrade >> $__apt_set_upgrade' )  is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                else:
+                                        log.err( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
+                                        
                         else:
-                                log.err( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
+                                
+                                if UpgradeType == "upgrade":
+                                        log.msg( "\nGenerating database of files that are needed for an upgrade.\n" )
+                                        
+                                        if self.__ExecSystemCmd('/usr/bin/apt-get -qq --print-uris upgrade >> $__apt_set_upgrade') is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                                        
+                                elif Str_SetUpgradeType == "dist-upgrade":
+                                        log.msg( "\nGenerating database of files that are needed for a dist-upgrade.\n" )
+                                        
+                                        if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris dist-upgrade >> $__apt_set_upgrade' ) is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                                
+                                elif Str_SetUpgradeType == "dselect-upgrade":
+                                        log.msg( "\nGenerating database of files that are needed for a dselect-upgrade.\n" )
+                                        if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris dselect-upgrade >> $__apt_set_upgrade' )  is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                else:
+                                        log.err( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
                                 
                 def __AptInstallPackage(self, PackageList=None, ReleaseType=None):
                         
@@ -1542,7 +1566,7 @@ def setter(args):
                                                                 install_file.write( uri + ' ' + file + ' ' + size + ' ' + checksum + "\n" )
                                                                 dup_records.append( checksum.__str__() )
                                 else:
-                                        AptInst.Upgrade("upgrade")
+                                        AptInst.Upgrade("upgrade", ReleaseType=Str_SetInstallRelease)
                         elif Str_SetUpgradeType == "dist-upgrade":
                                 AptInst.Upgrade("dist-upgrade")
                         elif Str_SetUpgradeType == "dselect-upgrade":
