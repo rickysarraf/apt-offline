@@ -1566,38 +1566,7 @@ def setter(args):
         
         if List_SetInstallSrcPackages != None and List_SetInstallSrcPackages != []:
                 if platform.system() in supported_platforms:
-                        
                         AptInst.InstallSrcPackages(List_SetInstallSrcPackages, Str_SetInstallRelease, Bool_SrcBuildDep)
-                        package_list = ''
-                        for pkg in List_SetInstallSrcPackages:
-                                package_list += pkg + ', '
-                        log.msg( "\nGenerating database of source packages %s.\n" % (package_list) )
-                        os.environ['__apt_set_install'] = Str_SetArg
-                        os.environ['__apt_set_install_src_packages'] = ''
-                        
-                        for x in List_SetInstallSrcPackages:
-                                os.environ['__apt_set_install_src_packages'] += x + ' '
-                                
-                        if Str_SetInstallRelease:
-                                os.environ['__apt_set_install_release'] = Str_SetArg
-                                if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release source $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
-                        else:
-                                #FIXME: Find a more Pythonic implementation
-                                if os.system( '/usr/bin/apt-get -qq --print-uris source $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
-                        
-                        if Bool_SrcBuildDep:
-                                log.msg("Generating Build-Dependency for source packages %s.\n" % (package_list) )
-                                if Str_SetInstallRelease:
-                                        os.environ['__apt_set_install_release'] = Str_SetArg
-                                        if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
-                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
-                                else:
-                                        #FIXME: Find a more Pythonic implementation
-                                        if os.system( '/usr/bin/apt-get -qq --print-uris build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
-                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
-                                
                 else:
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
