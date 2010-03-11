@@ -1279,6 +1279,7 @@ def setter(args):
         Bool_SetUpgrade = args.set_upgrade
         Str_SetUpgradeType = args.upgrade_type
         Bool_SrcBuildDep = args.src_build_dep
+        Bool_TestWindows = args.test_windows
         
         if Bool_SetUpdate is False and Bool_SetUpgrade is False and List_SetInstallPackages is None \
         and List_SetInstallSrcPackages is None:
@@ -1293,9 +1294,10 @@ def setter(args):
                 Bool_SetUpgrade = True
                 
         class AptManip:
-                def __init__(self, OutputFile, AptType="apt"):
+                def __init__(self, OutputFile, Simulate=False, AptType="apt"):
                         
                         self.WriteTo = OutputFile
+                        self.Simulate = Simulate
                         
                         if AptType == "apt":
                                 self.apt = "apt-get"
@@ -1307,6 +1309,19 @@ def setter(args):
                         else:
                                 self.apt = "apt-get"
                                 
+                def __Simulate(self):
+                        if self.Simulate is True:
+                                pass
+                
+                def __ExecSystemCmd(self, CommandString):
+                        
+                        if self.Simulate:
+                                return True
+                        else:
+                                if os.system( CommandString ) != 0:
+                                        return False
+                                return True
+                
                 def Update(self):
                         if self.apt == "apt-get":
                                 self.__AptGetUpdate()
@@ -1322,6 +1337,13 @@ def setter(args):
                                 self.__AptGetUpgrade(UpgradeType)
                         elif self.apt == "aptitude":
                                 pass
+                        else:
+                                log.err("Method not supported")
+                                sys.exit(1)
+                
+                def InstallPackages(self, PackageList, ReleaseType):
+                        if self.apt == "apt-get":
+                                self.__AptInstallPackage(PackageList, ReleaseType)
                         else:
                                 log.err("Method not supported")
                                 sys.exit(1)
@@ -1350,7 +1372,8 @@ def setter(args):
                                 old_environ = "C"
                         os.environ['LANG'] = "C"
                         log.verbose( "Set environment variable for LANG from %s to %s temporarily.\n" % ( old_environ, os.environ['LANG'] ) )
-                        if os.system( '/usr/bin/apt-get -qq --print-uris --simulate update >> $__apt_set_update' ) != 0:
+                        
+                        if self.__ExecSystemCmd('/usr/bin/apt-get -qq --print-uris --simulate update >> $__apt_set_update') is False:
                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
                         log.verbose( "Set environment variable for LANG back to its original from %s to %s.\n" % ( os.environ['LANG'], old_environ ) )
                         os.environ['LANG'] = old_environ
@@ -1371,21 +1394,49 @@ def setter(args):
                         if UpgradeType == "upgrade":
                                 log.msg( "\nGenerating database of files that are needed for an upgrade.\n" )
                                 
-                                if os.system( '/usr/bin/apt-get -qq --print-uris upgrade >> $__apt_set_upgrade' ) != 0:
+                                if self.__ExecSystemCmd('/usr/bin/apt-get -qq --print-uris upgrade >> $__apt_set_upgrade') is False:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                                                 
                         elif Str_SetUpgradeType == "dist-upgrade":
                                 log.msg( "\nGenerating database of files that are needed for a dist-upgrade.\n" )
-                                if os.system( '/usr/bin/apt-get -qq --print-uris dist-upgrade >> $__apt_set_upgrade' ) != 0:
+                                
+                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris dist-upgrade >> $__apt_set_upgrade' ) is False:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                                         
                         elif Str_SetUpgradeType == "dselect-upgrade":
                                 log.msg( "\nGenerating database of files that are needed for a dselect-upgrade.\n" )
-                                if os.system( '/usr/bin/apt-get -qq --print-uris dselect-upgrade >> $__apt_set_upgrade' ) != 0:
+                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris dselect-upgrade >> $__apt_set_upgrade' )  is False:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                         else:
                                 log.err( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
-                
+                                
+                def __AptInstallPackage(self, PackageList=None, ReleaseType=None):
+                        
+                        self.package_list = ''
+                        self.ReleaseType = ReleaseType
+                        
+                        for pkg in PackageList:
+                                self.package_list += pkg + ', '
+                        log.msg( "\nGenerating database of package %s and its dependencies.\n" % (self.package_list) )
+                        
+                        os.environ['__apt_set_install'] = self.WriteTo
+                        os.environ['__apt_set_install_packages'] = ''                   # Build an empty variable
+        
+                        #INFO: This is improper way of getting the args, the name of the packages.
+                        # But since optparse doesn't have the implementation in place at the moment, we're using it.
+                        # Once fixed, this will be changed.
+                        # For details look at the parser.add_option line above.
+                        for x in PackageList:
+                                os.environ['__apt_set_install_packages'] += x + ' '
+                        
+                        if self.ReleaseType is not None:
+                                os.environ['__apt_set_install_release'] = self.ReleaseType
+                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release install $__apt_set_install_packages >> $__apt_set_install' ) is False:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        else:
+                                #FIXME: Find a more Pythonic implementation
+                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris install $__apt_set_install_packages >> $__apt_set_install' ) is False:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
                 
                                 
         #FIXME: We'll use python-apt library to make it cleaner.
@@ -1398,11 +1449,11 @@ def setter(args):
         
         
         #Instantiate Apt based on what we have. For now, fall to apt only
-        AptInst = AptManip(Str_SetArg, "apt")
+        AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt")
         
         if Bool_SetUpdate:
                 if platform.system() in supported_platforms:
-                        if os.geteuid() != 0:
+                        if not Bool_TestWindows and os.geteuid() != 0:
                                 log.err("This option requires super-user privileges. Execute as root or use sudo/su\n")
                                 sys.exit(1)
                         else:
@@ -1413,7 +1464,7 @@ def setter(args):
                         
         if Bool_SetUpgrade:
                 if platform.system() in supported_platforms:
-                        if os.geteuid() != 0:
+                        if not Bool_TestWindows and os.geteuid() != 0:
                                 log.err( "This option requires super-user privileges. Execute as root or use sudo/su" )
                                 sys.exit(1)
                         #TODO: Use a more Pythonic way for it
@@ -1462,31 +1513,11 @@ def setter(args):
                 
         if List_SetInstallPackages != None and List_SetInstallPackages != []:
                 if platform.system() in supported_platforms:
-                        if os.geteuid() != 0:
+                        if not Bool_TestWindows and os.geteuid() != 0:
                                 log.err( "This option requires super-user privileges. Execute as root or use sudo/su\n" )
                                 sys.exit(1)
-                        package_list = ''
-                        for pkg in List_SetInstallPackages:
-                                package_list += pkg + ', '
-                        log.msg( "\nGenerating database of package %s and its dependencies.\n" % (package_list) )
-                        os.environ['__apt_set_install'] = Str_SetArg
-                        os.environ['__apt_set_install_packages'] = ''
-        
-                        #INFO: This is improper way of getting the args, the name of the packages.
-                        # But since optparse doesn't have the implementation in place at the moment, we're using it.
-                        # Once fixed, this will be changed.
-                        # For details look at the parser.add_option line above.
-                        for x in List_SetInstallPackages:
-                                os.environ['__apt_set_install_packages'] += x + ' '
-                        
-                        if Str_SetInstallRelease:
-                                os.environ['__apt_set_install_release'] = Str_SetArg
-                                if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release install $__apt_set_install_packages >> $__apt_set_install' ) != 0:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
-                        else:
-                                #FIXME: Find a more Pythonic implementation
-                                if os.system( '/usr/bin/apt-get -qq --print-uris install $__apt_set_install_packages >> $__apt_set_install' ) != 0:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                
+                        AptInst.InstallPackages(List_SetInstallPackages, Str_SetInstallRelease)
                 else:
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
