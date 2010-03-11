@@ -815,7 +815,7 @@ def installer( args ):
         
         # install opts
         Str_InstallArg = args.install
-        Bool_TestWindows = args.test_windows
+        Bool_TestWindows = args.simulate
         Bool_SkipBugReports = args.skip_bug_reports
         Bool_Untrusted = args.allow_unauthenticated
         Str_InstallSrcPath = args.install_src_path
@@ -1279,7 +1279,7 @@ def setter(args):
         Bool_SetUpgrade = args.set_upgrade
         Str_SetUpgradeType = args.upgrade_type
         Bool_SrcBuildDep = args.src_build_dep
-        Bool_TestWindows = args.test_windows
+        Bool_TestWindows = args.simulate
         
         if Bool_SetUpdate is False and Bool_SetUpgrade is False and List_SetInstallPackages is None \
         and List_SetInstallSrcPackages is None:
@@ -1606,7 +1606,7 @@ def main():
         # Global options
         global_options = argparse.ArgumentParser(add_help=False)
         global_options.add_argument("--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
-        global_options.add_argument("--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.",
+        global_options.add_argument("--simulate", dest="simulate", help="Just simulate. Very helpful when debugging",
                             action="store_true" )
         
         parser = argparse.ArgumentParser( prog=app_name, version=app_name + " - " + version,
@@ -1714,7 +1714,7 @@ def main():
                 #
         	# Global opts
         	Bool_Verbose = args.verbose
-        	Bool_TestWindows = args.test_windows
+        	Bool_TestWindows = args.simulate
                 
         	global log
         	log = AptOfflineLib.Log( Bool_Verbose, lock=True )
