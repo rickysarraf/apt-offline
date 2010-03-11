@@ -1609,9 +1609,9 @@ def main():
         global_options.add_argument("--simulate", dest="simulate", help="Just simulate. Very helpful when debugging",
                             action="store_true" )
         
-        parser = argparse.ArgumentParser( prog=app_name, version=app_name + " - " + version,
-                                          description="Offline APT Package Manager",
+        parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager",
                                           epilog=copyright + " - " + terminal_license, parents=[global_options])
+        parser.add_argument("-v", "--version", action='version', version=version)
         
         # We need subparsers for set/get/install
         subparsers = parser.add_subparsers()
