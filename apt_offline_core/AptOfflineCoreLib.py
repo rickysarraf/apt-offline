@@ -1347,6 +1347,13 @@ def setter(args):
                         else:
                                 log.err("Method not supported")
                                 sys.exit(1)
+                                
+                def InstallSrcPackages(self, SrcPackageList, ReleaseType, BuildDependency):
+                        if self.apt == "apt-get":
+                                self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
+                        else:
+                                log.err("Method not supported")
+                                sys.exit(1)
                         
                         
                 def __FixAptSigs(self):
@@ -1437,6 +1444,41 @@ def setter(args):
                                 #FIXME: Find a more Pythonic implementation
                                 if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris install $__apt_set_install_packages >> $__apt_set_install' ) is False:
                                         log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                        
+                def __AptInstallSrcPackages(self, SrcPackageList=None, ReleaseType=None, BuildDependency=False):
+                        
+                        self.package_list = ''
+                        self.ReleaseType = ReleaseType
+                        
+                        for pkg in SrcPackageList:
+                                self.package_list += pkg + ', '
+                        log.msg( "\nGenerating database of source packages %s.\n" % (self.package_list) )
+                        
+                        os.environ['__apt_set_install'] = self.WriteTo
+                        os.environ['__apt_set_install_src_packages'] = ''               # Build an empty variable
+                        
+                        for x in SrcPackageList:
+                                os.environ['__apt_set_install_src_packages'] += x + ' '
+                                
+                        if self.ReleaseType is not None:
+                                os.environ['__apt_set_install_release'] = self.ReleaseType
+                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release source $__apt_set_install_src_packages >> $__apt_set_install' ) is False:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        else:
+                                #FIXME: Find a more Pythonic implementation
+                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris source $__apt_set_install_src_packages >> $__apt_set_install' )  is False:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        
+                        if BuildDependency:
+                                log.msg("Generating Build-Dependency for source packages %s.\n" % (self.package_list) )
+                                if self.ReleaseType is not None:
+                                        os.environ['__apt_set_install_release'] = self.WriteTo
+                                        if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                else:
+                                        if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                
                 
                                 
         #FIXME: We'll use python-apt library to make it cleaner.
@@ -1524,6 +1566,8 @@ def setter(args):
         
         if List_SetInstallSrcPackages != None and List_SetInstallSrcPackages != []:
                 if platform.system() in supported_platforms:
+                        
+                        AptInst.InstallSrcPackages(List_SetInstallSrcPackages, Str_SetInstallRelease, Bool_SrcBuildDep)
                         package_list = ''
                         for pkg in List_SetInstallSrcPackages:
                                 package_list += pkg + ', '
