@@ -564,14 +564,16 @@ def fetcher( args ):
                                 if Bool_DisableMD5Check is False:
                                         if FetcherInstance.CheckHashDigest(full_file_path, checksum) is True:
                                                 log.verbose("Checksum correct for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                                
+                                                bug_fetched = False
                                                 if Bool_BugReports:
-                                                        bug_fetched = 0
                                                         log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                         if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
                                                                 log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                                                bug_fetched = 1
+                                                                bug_fetched = True
                                                         else:
                                                                 log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
+                                                                
                                                 if Str_BundleFile:
                                                         if FetcherInstance.compress_the_file(Str_BundleFile, full_file_path) is True:
                                                                 log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
@@ -587,7 +589,7 @@ def fetcher( args ):
                                                         except shutil.Error:
                                                                 log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (file, Str_DownloadDir, LINE_OVERWRITE_MID) )
                                                         
-                                                        if bug_fetched == 1:
+                                                        if bug_fetched is True:
                                                                 for x in os.listdir(os.curdir):
                                                                         if (x.startswith(PackageName) and x.endswith(apt_bug_file_format) ):
                                                                                 shutil.move(x, Str_DownloadDir)
@@ -627,12 +629,12 @@ def fetcher( args ):
                                 #INFO: You're and idiot.
                                 # You should NOT disable md5checksum for any files
                                 else:
+                                        bug_fetched = False
                                         if Bool_BugReports:
-                                                bug_fetched = 0
                                                 log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                                 if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
                                                         log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
-                                                        bug_fetched = 1
+                                                        bug_fetched = True
                                                 else:
                                                         log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                             
@@ -656,7 +658,7 @@ def fetcher( args ):
                                                         log.verbose( "%s already available in dest_dir. Skipping copy!!!%s\n" % ( file, LINE_OVERWRITE_SMALL ) )
                             
                                                 # And also the bug reports
-                                                if bug_fetched == 1:
+                                                if bug_fetched is True:
                                                         for x in os.listdir( os.curdir ):
                                                                 if ( x.startswith( PackageName ) and x.endswith( apt_bug_file_format ) ):
                                                                         shutil.move( x, Str_DownloadDir )
