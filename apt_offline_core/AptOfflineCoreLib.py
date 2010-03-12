@@ -744,7 +744,7 @@ def fetcher( args ):
         responseQueue = Queue.Queue()
         
         
-        ConnectThread = AptOfflineLib.MyThread(requestQueue, responseQueue, abc, Int_NumOfThreads)
+        ConnectThread = AptOfflineLib.MyThread(abc, requestQueue, responseQueue, Int_NumOfThreads)
         
         ConnectThread.startThreads()
         

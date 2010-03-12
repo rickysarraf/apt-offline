@@ -527,7 +527,7 @@ class FileMgmt( object ):
 
 class MyThread( threading.Thread ):
         """My thread class"""
-        def __init__( self, requestQueue, responseQueue, WorkerFunction, NumOfThreads=1 ):
+        def __init__( self, WorkerFunction, requestQueue=None, responseQueue=None, NumOfThreads=1 ):
                 # Pool of NUMTHREADS Threads that run run().
                 self.requestQueue = requestQueue
                 self.responseQueue = responseQueue
@@ -536,7 +536,7 @@ class MyThread( threading.Thread ):
                 self.thread_pool = [
                        threading.Thread( 
                               target=self.run,
-                              args=( self.requestQueue, self.responseQueue )
+                              args=()
                               )
                        for i in range( self.threads )
                        ]
@@ -564,12 +564,19 @@ class MyThread( threading.Thread ):
                 for thread in self.thread_pool:
                         thread.join()
                         
-        def run( self, requestQueue, responseQueue):
+        def run( self, item=None):
                 while True:
-                        item = self.requestQueue.get()
+                        if self.requestQueue is not None:
+                                item = self.requestQueue.get()
+                                
                         if item is None:
                                 break
+                                
                         thread_name = threading.currentThread().getName()
-                        self.responseQueue.put( self.WorkerFunction( item, thread_name ) )
                         
-                        exit_status = self.responseQueue.get()
+                        if self.responseQueue is not None:
+                                self.responseQueue.put( self.WorkerFunction( item, thread_name ) )
+                                exit_status = self.responseQueue.get()
+                        else:
+                                self.WorkerFunction( item, thread_name )
+                                
