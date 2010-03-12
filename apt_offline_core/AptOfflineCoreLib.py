@@ -523,190 +523,100 @@ def fetcher( args ):
                 log.msg("WARNING: Else higher number of threads executed could cause\n")
                 log.msg("WARNING: network congestion and timeouts.\n\n")
         
-        def run(request, response, func=find_first_match):
+        def abc(request, response, func=find_first_match):
                 '''Get items from the request Queue, process them
                 with func(), put the results along with the
                 Thread's name into the response Queue.
                 Stop running when item is None.'''
-                while 1:
-                        tuple_item_key = request.get()
-                        if tuple_item_key is None:
-                                break
-                        (key, item) = tuple_item_key
+                #while 1:
+                #tuple_item_key = request.get()
+                #if tuple_item_key is None:
+                #        break
+                #(key, item) = tuple_item_key
+                
+                (key, item) = request
+                
+                #INFO: Everything
+                (url, file, download_size, checksum) = stripper(item)
+                thread_name = threading.currentThread().getName()
+                log.verbose("Thread is %s\n" % (thread_name) )
+                
+                if url.endswith(".deb"):
+                        try:
+                                PackageName = file.split("_")[0]
+                        except IndexError:
+                                log.err("Not getting a package name here is problematic. Better bail out.\n")
+                                sys.exit(1)
                         
-                        #INFO: Everything
-                        (url, file, download_size, checksum) = stripper(item)
-                        thread_name = threading.currentThread().getName()
-                        log.verbose("Thread is %s\n" % (thread_name) )
+                        #INFO: For Package version, we don't want to fail
+                        try:
+                                PackageVersion = file.split("_")[1]
+                        except IndexError:
+                                PackageVersion = "NA"
+                                log.verbose("Weird!! Package version not present. Is it really a deb file?\n")
                         
-                        if url.endswith(".deb"):
-                                try:
-                                        PackageName = file.split("_")[0]
-                                except IndexError:
-                                        log.err("Not getting a package name here is problematic. Better bail out.\n")
-                                        sys.exit(1)
-                                
-                                #INFO: For Package version, we don't want to fail
-                                try:
-                                        PackageVersion = file.split("_")[1]
-                                except IndexError:
-                                        PackageVersion = "NA"
-                                        log.verbose("Weird!! Package version not present. Is it really a deb file?\n")
-                                
-                                response.put(func(Str_CacheDir, file) ) 
-                                #INFO: find_first_match() returns False or a file name with absolute path
-                                full_file_path = response.get()
-                                #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
-                                if full_file_path != False:
-                                        # We'll first check for its md5 checksum
-                                        if Bool_DisableMD5Check is False:
-                                                if FetcherInstance.CheckHashDigest(full_file_path, checksum) is True:
-                                                        log.verbose("Checksum correct for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                                        if Bool_BugReports:
-                                                                bug_fetched = 0
-                                                                log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                                                if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
-                                                                        log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                                                        bug_fetched = 1
-                                                                else:
-                                                                        log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
-                                                        if Str_BundleFile:
-                                                                if FetcherInstance.compress_the_file(Str_BundleFile, full_file_path) is True:
-                                                                        log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
-                                                                else:
-                                                                        log.err("Couldn't add %s to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
-                                                                        sys.exit(1)
-                                                        #INFO: If no zip option enabled, simply copy the downloaded package file
-                                                        # along with the downloaded bug reports.
-                                                        else:
-                                                                try:
-                                                                        shutil.copy(full_file_path, Str_DownloadDir)
-                                                                        log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
-                                                                except shutil.Error:
-                                                                        log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (file, Str_DownloadDir, LINE_OVERWRITE_MID) )
-                                                                
-                                                                if bug_fetched == 1:
-                                                                        for x in os.listdir(os.curdir):
-                                                                                if (x.startswith(PackageName) and x.endswith(apt_bug_file_format) ):
-                                                                                        shutil.move(x, Str_DownloadDir)
-                                                                                        log.verbose("Moved %s file to %s folder.%s\n" % (x, Str_DownloadDir, LINE_OVERWRITE_FULL) )
-                                                #INFO: Damn!! The md5chesum didn't match :-(
-                                                # The file is corrupted and we need to download a new copy from the internet
-                                                else:
-                                                        log.verbose("%s checksum mismatch. Skipping file.%s\n" % (file, LINE_OVERWRITE_FULL) )
-                                                        log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
-                                                        if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
-                                                                log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                                                
-                                                                #Add to Str_CacheDir if possible
-                                                                if Str_CacheDir and os.access(Str_CacheDir, os.W_OK) == True:
-                                                                        try:
-                                                                                shutil.copy(file, Str_CacheDir)
-                                                                                log.verbose("%s copied to local cache directory %s.%s\n" % (file, Str_CacheDir, LINE_OVERWRITE_MID) )
-                                                                        except shutil.Error:
-                                                                                log.verbose("Couldn't copy %s to %s.%s\n" % (file, Str_CacheDir, LINE_OVERWRITE_FULL) )
-                                                                else:
-                                                                        log.verbose("cache_dir %s is not writeable. Skipping copy to it.\n" % (Str_CacheDir) )
-                                                                
-                                                                #Fetch bug reports
-                                                                if Bool_BugReports:
-                                                                        log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
-                                                                        if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
-                                                                                log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
-                                                                        else:
-                                                                                log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
-                                                                if Str_BundleFile:
-                                                                        if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
-                                                                                log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                                sys.exit( 1 )
-                                                                        else:
-                                                                                log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
-                                        #INFO: You're and idiot.
-                                        # You should NOT disable md5checksum for any files
-                                        else:
+                        
+                        #INFO: find_first_match() returns False or a file name with absolute path
+                        full_file_path = func(Str_CacheDir, file)
+                        #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
+                        if full_file_path != False:
+                                # We'll first check for its md5 checksum
+                                if Bool_DisableMD5Check is False:
+                                        if FetcherInstance.CheckHashDigest(full_file_path, checksum) is True:
+                                                log.verbose("Checksum correct for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                 if Bool_BugReports:
                                                         bug_fetched = 0
-                                                        log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
-                                                        if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
-                                                                log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                        log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                                        if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
+                                                                log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                                 bug_fetched = 1
                                                         else:
-                                                                log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
-                                    
-                                                #FIXME: Don't know why this was really required. If this has no changes, delete it.
-                                                #file = full_file_path.split("/")
-                                                #file = file[len(file) - 1]
-                                                #file = download_path + "/" + file
+                                                                log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                                 if Str_BundleFile:
-                                                        if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
-                                                                log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                sys.exit( 1 )
+                                                        if FetcherInstance.compress_the_file(Str_BundleFile, full_file_path) is True:
+                                                                log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
                                                         else:
-                                                                log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
+                                                                log.err("Couldn't add %s to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
+                                                                sys.exit(1)
+                                                #INFO: If no zip option enabled, simply copy the downloaded package file
+                                                # along with the downloaded bug reports.
                                                 else:
-                                                        # Since zip file option is not enabled let's copy the file to the target folder
                                                         try:
-                                                                shutil.copy( full_file_path, Str_DownloadDir )
-                                                                log.success( "%s copied from local cache directory %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_SMALL ) )
+                                                                shutil.copy(full_file_path, Str_DownloadDir)
+                                                                log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
                                                         except shutil.Error:
-                                                                log.verbose( "%s already available in dest_dir. Skipping copy!!!%s\n" % ( file, LINE_OVERWRITE_SMALL ) )
-                                    
-                                                        # And also the bug reports
+                                                                log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (file, Str_DownloadDir, LINE_OVERWRITE_MID) )
+                                                        
                                                         if bug_fetched == 1:
-                                                                for x in os.listdir( os.curdir ):
-                                                                        if ( x.startswith( PackageName ) and x.endswith( apt_bug_file_format ) ):
-                                                                                shutil.move( x, Str_DownloadDir )
-                                                                                log.verbose( "Moved %s file to %s folder.%s\n" % ( x, Str_DownloadDir, LINE_OVERWRITE_MID ) )
-                                        
-                                else:
-                                        #INFO: This block gets executed if the file is not found in local Str_CacheDir or Str_CacheDir is None
-                                        # We go ahead and try to download it from the internet
-                                        log.verbose( "%s not available in local cache %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
-                                        log.msg( "Downloading %s %s - %s %s\n" % ( PackageName, PackageVersion, log.calcSize( download_size / 1024 ), LINE_OVERWRITE_MID ) )
-                                        if FetcherInstance.download_from_web( url, file, Str_DownloadDir ) == True:
-                                                #INFO: This block gets executed if md5checksum is allowed
-                                                if Bool_DisableMD5Check is False:
-                                                        #INFO: Debian moved to SHA256. So we use that now. Older systems could have md5
-                                                        log.verbose( "File %s has checksum %s\n" % ( file, checksum ) )
-                                                        if FetcherInstance.CheckHashDigest( file, checksum ) is True:
-                                                                if Str_CacheDir and os.access( Str_CacheDir, os.W_OK ) == True:
-                                                                        try:
-                                                                                shutil.copy( file, Str_CacheDir )
-                                                                                log.verbose( "%s copied to local cache directory %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
-                                                                        except shutil.Error:
-                                                                                log.verbose( "%s already available in %s. Skipping copy!!!%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
-                                                                else:
-                                                                        log.verbose( "Str_CacheDir %s is not writeable. Skipping copy to it.\n" % ( Str_CacheDir ) )
-                                            
-                                                                if Bool_BugReports:
-                                                                        log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
-                                                                        if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
-                                                                                log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
-                                                                        else:
-                                                                                log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
-                                            
-                                                                if Str_BundleFile:
-                                                                        if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
-                                                                                log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                                sys.exit( 1 )
-                                                                        else:
-                                                                                log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
-                                                                log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
+                                                                for x in os.listdir(os.curdir):
+                                                                        if (x.startswith(PackageName) and x.endswith(apt_bug_file_format) ):
+                                                                                shutil.move(x, Str_DownloadDir)
+                                                                                log.verbose("Moved %s file to %s folder.%s\n" % (x, Str_DownloadDir, LINE_OVERWRITE_FULL) )
+                                        #INFO: Damn!! The md5chesum didn't match :-(
+                                        # The file is corrupted and we need to download a new copy from the internet
+                                        else:
+                                                log.verbose("%s checksum mismatch. Skipping file.%s\n" % (file, LINE_OVERWRITE_FULL) )
+                                                log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
+                                                if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
+                                                        log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                                        
+                                                        #Add to Str_CacheDir if possible
+                                                        if Str_CacheDir and os.access(Str_CacheDir, os.W_OK) == True:
+                                                                try:
+                                                                        shutil.copy(file, Str_CacheDir)
+                                                                        log.verbose("%s copied to local cache directory %s.%s\n" % (file, Str_CacheDir, LINE_OVERWRITE_MID) )
+                                                                except shutil.Error:
+                                                                        log.verbose("Couldn't copy %s to %s.%s\n" % (file, Str_CacheDir, LINE_OVERWRITE_FULL) )
                                                         else:
-                                                                #INFO MD5 Checksum is incorrect.
-                                                                log.err( "%s Checksum mismatch.\n" % ( PackageName ) )
-                                                                errlist.append( PackageName )
-                                                else:
+                                                                log.verbose("cache_dir %s is not writeable. Skipping copy to it.\n" % (Str_CacheDir) )
+                                                        
+                                                        #Fetch bug reports
                                                         if Bool_BugReports:
                                                                 log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                                                 if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
                                                                         log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                                 else:
                                                                         log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
-                                                        
                                                         if Str_BundleFile:
                                                                 if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
                                                                         log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
@@ -714,59 +624,136 @@ def fetcher( args ):
                                                                 else:
                                                                         log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                                         os.unlink( os.path.join( Str_DownloadDir, file ) )
-                                            
-                                                        log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
-                                        else:
-                                                errlist.append( PackageName )
-                                                
-                        else:
-                                #INFO: We are a package update
-                                PackageName = url
-                                log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
-                                if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
-                                        log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                        if Str_BundleFile:
-                                                if FetcherInstance.compress_the_file(Str_BundleFile, file) != True:
-                                                        log.err("Couldn't archive %s to file %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
-                                                        sys.exit(1)
-                                                else:
-                                                        log.verbose("%s added to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_FULL) )
-                                                        os.unlink(os.path.join(Str_DownloadDir, file) )
+                                #INFO: You're and idiot.
+                                # You should NOT disable md5checksum for any files
                                 else:
-                                        errlist.append(url)
+                                        if Bool_BugReports:
+                                                bug_fetched = 0
+                                                log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
+                                                if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
+                                                        log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                        bug_fetched = 1
+                                                else:
+                                                        log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                            
+                                        #FIXME: Don't know why this was really required. If this has no changes, delete it.
+                                        #file = full_file_path.split("/")
+                                        #file = file[len(file) - 1]
+                                        #file = download_path + "/" + file
+                                        if Str_BundleFile:
+                                                if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
+                                                        log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                        sys.exit( 1 )
+                                                else:
+                                                        log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                        os.unlink( os.path.join( Str_DownloadDir, file ) )
+                                        else:
+                                                # Since zip file option is not enabled let's copy the file to the target folder
+                                                try:
+                                                        shutil.copy( full_file_path, Str_DownloadDir )
+                                                        log.success( "%s copied from local cache directory %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_SMALL ) )
+                                                except shutil.Error:
+                                                        log.verbose( "%s already available in dest_dir. Skipping copy!!!%s\n" % ( file, LINE_OVERWRITE_SMALL ) )
+                            
+                                                # And also the bug reports
+                                                if bug_fetched == 1:
+                                                        for x in os.listdir( os.curdir ):
+                                                                if ( x.startswith( PackageName ) and x.endswith( apt_bug_file_format ) ):
+                                                                        shutil.move( x, Str_DownloadDir )
+                                                                        log.verbose( "Moved %s file to %s folder.%s\n" % ( x, Str_DownloadDir, LINE_OVERWRITE_MID ) )
+                                
+                        else:
+                                #INFO: This block gets executed if the file is not found in local Str_CacheDir or Str_CacheDir is None
+                                # We go ahead and try to download it from the internet
+                                log.verbose( "%s not available in local cache %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
+                                log.msg( "Downloading %s %s - %s %s\n" % ( PackageName, PackageVersion, log.calcSize( download_size / 1024 ), LINE_OVERWRITE_MID ) )
+                                if FetcherInstance.download_from_web( url, file, Str_DownloadDir ) == True:
+                                        #INFO: This block gets executed if md5checksum is allowed
+                                        if Bool_DisableMD5Check is False:
+                                                #INFO: Debian moved to SHA256. So we use that now. Older systems could have md5
+                                                log.verbose( "File %s has checksum %s\n" % ( file, checksum ) )
+                                                if FetcherInstance.CheckHashDigest( file, checksum ) is True:
+                                                        if Str_CacheDir and os.access( Str_CacheDir, os.W_OK ) == True:
+                                                                try:
+                                                                        shutil.copy( file, Str_CacheDir )
+                                                                        log.verbose( "%s copied to local cache directory %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
+                                                                except shutil.Error:
+                                                                        log.verbose( "%s already available in %s. Skipping copy!!!%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
+                                                        else:
+                                                                log.verbose( "Str_CacheDir %s is not writeable. Skipping copy to it.\n" % ( Str_CacheDir ) )
+                                    
+                                                        if Bool_BugReports:
+                                                                log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
+                                                                if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
+                                                                        log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                                else:
+                                                                        log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                    
+                                                        if Str_BundleFile:
+                                                                if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
+                                                                        log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                        sys.exit( 1 )
+                                                                else:
+                                                                        log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                        os.unlink( os.path.join( Str_DownloadDir, file ) )
+                                                        log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
+                                                else:
+                                                        #INFO MD5 Checksum is incorrect.
+                                                        log.err( "%s Checksum mismatch.\n" % ( PackageName ) )
+                                                        errlist.append( PackageName )
+                                        else:
+                                                if Bool_BugReports:
+                                                        log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
+                                                        if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
+                                                                log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                        else:
+                                                                log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                
+                                                if Str_BundleFile:
+                                                        if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
+                                                                log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                sys.exit( 1 )
+                                                        else:
+                                                                log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
+                                    
+                                                log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
+                                else:
+                                        errlist.append( PackageName )
+                                        
+                else:
+                        #INFO: We are a package update
+                        PackageName = url
+                        log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
+                        if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
+                                log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                if Str_BundleFile:
+                                        if FetcherInstance.compress_the_file(Str_BundleFile, file) != True:
+                                                log.err("Couldn't archive %s to file %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
+                                                sys.exit(1)
+                                        else:
+                                                log.verbose("%s added to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_FULL) )
+                                                os.unlink(os.path.join(Str_DownloadDir, file) )
+                        else:
+                                errlist.append(url)
                         
         # Create two Queues for the requests and responses
         requestQueue = Queue.Queue()
         responseQueue = Queue.Queue()
-        # Pool of NUMTHREADS Threads that run run().
-        thread_pool = [
-                       threading.Thread(
-                                        target=run,
-                                        args=(requestQueue, responseQueue)
-                                        )
-                       for i in range(Int_NumOfThreads)
-                       ]
         
-        # Start the threads.
-        for t in thread_pool: t.start()
+        
+        ConnectThread = AptOfflineLib.MyThread(requestQueue, responseQueue, abc, Int_NumOfThreads)
+        
+        ConnectThread.startThreads()
         
         # Queue up the requests.
         #for item in raw_data_list: requestQueue.put(item)
         for key in FetchData.keys():
                 for item in FetchData.get(key):
-                        requestQueue.put( (key, item) )
+                        ConnectThread.populateQueue( (key, item) )
+        ConnectThread.stopThreads()
+        ConnectThread.stopQueue()
         
-        # Shut down the threads after all requests end.
-        # (Put one None "sentinel" for each thread.)
-        for t in thread_pool: requestQueue.put(None)
-        
-        # Don't end the program prematurely.
-        # (Note that because Queue.get() is blocking by
-        # defualt this isn't strictly necessary. But if
-        # you were, say, handling responses in another
-        # thread, you'd want something like this in your
-        # main thread.)
-        for t in thread_pool: t.join()
                 
         # Print the failed files
         if len(errlist) > 0:
