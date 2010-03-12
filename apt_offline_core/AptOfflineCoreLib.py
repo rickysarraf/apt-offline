@@ -320,10 +320,11 @@ def errfunc(errno, errormsg, filename):
         be well accessible.
         This function does the job of behaving accordingly
         as per the error codes.'''
-        error_codes = [-3, 13, 504, 404, 10060, 104, 101010]
+        error_codes = [-3, 13, 504, 404, 401, 10060, 104, 101010]
         # 104, 'Connection reset by peer'
         # 504 is for gateway timeout
         # 404 is for URL error. Page not found.
+        # 401 is for Restricted pages
         # 10060 is for Operation Time out. There can be multiple reasons for this timeout
         # 101010 is for socket max retry count
         # 10054 is for Socket Timeout. Socket Timeout are seen during network congestion
