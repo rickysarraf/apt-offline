@@ -349,8 +349,7 @@ def errfunc(errno, errormsg, filename):
                 log.err("Explicit program termination %s\n" % (errno))
                 sys.exit(errno)
         else:
-                log.err("I don't understand this error code %s\n" % (errno))
-                sys.exit(errno)
+                log.err("I don't understand this error code %s\nPlease file a bug report" % (errno))
         
         
 def get_pager_cmd(pager_cmd = None):
