@@ -564,12 +564,12 @@ class MyThread( threading.Thread ):
                 for thread in self.thread_pool:
                         thread.join()
                         
-        def run( self, requestQueue, responseQueue ):
+        def run( self, requestQueue, responseQueue):
                 while True:
-                        item = requestQueue.get()
+                        item = self.requestQueue.get()
                         if item is None:
                                 break
                         thread_name = threading.currentThread().getName()
-                        responseQueue.put( self.WorkerFunction( item, thread_name ) )
+                        self.responseQueue.put( self.WorkerFunction( item, thread_name ) )
                         
-                        exit_status = responseQueue.get()
+                        exit_status = self.responseQueue.get()
