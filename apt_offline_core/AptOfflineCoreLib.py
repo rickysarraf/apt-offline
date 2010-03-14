@@ -1496,7 +1496,7 @@ def setter(args):
                         if BuildDependency:
                                 log.msg("Generating Build-Dependency for source packages %s.\n" % (self.package_list) )
                                 if self.ReleaseType is not None:
-                                        os.environ['__apt_set_install_release'] = self.WriteTo
+                                        os.environ['__apt_set_install_release'] = self.ReleaseType
                                         if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) is False:
                                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
                                 else:
