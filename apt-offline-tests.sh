@@ -79,17 +79,29 @@ get_features () {
 }
 
 install_features () {
-	echo "Executing command 'install $URI --verbose --skip-bug-reports'"
-	$APT_OFFLINE install $URI --verbose --skip-bug-reports
+	echo "Executing command 'install $DOWNLOAD_DIR --verbose --skip-bug-reports'"
+	$APT_OFFLINE install $DOWNLOAD_DIR --verbose --skip-bug-reports
 
-	echo "Executing command 'install $URI --simulate --skip-bug-reports'"
-	$APT_OFFLINE install $URI --simulate --skip-bug-reports
+	echo "Executing command 'install $DOWNLOAD_DIR --simulate --skip-bug-reports'"
+	$APT_OFFLINE install $DOWNLOAD_DIR --simulate --skip-bug-reports
 
-	echo "Executing command 'install $URI --skip-bug-reports'"
-	$APT_OFFLINE install $URI --simulate --skip-bug-reports
+	echo "Executing command 'install $DOWNLOAD_DIR --skip-bug-reports'"
+	$APT_OFFLINE install $DOWNLOAD_DIR --simulate --skip-bug-reports
 
-	echo "Executing command 'install $URI --skip-bug-reports --allow-unauthenticated'"
-	$APT_OFFLINE install $URI --simulate --skip-bug-reports  --allow-unauthenticated
+	echo "Executing command 'install $DOWNLOAD_DIR --skip-bug-reports --allow-unauthenticated'"
+	$APT_OFFLINE install $DOWNLOAD_DIR --simulate --skip-bug-reports  --allow-unauthenticated
+
+	echo "Executing command 'install $BUNDLE_FILE --verbose --skip-bug-reports'"
+	$APT_OFFLINE install $BUNDLE_FILE --verbose --skip-bug-reports
+
+	echo "Executing command 'install $BUNDLE_FILE --simulate --skip-bug-reports'"
+	$APT_OFFLINE install $BUNDLE_FILE --simulate --skip-bug-reports
+
+	echo "Executing command 'install $BUNDLE_FILE --skip-bug-reports'"
+	$APT_OFFLINE install $BUNDLE_FILE --simulate --skip-bug-reports
+
+	echo "Executing command 'install $BUNDLE_FILE --skip-bug-reports --allow-unauthenticated'"
+	$APT_OFFLINE install $BUNDLE_FILE --simulate --skip-bug-reports  --allow-unauthenticated
 }
 
 install_features_prompt () {
