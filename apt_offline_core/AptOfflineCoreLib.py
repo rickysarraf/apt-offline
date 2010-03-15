@@ -1187,6 +1187,9 @@ def installer( args ):
                                 elif response.startswith( 'y' ) or response.startswith( 'Y' ):
                                         if DirInstallPackages(install_file_path) is True:
                                                 sys.exit(0)
+                                        else:
+                                                log.err("Failed during install operation on %s.\n" % (install_file_path) )
+                                                sys.exit(1)
                                         
                                 elif response.startswith( 'n' ) or response.startswith( 'N' ):
                                         log.err( "Exiting gracefully on user request.\n\n" )
