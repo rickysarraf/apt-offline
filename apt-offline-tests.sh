@@ -115,17 +115,33 @@ install_features () {
 }
 
 install_features_prompt () {
-	echo "Executing command 'install $URI --verbose '"
-	$APT_OFFLINE install $URI --verbose 
+	if [ ! -z $1 ]; then
+		DOWNLOAD_DIR=$1
+		BUNDLE_FILE=$1
+	fi
+	echo "Executing command 'install $DOWNLOAD_DIR --verbose'"
+	$APT_OFFLINE install $DOWNLOAD_DIR --verbose
 
-	echo "Executing command 'install $URI --simulate '"
-	$APT_OFFLINE install $URI --simulate 
+	echo "Executing command 'install $DOWNLOAD_DIR --simulate'"
+	$APT_OFFLINE install $DOWNLOAD_DIR --simulate
 
-	echo "Executing command 'install $URI '"
-	$APT_OFFLINE install $URI
+	echo "Executing command 'install $DOWNLOAD_DIR'"
+	$APT_OFFLINE install $DOWNLOAD_DIR --simulate
 
-	echo "Executing command 'install $URI --allow-unauthenticated'"
-	$APT_OFFLINE install $URI --allow-unauthenticated
+	echo "Executing command 'install $DOWNLOAD_DIR --allow-unauthenticated'"
+	$APT_OFFLINE install $DOWNLOAD_DIR --simulate --allow-unauthenticated
+
+	echo "Executing command 'install $BUNDLE_FILE --verbose'"
+	$APT_OFFLINE install $BUNDLE_FILE --verbose
+
+	echo "Executing command 'install $BUNDLE_FILE --simulate'"
+	$APT_OFFLINE install $BUNDLE_FILE --simulate
+
+	echo "Executing command 'install $BUNDLE_FILE'"
+	$APT_OFFLINE install $BUNDLE_FILE --simulate
+
+	echo "Executing command 'install $BUNDLE_FILE --allow-unauthenticated'"
+	$APT_OFFLINE install $BUNDLE_FILE --simulate --allow-unauthenticated
 }
 
 all_features () {
