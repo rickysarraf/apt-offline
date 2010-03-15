@@ -1137,6 +1137,27 @@ def installer( args ):
                                 temp.close()
                 
                 bugs_number = {}
+                
+                def DirInstallPackages(InstallDirPath):
+                        for eachfile in os.listdir( InstallDirPath ):
+                                
+                                filename = eachfile
+                                FullFileName = os.path.abspath(os.path.join(InstallDirPath, eachfile) )
+                        
+                                #INFO: Take care of Src Pkgs
+                                found = False
+                                for item in SrcPkgDict.keys():
+                                        if filename in SrcPkgDict[item]:
+                                                found = True
+                                                break
+                                if found is True:
+                                        shutil.copy2(filename, Str_InstallSrcPath)
+                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                        continue
+                                
+                                magic_check_and_uncompress( FullFileName, filename )
+                        return True
+                                
                 if Bool_SkipBugReports:
                         log.verbose("Skipping bug report check as requested")
                 else:
@@ -1164,24 +1185,8 @@ def installer( args ):
                                         response = get_response()
                                         
                                 elif response.startswith( 'y' ) or response.startswith( 'Y' ):
-                                        for eachfile in os.listdir( install_file_path ):
-                                                
-                                                filename = eachfile
-                                                FullFileName = os.path.abspath(os.path.join(install_file_path, eachfile) )
-                                        
-                                                #INFO: Take care of Src Pkgs
-                                                found = False
-                                                for item in SrcPkgDict.keys():
-                                                        if filename in SrcPkgDict[item]:
-                                                                found = True
-                                                                break
-                                                if found is True:
-                                                        shutil.copy2(filename, Str_InstallSrcPath)
-                                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
-                                                        continue
-                                                
-                                                magic_check_and_uncompress( FullFileName, filename )
-                                        sys.exit(0)
+                                        if DirInstallPackages(install_file_path) is True:
+                                                sys.exit(0)
                                         
                                 elif response.startswith( 'n' ) or response.startswith( 'N' ):
                                         log.err( "Exiting gracefully on user request.\n\n" )
@@ -1216,28 +1221,8 @@ def installer( args ):
                                         sys.exit( 1 )
                 else:
                         log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
-                        #response = raw_input( "Continue with Installation. Y/N?" )
-                        #response = response.rstrip( "\r" )
-                        #if response.startswith( 'y' ) or response.startswith( 'Y' ):
-                        for eachfile in os.listdir( install_file_path ):
-                                filename = eachfile
-                                eachfile = os.path.abspath(os.path.join(install_file_path, eachfile) )
-                                
-                                #INFO: Take care of Src Pkgs
-                                found = False
-                                for item in SrcPkgDict.keys():
-                                        if filename in SrcPkgDict[item]:
-                                                found = True
-                                                break
-                                if found is True:
-                                        shutil.copy2(eachfile, Str_InstallSrcPath)
-                                        log.msg("Installed src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
-                                        continue
-                                
-                                magic_check_and_uncompress( eachfile, filename )
-                        #else:
-                        #        log.msg( "Exiting gracefully on user request.\n" )
-                        #        sys.exit( 0 )
+                        DirInstallPackages(install_file_path)
+                        
         if Bool_Untrusted:
                 log.err("Disabling apt gpg check can risk your machine to compromise.\n")
                 for x in os.listdir(apt_update_target_path):
