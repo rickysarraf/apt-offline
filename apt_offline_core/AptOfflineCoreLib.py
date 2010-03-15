@@ -966,6 +966,8 @@ def installer( args ):
                         else:
                                 log.err( "Cannot write to target path %s\n" % ( apt_package_target_path ) )
                                 sys.exit( 1 )
+                elif filename.endswith( apt_bug_file_format ):
+                        pass
                 elif AptOfflineMagicLib.file( archive_file ) == "ASCII text":
                         filename = os.path.join(apt_update_target_path, filename)
                         if os.access( apt_update_target_path, os.W_OK ):
@@ -974,15 +976,11 @@ def installer( args ):
                         else:
                                 log.err( "Cannot write to target path %s\n" % ( apt_update_target_path ) )
                                 sys.exit( 1 )
-                elif filename.endswith( apt_bug_file_format ):
-                        retval = False # We intentionally put the bug report files as not printed.
                 else:
                         log.err( "I couldn't understand file type %s.\n" % ( filename ) )
                 
                 if retval:
                         log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
-                else:
-                        log.err("Failed to sync %s\n" % (filename) )
         
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
@@ -1164,9 +1162,13 @@ def installer( args ):
                                 if response == "?":
                                         display_options()
                                         response = get_response()
+                                        
                                 elif response.startswith( 'y' ) or response.startswith( 'Y' ):
                                         for eachfile in os.listdir( install_file_path ):
                                                 
+                                                filename = eachfile
+                                                FullFileName = os.path.abspath(os.path.join(install_file_path, eachfile) )
+                                        
                                                 #INFO: Take care of Src Pkgs
                                                 found = False
                                                 for item in SrcPkgDict.keys():
@@ -1178,11 +1180,13 @@ def installer( args ):
                                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                                         continue
                                                 
-                                                archive_type = None
-                                                magic_check_and_uncompress( archive_file, filename )
+                                                magic_check_and_uncompress( FullFileName, filename )
+                                        sys.exit(0)
+                                        
                                 elif response.startswith( 'n' ) or response.startswith( 'N' ):
                                         log.err( "Exiting gracefully on user request.\n\n" )
                                         sys.exit( 0 )
+                                        
                                 elif response.isdigit() is True:
                                         found = False
                                         for full_bug_file_name in bugs_number:
