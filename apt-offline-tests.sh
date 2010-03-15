@@ -10,6 +10,9 @@ THREADS=5
 APT_OFFLINE="./apt-offline"
 
 set_features () {
+	if [ ! -z $1 ]; then
+		URI=$1
+	fi
 	echo "Executing command 'set $URI'"
 	$APT_OFFLINE set $URI
 
@@ -52,6 +55,9 @@ set_features () {
 }
 
 get_features () {
+	if [ ! -z $1 ]; then
+		URI=$1
+	fi
 	echo "Executing command 'get $URI --verbose'"
 	$APT_OFFLINE get $URI --verbose
 
@@ -79,6 +85,10 @@ get_features () {
 }
 
 install_features () {
+	if [ ! -z $1 ]; then
+		DOWNLOAD_DIR=$1
+		BUNDLE_FILE=$1
+	fi
 	echo "Executing command 'install $DOWNLOAD_DIR --verbose --skip-bug-reports'"
 	$APT_OFFLINE install $DOWNLOAD_DIR --verbose --skip-bug-reports
 
@@ -131,23 +141,40 @@ all_features () {
 
 case $1 in
 	"set")
-		set_features
+		if [ ! -z $2 ]; then
+			set_features $2
+		else
+			set_features
+		fi
 		;;
 	"get")
-		get_features
+		if [ ! -z $2 ]; then
+			get_features $2
+		else
+			get_features
+		fi
+		;;
+	"install_features_promptless")
+		if [ ! -z $2 ]; then
+			install_features $2
+		else
+			install_features
+		fi
 		;;
 	"install")
-		install_features
-		;;
-	"install_features_prompt")
-		install_features_prompt
+		# With prompts for bug reports
+		if [ ! -z $2 ]; then
+			install_features_prompt $2
+		else
+			install_features_prompt
+		fi
 		;;
 	"--help")
-		echo "$0 [set || get || install || install_features_prompt]"
+		echo "$0 [set || get || install_features_promptless || install]"
 		exit 0;
 		;;
 	"-h")
-		echo "$0 [set || get || install || install_features_prompt]"
+		echo "$0 [set || get || install_features_promptless || install]"
 		exit 0;
 		;;
 	*)
