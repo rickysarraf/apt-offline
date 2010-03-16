@@ -523,7 +523,7 @@ def fetcher( args ):
                 log.msg("WARNING: Else higher number of threads executed could cause\n")
                 log.msg("WARNING: network congestion and timeouts.\n\n")
         
-        def abc(request, response, func=find_first_match):
+        def DataFetcher(request, response, func=find_first_match):
                 '''Get items from the request Queue, process them
                 with func(), put the results along with the
                 Thread's name into the response Queue.
@@ -744,7 +744,7 @@ def fetcher( args ):
         responseQueue = Queue.Queue()
         
         
-        ConnectThread = AptOfflineLib.MyThread(abc, requestQueue, responseQueue, Int_NumOfThreads)
+        ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
         
         ConnectThread.startThreads()
         
