@@ -1,3 +1,18 @@
+apt-offline (0.9.7) unstable; urgency=low
+
+  * New Bug Fix Release
+    + Allow release type to be specified when in the set operation, for
+      an upgrade. (This is the equivalent of `apt-get -t unstable upgrade`) 
+    + Add new option --simulate (which replaces the old --test-windows option)
+    + Do a check to ensure that the argument to the 'get' operation is a file
+    + Fix APT/GPG security issues. When just running the 'set' operation, the
+      apt gpg database gets invalid. Currently, fixed with a workaround. For
+      more details, see DBTS: 565918
+      Many thanks to Paul Nijjar for reporting the bug
+  * Update Standards Version to 3.8.4 (No changes required) 
+
+ -- Ritesh Raj Sarraf <rrs@researchut.com>  Wed, 17 Mar 2010 17:10:41 +0530
+
 apt-offline (0.9.6.1) unstable; urgency=low
 
   [ Ritesh Raj Sarraf ]
