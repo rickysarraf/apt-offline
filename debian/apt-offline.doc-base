@@ -2,7 +2,7 @@ Document: apt-offline
 Title: apt-offline online manpage
 Author: Ritesh Raj Sarraf
 Abstract: This set of document provides the manual in html format
-Section: Applicatons/Admin
+Section: System/Package Management
 
 Format: HTML
 Index: /usr/share/doc/apt-offline/apt-offline.html
