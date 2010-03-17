@@ -1,6 +1,6 @@
 
 ############################################################################
-#    Copyright (C) 2005, 2009 Ritesh Raj Sarraf                            #
+#    Copyright (C) 2005, 2010 Ritesh Raj Sarraf                            #
 #    rrs@researchut.com                                                    #
 #                                                                          #
 #    This program is free software; you can redistribute it and/or modify  #
@@ -27,7 +27,6 @@ import string
 import urllib2
 import Queue
 import threading
-import optparse
 import socket
 import tempfile
 
@@ -80,11 +79,11 @@ figuring out if the packages are in the local cache, handling exceptions and man
 
 
 app_name = "apt-offline"
-version = "0.9.6"
-copyright = "(C) 2005 - 2009 Ritesh Raj Sarraf"
+version = "0.9.7"
+copyright = "(C) 2005 - 2010 Ritesh Raj Sarraf"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
-the GNU GPL License\n"
+the GNU GPL Version 3 (or later) License\n"
         
 errlist = []
 supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
@@ -321,10 +320,11 @@ def errfunc(errno, errormsg, filename):
         be well accessible.
         This function does the job of behaving accordingly
         as per the error codes.'''
-        error_codes = [-3, 13, 504, 404, 10060, 104, 101010]
+        error_codes = [-3, 13, 504, 404, 401, 10060, 104, 101010]
         # 104, 'Connection reset by peer'
         # 504 is for gateway timeout
         # 404 is for URL error. Page not found.
+        # 401 is for Restricted pages
         # 10060 is for Operation Time out. There can be multiple reasons for this timeout
         # 101010 is for socket max retry count
         # 10054 is for Socket Timeout. Socket Timeout are seen during network congestion
@@ -349,8 +349,7 @@ def errfunc(errno, errormsg, filename):
                 log.err("Explicit program termination %s\n" % (errno))
                 sys.exit(errno)
         else:
-                log.err("I don't understand this error code %s\n" % (errno))
-                sys.exit(errno)
+                log.err("I don't understand this error code %s\nPlease file a bug report" % (errno))
         
         
 def get_pager_cmd(pager_cmd = None):
@@ -431,10 +430,10 @@ def fetcher( args ):
                 log.verbose( "\nMD5/SHA256 Checksum is being disabled. You need atleast Python 2.5 to do checksum verification.\n" )
         
         if Str_GetArg:
-                if os.access( Str_GetArg, os.F_OK):
+                if os.path.isfile(Str_GetArg):
                         log.msg( "\nFetching APT Data\n\n" )
                 else:
-                        log.err( "\nFile not present. Check path.\n" )
+                        log.err( "File not present. Check path.\n" )
                         sys.exit( 1 )
                         
         if Str_CacheDir is not None:
@@ -524,189 +523,102 @@ def fetcher( args ):
                 log.msg("WARNING: Else higher number of threads executed could cause\n")
                 log.msg("WARNING: network congestion and timeouts.\n\n")
         
-        def run(request, response, func=find_first_match):
+        def DataFetcher(request, response, func=find_first_match):
                 '''Get items from the request Queue, process them
                 with func(), put the results along with the
                 Thread's name into the response Queue.
                 Stop running when item is None.'''
-                while 1:
-                        tuple_item_key = request.get()
-                        if tuple_item_key is None:
-                                break
-                        (key, item) = tuple_item_key
+                #while 1:
+                #tuple_item_key = request.get()
+                #if tuple_item_key is None:
+                #        break
+                #(key, item) = tuple_item_key
+                
+                (key, item) = request
+                
+                #INFO: Everything
+                (url, file, download_size, checksum) = stripper(item)
+                thread_name = threading.currentThread().getName()
+                log.verbose("Thread is %s\n" % (thread_name) )
+                
+                if url.endswith(".deb"):
+                        try:
+                                PackageName = file.split("_")[0]
+                        except IndexError:
+                                log.err("Not getting a package name here is problematic. Better bail out.\n")
+                                sys.exit(1)
                         
-                        #INFO: Everything
-                        (url, file, download_size, checksum) = stripper(item)
-                        thread_name = threading.currentThread().getName()
-                        log.verbose("Thread is %s\n" % (thread_name) )
+                        #INFO: For Package version, we don't want to fail
+                        try:
+                                PackageVersion = file.split("_")[1]
+                        except IndexError:
+                                PackageVersion = "NA"
+                                log.verbose("Weird!! Package version not present. Is it really a deb file?\n")
                         
-                        if url.endswith(".deb"):
-                                try:
-                                        PackageName = file.split("_")[0]
-                                except IndexError:
-                                        log.err("Not getting a package name here is problematic. Better bail out.\n")
-                                        sys.exit(1)
-                                
-                                #INFO: For Package version, we don't want to fail
-                                try:
-                                        PackageVersion = file.split("_")[1]
-                                except IndexError:
-                                        PackageVersion = "NA"
-                                        log.verbose("Weird!! Package version not present. Is it really a deb file?\n")
-                                
-                                response.put(func(Str_CacheDir, file) ) 
-                                #INFO: find_first_match() returns False or a file name with absolute path
-                                full_file_path = response.get()
-                                #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
-                                if full_file_path != False:
-                                        # We'll first check for its md5 checksum
-                                        if Bool_DisableMD5Check is False:
-                                                if FetcherInstance.CheckHashDigest(full_file_path, checksum) is True:
-                                                        log.verbose("Checksum correct for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                                        if Bool_BugReports:
-                                                                bug_fetched = 0
-                                                                log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                                                if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
-                                                                        log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                                                        bug_fetched = 1
-                                                                else:
-                                                                        log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
-                                                        if Str_BundleFile:
-                                                                if FetcherInstance.compress_the_file(Str_BundleFile, full_file_path) is True:
-                                                                        log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
-                                                                else:
-                                                                        log.err("Couldn't add %s to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
-                                                                        sys.exit(1)
-                                                        #INFO: If no zip option enabled, simply copy the downloaded package file
-                                                        # along with the downloaded bug reports.
-                                                        else:
-                                                                try:
-                                                                        shutil.copy(full_file_path, Str_DownloadDir)
-                                                                        log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
-                                                                except shutil.Error:
-                                                                        log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (file, Str_DownloadDir, LINE_OVERWRITE_MID) )
-                                                                
-                                                                if bug_fetched == 1:
-                                                                        for x in os.listdir(os.curdir):
-                                                                                if (x.startswith(PackageName) and x.endswith(apt_bug_file_format) ):
-                                                                                        shutil.move(x, Str_DownloadDir)
-                                                                                        log.verbose("Moved %s file to %s folder.%s\n" % (x, Str_DownloadDir, LINE_OVERWRITE_FULL) )
-                                                #INFO: Damn!! The md5chesum didn't match :-(
-                                                # The file is corrupted and we need to download a new copy from the internet
-                                                else:
-                                                        log.verbose("%s checksum mismatch. Skipping file.%s\n" % (file, LINE_OVERWRITE_FULL) )
-                                                        log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
-                                                        if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
-                                                                log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                                                
-                                                                #Add to Str_CacheDir if possible
-                                                                if Str_CacheDir and os.access(Str_CacheDir, os.W_OK) == True:
-                                                                        try:
-                                                                                shutil.copy(file, Str_CacheDir)
-                                                                                log.verbose("%s copied to local cache directory %s.%s\n" % (file, Str_CacheDir, LINE_OVERWRITE_MID) )
-                                                                        except shutil.Error:
-                                                                                log.verbose("Couldn't copy %s to %s.%s\n" % (file, Str_CacheDir, LINE_OVERWRITE_FULL) )
-                                                                else:
-                                                                        log.verbose("cache_dir %s is not writeable. Skipping copy to it.\n" % (Str_CacheDir) )
-                                                                
-                                                                #Fetch bug reports
-                                                                if Bool_BugReports:
-                                                                        log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
-                                                                        if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
-                                                                                log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
-                                                                        else:
-                                                                                log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
-                                                                if Str_BundleFile:
-                                                                        if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
-                                                                                log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                                sys.exit( 1 )
-                                                                        else:
-                                                                                log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
-                                        #INFO: You're and idiot.
-                                        # You should NOT disable md5checksum for any files
-                                        else:
+                        
+                        #INFO: find_first_match() returns False or a file name with absolute path
+                        full_file_path = func(Str_CacheDir, file)
+                        #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
+                        if full_file_path != False:
+                                # We'll first check for its md5 checksum
+                                if Bool_DisableMD5Check is False:
+                                        if FetcherInstance.CheckHashDigest(full_file_path, checksum) is True:
+                                                log.verbose("Checksum correct for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                                
+                                                bug_fetched = False
                                                 if Bool_BugReports:
-                                                        bug_fetched = 0
-                                                        log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
-                                                        if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
-                                                                log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
-                                                                bug_fetched = 1
+                                                        log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                                        if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
+                                                                log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                                                bug_fetched = True
                                                         else:
-                                                                log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
-                                    
-                                                #FIXME: Don't know why this was really required. If this has no changes, delete it.
-                                                #file = full_file_path.split("/")
-                                                #file = file[len(file) - 1]
-                                                #file = download_path + "/" + file
+                                                                log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
+                                                                
                                                 if Str_BundleFile:
-                                                        if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
-                                                                log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                sys.exit( 1 )
+                                                        if FetcherInstance.compress_the_file(Str_BundleFile, full_file_path) is True:
+                                                                log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
                                                         else:
-                                                                log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
+                                                                log.err("Couldn't add %s to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
+                                                                sys.exit(1)
+                                                #INFO: If no zip option enabled, simply copy the downloaded package file
+                                                # along with the downloaded bug reports.
                                                 else:
-                                                        # Since zip file option is not enabled let's copy the file to the target folder
                                                         try:
-                                                                shutil.copy( full_file_path, Str_DownloadDir )
-                                                                log.success( "%s copied from local cache directory %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_SMALL ) )
+                                                                shutil.copy(full_file_path, Str_DownloadDir)
+                                                                log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
                                                         except shutil.Error:
-                                                                log.verbose( "%s already available in dest_dir. Skipping copy!!!%s\n" % ( file, LINE_OVERWRITE_SMALL ) )
-                                    
-                                                        # And also the bug reports
-                                                        if bug_fetched == 1:
-                                                                for x in os.listdir( os.curdir ):
-                                                                        if ( x.startswith( PackageName ) and x.endswith( apt_bug_file_format ) ):
-                                                                                shutil.move( x, Str_DownloadDir )
-                                                                                log.verbose( "Moved %s file to %s folder.%s\n" % ( x, Str_DownloadDir, LINE_OVERWRITE_MID ) )
-                                        
-                                else:
-                                        #INFO: This block gets executed if the file is not found in local Str_CacheDir or Str_CacheDir is None
-                                        # We go ahead and try to download it from the internet
-                                        log.verbose( "%s not available in local cache %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
-                                        log.msg( "Downloading %s %s - %s %s\n" % ( PackageName, PackageVersion, log.calcSize( download_size / 1024 ), LINE_OVERWRITE_MID ) )
-                                        if FetcherInstance.download_from_web( url, file, Str_DownloadDir ) == True:
-                                                #INFO: This block gets executed if md5checksum is allowed
-                                                if Bool_DisableMD5Check is False:
-                                                        #INFO: Debian moved to SHA256. So we use that now. Older systems could have md5
-                                                        log.verbose( "File %s has checksum %s\n" % ( file, checksum ) )
-                                                        if FetcherInstance.CheckHashDigest( file, checksum ) is True:
-                                                                if Str_CacheDir and os.access( Str_CacheDir, os.W_OK ) == True:
-                                                                        try:
-                                                                                shutil.copy( file, Str_CacheDir )
-                                                                                log.verbose( "%s copied to local cache directory %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
-                                                                        except shutil.Error:
-                                                                                log.verbose( "%s already available in %s. Skipping copy!!!%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
-                                                                else:
-                                                                        log.verbose( "Str_CacheDir %s is not writeable. Skipping copy to it.\n" % ( Str_CacheDir ) )
-                                            
-                                                                if Bool_BugReports:
-                                                                        log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
-                                                                        if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
-                                                                                log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
-                                                                        else:
-                                                                                log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
-                                            
-                                                                if Str_BundleFile:
-                                                                        if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
-                                                                                log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                                sys.exit( 1 )
-                                                                        else:
-                                                                                log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
+                                                                log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (file, Str_DownloadDir, LINE_OVERWRITE_MID) )
+                                                        
+                                                        if bug_fetched is True:
+                                                                for x in os.listdir(os.curdir):
+                                                                        if (x.startswith(PackageName) and x.endswith(apt_bug_file_format) ):
+                                                                                shutil.move(x, Str_DownloadDir)
+                                                                                log.verbose("Moved %s file to %s folder.%s\n" % (x, Str_DownloadDir, LINE_OVERWRITE_FULL) )
+                                        #INFO: Damn!! The md5chesum didn't match :-(
+                                        # The file is corrupted and we need to download a new copy from the internet
+                                        else:
+                                                log.verbose("%s checksum mismatch. Skipping file.%s\n" % (file, LINE_OVERWRITE_FULL) )
+                                                log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
+                                                if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
+                                                        log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                                        
+                                                        #Add to Str_CacheDir if possible
+                                                        if Str_CacheDir and os.access(Str_CacheDir, os.W_OK) == True:
+                                                                try:
+                                                                        shutil.copy(file, Str_CacheDir)
+                                                                        log.verbose("%s copied to local cache directory %s.%s\n" % (file, Str_CacheDir, LINE_OVERWRITE_MID) )
+                                                                except shutil.Error:
+                                                                        log.verbose("Couldn't copy %s to %s.%s\n" % (file, Str_CacheDir, LINE_OVERWRITE_FULL) )
                                                         else:
-                                                                #INFO MD5 Checksum is incorrect.
-                                                                log.err( "%s Checksum mismatch.\n" % ( PackageName ) )
-                                                                errlist.append( PackageName )
-                                                else:
+                                                                log.verbose("cache_dir %s is not writeable. Skipping copy to it.\n" % (Str_CacheDir) )
+                                                        
+                                                        #Fetch bug reports
                                                         if Bool_BugReports:
                                                                 log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                                                 if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
                                                                         log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                                 else:
                                                                         log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
-                                                        
                                                         if Str_BundleFile:
                                                                 if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
                                                                         log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
@@ -714,59 +626,136 @@ def fetcher( args ):
                                                                 else:
                                                                         log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                                         os.unlink( os.path.join( Str_DownloadDir, file ) )
-                                            
-                                                log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
-                                        else:
-                                                errlist.append( PackageName )
-                                                
-                        else:
-                                #INFO: We are a package update
-                                PackageName = url
-                                log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
-                                if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
-                                        log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                        if Str_BundleFile:
-                                                if FetcherInstance.compress_the_file(Str_BundleFile, file) != True:
-                                                        log.err("Couldn't archive %s to file %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
-                                                        sys.exit(1)
-                                                else:
-                                                        log.verbose("%s added to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_FULL) )
-                                                        os.unlink(os.path.join(Str_DownloadDir, file) )
+                                #INFO: You're and idiot.
+                                # You should NOT disable md5checksum for any files
                                 else:
-                                        errlist.append(url)
+                                        bug_fetched = False
+                                        if Bool_BugReports:
+                                                log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
+                                                if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
+                                                        log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                        bug_fetched = True
+                                                else:
+                                                        log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                            
+                                        #FIXME: Don't know why this was really required. If this has no changes, delete it.
+                                        #file = full_file_path.split("/")
+                                        #file = file[len(file) - 1]
+                                        #file = download_path + "/" + file
+                                        if Str_BundleFile:
+                                                if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
+                                                        log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                        sys.exit( 1 )
+                                                else:
+                                                        log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                        os.unlink( os.path.join( Str_DownloadDir, file ) )
+                                        else:
+                                                # Since zip file option is not enabled let's copy the file to the target folder
+                                                try:
+                                                        shutil.copy( full_file_path, Str_DownloadDir )
+                                                        log.success( "%s copied from local cache directory %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_SMALL ) )
+                                                except shutil.Error:
+                                                        log.verbose( "%s already available in dest_dir. Skipping copy!!!%s\n" % ( file, LINE_OVERWRITE_SMALL ) )
+                            
+                                                # And also the bug reports
+                                                if bug_fetched is True:
+                                                        for x in os.listdir( os.curdir ):
+                                                                if ( x.startswith( PackageName ) and x.endswith( apt_bug_file_format ) ):
+                                                                        shutil.move( x, Str_DownloadDir )
+                                                                        log.verbose( "Moved %s file to %s folder.%s\n" % ( x, Str_DownloadDir, LINE_OVERWRITE_MID ) )
+                                
+                        else:
+                                #INFO: This block gets executed if the file is not found in local Str_CacheDir or Str_CacheDir is None
+                                # We go ahead and try to download it from the internet
+                                log.verbose( "%s not available in local cache %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
+                                log.msg( "Downloading %s %s - %s %s\n" % ( PackageName, PackageVersion, log.calcSize( download_size / 1024 ), LINE_OVERWRITE_MID ) )
+                                if FetcherInstance.download_from_web( url, file, Str_DownloadDir ) == True:
+                                        #INFO: This block gets executed if md5checksum is allowed
+                                        if Bool_DisableMD5Check is False:
+                                                #INFO: Debian moved to SHA256. So we use that now. Older systems could have md5
+                                                log.verbose( "File %s has checksum %s\n" % ( file, checksum ) )
+                                                if FetcherInstance.CheckHashDigest( file, checksum ) is True:
+                                                        if Str_CacheDir and os.access( Str_CacheDir, os.W_OK ) == True:
+                                                                try:
+                                                                        shutil.copy( file, Str_CacheDir )
+                                                                        log.verbose( "%s copied to local cache directory %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
+                                                                except shutil.Error:
+                                                                        log.verbose( "%s already available in %s. Skipping copy!!!%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
+                                                        else:
+                                                                log.verbose( "Str_CacheDir %s is not writeable. Skipping copy to it.\n" % ( Str_CacheDir ) )
+                                    
+                                                        if Bool_BugReports:
+                                                                log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
+                                                                if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
+                                                                        log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                                else:
+                                                                        log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                    
+                                                        if Str_BundleFile:
+                                                                if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
+                                                                        log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                        sys.exit( 1 )
+                                                                else:
+                                                                        log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                        os.unlink( os.path.join( Str_DownloadDir, file ) )
+                                                        log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
+                                                else:
+                                                        #INFO MD5 Checksum is incorrect.
+                                                        log.err( "%s Checksum mismatch.\n" % ( PackageName ) )
+                                                        errlist.append( PackageName )
+                                        else:
+                                                if Bool_BugReports:
+                                                        log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
+                                                        if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
+                                                                log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                        else:
+                                                                log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                
+                                                if Str_BundleFile:
+                                                        if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
+                                                                log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                sys.exit( 1 )
+                                                        else:
+                                                                log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
+                                    
+                                                log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
+                                else:
+                                        errlist.append( PackageName )
+                                        
+                else:
+                        #INFO: We are a package update
+                        PackageName = url
+                        log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
+                        if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
+                                log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                if Str_BundleFile:
+                                        if FetcherInstance.compress_the_file(Str_BundleFile, file) != True:
+                                                log.err("Couldn't archive %s to file %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
+                                                sys.exit(1)
+                                        else:
+                                                log.verbose("%s added to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_FULL) )
+                                                os.unlink(os.path.join(Str_DownloadDir, file) )
+                        else:
+                                errlist.append(url)
                         
         # Create two Queues for the requests and responses
         requestQueue = Queue.Queue()
         responseQueue = Queue.Queue()
-        # Pool of NUMTHREADS Threads that run run().
-        thread_pool = [
-                       threading.Thread(
-                                        target=run,
-                                        args=(requestQueue, responseQueue)
-                                        )
-                       for i in range(Int_NumOfThreads)
-                       ]
         
-        # Start the threads.
-        for t in thread_pool: t.start()
+        
+        ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
+        
+        ConnectThread.startThreads()
         
         # Queue up the requests.
         #for item in raw_data_list: requestQueue.put(item)
         for key in FetchData.keys():
                 for item in FetchData.get(key):
-                        requestQueue.put( (key, item) )
+                        ConnectThread.populateQueue( (key, item) )
+        ConnectThread.stopThreads()
+        ConnectThread.stopQueue()
         
-        # Shut down the threads after all requests end.
-        # (Put one None "sentinel" for each thread.)
-        for t in thread_pool: requestQueue.put(None)
-        
-        # Don't end the program prematurely.
-        # (Note that because Queue.get() is blocking by
-        # defualt this isn't strictly necessary. But if
-        # you were, say, handling responses in another
-        # thread, you'd want something like this in your
-        # main thread.)
-        for t in thread_pool: t.join()
                 
         # Print the failed files
         if len(errlist) > 0:
@@ -815,7 +804,7 @@ def installer( args ):
         
         # install opts
         Str_InstallArg = args.install
-        Bool_TestWindows = args.test_windows
+        Bool_TestWindows = args.simulate
         Bool_SkipBugReports = args.skip_bug_reports
         Bool_Untrusted = args.allow_unauthenticated
         Str_InstallSrcPath = args.install_src_path
@@ -966,6 +955,8 @@ def installer( args ):
                         else:
                                 log.err( "Cannot write to target path %s\n" % ( apt_package_target_path ) )
                                 sys.exit( 1 )
+                elif filename.endswith( apt_bug_file_format ):
+                        pass
                 elif AptOfflineMagicLib.file( archive_file ) == "ASCII text":
                         filename = os.path.join(apt_update_target_path, filename)
                         if os.access( apt_update_target_path, os.W_OK ):
@@ -974,15 +965,11 @@ def installer( args ):
                         else:
                                 log.err( "Cannot write to target path %s\n" % ( apt_update_target_path ) )
                                 sys.exit( 1 )
-                elif filename.endswith( apt_bug_file_format ):
-                        retval = False # We intentionally put the bug report files as not printed.
                 else:
                         log.err( "I couldn't understand file type %s.\n" % ( filename ) )
                 
                 if retval:
                         log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
-                else:
-                        log.err("Failed to sync %s\n" % (filename) )
         
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
@@ -1139,6 +1126,27 @@ def installer( args ):
                                 temp.close()
                 
                 bugs_number = {}
+                
+                def DirInstallPackages(InstallDirPath):
+                        for eachfile in os.listdir( InstallDirPath ):
+                                
+                                filename = eachfile
+                                FullFileName = os.path.abspath(os.path.join(InstallDirPath, eachfile) )
+                        
+                                #INFO: Take care of Src Pkgs
+                                found = False
+                                for item in SrcPkgDict.keys():
+                                        if filename in SrcPkgDict[item]:
+                                                found = True
+                                                break
+                                if found is True:
+                                        shutil.copy2(FullFileName, Str_InstallSrcPath)
+                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                        continue
+                                
+                                magic_check_and_uncompress( FullFileName, filename )
+                        return True
+                                
                 if Bool_SkipBugReports:
                         log.verbose("Skipping bug report check as requested")
                 else:
@@ -1164,25 +1172,18 @@ def installer( args ):
                                 if response == "?":
                                         display_options()
                                         response = get_response()
+                                        
                                 elif response.startswith( 'y' ) or response.startswith( 'Y' ):
-                                        for eachfile in os.listdir( install_file_path ):
-                                                
-                                                #INFO: Take care of Src Pkgs
-                                                found = False
-                                                for item in SrcPkgDict.keys():
-                                                        if filename in SrcPkgDict[item]:
-                                                                found = True
-                                                                break
-                                                if found is True:
-                                                        shutil.copy2(filename, Str_InstallSrcPath)
-                                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
-                                                        continue
-                                                
-                                                archive_type = None
-                                                magic_check_and_uncompress( archive_file, filename )
+                                        if DirInstallPackages(install_file_path) is True:
+                                                sys.exit(0)
+                                        else:
+                                                log.err("Failed during install operation on %s.\n" % (install_file_path) )
+                                                sys.exit(1)
+                                        
                                 elif response.startswith( 'n' ) or response.startswith( 'N' ):
                                         log.err( "Exiting gracefully on user request.\n\n" )
                                         sys.exit( 0 )
+                                        
                                 elif response.isdigit() is True:
                                         found = False
                                         for full_bug_file_name in bugs_number:
@@ -1212,28 +1213,8 @@ def installer( args ):
                                         sys.exit( 1 )
                 else:
                         log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
-                        #response = raw_input( "Continue with Installation. Y/N?" )
-                        #response = response.rstrip( "\r" )
-                        #if response.startswith( 'y' ) or response.startswith( 'Y' ):
-                        for eachfile in os.listdir( install_file_path ):
-                                filename = eachfile
-                                eachfile = os.path.abspath(os.path.join(install_file_path, eachfile) )
-                                
-                                #INFO: Take care of Src Pkgs
-                                found = False
-                                for item in SrcPkgDict.keys():
-                                        if filename in SrcPkgDict[item]:
-                                                found = True
-                                                break
-                                if found is True:
-                                        shutil.copy2(eachfile, Str_InstallSrcPath)
-                                        log.msg("Installed src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
-                                        continue
-                                
-                                magic_check_and_uncompress( eachfile, filename )
-                        #else:
-                        #        log.msg( "Exiting gracefully on user request.\n" )
-                        #        sys.exit( 0 )
+                        DirInstallPackages(install_file_path)
+                        
         if Bool_Untrusted:
                 log.err("Disabling apt gpg check can risk your machine to compromise.\n")
                 for x in os.listdir(apt_update_target_path):
@@ -1279,6 +1260,7 @@ def setter(args):
         Bool_SetUpgrade = args.set_upgrade
         Str_SetUpgradeType = args.upgrade_type
         Bool_SrcBuildDep = args.src_build_dep
+        Bool_TestWindows = args.simulate
         
         if Bool_SetUpdate is False and Bool_SetUpgrade is False and List_SetInstallPackages is None \
         and List_SetInstallSrcPackages is None:
@@ -1291,7 +1273,219 @@ def setter(args):
         if Default_Operation:
                 Bool_SetUpdate = True
                 Bool_SetUpgrade = True
+                
+        class AptManip:
+                def __init__(self, OutputFile, Simulate=False, AptType="apt"):
+                        
+                        self.WriteTo = OutputFile
+                        self.Simulate = Simulate
+                        
+                        if AptType == "apt":
+                                self.apt = "apt-get"
+                        elif AptType == "aptitude":
+                                self.apt = "aptitude"
+                        elif AptType == "python-apt":
+                                #TODO:
+                                pass
+                        else:
+                                self.apt = "apt-get"
+                                
+                def __Simulate(self):
+                        if self.Simulate is True:
+                                pass
+                
+                def __ExecSystemCmd(self, CommandString):
+                        
+                        if self.Simulate:
+                                return True
+                        else:
+                                if os.system( CommandString ) != 0:
+                                        return False
+                                return True
+                
+                def Update(self):
+                        if self.apt == "apt-get":
+                                self.__AptGetUpdate()
+                        elif self.apt == "aptitude":
+                                pass
+                        else:
+                                log.err("Method not supported")
+                                sys.exit(1)
+                                
+                                
+                def Upgrade(self, UpgradeType="upgrade", ReleaseType=None):
+                        if self.apt == "apt-get":
+                                self.__AptGetUpgrade(UpgradeType, ReleaseType)
+                        elif self.apt == "aptitude":
+                                pass
+                        else:
+                                log.err("Method not supported")
+                                sys.exit(1)
+                
+                def InstallPackages(self, PackageList, ReleaseType):
+                        if self.apt == "apt-get":
+                                self.__AptInstallPackage(PackageList, ReleaseType)
+                        else:
+                                log.err("Method not supported")
+                                sys.exit(1)
+                                
+                def InstallSrcPackages(self, SrcPackageList, ReleaseType, BuildDependency):
+                        if self.apt == "apt-get":
+                                self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
+                        else:
+                                log.err("Method not supported")
+                                sys.exit(1)
+                        
+                        
+                def __FixAptSigs(self):
+                        for file in os.listdir(apt_update_target_path):
+                                if file.endswith(".gpg.reverify"):
+                                        sig_file = file.rstrip(".reverify")
+                                        log.verbose("Recovering gpg signature %s.\n" % (file) )
+                                        file = os.path.join(apt_update_target_path, file)
+                                        os.rename(file, os.path.join(apt_update_final_path + sig_file) )
+                                        
+                                        
+                def __AptGetUpdate(self):
+                        log.msg("\nGenerating database of files that are needed for an update.\n")
+                
+                        #FIXME: Unicode Fix
+                        # This is only a workaround.
+                        # When using locales, we get translation files. But apt doesn't extract the URI properly.
+                        # Once the extraction problem is root-caused, we can fix this easily.
+                        os.environ['__apt_set_update'] = self.WriteTo
+                        try:
+                                old_environ = os.environ['LANG']
+                        except KeyError:
+                                old_environ = "C"
+                        os.environ['LANG'] = "C"
+                        log.verbose( "Set environment variable for LANG from %s to %s temporarily.\n" % ( old_environ, os.environ['LANG'] ) )
+                        
+                        if self.__ExecSystemCmd('/usr/bin/apt-get -qq --print-uris --simulate update >> $__apt_set_update') is False:
+                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        log.verbose( "Set environment variable for LANG back to its original from %s to %s.\n" % ( os.environ['LANG'], old_environ ) )
+                        os.environ['LANG'] = old_environ
+                        
+                        log.verbose("Calling __FixAptSigs to fix the apt sig problem")
+                        self.__FixAptSigs()
+                                
+                def __AptitudeUpdate(self):
+                        pass
+                
+                def __PythonAptUpdate(self):
+                        pass
+                
+                def __AptGetUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
+                        self.ReleaseType = ReleaseType
+                        
+                        os.environ['__apt_set_upgrade'] = self.WriteTo
+                        
+                        if ReleaseType is not None:
+                                os.environ['__apt_set_install_release'] = self.ReleaseType
+                                if UpgradeType == "upgrade":
+                                        log.msg( "\nGenerating database of files that are needed for an upgrade.\n" )
+                                        
+                                        if self.__ExecSystemCmd('/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release upgrade >> $__apt_set_upgrade') is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                                        
+                                elif Str_SetUpgradeType == "dist-upgrade":
+                                        log.msg( "\nGenerating database of files that are needed for a dist-upgrade.\n" )
+                                        
+                                        if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release dist-upgrade >> $__apt_set_upgrade' ) is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                                
+                                elif Str_SetUpgradeType == "dselect-upgrade":
+                                        log.msg( "\nGenerating database of files that are needed for a dselect-upgrade.\n" )
+                                        if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release dselect-upgrade >> $__apt_set_upgrade' )  is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                else:
+                                        log.err( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
+                                        
+                        else:
+                                
+                                if UpgradeType == "upgrade":
+                                        log.msg( "\nGenerating database of files that are needed for an upgrade.\n" )
+                                        
+                                        if self.__ExecSystemCmd('/usr/bin/apt-get -qq --print-uris upgrade >> $__apt_set_upgrade') is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                                        
+                                elif Str_SetUpgradeType == "dist-upgrade":
+                                        log.msg( "\nGenerating database of files that are needed for a dist-upgrade.\n" )
+                                        
+                                        if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris dist-upgrade >> $__apt_set_upgrade' ) is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                                
+                                elif Str_SetUpgradeType == "dselect-upgrade":
+                                        log.msg( "\nGenerating database of files that are needed for a dselect-upgrade.\n" )
+                                        if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris dselect-upgrade >> $__apt_set_upgrade' )  is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                else:
+                                        log.err( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
+                                
+                def __AptInstallPackage(self, PackageList=None, ReleaseType=None):
+                        
+                        self.package_list = ''
+                        self.ReleaseType = ReleaseType
+                        
+                        for pkg in PackageList:
+                                self.package_list += pkg + ', '
+                        log.msg( "\nGenerating database of package %s and its dependencies.\n" % (self.package_list) )
+                        
+                        os.environ['__apt_set_install'] = self.WriteTo
+                        os.environ['__apt_set_install_packages'] = ''                   # Build an empty variable
         
+                        #INFO: This is improper way of getting the args, the name of the packages.
+                        # But since optparse doesn't have the implementation in place at the moment, we're using it.
+                        # Once fixed, this will be changed.
+                        # For details look at the parser.add_option line above.
+                        for x in PackageList:
+                                os.environ['__apt_set_install_packages'] += x + ' '
+                        
+                        if self.ReleaseType is not None:
+                                os.environ['__apt_set_install_release'] = self.ReleaseType
+                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release install $__apt_set_install_packages >> $__apt_set_install' ) is False:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        else:
+                                #FIXME: Find a more Pythonic implementation
+                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris install $__apt_set_install_packages >> $__apt_set_install' ) is False:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                        
+                def __AptInstallSrcPackages(self, SrcPackageList=None, ReleaseType=None, BuildDependency=False):
+                        
+                        self.package_list = ''
+                        self.ReleaseType = ReleaseType
+                        
+                        for pkg in SrcPackageList:
+                                self.package_list += pkg + ', '
+                        log.msg( "\nGenerating database of source packages %s.\n" % (self.package_list) )
+                        
+                        os.environ['__apt_set_install'] = self.WriteTo
+                        os.environ['__apt_set_install_src_packages'] = ''               # Build an empty variable
+                        
+                        for x in SrcPackageList:
+                                os.environ['__apt_set_install_src_packages'] += x + ' '
+                                
+                        if self.ReleaseType is not None:
+                                os.environ['__apt_set_install_release'] = self.ReleaseType
+                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release source $__apt_set_install_src_packages >> $__apt_set_install' ) is False:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        else:
+                                #FIXME: Find a more Pythonic implementation
+                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris source $__apt_set_install_src_packages >> $__apt_set_install' )  is False:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        
+                        if BuildDependency:
+                                log.msg("Generating Build-Dependency for source packages %s.\n" % (self.package_list) )
+                                if self.ReleaseType is not None:
+                                        os.environ['__apt_set_install_release'] = self.ReleaseType
+                                        if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                else:
+                                        if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) is False:
+                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                
+                
+                                
         #FIXME: We'll use python-apt library to make it cleaner.
         # For now, we need to set markers using shell variables.
         if os.path.isfile(Str_SetArg):
@@ -1300,35 +1494,24 @@ def setter(args):
                 except OSError:
                         log.err("Cannot remove file %s.\n" % (Str_SetArg) )
         
+        
+        #Instantiate Apt based on what we have. For now, fall to apt only
+        AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt")
+        
         if Bool_SetUpdate:
                 if platform.system() in supported_platforms:
-                        if os.geteuid() != 0:
+                        if not Bool_TestWindows and os.geteuid() != 0:
                                 log.err("This option requires super-user privileges. Execute as root or use sudo/su\n")
                                 sys.exit(1)
                         else:
-                                log.msg("\nGenerating database of files that are needed for an update.\n")
-                        
-                                #FIXME: Unicode Fix
-                                # This is only a workaround.
-                                # When using locales, we get translation files. But apt doesn't extract the URI properly.
-                                # Once the extraction problem is root-caused, we can fix this easily.
-                                os.environ['__apt_set_update'] = Str_SetArg
-                                try:
-                                        old_environ = os.environ['LANG']
-                                except KeyError:
-                                        old_environ = "C"
-                                os.environ['LANG'] = "C"
-                                log.verbose( "Set environment variable for LANG from %s to %s temporarily.\n" % ( old_environ, os.environ['LANG'] ) )
-                                if os.system( '/usr/bin/apt-get -qq --print-uris update >> $__apt_set_update' ) != 0:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
-                                log.verbose( "Set environment variable for LANG back to its original from %s to %s.\n" % ( os.environ['LANG'], old_environ ) )
-                                os.environ['LANG'] = old_environ
+                                AptInst.Update()
                 else:
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
+                        
         if Bool_SetUpgrade:
                 if platform.system() in supported_platforms:
-                        if os.geteuid() != 0:
+                        if not Bool_TestWindows and os.geteuid() != 0:
                                 log.err( "This option requires super-user privileges. Execute as root or use sudo/su" )
                                 sys.exit(1)
                         #TODO: Use a more Pythonic way for it
@@ -1364,20 +1547,11 @@ def setter(args):
                                                                 install_file.write( uri + ' ' + file + ' ' + size + ' ' + checksum + "\n" )
                                                                 dup_records.append( checksum.__str__() )
                                 else:
-                                        log.msg( "\nGenerating database of files that are needed for an upgrade.\n" )
-                                        os.environ['__apt_set_upgrade'] = Str_SetArg
-                                        if os.system( '/usr/bin/apt-get -qq --print-uris upgrade >> $__apt_set_upgrade' ) != 0:
-                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                        AptInst.Upgrade("upgrade", ReleaseType=Str_SetInstallRelease)
                         elif Str_SetUpgradeType == "dist-upgrade":
-                                log.msg( "\nGenerating database of files that are needed for a dist-upgrade.\n" )
-                                os.environ['__apt_set_upgrade'] = Str_SetArg
-                                if os.system( '/usr/bin/apt-get -qq --print-uris dist-upgrade >> $__apt_set_upgrade' ) != 0:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                AptInst.Upgrade("dist-upgrade")
                         elif Str_SetUpgradeType == "dselect-upgrade":
-                                log.msg( "\nGenerating database of files that are needed for a dselect-upgrade.\n" )
-                                os.environ['__apt_set_upgrade'] = Str_SetArg
-                                if os.system( '/usr/bin/apt-get -qq --print-uris dselect-upgrade >> $__apt_set_upgrade' ) != 0:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                AptInst.Upgrade("dselect-upgrade")
                         else:
                                 log.err( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
                 else:
@@ -1386,67 +1560,18 @@ def setter(args):
                 
         if List_SetInstallPackages != None and List_SetInstallPackages != []:
                 if platform.system() in supported_platforms:
-                        if os.geteuid() != 0:
+                        if not Bool_TestWindows and os.geteuid() != 0:
                                 log.err( "This option requires super-user privileges. Execute as root or use sudo/su\n" )
                                 sys.exit(1)
-                        package_list = ''
-                        for pkg in List_SetInstallPackages:
-                                package_list += pkg + ', '
-                        log.msg( "\nGenerating database of package %s and its dependencies.\n" % (package_list) )
-                        os.environ['__apt_set_install'] = Str_SetArg
-                        os.environ['__apt_set_install_packages'] = ''
-        
-                        #INFO: This is improper way of getting the args, the name of the packages.
-                        # But since optparse doesn't have the implementation in place at the moment, we're using it.
-                        # Once fixed, this will be changed.
-                        # For details look at the parser.add_option line above.
-                        for x in List_SetInstallPackages:
-                                os.environ['__apt_set_install_packages'] += x + ' '
-                        
-                        if Str_SetInstallRelease:
-                                os.environ['__apt_set_install_release'] = Str_SetArg
-                                if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release install $__apt_set_install_packages >> $__apt_set_install' ) != 0:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
-                        else:
-                                #FIXME: Find a more Pythonic implementation
-                                if os.system( '/usr/bin/apt-get -qq --print-uris install $__apt_set_install_packages >> $__apt_set_install' ) != 0:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                
+                        AptInst.InstallPackages(List_SetInstallPackages, Str_SetInstallRelease)
                 else:
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
         
         if List_SetInstallSrcPackages != None and List_SetInstallSrcPackages != []:
                 if platform.system() in supported_platforms:
-                        package_list = ''
-                        for pkg in List_SetInstallSrcPackages:
-                                package_list += pkg + ', '
-                        log.msg( "\nGenerating database of source packages %s.\n" % (package_list) )
-                        os.environ['__apt_set_install'] = Str_SetArg
-                        os.environ['__apt_set_install_src_packages'] = ''
-                        
-                        for x in List_SetInstallSrcPackages:
-                                os.environ['__apt_set_install_src_packages'] += x + ' '
-                                
-                        if Str_SetInstallRelease:
-                                os.environ['__apt_set_install_release'] = Str_SetArg
-                                if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release source $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
-                        else:
-                                #FIXME: Find a more Pythonic implementation
-                                if os.system( '/usr/bin/apt-get -qq --print-uris source $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
-                        
-                        if Bool_SrcBuildDep:
-                                log.msg("Generating Build-Dependency for source packages %s.\n" % (package_list) )
-                                if Str_SetInstallRelease:
-                                        os.environ['__apt_set_install_release'] = Str_SetArg
-                                        if os.system( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
-                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
-                                else:
-                                        #FIXME: Find a more Pythonic implementation
-                                        if os.system( '/usr/bin/apt-get -qq --print-uris build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) != 0:
-                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
-                                
+                        AptInst.InstallSrcPackages(List_SetInstallSrcPackages, Str_SetInstallRelease, Bool_SrcBuildDep)
                 else:
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
@@ -1486,12 +1611,12 @@ def main():
         # Global options
         global_options = argparse.ArgumentParser(add_help=False)
         global_options.add_argument("--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
-        global_options.add_argument("--test-windows", dest="test_windows", help="This switch is used while doing testing on windows.",
+        global_options.add_argument("--simulate", dest="simulate", help="Just simulate. Very helpful when debugging",
                             action="store_true" )
         
-        parser = argparse.ArgumentParser( prog=app_name, version=app_name + " - " + version,
-                                          description="Offline APT Package Manager",
+        parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
                                           epilog=copyright + " - " + terminal_license, parents=[global_options])
+        parser.add_argument("-v", "--version", action='version', version=version)
         
         # We need subparsers for set/get/install
         subparsers = parser.add_subparsers()
@@ -1594,7 +1719,7 @@ def main():
                 #
         	# Global opts
         	Bool_Verbose = args.verbose
-        	Bool_TestWindows = args.test_windows
+        	Bool_TestWindows = args.simulate
                 
         	global log
         	log = AptOfflineLib.Log( Bool_Verbose, lock=True )

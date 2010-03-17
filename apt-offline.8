@@ -142,6 +142,20 @@ Display the version of the progream
 .B To keep your disconnected machine  up-to-date, here is a typical workflow
 
 .TP
+.B NOTE: argument/option handling
+apt\-offline relies on argparse for argument/option parsing. To explicitly instruct apt\-offline about an argument, you can pass it with the \-\- delimiter.
+
+.B Ex. apt\-offline set \-\-update \-\-upgrade \-\-install\-packages wm2 \-\- foo.sig
+
+By specifying the
+.B \-\-
+delimiter, we instruct apt\-offline that foo.sig is an argument to the 
+.B apt\-offline 
+command and not to the
+.B \-\-install\-packages
+option.
+
+.TP
 .B apt-offline set FILENAME
 This command will generate a signature file FILENAME for APT Package Database.
 To generate only the signature for updates, use the \-\-update option.  To
