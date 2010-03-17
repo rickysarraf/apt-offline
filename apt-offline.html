@@ -194,6 +194,25 @@ Display the version of the progream
 
 <DD>
 <P>
+<DT><B>NOTE: argument/option handling</B>
+
+<DD>
+apt-offline relies on argparse for argument/option parsing. To explicitly instruct apt-offline about an argument, you can pass it with the -- delimiter.
+<P>
+<B>Ex. apt-offline set --update --upgrade --install-packages wm2 -- foo.sig</B>
+
+<P>
+By specifying the
+<B>--</B>
+
+delimiter, we instruct apt-offline that foo.sig is an argument to the 
+<B>apt-offline </B>
+
+command and not to the
+<B>--install-packages</B>
+
+option.
+<P>
 <DT><B>apt-offline set FILENAME</B>
 
 <DD>
@@ -281,6 +300,6 @@ This software is dedicated to the memory of my father Santosh Kumar Sarraf. We m
 This document was created by
 <A HREF="/cgi-bin/man/man2html">man2html</A>,
 using the manual pages.<BR>
-Time: 09:13:07 GMT, December 20, 2009
+Time: 11:23:06 GMT, March 17, 2010
 </BODY>
 </HTML>
