@@ -1140,7 +1140,7 @@ def installer( args ):
                                                 found = True
                                                 break
                                 if found is True:
-                                        shutil.copy2(filename, Str_InstallSrcPath)
+                                        shutil.copy2(FullFileName, Str_InstallSrcPath)
                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                         continue
                                 
