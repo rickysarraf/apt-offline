@@ -42,7 +42,4 @@ distutils.core.setup(
             'apt_offline_core.AptOffline_argparse',
             'apt_offline_core.AptOffline_urlutils',],
     scripts=['apt-offline'],
-    data_files = [('share/man/man8',['apt-offline.8']),
-            ('share/doc/apt-offline',['apt-offline.html',
-                    'README', 'THANKS', 'INSTALL', 'LICENSE'])],
 )
