@@ -535,6 +535,13 @@ def fetcher( args ):
                 #(key, item) = tuple_item_key
                 
                 (key, item) = request
+
+		# On many boxes, the cdrom apt repository will be enabled.
+		# For now, let's skip the cdrom repository items.
+		if item.startswith("\'cdrom"):
+			log.verbose("cdrom apt repository not supported. Skipping\n")
+			log.verbose(item)
+			return True
                 
                 #INFO: Everything
                 (url, file, download_size, checksum) = stripper(item)
