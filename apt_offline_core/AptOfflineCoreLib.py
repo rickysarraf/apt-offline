@@ -299,6 +299,8 @@ def stripper(item):
         and returns them.'''
     
         item = item.split(' ')
+	log.verbose("Item is %s\n" % (item) )
+
         url = string.rstrip(string.lstrip(''.join(item[0]), chars="'"), chars="'")
         file = string.rstrip(string.lstrip(''.join(item[1]), chars="'"), chars="'")
         size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
