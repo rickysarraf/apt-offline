@@ -306,9 +306,12 @@ def stripper(item):
         size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
         #INFO: md5 ends up having '\n' with it.
         # That needs to be stripped too.
-        checksum = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
-        checksum = string.rstrip(checksum, chars = "\n")
-    
+	try:
+		checksum = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
+        	checksum = string.rstrip(checksum, chars = "\n")
+	except IndexError:
+		if item[1].endswith("_Release") or item[1].endswith("_Release.gpg"):
+			checksum = None
         return url, file, size, checksum
 
 
