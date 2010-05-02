@@ -929,10 +929,13 @@ def installer( args ):
                 value => subject string
                 '''
                 log.msg( "\n\nFollowing are the list of bugs present.\n" )
-                for each_bug in dictList.keys():
+		sortedKeyList = dictList.keys()
+		sortedKeyList.sort()
+                for each_bug in sortedKeyList:
+			pkg_name = each_bug.split( '.' )[-3].split('/')[-1]
                         bug_num = each_bug.split( '.' )[-2]
                         bug_subject = dictList[each_bug]
-                        log.msg( "%s\t%s\n" % ( bug_num, bug_subject ) )
+                        log.msg( "%s\t%s\t\t%s\n" % ( bug_num, pkg_name, bug_subject ) )
             
         def magic_check_and_uncompress( archive_file=None, filename=None):
                 retval = False
