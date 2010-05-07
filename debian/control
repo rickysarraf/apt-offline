@@ -1,8 +1,7 @@
 Source: apt-offline
 Section: admin
 Priority: optional
-Maintainer: Ritesh Raj Sarraf <rrs@researchut.com>
-DM-Upload-Allowed: yes
+Maintainer: Ritesh Raj Sarraf <rrs@debian.org>
 Build-Depends: debhelper (>= 7), python
 Build-Depends-Indep: python-support
 Standards-Version: 3.8.4
