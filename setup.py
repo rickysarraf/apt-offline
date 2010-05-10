@@ -11,7 +11,7 @@ import distutils.core
 
 distutils.core.setup(
     name='apt-offline',
-    version='0.9.7',
+    version='0.9.8',
     author='Ritesh Raj Sarraf',
     author_email='rrs@researchut.com',
     url='http://apt-offline.alioth.debian.org',
@@ -42,7 +42,4 @@ distutils.core.setup(
             'apt_offline_core.AptOffline_argparse',
             'apt_offline_core.AptOffline_urlutils',],
     scripts=['apt-offline'],
-    data_files = [('share/man/man8',['apt-offline.8']),
-            ('share/doc/apt-offline',['apt-offline.html',
-                    'README', 'THANKS', 'INSTALL', 'LICENSE'])],
 )

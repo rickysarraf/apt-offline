@@ -79,7 +79,7 @@ figuring out if the packages are in the local cache, handling exceptions and man
 
 
 app_name = "apt-offline"
-version = "0.9.7"
+version = "0.9.8"
 copyright = "(C) 2005 - 2010 Ritesh Raj Sarraf"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
@@ -299,14 +299,19 @@ def stripper(item):
         and returns them.'''
     
         item = item.split(' ')
+	log.verbose("Item is %s\n" % (item) )
+
         url = string.rstrip(string.lstrip(''.join(item[0]), chars="'"), chars="'")
         file = string.rstrip(string.lstrip(''.join(item[1]), chars="'"), chars="'")
         size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
         #INFO: md5 ends up having '\n' with it.
         # That needs to be stripped too.
-        checksum = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
-        checksum = string.rstrip(checksum, chars = "\n")
-    
+	try:
+		checksum = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
+        	checksum = string.rstrip(checksum, chars = "\n")
+	except IndexError:
+		if item[1].endswith("_Release") or item[1].endswith("_Release.gpg"):
+			checksum = None
         return url, file, size, checksum
 
 
@@ -535,6 +540,13 @@ def fetcher( args ):
                 #(key, item) = tuple_item_key
                 
                 (key, item) = request
+
+		# On many boxes, the cdrom apt repository will be enabled.
+		# For now, let's skip the cdrom repository items.
+		if item.startswith("\'cdrom"):
+			log.verbose("cdrom apt repository not supported. Skipping\n")
+			log.verbose(item)
+			return True
                 
                 #INFO: Everything
                 (url, file, download_size, checksum) = stripper(item)
@@ -917,10 +929,13 @@ def installer( args ):
                 value => subject string
                 '''
                 log.msg( "\n\nFollowing are the list of bugs present.\n" )
-                for each_bug in dictList.keys():
+		sortedKeyList = dictList.keys()
+		sortedKeyList.sort()
+                for each_bug in sortedKeyList:
+			pkg_name = each_bug.split( '.' )[-3].split('/')[-1]
                         bug_num = each_bug.split( '.' )[-2]
                         bug_subject = dictList[each_bug]
-                        log.msg( "%s\t%s\n" % ( bug_num, bug_subject ) )
+                        log.msg( "%s\t%s\t%s\n" % ( pkg_name, bug_num, bug_subject ) )
             
         def magic_check_and_uncompress( archive_file=None, filename=None):
                 retval = False
@@ -1614,9 +1629,15 @@ def main():
         global_options.add_argument("--simulate", dest="simulate", help="Just simulate. Very helpful when debugging",
                             action="store_true" )
         
-        parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
+	if argparse.__version__ >= 1.1:
+		parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
                                           epilog=copyright + " - " + terminal_license, parents=[global_options])
-        parser.add_argument("-v", "--version", action='version', version=version)
+		parser.add_argument("-v", "--version", action='version', version=version)
+	else:
+		# Remain backward compatible with older argparse versions 
+		parser = argparse.ArgumentParser( prog=app_name, version=app_name + " - " + version,
+				description="Offline APT Package Manager", epilog=copyright + " - " + terminal_license,
+				parents=[global_options])
         
         # We need subparsers for set/get/install
         subparsers = parser.add_subparsers()
