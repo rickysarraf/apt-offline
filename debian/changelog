@@ -1,8 +1,9 @@
-apt-offline (0.9.8) UNRELEASED; urgency=low
+apt-offline (0.9.8) unstable; urgency=low
 
+  * New Bug Fix Release
   * Change address to my official Debian address and remove the DMUA flag
 
- -- Ritesh Raj Sarraf <rrs@debian.org>  Sat, 08 May 2010 03:36:57 +0530
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Mon, 10 May 2010 21:44:06 +0530
 
 apt-offline (0.9.7) unstable; urgency=low
 
