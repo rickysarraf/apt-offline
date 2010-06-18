@@ -604,7 +604,11 @@ def fetcher( args ):
                                                         if bug_fetched is True:
                                                                 for x in os.listdir(os.curdir):
                                                                         if (x.startswith(PackageName) and x.endswith(apt_bug_file_format) ):
-                                                                                shutil.move(x, Str_DownloadDir)
+                                                                                try:
+                                                                                        shutil.move(x, Str_DownloadDir)
+                                                                                except:
+                                                                                        #INFO: This should fix DBTS #584427
+                                                                                        log.verbose("Exception thrown. Most likely it is because the cache_dir and download_dir locations are the same.\n")
                                                                                 log.verbose("Moved %s file to %s folder.%s\n" % (x, Str_DownloadDir, LINE_OVERWRITE_FULL) )
                                         #INFO: Damn!! The md5chesum didn't match :-(
                                         # The file is corrupted and we need to download a new copy from the internet
