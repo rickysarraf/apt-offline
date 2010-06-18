@@ -736,20 +736,45 @@ def fetcher( args ):
                                         errlist.append( PackageName )
                                         
                 else:
+                        
+                        def DownloadPackages(url):
+                                if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
+                                        log.success("\r%s done.%s\n" % (url, LINE_OVERWRITE_FULL) )
+                                        if Str_BundleFile:
+                                                if FetcherInstance.compress_the_file(Str_BundleFile, file) != True:
+                                                        log.err("Couldn't archive %s to file %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
+                                                        sys.exit(1)
+                                                else:
+                                                        log.verbose("%s added to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_FULL) )
+                                                        os.unlink(os.path.join(Str_DownloadDir, file) )
+                                        return True
+                                else:
+                                        return False
+                                
+                        #INFO: Handle the multiple Packages formats.
+                        # See DTBS #583502
+                        SupportedFormats = ["bz2", "gz", "lzma"]
+                        
                         #INFO: We are a package update
                         PackageName = url
+                        PackageFile = url.split("/")[-1]
+                        PackageFormat = PackageFile.split(".")[-1]
+                        if PackageFormat in SupportedFormats:
+                                SupportedFormats.remove(PackageFormat) #Remove the already tried format
+                        
                         log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
-                        if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
-                                log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
-                                if Str_BundleFile:
-                                        if FetcherInstance.compress_the_file(Str_BundleFile, file) != True:
-                                                log.err("Couldn't archive %s to file %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
-                                                sys.exit(1)
-                                        else:
-                                                log.verbose("%s added to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_FULL) )
-                                                os.unlink(os.path.join(Str_DownloadDir, file) )
-                        else:
+                        if DownloadPackages(url) is False:
                                 errlist.append(url)
+                                
+                                # We could fail with the Packages format of what apt gave us. We can try the rest of the formats that apt or the archive could support
+                                for Format in SupportedFormats:
+                                        NewPackageFile = PackageFile.split(".")[0] + "." + Format
+                                        NewUrl = url.strip(url.split("/")[-1]) + NewPackageFile
+                                        log.msg("Retry download %s.%s\n" % (NewUrl, LINE_OVERWRITE_MID) ) 
+                                        if DownloadPackages(NewUrl) is True:
+                                                break
+                                        else:
+                                                errlist.append(NewUrl)
                         
         # Create two Queues for the requests and responses
         requestQueue = Queue.Queue()
