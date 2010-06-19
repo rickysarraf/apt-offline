@@ -1,3 +1,12 @@
+apt-offline (0.9.9) unstable; urgency=low
+
+  * New Feature Release
+    + Add support to cycle through all supported Packages.extension types
+      (Closes: #583502)
+    + Fix exception which downloading bug reports (Closes: #584427) 
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Sat, 19 Jun 2010 12:18:20 +0530
+
 apt-offline (0.9.8) unstable; urgency=low
 
   * New Bug Fix Release
