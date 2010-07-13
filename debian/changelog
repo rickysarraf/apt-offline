@@ -1,3 +1,10 @@
+apt-offline (0.9.10) UNRELEASED; urgency=low
+
+  * Add less to Recommends because we depend on `less` to display the
+    bug reports
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Tue, 13 Jul 2010 17:27:11 +0530
+
 apt-offline (0.9.9) unstable; urgency=low
 
   * New Feature Release
