@@ -3,15 +3,33 @@
  <class>AptOfflineQtFetch</class>
  <widget class="QDialog" name="AptOfflineQtFetch">
   <property name="windowModality">
-   <enum>Qt::WindowModal</enum>
+   <enum>Qt::ApplicationModal</enum>
   </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
-    <height>454</height>
+    <width>468</width>
+    <height>495</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>468</width>
+    <height>495</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>468</width>
+    <height>495</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Fetch Packages or Upgrade</string>
@@ -20,7 +38,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>60</y>
+     <y>46</y>
      <width>270</width>
      <height>30</height>
     </rect>
@@ -30,7 +48,7 @@
    <property name="geometry">
     <rect>
      <x>320</x>
-     <y>60</y>
+     <y>46</y>
      <width>110</width>
      <height>30</height>
     </rect>
@@ -46,7 +64,7 @@
    <property name="geometry">
     <rect>
      <x>90</x>
-     <y>110</y>
+     <y>165</y>
      <width>130</width>
      <height>30</height>
     </rect>
@@ -75,7 +93,7 @@
    <property name="geometry">
     <rect>
      <x>240</x>
-     <y>110</y>
+     <y>165</y>
      <width>140</width>
      <height>30</height>
     </rect>
@@ -92,7 +110,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>30</y>
+     <y>16</y>
      <width>200</width>
      <height>30</height>
     </rect>
@@ -110,7 +128,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>190</y>
+     <y>230</y>
      <width>410</width>
      <height>20</height>
     </rect>
@@ -123,7 +141,7 @@
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>170</y>
+     <y>210</y>
      <width>70</width>
      <height>16</height>
     </rect>
@@ -141,9 +159,9 @@
    <property name="geometry">
     <rect>
      <x>90</x>
-     <y>170</y>
-     <width>53</width>
-     <height>15</height>
+     <y>210</y>
+     <width>341</width>
+     <height>16</height>
     </rect>
    </property>
    <property name="font">
@@ -159,9 +177,50 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>230</y>
+     <y>268</y>
      <width>411</width>
      <height>211</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="browseZipFileButton">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>107</y>
+     <width>110</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Browse</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>77</y>
+     <width>200</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Save archive as</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="zipFilePath">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>107</y>
+     <width>270</width>
+     <height>30</height>
     </rect>
    </property>
   </widget>

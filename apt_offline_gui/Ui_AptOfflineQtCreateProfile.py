@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtCreateProfile.ui'
 #
-# Created: Thu Feb  4 01:28:54 2010
-#      by: PyQt4 UI code generator 4.4.4
+# Created: Sun Mar  7 03:28:04 2010
+#      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,9 +12,17 @@ from PyQt4 import QtCore, QtGui
 class Ui_CreateProfile(object):
     def setupUi(self, CreateProfile):
         CreateProfile.setObjectName("CreateProfile")
-        CreateProfile.resize(420, 368)
+        CreateProfile.setWindowModality(QtCore.Qt.ApplicationModal)
+        CreateProfile.resize(443, 374)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(CreateProfile.sizePolicy().hasHeightForWidth())
+        CreateProfile.setSizePolicy(sizePolicy)
+        CreateProfile.setMinimumSize(QtCore.QSize(443, 374))
+        CreateProfile.setMaximumSize(QtCore.QSize(443, 374))
         self.verticalLayoutWidget = QtGui.QWidget(CreateProfile)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 401, 309))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 427, 321))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtGui.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -45,7 +53,7 @@ class Ui_CreateProfile(object):
         self.installPackagesRadioBox.setObjectName("installPackagesRadioBox")
         self.verticalLayout_4.addWidget(self.installPackagesRadioBox)
         self.horizontalLayout.addLayout(self.verticalLayout_4)
-        spacerItem = QtGui.QSpacerItem(150, 20, QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Minimum)
+        spacerItem = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
         self.verticalLayout.addLayout(self.verticalLayout_2)
@@ -111,7 +119,7 @@ class Ui_CreateProfile(object):
         self.verticalLayout_5.addLayout(self.verticalLayout_8)
         self.verticalLayout.addLayout(self.verticalLayout_5)
         self.horizontalLayoutWidget = QtGui.QWidget(CreateProfile)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(11, 320, 401, 40))
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(25, 325, 401, 40))
         self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
         self.horizontalLayout_4 = QtGui.QHBoxLayout(self.horizontalLayoutWidget)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")

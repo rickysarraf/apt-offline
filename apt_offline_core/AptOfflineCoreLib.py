@@ -52,7 +52,9 @@ except ImportError:
 
 import AptOfflineMagicLib
 
+#INFO: added to store progressbar info
 guiBool = False
+totalSize = [0,0]             # total_size, current_total
 
 #INFO: Check if python-apt is installed
 PythonApt = True
@@ -255,7 +257,11 @@ class GenericDownloadFunction():
                                 i += block_size
                                 counter += 1
                                 self.updateValue(increment)
+                                #REAL_PROGRESS: update current total in totalSize
+                                totalSize[1] += block_size
+                                
                         self.completed()
+                        
                         data.close()
                         temp.close()
                         return True
@@ -777,6 +783,23 @@ def fetcher( args ):
         # Start the threads.
         for t in thread_pool: t.start()
         
+        #REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
+        if guiBool:
+            for key in FetchData.keys():
+                for item in FetchData.get(key):
+                    try:
+                        (url, file, download_size, checksum) = stripper(item)
+                        size = int(download_size)
+                        if size == 0:
+                            log.msg("MSG_START")
+                            temp = urllib2.urlopen(url)
+                            headers = temp.info()
+                            size = int(headers['Content-Length'])
+                        totalSize[0] += size
+                    except:
+                        ''' some int parsing problem '''
+            log.msg("MSG_END")
+                
         # Queue up the requests.
         #for item in raw_data_list: requestQueue.put(item)
         for key in FetchData.keys():
