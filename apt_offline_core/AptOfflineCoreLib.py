@@ -543,9 +543,7 @@ def fetcher( args ):
         #global FetcherInstance
         try:
             gui = args.qt_gui
-            progress = args.progress_bar
-            progressLabel = args.progress_label
-            FetcherInstance = QtFetcherClass(progress=progress, progressLabel=progressLabel, lock=True, total_items=total_items )
+            FetcherInstance = QtFetcherClass(progress_bar=args.progress, progress_label=args.progress_label, lock=True, total_items=total_items )
         except AttributeError:
             FetcherInstance = FetcherClass( width=30, lock=True, total_items=total_items )
         
