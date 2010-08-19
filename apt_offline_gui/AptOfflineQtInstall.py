@@ -31,29 +31,6 @@ class Worker(QtCore.QThread):
         # extract chinese whisper from text
         self.emit (QtCore.SIGNAL('output(QString)'), text)
         return
-        '''
-        # TODO: if backend sends out any progress, error or success messages,
-        #       rewrite UI handlers here
-        
-        if ("MSG_START" in text):
-            self.emit (QtCore.SIGNAL('status(QString)'), "Fetching missing meta data ...")
-            return
-        if ("MSG_END" in text):
-            self.emit (QtCore.SIGNAL('status(QString)'), "Downloading packages ...")
-            return
-            
-        if ("[" in text and "]" in text):
-            try:
-                # no more splits, we know the exact byte count now
-                progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
-                total = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
-                self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
-                return
-            except:
-                pass
-            
-        self.emit (QtCore.SIGNAL('output(QString)'), text)
-        '''
 
     def flush(self):
         ''' nothing to do :D '''
@@ -111,15 +88,6 @@ class AptOfflineQtInstall(QtGui.QDialog):
 
         self.worker.setArgs (args)
         self.worker.start()
-        ''' old discarded imcompatible threading '''
-        # setup i/o redirects before call
-        #sys.stdout = self
-        #sys.stderr = self
-        # returnStatus = apt_offline_core.AptOfflineCoreLib.installer(args)
-        # TODO: deal with return status laters
-        #thread.start_new_thread (apt_offline_core.AptOfflineCoreLib.installer, (args,))
-        # TODO to be implemented later
-        # self.accept()
 
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
