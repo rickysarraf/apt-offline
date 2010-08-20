@@ -29,8 +29,22 @@ class Worker(QtCore.QThread):
     def write(self, text):
         # redirects console output to our consoleOutputHolder
         # extract chinese whisper from text
-        self.emit (QtCore.SIGNAL('output(QString)'), text)
-        return
+        if ('.deb' in text and 'synced' in text):
+            try:
+                text = guicommon.style("Package : ",'orange') + guicommon.style(text.split("/")[-1],'green_fin')
+            except:
+                pass
+            self.emit (QtCore.SIGNAL('output(QString)'), text)
+        if ('apt/lists' in text):
+            try:
+                # this part is always done on a linux system so we can hardcode / for a while
+                text = guicommon.style("Update : ",'orange') + guicommon.style(text.split("/")[-1],'green_fin')
+            except:
+                # let the text be original otherwise
+                pass
+            self.emit (QtCore.SIGNAL('output(QString)'), text)
+        else:
+            self.emit (QtCore.SIGNAL('output(QString)'), guicommon.style(text,'red'))
 
     def flush(self):
         ''' nothing to do :D '''
@@ -87,6 +101,7 @@ class AptOfflineQtInstall(QtGui.QDialog):
         args = InstallerArgs(filename=self.filepath, progress_bar=self.ui.statusProgressBar, progress_label=self.ui.progressStatusDescription )
 
         self.worker.setArgs (args)
+        self.disableActions()
         self.worker.start()
 
     def popupDirectoryDialog(self):
@@ -114,6 +129,17 @@ class AptOfflineQtInstall(QtGui.QDialog):
         # TODO: implement progress here
         return
 
+    def disableActions(self):
+        self.ui.cancelButton.setEnabled(False)
+        self.ui.startInstallButton.setEnabled(False)
+        self.ui.browseFilePathButton.setEnabled(False)
+        self.ui.zipFilePath.setEnabled(False)
+
+    def enableActions(self):
+        self.ui.cancelButton.setEnabled(True)
+        self.ui.startInstallButton.setEnabled(True)
+        self.ui.browseFilePathButton.setEnabled(True)
+        self.ui.zipFilePath.setEnabled(True)
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
