@@ -1,9 +1,10 @@
-apt-offline (0.9.10) UNRELEASED; urgency=low
+apt-offline (0.9.9squeeze1) unstable; urgency=low
 
   * Add less to Recommends because we depend on `less` to display the
     bug reports
+  * Check if argument is a directory. (Closes: #588908) 
 
- -- Ritesh Raj Sarraf <rrs@debian.org>  Tue, 13 Jul 2010 17:27:11 +0530
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Fri, 20 Aug 2010 14:00:31 +0530
 
 apt-offline (0.9.9) unstable; urgency=low
 
