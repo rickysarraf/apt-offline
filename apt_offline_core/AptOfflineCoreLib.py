@@ -1028,13 +1028,23 @@ def installer( args ):
                         log.err( "I couldn't understand file type %s.\n" % ( filename ) )
                 
                 if retval:
+                        #CHANGE: track progress
+                        totalSize[0]+=1 
+                        if guiBool:
+                            log.msg("[%d/%d]" % (totalSize[0], totalSize[1]))
+                        #ENDCHANGE
                         log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
                 else:
                         log.err("Failed to sync %s\n" % (filename) )
+
         
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
                 file = zipfile.ZipFile( install_file_path, "r" )
+                #CHANGE: for progress tracking
+                totalSize[1] = len(file.namelist())
+                totalSize[0] = 0
+                #ENDCHANGE
                 
                 SrcPkgDict = {}
                 for filename in file.namelist():
@@ -1103,7 +1113,6 @@ def installer( args ):
                                                         shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
                                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                                         continue
-                                                
                                                 magic_check_and_uncompress( archive_file, filename )
                                                 data.file.close()
                                         sys.exit( 0 )
@@ -1160,7 +1169,7 @@ def installer( args ):
                                         shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                         continue
-                                
+                                    
                                 magic_check_and_uncompress( archive_file, filename )
                                 data.file.close()
                         #else:
@@ -1277,7 +1286,7 @@ def installer( args ):
                                         shutil.copy2(eachfile, Str_InstallSrcPath)
                                         log.msg("Installed src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                         continue
-                                
+                                    
                                 magic_check_and_uncompress( eachfile, filename )
                         #else:
                         #        log.msg( "Exiting gracefully on user request.\n" )

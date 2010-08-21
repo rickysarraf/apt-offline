@@ -35,7 +35,7 @@ class Worker(QtCore.QThread):
             except:
                 pass
             self.emit (QtCore.SIGNAL('output(QString)'), text)
-        if ('apt/lists' in text):
+        elif ('apt/lists' in text):
             try:
                 # this part is always done on a linux system so we can hardcode / for a while
                 text = guicommon.style("Update : ",'orange') + guicommon.style(text.split("/")[-1],'green')
@@ -43,9 +43,16 @@ class Worker(QtCore.QThread):
                 # let the text be original otherwise
                 pass
             self.emit (QtCore.SIGNAL('output(QString)'), text)
+        elif ('[' in text and ']' in text):
+            try:
+                progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
+                total = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
+                self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
+            except:
+                ''' nothing to do '''
         else:
             self.emit (QtCore.SIGNAL('output(QString)'), guicommon.style(text,'red'))
-
+                            
     def flush(self):
         ''' nothing to do :D '''
         
@@ -134,9 +141,12 @@ class AptOfflineQtInstall(QtGui.QDialog):
         self.ui.progressStatusDescription.setText(text)
 
     def updateProgress(self,progress,total):
-        # NOTE: inactive
-        # TODO: implement progress here
-        return
+        try:
+            # try parsing numbers and updating progressBar
+            percent = (float(progress)/float(total))*100
+            self.ui.statusProgressBar.setValue (percent)
+        except:
+             ''' nothing to do '''
 
     def finishedWork(self):
         self.enableActions()
