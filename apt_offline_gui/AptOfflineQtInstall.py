@@ -31,14 +31,14 @@ class Worker(QtCore.QThread):
         # extract chinese whisper from text
         if ('.deb' in text and 'synced' in text):
             try:
-                text = guicommon.style("Package : ",'orange') + guicommon.style(text.split("/")[-1],'green_fin')
+                text = guicommon.style("Package : ",'orange') + guicommon.style(text.split("/")[-1],'green')
             except:
                 pass
             self.emit (QtCore.SIGNAL('output(QString)'), text)
         if ('apt/lists' in text):
             try:
                 # this part is always done on a linux system so we can hardcode / for a while
-                text = guicommon.style("Update : ",'orange') + guicommon.style(text.split("/")[-1],'green_fin')
+                text = guicommon.style("Update : ",'orange') + guicommon.style(text.split("/")[-1],'green')
             except:
                 # let the text be original otherwise
                 pass
@@ -48,6 +48,10 @@ class Worker(QtCore.QThread):
 
     def flush(self):
         ''' nothing to do :D '''
+        
+    def quit(self):
+        self.emit (QtCore.SIGNAL('finished()'))
+        
         
 class AptOfflineQtInstall(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -80,6 +84,10 @@ class AptOfflineQtInstall(QtGui.QDialog):
                         self.updateProgress )
         QtCore.QObject.connect(self.worker, QtCore.SIGNAL("status(QString)"),
                         self.updateStatus )
+        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("finished()"),
+                        self.finishedWork )
+        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("terminated()"),
+                        self.finishedWork )
         
     def StartInstall(self):
         # gui validation
@@ -100,8 +108,9 @@ class AptOfflineQtInstall(QtGui.QDialog):
         # parse args
         args = InstallerArgs(filename=self.filepath, progress_bar=self.ui.statusProgressBar, progress_label=self.ui.progressStatusDescription )
 
-        self.worker.setArgs (args)
         self.disableActions()
+        self.ui.progressStatusDescription.setText("Syncing updates")
+        self.worker.setArgs (args)
         self.worker.start()
 
     def popupDirectoryDialog(self):
@@ -129,6 +138,12 @@ class AptOfflineQtInstall(QtGui.QDialog):
         # TODO: implement progress here
         return
 
+    def finishedWork(self):
+        self.enableActions()
+        guicommon.updateInto (self.ui.rawLogHolder,
+            guicommon.style("Finished syncting updates/packages","green_fin"))
+        self.ui.progressStatusDescription.setText("Finished Syncing")
+        
     def disableActions(self):
         self.ui.cancelButton.setEnabled(False)
         self.ui.startInstallButton.setEnabled(False)
