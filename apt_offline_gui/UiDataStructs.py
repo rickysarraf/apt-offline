@@ -68,7 +68,7 @@ class GetterArgs():
 '''
 # install opts
         Str_InstallArg = args.install
-        Bool_TestWindows = args.test_windows
+        Bool_TestWindows = args.simulate
         Bool_SkipBugReports = args.skip_bug_reports
         Bool_Untrusted = args.allow_unauthenticated
         Str_InstallSrcPath = args.install_src_path
@@ -76,12 +76,12 @@ class GetterArgs():
 
 class InstallerArgs():
 
-    def __init__(self, filename=None, test_windows=False, skip_bug_reports=True, allow_unauthenticated=False, install_src_path=None, progress_bar=None, progress_label=None):
+    def __init__(self, filename=None, skip_bug_reports=True, allow_unauthenticated=False, install_src_path=None, progress_bar=None, progress_label=None, simulate = False):
 
         self.install = filename
 
         # TODO: to be implemented in next revision
-        self.test_windows = test_windows
+        self.simulate = simulate 
         self.skip_bug_reports = skip_bug_reports
         self.allow_unauthenticated = allow_unauthenticated
         self.install_src_path = install_src_path
