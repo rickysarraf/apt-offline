@@ -50,7 +50,9 @@ except ImportError:
 
 import AptOfflineMagicLib
 
+#INFO: added to store progressbar info
 guiBool = False
+totalSize = [0,0]             # total_size, current_total
 
 #INFO: Check if python-apt is installed
 PythonApt = True
@@ -62,6 +64,7 @@ except ImportError:
 PythonApt = False #Remove it after porting to python-apt
     
 import AptOfflineLib
+import apt_offline_gui.QtProgressBar
 
 #INFO: Set the default timeout to 30 seconds for the packages that are being downloaded.
 socket.setdefaulttimeout(30)
@@ -252,7 +255,11 @@ class GenericDownloadFunction():
                                 i += block_size
                                 counter += 1
                                 self.updateValue(increment)
+                                #REAL_PROGRESS: update current total in totalSize
+                                totalSize[1] += block_size
+                                
                         self.completed()
+                        
                         data.close()
                         temp.close()
                         return True
@@ -289,7 +296,14 @@ class DownloadFromWeb(AptOfflineLib.ProgressBar, GenericDownloadFunction):
                 '''width = Progress Bar width'''
                 AptOfflineLib.ProgressBar.__init__(self, width=width, total_items=total_items)
         
+class QtDownloadFromWeb(apt_offline_gui.QtProgressBar.QtProgressBar, GenericDownloadFunction):
+        '''Class for DownloadFromWeb
+        This class also inherits progressbar functionalities from
+        parent class, ProgressBar'''
         
+        def __init__(self,progressbar,label, total_items):
+                '''width = Progress Bar width'''
+                apt_offline_gui.QtProgressBar.QtProgressBar.__init__(self,progressbar=progressbar,label=label, total_items=total_items)
 
 
 def stripper(item):
@@ -456,6 +470,14 @@ def fetcher( args ):
                         AptOfflineLib.Archiver.__init__( self, lock=lock )
                         #self.lock = lock
         
+        class QtFetcherClass( QtDownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum ):
+            def __init__( self, progress_bar, progress_label ,lock, total_items ):
+                        QtDownloadFromWeb.__init__( self, progressbar=progress_bar, label=progress_label, total_items=total_items )
+                        #ProgressBar.__init__(self, width)
+                        #self.width = width
+                        AptOfflineLib.Archiver.__init__( self, lock=lock )
+                        #self.lock = lock
+        
         if Str_DownloadDir is None:
                 tempdir = tempfile.gettempdir()
                 if os.access( tempdir, os.W_OK ) is True:
@@ -522,7 +544,12 @@ def fetcher( args ):
         total_items = len(FetchData['Item'])
         
         #global FetcherInstance
-        FetcherInstance = FetcherClass( width=30, lock=True, total_items=total_items )
+        try:
+            gui = args.qt_gui
+            FetcherInstance = QtFetcherClass(progress_bar=args.progress, progress_label=args.progress_label, lock=True, total_items=total_items )
+        except AttributeError:
+            FetcherInstance = FetcherClass( width=30, lock=True, total_items=total_items )
+        
         
         #INFO: Thread Support
         if Int_NumOfThreads > 2:
@@ -792,6 +819,23 @@ def fetcher( args ):
         
         ConnectThread.startThreads()
         
+        #REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
+        if guiBool:
+            for key in FetchData.keys():
+                for item in FetchData.get(key):
+                    try:
+                        (url, file, download_size, checksum) = stripper(item)
+                        size = int(download_size)
+                        if size == 0:
+                            log.msg("MSG_START")
+                            temp = urllib2.urlopen(url)
+                            headers = temp.info()
+                            size = int(headers['Content-Length'])
+                        totalSize[0] += size
+                    except:
+                        ''' some int parsing problem '''
+            log.msg("MSG_END")
+                
         # Queue up the requests.
         #for item in raw_data_list: requestQueue.put(item)
         for key in FetchData.keys():
@@ -1016,11 +1060,21 @@ def installer( args ):
                         log.err( "I couldn't understand file type %s.\n" % ( filename ) )
                 
                 if retval:
+                        #CHANGE: track progress
+                        totalSize[0]+=1 
+                        if guiBool:
+                            log.msg("[%d/%d]" % (totalSize[0], totalSize[1]))
+                        #ENDCHANGE
                         log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
+
         
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
                 file = zipfile.ZipFile( install_file_path, "r" )
+                #CHANGE: for progress tracking
+                totalSize[1] = len(file.namelist())
+                totalSize[0] = 0
+                #ENDCHANGE
                 
                 SrcPkgDict = {}
                 for filename in file.namelist():
@@ -1089,7 +1143,6 @@ def installer( args ):
                                                         shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
                                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                                         continue
-                                                
                                                 magic_check_and_uncompress( archive_file, filename )
                                                 data.file.close()
                                         sys.exit( 0 )
@@ -1146,7 +1199,7 @@ def installer( args ):
                                         shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                         continue
-                                
+                                    
                                 magic_check_and_uncompress( archive_file, filename )
                                 data.file.close()
                         #else:

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetch.ui'
 #
-# Created: Sun Mar  7 00:22:12 2010
+# Created: Sun Mar  7 03:28:04 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -60,7 +60,7 @@ class Ui_AptOfflineQtFetch(object):
         self.label_2.setFont(font)
         self.label_2.setObjectName("label_2")
         self.progressStatusDescription = QtGui.QLabel(AptOfflineQtFetch)
-        self.progressStatusDescription.setGeometry(QtCore.QRect(90, 210, 53, 15))
+        self.progressStatusDescription.setGeometry(QtCore.QRect(90, 210, 341, 16))
         font = QtGui.QFont()
         font.setPointSize(10)
         self.progressStatusDescription.setFont(font)

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtAbout.ui'
 #
-# Created: Sun Mar  7 00:22:12 2010
+# Created: Sun Mar  7 03:28:04 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,6 +12,7 @@ from PyQt4 import QtCore, QtGui
 class Ui_AboutAptOffline(object):
     def setupUi(self, AboutAptOffline):
         AboutAptOffline.setObjectName("AboutAptOffline")
+        AboutAptOffline.setWindowModality(QtCore.Qt.ApplicationModal)
         AboutAptOffline.resize(526, 378)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)

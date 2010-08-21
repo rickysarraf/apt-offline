@@ -2,8 +2,13 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtInstall.ui'
 #
+<<<<<<< HEAD
+# Created: Sun Feb 14 02:12:06 2010
+#      by: PyQt4 UI code generator 4.4.4
+=======
 # Created: Sun Mar  7 03:28:04 2010
 #      by: PyQt4 UI code generator 4.6
+>>>>>>> aaa12657827ca58aee6b1e2edf5e964245990eb8
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -41,8 +46,13 @@ class Ui_AptOfflineQtInstall(object):
         self.cancelButton.setIcon(icon1)
         self.cancelButton.setObjectName("cancelButton")
         self.statusProgressBar = QtGui.QProgressBar(AptOfflineQtInstall)
-        self.statusProgressBar.setGeometry(QtCore.QRect(30, 161, 410, 20))
+<<<<<<< HEAD
+        self.statusProgressBar.setGeometry(QtCore.QRect(30, 190, 410, 20))
         self.statusProgressBar.setProperty("value", QtCore.QVariant(0))
+=======
+        self.statusProgressBar.setGeometry(QtCore.QRect(30, 161, 410, 20))
+        self.statusProgressBar.setProperty("value", 0)
+>>>>>>> aaa12657827ca58aee6b1e2edf5e964245990eb8
         self.statusProgressBar.setObjectName("statusProgressBar")
         self.label = QtGui.QLabel(AptOfflineQtInstall)
         self.label.setGeometry(QtCore.QRect(30, 13, 200, 30))
