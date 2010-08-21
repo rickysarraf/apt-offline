@@ -1180,6 +1180,9 @@ def installer( args ):
                                 filename = eachfile
                                 FullFileName = os.path.abspath(os.path.join(InstallDirPath, eachfile) )
                         
+                                if os.path.isdir(FullFileName):
+                                        log.verbose("Skipping!! %s is a directory\n" % (FullFileName))
+                                        continue
                                 #INFO: Take care of Src Pkgs
                                 found = False
                                 for item in SrcPkgDict.keys():

@@ -1,2 +1,4 @@
 *.pyc
-.gitignore
+.project
+.pydevproject
+.settings/
