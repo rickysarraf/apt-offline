@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # apt-offline
 #
 ############################################################################
@@ -22,11 +23,16 @@
 ############################################################################
 
 import sys
+import os
 from PyQt4 import QtCore, QtGui
 from apt_offline_gui.AptOfflineQtMain import AptOfflineQtMain
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     myapp = AptOfflineQtMain()
-    myapp.show()
-    sys.exit(app.exec_())
+    if os.geteuid() == 0:
+        myapp.show()
+        sys.exit(app.exec_())
+    else:
+        QtGui.QMessageBox.critical(myapp, "Error", "You need to run with root priviliges")
+        

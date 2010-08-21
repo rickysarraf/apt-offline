@@ -2,6 +2,7 @@
 
 styles = {
             'red': "<span style='color:red;'>#</span>",
+            'orange': "<span style='color:orange;'>#</span>",
             'green': "<span style='color:green;'>#</span>",
             'green_fin': "<span style='color:green;font-weight:bold;'>#</span>"
         }
