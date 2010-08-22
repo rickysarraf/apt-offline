@@ -21,6 +21,7 @@
 
 import os
 import sys
+import time
 import shutil
 import platform
 import string
@@ -50,8 +51,9 @@ except ImportError:
 
 import AptOfflineMagicLib
 
-#INFO: added to store progressbar info
+#INFO: added to handle GUI interaction
 guiBool = False
+guiTerminateSignal = False    # cancelling a download
 totalSize = [0,0]             # total_size, current_total
 
 #INFO: Check if python-apt is installed
@@ -821,9 +823,14 @@ def fetcher( args ):
         ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
         
         ConnectThread.startThreads()
-        
-        #REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
+                
+        # Queue up the requests.
+        #for item in raw_data_list: requestQueue.put(item)
+        for key in FetchData.keys():
+                for item in FetchData.get(key):
+                        ConnectThread.populateQueue( (key, item) )
         if guiBool:
+            #REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
             for key in FetchData.keys():
                 for item in FetchData.get(key):
                     try:
@@ -839,14 +846,20 @@ def fetcher( args ):
                         ''' some int parsing problem '''
             log.msg("MSG_END")
                 
-        # Queue up the requests.
-        #for item in raw_data_list: requestQueue.put(item)
-        for key in FetchData.keys():
-                for item in FetchData.get(key):
-                        ConnectThread.populateQueue( (key, item) )
-        ConnectThread.stopThreads()
-        ConnectThread.stopQueue()
-        
+                
+        if guiBool:
+            # For the sake of a responsive GUI
+            while (ConnectThread.threads_finished < ConnectThread.threads):
+                # handle signals from gui here
+                if guiTerminateSignal:
+                    # stop all ongoing work
+                    break
+                ConnectThread.stopThreads()
+                ConnectThread.stopQueue(0.2)    # let them work for 0.2s
+        else:
+            # else go by the normal CLI way and give optimal performacn
+            ConnectThread.stopThreads()
+            ConnectThread.stopQueue()
                 
         # Print the failed files
         if len(errlist) > 0:
