@@ -74,6 +74,7 @@ class AptOfflineQtMain(QtGui.QMainWindow):
     
     def CreateProfile(self):
         # Code for creating Modal Dialog for Create Profile
+        self.createProfileDialog.resetUI()
         self.createProfileDialog.show()
 
     def DownloadPackagesUpgrades(self):

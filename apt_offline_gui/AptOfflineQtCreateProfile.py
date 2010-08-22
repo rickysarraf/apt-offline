@@ -67,12 +67,13 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
             # setup i/o redirects before call
             sys.stdout = self
             sys.stderr = self
-            
+             
             args = SetterArgs(filename=self.filepath, update=self.updateChecked, upgrade=self.upgradeChecked, install_packages=self.packageList, simulate=False)
             returnStatus = apt_offline_core.AptOfflineCoreLib.setter(args)
 
             if(returnStatus != False):  # right now it returns None, I think it doesn't return at all but sys.exits on failure
                 # TODO ^ fixup this behaviour
+                guicommon.updateInto(self.ui.consoleOutputHolder, guicommon.style("Completed.","green_fin"))
                 self.ui.createProfileButton.setEnabled(False)
                 self.ui.cancelButton.setText("Finish")
                 self.ui.cancelButton.setIcon(QtGui.QIcon())
@@ -89,10 +90,22 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
 
     def write(self, text):
         # redirects console output to our consoleOutputHolder
-        guicommon.updateInto(self.ui.consoleOutputHolder,text)
+        text=text.strip()
+        if (len(text)>2):
+            guicommon.updateInto(self.ui.consoleOutputHolder,text)
 
     def flush(self):
         ''' nothing to do :D '''
+
+    def resetUI(self):
+        self.ui.updateCheckBox.setChecked(False)
+        self.ui.upgradePackagesRadioBox.setChecked(False)
+        self.ui.installPackagesRadioBox.setChecked(False)
+        self.ui.cancelButton.setText("Close")
+        self.ui.createProfileButton.setEnabled(True)
+        self.ui.consoleOutputHolder.setText("")
+        self.ui.profileFilePath.setText("")
+        self.ui.packageList.setText("")
 
 
 if __name__ == "__main__":
