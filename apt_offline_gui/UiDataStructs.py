@@ -3,7 +3,7 @@ from PyQt4 import QtCore, QtGui
 
 class SetterArgs():
     
-    def __init__(self, filename, update, upgrade, install_packages):
+    def __init__(self, filename, update, upgrade, install_packages, simulate=False):
         self.set = filename
         
         # self.set_update is of type boolean
@@ -20,6 +20,7 @@ class SetterArgs():
         self.src_build_dep = False
         self.set_install_src_packages = None
         self.set_install_release = False
+        self.simulate=simulate
     
     def __str__(self):
         print "self.set=",self.set
