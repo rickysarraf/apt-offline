@@ -22,8 +22,7 @@ class Worker(QtCore.QThread):
     def run(self):
         # setup i/o redirects before call
         sys.stdout = self
-        sys.stderr = self
-        
+        sys.stderr = self 
         apt_offline_core.AptOfflineCoreLib.fetcher(self.args)
 
     def setArgs (self,args):
@@ -59,6 +58,9 @@ class Worker(QtCore.QThread):
     def flush(self):
         ''' nothing to do :D '''
 
+    def quit(self):
+        self.emit (QtCore.SIGNAL('finished()'))
+
 
 class AptOfflineQtFetch(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -80,20 +82,17 @@ class AptOfflineQtFetch(QtGui.QDialog):
                         
         # Connect the clicked signal of the Cancel to it's Slot - reject
         QtCore.QObject.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
-                        self.reject )
+                        self.handleCancel )
                         
         QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
-                        self.ControlStartDownloadBox )
+                        self.controlStartDownloadBox )
 
         QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
-                        self.ControlStartDownloadBox )
-                        
+                        self.controlStartDownloadBox )
         QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
-                        self.ControlStartDownloadBox )
-        
+                        self.controlStartDownloadBox )
         QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
-                        self.ControlStartDownloadBox )
-                        
+                        self.controlStartDownloadBox )
         self.worker = Worker(parent=self)
         QtCore.QObject.connect(self.worker, QtCore.SIGNAL("output(QString)"),
                         self.updateLog )
@@ -101,7 +100,11 @@ class AptOfflineQtFetch(QtGui.QDialog):
                         self.updateProgress )
         QtCore.QObject.connect(self.worker, QtCore.SIGNAL("status(QString)"),
                         self.updateStatus )
-                        
+        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("finished()"),
+                        self.finishedWork )
+        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("terminated()"),
+                        self.finishedWork )
+
         #INFO: inform CLI that it's a gui app
         apt_offline_core.AptOfflineCoreLib.guiBool = True
         # Reduce extra line gaps in CLI o/p
@@ -109,14 +112,13 @@ class AptOfflineQtFetch(QtGui.QDialog):
         apt_offline_core.AptOfflineCoreLib.LINE_OVERWRITE_MID=""
         apt_offline_core.AptOfflineCoreLib.LINE_OVERWRITE_FULL=""
 
-        
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
         directory = QtGui.QFileDialog.getOpenFileName(self, u'Select the signature file')
         # Show the selected file path in the field marked for showing directory path
         self.ui.profileFilePath.setText(directory)
         
-        self.ControlStartDownloadBox()
+        self.controlStartDownloadBox()
     
     def popupZipFileDialog(self):
         # Popup a Zip File selection box
@@ -124,7 +126,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
         # Show the selected file path in the field marked for showing directory path
         self.ui.zipFilePath.setText(filename)
         
-        self.ControlStartDownloadBox()
+        self.controlStartDownloadBox()
         
     def StartDownload(self):
         # Do all the download related work here and then close
@@ -179,6 +181,8 @@ class AptOfflineQtFetch(QtGui.QDialog):
         
         #returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
         # TODO: deal with return status laters
+        self.ui.cancelButton.setText("Cancel")
+        self.disableAction()
         self.worker.setArgs (args)
         self.worker.start()
         #if (returnStatus):
@@ -207,14 +211,41 @@ class AptOfflineQtFetch(QtGui.QDialog):
         except:
             ''' nothing to do '''
 
-    def ControlStartDownloadBox(self):
+    def controlStartDownloadBox(self):
         if self.ui.profileFilePath.text().isEmpty():
-            self.ui.startDownloadButton.setEnabled(False)
+            self.disableAction()
         if self.ui.zipFilePath.text().isEmpty():
-            self.ui.startDownloadButton.setEnabled(False)
+            self.disableAction()
         else:
-            self.ui.startDownloadButton.setEnabled(True)
-        
+            self.enableAction()
+
+    def handleCancel(self):
+        if self.ui.cancelButton.text() == "Cancel":
+            if self.worker.isRunning():
+                # Download is still in progress
+                ret = QMessageBox.warning(self, "Cancel current downloads?",
+                    "A download is already in progress.\nDo you want to cancel it?",
+                           QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                if ret == QMessageBox.Yes:
+                    self.updateStatus(guicommon.style("Download aborted","red"))
+
+    def resetUI(self):
+        self.ui.profileFilePath.setText("")
+        self.ui.zipFilePath.setText("")
+        self.ui.spinThreads.setValue(1)
+        self.ui.rawLogHolder.setText("")
+        self.ui.statusProgressBar.setValue(0)
+        self.enableAction()
+
+    def disableAction(self):
+        self.ui.startDownloadButton.setEnabled(False)
+
+    def enableAction(self):
+        self.ui.startDownloadButton.setEnabled(True)
+
+    def finishedWork(self):
+        ''' do nothing '''
+        self.ui.cancelButton.setText("Close")
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
