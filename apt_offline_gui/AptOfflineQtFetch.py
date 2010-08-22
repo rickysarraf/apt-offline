@@ -34,22 +34,27 @@ class Worker(QtCore.QThread):
         # extract chinese whisper from text
         if ("MSG_START" in text):
             self.emit (QtCore.SIGNAL('status(QString)'), "Fetching missing meta data ...")
-            return
-        if ("MSG_END" in text):
+        elif ("MSG_END" in text):
             self.emit (QtCore.SIGNAL('status(QString)'), "Downloading packages ...")
-            return
-            
-        if ("[" in text and "]" in text):
+        elif ("[" in text and "]" in text):
             try:
                 # no more splits, we know the exact byte count now
                 progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
                 total = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
                 self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
-                return
             except:
                 ''' nothing to do '''
-            
-        self.emit (QtCore.SIGNAL('output(QString)'), text)
+        elif ("WARNING" in text):
+            self.emit (QtCore.SIGNAL('output(QString)'), 
+                                    guicommon.style(text,"red"))
+        elif ("Downloading" in text):
+            self.emit (QtCore.SIGNAL('output(QString)'), 
+                                    guicommon.style(text,"orange"))
+        elif ("done." in text):
+            self.emit (QtCore.SIGNAL('output(QString)'), 
+                                    guicommon.style(text,"green"))
+        else:
+          self.emit (QtCore.SIGNAL('output(QString)'), text.strip())
 
     def flush(self):
         ''' nothing to do :D '''
@@ -99,6 +104,11 @@ class AptOfflineQtFetch(QtGui.QDialog):
                         
         #INFO: inform CLI that it's a gui app
         apt_offline_core.AptOfflineCoreLib.guiBool = True
+        # Reduce extra line gaps in CLI o/p
+        apt_offline_core.AptOfflineCoreLib.LINE_OVERWRITE_SMALL=""
+        apt_offline_core.AptOfflineCoreLib.LINE_OVERWRITE_MID=""
+        apt_offline_core.AptOfflineCoreLib.LINE_OVERWRITE_FULL=""
+
         
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
@@ -162,8 +172,10 @@ class AptOfflineQtFetch(QtGui.QDialog):
                             guicommon.style("Could'nt write to %s!" % self.zipfilepath,'red'))
                 else:
                     return
-                   
-        args = GetterArgs(filename=self.filepath, bundle_file= self.zipfilepath, progress_bar=self.ui.statusProgressBar, progress_label=self.ui.progressStatusDescription)
+
+        self.num_of_threads=self.ui.spinThreads.value() 
+        args = GetterArgs(filename=self.filepath, bundle_file= self.zipfilepath, progress_bar=self.ui.statusProgressBar, 
+                        progress_label=self.ui.progressStatusDescription, num_of_threads=self.num_of_threads)
         
         #returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
         # TODO: deal with return status laters
