@@ -29,7 +29,7 @@ import Queue
 import threading
 import socket
 import tempfile
-
+import random   # to generate random directory names for installing multiple bundles in on go
 import zipfile
 
 # Given the merits of argparse, I hope it'll soon be part
@@ -482,7 +482,10 @@ def fetcher( args ):
                 tempdir = tempfile.gettempdir()
                 if os.access( tempdir, os.W_OK ) is True:
                         pidname = os.getpid()
-                        tempdir = os.path.join(tempdir , "apt-offline-downloads-" + str(pidname) )
+                        randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
+                        # 5 byte random junk to make mkdir possible multiple times
+                        # use-case -> download many sigs of different machines using one instance
+                        tempdir = os.path.join(tempdir , "apt-offline-downloads-" + str(pidname) + randomjunk)
                         os.mkdir(tempdir)
                                 
                         Str_DownloadDir = os.path.abspath(tempdir)
@@ -905,7 +908,10 @@ def installer( args ):
                 tempdir = tempfile.gettempdir()
                 if os.access( tempdir, os.W_OK ) is True:
                         pidname = os.getpid()
-                        tempdir = os.path.join(tempdir , "apt-offline-src-downloads-" + str(pidname) )
+                        randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
+                        # 5 byte random junk to make mkdir possible multiple times
+                        # use-case -> installing multiple bundles with one dialog
+                        tempdir = os.path.join(tempdir , "apt-offline-src-downloads-" + str(pidname) + randomjunk )
                         os.mkdir(tempdir)
                                 
                         Str_InstallSrcPath = os.path.abspath(tempdir)
