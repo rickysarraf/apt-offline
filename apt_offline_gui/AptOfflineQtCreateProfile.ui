@@ -87,14 +87,14 @@
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="upgradePackagesRadioBox">
+           <widget class="QCheckBox" name="upgradePackagesRadioBox">
             <property name="text">
              <string>Upgrade Packages</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="installPackagesRadioBox">
+           <widget class="QCheckBox" name="installPackagesRadioBox">
             <property name="text">
              <string>Install Packages</string>
             </property>
