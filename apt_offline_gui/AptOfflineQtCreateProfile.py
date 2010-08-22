@@ -70,8 +70,9 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
             
             args = SetterArgs(filename=self.filepath, update=self.updateChecked, upgrade=self.upgradeChecked, install_packages=self.packageList, simulate=False)
             returnStatus = apt_offline_core.AptOfflineCoreLib.setter(args)
-            
-            if(returnStatus):
+
+            if(returnStatus != False):  # right now it returns None, I think it doesn't return at all but sys.exits on failure
+                # TODO ^ fixup this behaviour
                 self.ui.createProfileButton.setEnabled(False)
                 self.ui.cancelButton.setText("Finish")
                 self.ui.cancelButton.setIcon(QtGui.QIcon())

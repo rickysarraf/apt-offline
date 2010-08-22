@@ -1354,8 +1354,8 @@ def installer( args ):
                         
 
 def setter(args):
-        # log.verbose(str(args) ) # only setter logs the args verbosely which fetcher and installer don't exhibit this behaviour?
-        # commented to keep setter UI sane
+        #log.verbose(str(args))
+        # commented to keep setter UI sane for time
         Str_SetArg = args.set
         List_SetInstallPackages = args.set_install_packages
         List_SetInstallSrcPackages = args.set_install_src_packages

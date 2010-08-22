@@ -19,7 +19,7 @@ class SetterArgs():
         # To be implmented later
         self.src_build_dep = False
         self.set_install_src_packages = None
-        self.set_install_release = False
+        self.set_install_release = None
         self.simulate=simulate
     
     def __str__(self):
@@ -28,6 +28,7 @@ class SetterArgs():
         print "self.set_upgrade=",self.set_upgrade
         print "self.upgrade_type=",self.upgrade_type
         print "self.set_install_packages=",self.set_install_packages
+        print "self.simulate=", self.simulate
         
         return ""
     
