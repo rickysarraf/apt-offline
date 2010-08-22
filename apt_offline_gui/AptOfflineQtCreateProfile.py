@@ -68,7 +68,7 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
             sys.stdout = self
             sys.stderr = self
             
-            args = SetterArgs(filename=self.filepath, update=self.updateChecked, upgrade=self.upgradeChecked, install_packages=self.packageList)
+            args = SetterArgs(filename=self.filepath, update=self.updateChecked, upgrade=self.upgradeChecked, install_packages=self.packageList, simulate=False)
             returnStatus = apt_offline_core.AptOfflineCoreLib.setter(args)
             
             if(returnStatus):
