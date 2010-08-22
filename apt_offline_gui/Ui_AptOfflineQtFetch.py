@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetch.ui'
 #
-# Created: Sun Mar  7 03:28:04 2010
-#      by: PyQt4 UI code generator 4.6
+# Created: Sun Aug 22 10:55:44 2010
+#      by: PyQt4 UI code generator 4.7.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -33,6 +33,7 @@ class Ui_AptOfflineQtFetch(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/icons/go-down.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.startDownloadButton.setIcon(icon)
+        self.startDownloadButton.setShortcut("None")
         self.startDownloadButton.setCheckable(False)
         self.startDownloadButton.setChecked(False)
         self.startDownloadButton.setFlat(False)
