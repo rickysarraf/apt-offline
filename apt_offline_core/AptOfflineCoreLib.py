@@ -853,7 +853,7 @@ def fetcher( args ):
                 # handle signals from gui here
                 if guiTerminateSignal:
                     # stop all ongoing work
-                    break
+                    return
                 ConnectThread.stopThreads()
                 ConnectThread.stopQueue(0.2)    # let them work for 0.2s
         else:
