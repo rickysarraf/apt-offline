@@ -79,6 +79,7 @@ class AptOfflineQtMain(QtGui.QMainWindow):
 
     def DownloadPackagesUpgrades(self):
         # Code for creating Modal Dialog for Downloading Packages/Upgrades
+        self.createDownloadDialog.resetUI()
         self.createDownloadDialog.show()
 
     def InstallPackagesUpgrades(self):
