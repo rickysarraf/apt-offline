@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>466</width>
-    <height>440</height>
+    <height>400</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,13 +22,13 @@
   <property name="minimumSize">
    <size>
     <width>466</width>
-    <height>440</height>
+    <height>400</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>466</width>
-    <height>440</height>
+    <height>400</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -38,7 +38,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>43</y>
+     <y>32</y>
      <width>270</width>
      <height>30</height>
     </rect>
@@ -48,7 +48,7 @@
    <property name="geometry">
     <rect>
      <x>320</x>
-     <y>43</y>
+     <y>32</y>
      <width>110</width>
      <height>30</height>
     </rect>
@@ -64,7 +64,7 @@
    <property name="geometry">
     <rect>
      <x>90</x>
-     <y>93</y>
+     <y>75</y>
      <width>130</width>
      <height>30</height>
     </rect>
@@ -81,24 +81,24 @@
    <property name="geometry">
     <rect>
      <x>240</x>
-     <y>93</y>
+     <y>75</y>
      <width>140</width>
      <height>30</height>
     </rect>
    </property>
    <property name="text">
-    <string>Cancel</string>
+    <string>Close</string>
    </property>
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/icons/icons/dialog-cancel.png</normaloff>:/icons/icons/dialog-cancel.png</iconset>
+     <normaloff>:/icons/icons/application-exit.png</normaloff>:/icons/icons/application-exit.png</iconset>
    </property>
   </widget>
   <widget class="QProgressBar" name="statusProgressBar">
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>161</y>
+     <y>146</y>
      <width>410</width>
      <height>20</height>
     </rect>
@@ -111,7 +111,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>13</y>
+     <y>2</y>
      <width>200</width>
      <height>30</height>
     </rect>
@@ -128,8 +128,8 @@
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>141</y>
+     <x>34</x>
+     <y>120</y>
      <width>70</width>
      <height>16</height>
     </rect>
@@ -147,7 +147,7 @@
    <property name="geometry">
     <rect>
      <x>90</x>
-     <y>141</y>
+     <y>120</y>
      <width>53</width>
      <height>15</height>
     </rect>
@@ -165,9 +165,9 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>201</y>
+     <y>180</y>
      <width>411</width>
-     <height>221</height>
+     <height>191</height>
     </rect>
    </property>
   </widget>
