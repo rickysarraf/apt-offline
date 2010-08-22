@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtCreateProfile.ui'
 #
-# Created: Sun Aug 22 11:09:13 2010
+# Created: Sun Aug 22 12:40:21 2010
 #      by: PyQt4 UI code generator 4.7.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -46,10 +46,10 @@ class Ui_CreateProfile(object):
         self.updateCheckBox = QtGui.QCheckBox(self.verticalLayoutWidget)
         self.updateCheckBox.setObjectName("updateCheckBox")
         self.verticalLayout_4.addWidget(self.updateCheckBox)
-        self.upgradePackagesRadioBox = QtGui.QRadioButton(self.verticalLayoutWidget)
+        self.upgradePackagesRadioBox = QtGui.QCheckBox(self.verticalLayoutWidget)
         self.upgradePackagesRadioBox.setObjectName("upgradePackagesRadioBox")
         self.verticalLayout_4.addWidget(self.upgradePackagesRadioBox)
-        self.installPackagesRadioBox = QtGui.QRadioButton(self.verticalLayoutWidget)
+        self.installPackagesRadioBox = QtGui.QCheckBox(self.verticalLayoutWidget)
         self.installPackagesRadioBox.setObjectName("installPackagesRadioBox")
         self.verticalLayout_4.addWidget(self.installPackagesRadioBox)
         self.horizontalLayout.addLayout(self.verticalLayout_4)
