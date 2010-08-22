@@ -31,6 +31,10 @@ class Worker(QtCore.QThread):
     def write(self, text):
         # redirects console output to our consoleOutputHolder
         # extract chinese whisper from text
+        if apt_offline_core.AptOfflineCoreLib.guiTerminateSignal:
+            # ^ so artificial, the threads still remain frozen in time I suppose
+            return
+            
         if ("MSG_START" in text):
             self.emit (QtCore.SIGNAL('status(QString)'), "Fetching missing meta data ...")
         elif ("MSG_END" in text):
@@ -38,9 +42,9 @@ class Worker(QtCore.QThread):
         elif ("[" in text and "]" in text):
             try:
                 # no more splits, we know the exact byte count now
-                progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
-                total = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
-                self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
+                    progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
+                    total = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
+                    self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
             except:
                 ''' nothing to do '''
         elif ("WARNING" in text):
@@ -227,14 +231,22 @@ class AptOfflineQtFetch(QtGui.QDialog):
                     "A download is already in progress.\nDo you want to cancel it?",
                            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
                 if ret == QMessageBox.Yes:
+                    # we can't just stop threads, we need to pass message
+                    apt_offline_core.AptOfflineCoreLib.guiTerminateSignal=True
                     self.updateStatus(guicommon.style("Download aborted","red"))
+            else:
+                self.reject()
+        else:
+            self.reject()
 
     def resetUI(self):
+        apt_offline_core.AptOfflineCoreLib.guiTerminateSignal=False
         self.ui.profileFilePath.setText("")
         self.ui.zipFilePath.setText("")
         self.ui.spinThreads.setValue(1)
         self.ui.rawLogHolder.setText("")
         self.ui.statusProgressBar.setValue(0)
+        self.updateStatus("Ready")
         self.enableAction()
 
     def disableAction(self):
