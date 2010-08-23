@@ -54,7 +54,7 @@ import AptOfflineMagicLib
 #INFO: added to handle GUI interaction
 guiBool = False
 guiTerminateSignal = False     # cancelling a download
-guiMetaCollectionEnded = False # to signal when downloading of packages has started
+guiMetaCompleted = False
 totalSize = [0,0]              # total_size, current_total
 
 #INFO: Check if python-apt is installed
@@ -259,12 +259,11 @@ class GenericDownloadFunction():
                                 counter += 1
                                 self.updateValue(increment)
                                 #REAL_PROGRESS: update current total in totalSize
-                                
-                                if guiMetaCollectionEnded:
+                                if guiBool and not guiTerminateSignal:
                                         totalSize[1] += block_size
-                                        log.msg ("update_progress")
+                                if guiTerminateSignal:
+                                        return
                         self.completed()
-                        
                         data.close()
                         temp.close()
                         return True
@@ -817,20 +816,14 @@ def fetcher( args ):
                                                 break
                                         else:
                                                 errlist.append(NewUrl)
-                        
+
         # Create two Queues for the requests and responses
         requestQueue = Queue.Queue()
         responseQueue = Queue.Queue()
-        
-        if not guiTerminateSignal:
-            ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
-            ConnectThread.startThreads()
-                
-        # Queue up the requests.
-        #for item in raw_data_list: requestQueue.put(item)
+
+        # create size metadata for progress
         for key in FetchData.keys():
                 for item in FetchData.get(key):
-                        ConnectThread.populateQueue( (key, item) )
                         if guiBool:
                             #REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
                             if guiTerminateSignal:
@@ -846,9 +839,20 @@ def fetcher( args ):
                                 totalSize[0] += size
                             except:
                                 ''' some int parsing problem '''
+            
+        if not guiTerminateSignal:
+            ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
+            
+        ConnectThread.startThreads()
+        # Queue up the requests.
+        #for item in raw_data_list: requestQueue.put(item)
+        for key in FetchData.keys():
+            for item in FetchData.get(key):
+                ConnectThread.populateQueue( (key, item) )
+            
         if guiBool:
             log.msg("MSG_END")
-            guiMetaCollectionEnded = True
+            guiMetaCompleted=True
             # For the sake of a responsive GUI
             while (ConnectThread.threads_finished < ConnectThread.threads):
                 # handle signals from gui here
@@ -863,6 +867,7 @@ def fetcher( args ):
                     return
                 ConnectThread.stopThreads()
                 ConnectThread.stopQueue(timeout=0.2)    # let them work for 0.2s
+                log.msg ("[%d/%d]" %(totalSize[1], totalSize[0]))
         else:
             # else go by the normal CLI way and give optimal performacn
             ConnectThread.stopThreads()
