@@ -49,15 +49,13 @@ class Worker(QtCore.QThread):
             self.emit (QtCore.SIGNAL('output(QString)'), 
                                     guicommon.style(text,"green"))
         elif ("[" in text and "]" in text):
-            self.emit (QtCore.SIGNAL('output(QString)'), 
-                                    guicommon.style(text,"red"))
-            #try:
-            # no more splits, we know the exact byte count now
-            progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
-            total = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
-            self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
-            #except:
-            #    ''' nothing to do '''
+            try:
+                # no more splits, we know the exact byte count now
+                progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
+                total = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
+                self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
+            except:
+                ''' nothing to do '''
         else:
             self.emit (QtCore.SIGNAL('output(QString)'), text.strip())
 
