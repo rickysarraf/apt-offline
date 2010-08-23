@@ -262,7 +262,9 @@ class GenericDownloadFunction():
                                 if guiBool and not guiTerminateSignal:
                                         totalSize[1] += block_size
                                 if guiTerminateSignal:
-                                        return
+                                        data.close()
+                                        temp.close()
+                                        return False
                         self.completed()
                         data.close()
                         temp.close()
@@ -439,6 +441,7 @@ def fetcher( args ):
         #Bool_GetUpdate = args.get_update
         #Bool_GetUpgrade = args.get_upgrade
         Bool_BugReports = args.deb_bugs
+        global guiTerminateSignal
         
         if Int_SocketTimeout:
                 try:
@@ -804,7 +807,8 @@ def fetcher( args ):
                                 SupportedFormats.remove(PackageFormat) #Remove the already tried format
                         
                         log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
-                        if DownloadPackages(url) is False:
+                        if DownloadPackages(url) is False and guiTerminateSignal is False:
+                                # dont proceed retry if Ctrl+C in cli
                                 errlist.append(url)
                                 
                                 # We could fail with the Packages format of what apt gave us. We can try the rest of the formats that apt or the archive could support
@@ -869,9 +873,22 @@ def fetcher( args ):
                 ConnectThread.stopQueue(timeout=0.2)    # let them work for 0.2s
                 log.msg ("[%d/%d]" %(totalSize[1], totalSize[0]))
         else:
-            # else go by the normal CLI way and give optimal performacn
-            ConnectThread.stopThreads()
-            ConnectThread.stopQueue()
+            # else go by the normal CLI way
+            while ConnectThread.threads_finished < ConnectThread.threads:
+                try:
+                    ConnectThread.stopThreads()
+                    ConnectThread.stopQueue(0.2)
+                except KeyboardInterrupt:
+                    # user pressed Ctrl-c, signal all threads to exit
+                    guiTerminateSignal=True # this would signal download_from_web to stop
+                    ConnectThread.guiTerminateSignal=True
+                    for thread in ConnectThread.thread_pool:
+                        thread.guiTerminateSignal=True      # tell all threads to exit
+                    ConnectThread.stopThreads()
+                    ConnectThread.stopQueue()
+                    log.err("\nInterrupted by user. Exiting!\n")
+                    sys.exit(0)
+                    
                 
         # Print the failed files
         if len(errlist) > 0:
