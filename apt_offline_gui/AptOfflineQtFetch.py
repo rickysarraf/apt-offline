@@ -48,14 +48,16 @@ class Worker(QtCore.QThread):
         elif ("done." in text):
             self.emit (QtCore.SIGNAL('output(QString)'), 
                                     guicommon.style(text,"green"))
-        elif ("update_progress" in text):
-            try:
-                # no more splits, we know the exact byte count now
-                progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
-                total = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
-                self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
-            except:
-                ''' nothing to do '''
+        elif ("[" in text and "]" in text):
+            self.emit (QtCore.SIGNAL('output(QString)'), 
+                                    guicommon.style(text,"red"))
+            #try:
+            # no more splits, we know the exact byte count now
+            progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
+            total = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
+            self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
+            #except:
+            #    ''' nothing to do '''
         else:
             self.emit (QtCore.SIGNAL('output(QString)'), text.strip())
 
@@ -243,6 +245,9 @@ class AptOfflineQtFetch(QtGui.QDialog):
 
     def resetUI(self):
         apt_offline_core.AptOfflineCoreLib.guiTerminateSignal=False
+        apt_offline_core.AptOfflineCoreLib.guiMetaCompleted=False
+        apt_offline_core.AptOfflineCoreLib.errlist = []
+        apt_offline_core.AptOfflineCoreLib.totalSize = [0,0]
         self.ui.profileFilePath.setText("")
         self.ui.zipFilePath.setText("")
         self.ui.spinThreads.setValue(1)
