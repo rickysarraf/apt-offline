@@ -53,8 +53,9 @@ import AptOfflineMagicLib
 
 #INFO: added to handle GUI interaction
 guiBool = False
-guiTerminateSignal = False    # cancelling a download
-totalSize = [0,0]             # total_size, current_total
+guiTerminateSignal = False     # cancelling a download
+guiMetaCollectionEnded = False # to signal when downloading of packages has started
+totalSize = [0,0]              # total_size, current_total
 
 #INFO: Check if python-apt is installed
 PythonApt = True
@@ -258,8 +259,10 @@ class GenericDownloadFunction():
                                 counter += 1
                                 self.updateValue(increment)
                                 #REAL_PROGRESS: update current total in totalSize
-                                totalSize[1] += block_size
                                 
+                                if guiMetaCollectionEnded:
+                                        totalSize[1] += block_size
+                                        log.msg ("update_progress")
                         self.completed()
                         
                         data.close()
@@ -845,6 +848,7 @@ def fetcher( args ):
                                 ''' some int parsing problem '''
         if guiBool:
             log.msg("MSG_END")
+            guiMetaCollectionEnded = True
             # For the sake of a responsive GUI
             while (ConnectThread.threads_finished < ConnectThread.threads):
                 # handle signals from gui here
