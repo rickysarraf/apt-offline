@@ -39,14 +39,6 @@ class Worker(QtCore.QThread):
             self.emit (QtCore.SIGNAL('status(QString)'), "Fetching missing meta data ...")
         elif ("MSG_END" in text):
             self.emit (QtCore.SIGNAL('status(QString)'), "Downloading packages ...")
-        elif ("[" in text and "]" in text):
-            try:
-                # no more splits, we know the exact byte count now
-                    progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
-                    total = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
-                    self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
-            except:
-                ''' nothing to do '''
         elif ("WARNING" in text):
             self.emit (QtCore.SIGNAL('output(QString)'), 
                                     guicommon.style(text,"red"))
@@ -56,8 +48,16 @@ class Worker(QtCore.QThread):
         elif ("done." in text):
             self.emit (QtCore.SIGNAL('output(QString)'), 
                                     guicommon.style(text,"green"))
+        elif ("update_progress" in text):
+            try:
+                # no more splits, we know the exact byte count now
+                progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
+                total = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
+                self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
+            except:
+                ''' nothing to do '''
         else:
-          self.emit (QtCore.SIGNAL('output(QString)'), text.strip())
+            self.emit (QtCore.SIGNAL('output(QString)'), text.strip())
 
     def flush(self):
         ''' nothing to do :D '''
@@ -185,6 +185,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
         
         #returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
         # TODO: deal with return status laters
+        
         self.ui.cancelButton.setText("Cancel")
         self.disableAction()
         self.worker.setArgs (args)
