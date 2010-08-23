@@ -234,6 +234,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
                     # we can't just stop threads, we need to pass message
                     apt_offline_core.AptOfflineCoreLib.guiTerminateSignal=True
                     self.updateStatus(guicommon.style("Download aborted","red"))
+                    self.ui.cancelButton.setText("Close")
             else:
                 self.reject()
         else:

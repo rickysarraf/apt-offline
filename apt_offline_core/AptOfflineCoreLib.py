@@ -819,43 +819,46 @@ def fetcher( args ):
         requestQueue = Queue.Queue()
         responseQueue = Queue.Queue()
         
-        
-        ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
-        
-        ConnectThread.startThreads()
+        if not guiTerminateSignal:
+            ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
+            ConnectThread.startThreads()
                 
         # Queue up the requests.
         #for item in raw_data_list: requestQueue.put(item)
         for key in FetchData.keys():
                 for item in FetchData.get(key):
                         ConnectThread.populateQueue( (key, item) )
+                        if guiBool:
+                            #REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
+                            if guiTerminateSignal:
+                                break
+                            try:
+                                (url, file, download_size, checksum) = stripper(item)
+                                size = int(download_size)
+                                if size == 0:
+                                    log.msg("MSG_START")
+                                    temp = urllib2.urlopen(url)
+                                    headers = temp.info()
+                                    size = int(headers['Content-Length'])
+                                totalSize[0] += size
+                            except:
+                                ''' some int parsing problem '''
         if guiBool:
-            #REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
-            for key in FetchData.keys():
-                for item in FetchData.get(key):
-                    try:
-                        (url, file, download_size, checksum) = stripper(item)
-                        size = int(download_size)
-                        if size == 0:
-                            log.msg("MSG_START")
-                            temp = urllib2.urlopen(url)
-                            headers = temp.info()
-                            size = int(headers['Content-Length'])
-                        totalSize[0] += size
-                    except:
-                        ''' some int parsing problem '''
             log.msg("MSG_END")
-                
-                
-        if guiBool:
             # For the sake of a responsive GUI
             while (ConnectThread.threads_finished < ConnectThread.threads):
                 # handle signals from gui here
                 if guiTerminateSignal:
                     # stop all ongoing work
+                    #TODO: find a way to stop those threads here
+                    ConnectThread.guiTerminateSignal=True
+                    for thread in ConnectThread.thread_pool:
+                        thread.guiTerminateSignal=True
+                    ConnectThread.stopThreads()
+                    ConnectThread.stopQueue(timeout=0.2)
                     return
                 ConnectThread.stopThreads()
-                ConnectThread.stopQueue(0.2)    # let them work for 0.2s
+                ConnectThread.stopQueue(timeout=0.2)    # let them work for 0.2s
         else:
             # else go by the normal CLI way and give optimal performacn
             ConnectThread.stopThreads()
