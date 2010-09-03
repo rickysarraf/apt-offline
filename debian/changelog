@@ -1,3 +1,9 @@
+apt-offline (0.9.9squeeze2) unstable; urgency=low
+
+  * Clean up the cruft that got carried into the source file
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Fri, 03 Sep 2010 22:48:21 +0530
+
 apt-offline (0.9.9squeeze1) unstable; urgency=low
 
   * Add less to Depends because we depend on `less` to display the
