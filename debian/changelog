@@ -1,3 +1,9 @@
+apt-offline (0.9.9squeeze3) unstable; urgency=low
+
+  * Fix checksum error for MD5 checksums 
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Tue, 19 Oct 2010 19:16:13 +0530
+
 apt-offline (0.9.9squeeze2) unstable; urgency=low
 
   * Clean up the cruft that got carried into the source file
