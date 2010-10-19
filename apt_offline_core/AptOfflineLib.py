@@ -66,7 +66,7 @@ class Checksum:
                 data = open( file, 'rb' )
                 if HashType == "sha256":
                         Hash = self.sha256( data )
-                elif HashType == "md5":
+		elif HashType == "md5" or HashType == "md5sum":
                         Hash = self.md5( data )
                 else: Hash = None
                 data.close()
@@ -81,7 +81,7 @@ class Checksum:
                 return hash.hexdigest()
         
         def md5( self, data ):
-                hash = hashlib.md5.new()
+                hash = hashlib.md5()
                 hash.update( data.read() )
                 return hash.hexdigest() 
         
