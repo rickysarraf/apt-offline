@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetch.ui'
 #
-# Created: Sat Nov  6 13:55:07 2010
+# Created: Sat Nov  6 14:22:12 2010
 #      by: PyQt4 UI code generator 4.7.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -97,7 +97,7 @@ class Ui_AptOfflineQtFetch(object):
         QtCore.QMetaObject.connectSlotsByName(AptOfflineQtFetch)
 
     def retranslateUi(self, AptOfflineQtFetch):
-        AptOfflineQtFetch.setWindowTitle(QtGui.QApplication.translate("AptOfflineQtFetch", "Fetch Packages or Upgrade", None, QtGui.QApplication.UnicodeUTF8))
+        AptOfflineQtFetch.setWindowTitle(QtGui.QApplication.translate("AptOfflineQtFetch", "Fetch Packages or Updates", None, QtGui.QApplication.UnicodeUTF8))
         self.browseFilePathButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Browse", None, QtGui.QApplication.UnicodeUTF8))
         self.startDownloadButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Download", None, QtGui.QApplication.UnicodeUTF8))
         self.cancelButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Close", None, QtGui.QApplication.UnicodeUTF8))
