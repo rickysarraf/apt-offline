@@ -56,7 +56,7 @@
      <bool>true</bool>
     </property>
     <property name="text">
-     <string>Create Signature</string>
+     <string>Generate Signature</string>
     </property>
     <property name="icon">
      <iconset resource="resources.qrc">
@@ -80,7 +80,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Download Packages or Upgrades</string>
+     <string>Download Packages or Updates</string>
     </property>
     <property name="icon">
      <iconset resource="resources.qrc">
@@ -102,7 +102,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Install Packages or Upgrades</string>
+     <string>Install Packages or Updates</string>
     </property>
     <property name="icon">
      <iconset resource="resources.qrc">
@@ -232,7 +232,7 @@
      <normaloff>:/icons/icons/contact-new.png</normaloff>:/icons/icons/contact-new.png</iconset>
    </property>
    <property name="text">
-    <string>Create Signature</string>
+    <string>Generate Signature</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
@@ -244,7 +244,7 @@
      <normaloff>:/icons/icons/go-down.png</normaloff>:/icons/icons/go-down.png</iconset>
    </property>
    <property name="text">
-    <string>Download Packages or Upgrades</string>
+    <string>Download Packages or Updates</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -256,7 +256,7 @@
      <normaloff>:/icons/icons/install.png</normaloff>:/icons/icons/install.png</iconset>
    </property>
    <property name="text">
-    <string>Install Packages or Upgrades</string>
+    <string>Install Packages or Updates</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
