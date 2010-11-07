@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AptOfflineQtFetch</class>
+ <widget class="QDialog" name="AptOfflineQtFetch">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>468</width>
+    <height>483</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>468</width>
+    <height>475</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>468</width>
+    <height>495</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Fetch Packages or Updates</string>
+  </property>
+  <widget class="QLineEdit" name="profileFilePath">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>35</y>
+     <width>270</width>
+     <height>30</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="browseFilePathButton">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>35</y>
+     <width>110</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Browse</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="startDownloadButton">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>179</x>
+     <y>148</y>
+     <width>120</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Download</string>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/go-down.png</normaloff>:/icons/icons/go-down.png</iconset>
+   </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="flat">
+    <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="cancelButton">
+   <property name="geometry">
+    <rect>
+     <x>319</x>
+     <y>148</y>
+     <width>111</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Close</string>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/application-exit.png</normaloff>:/icons/icons/application-exit.png</iconset>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lblSelectSig">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>5</y>
+     <width>200</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Select the signature file</string>
+   </property>
+  </widget>
+  <widget class="QProgressBar" name="statusProgressBar">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>214</y>
+     <width>410</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="value">
+    <number>0</number>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lblStatus">
+   <property name="geometry">
+    <rect>
+     <x>32</x>
+     <y>194</y>
+     <width>70</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Status:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="progressStatusDescription">
+   <property name="geometry">
+    <rect>
+     <x>82</x>
+     <y>194</y>
+     <width>341</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Ready</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="rawLogHolder">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>252</y>
+     <width>411</width>
+     <height>211</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="browseZipFileButton">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>98</y>
+     <width>110</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Browse</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lblSaveAs">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>68</y>
+     <width>200</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Save archive as</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="zipFilePath">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>98</y>
+     <width>270</width>
+     <height>30</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinThreads">
+   <property name="geometry">
+    <rect>
+     <x>122</x>
+     <y>148</y>
+     <width>40</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>1</number>
+   </property>
+   <property name="maximum">
+    <number>10</number>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lblThreads">
+   <property name="geometry">
+    <rect>
+     <x>32</x>
+     <y>149</y>
+     <width>81</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Use threads</string>
+   </property>
+  </widget>
+ </widget>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>
