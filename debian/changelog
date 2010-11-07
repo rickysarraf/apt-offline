@@ -1,4 +1,4 @@
-apt-offline (1.0) UNRELEASED; urgency=low
+apt-offline (1.0) experimental; urgency=low
 
   * New Feature Release
     + This release bring a new GUI tool for apt-offline. Kudos to
@@ -6,7 +6,7 @@ apt-offline (1.0) UNRELEASED; urgency=low
   * Introduce the new apt-offline-gui package
   * Bump Standards Version to 3.9.1 (No changes required) 
 
- -- Ritesh Raj Sarraf <rrs@debian.org>  Sun, 07 Nov 2010 22:08:16 +0530
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Sun, 07 Nov 2010 22:08:54 +0530
 
 apt-offline (0.9.9squeeze3) unstable; urgency=low
 
