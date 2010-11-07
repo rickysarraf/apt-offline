@@ -1,2 +1,3 @@
 apt-offline-gui		/usr/bin/
+apt_offline_gui/icons/*	/usr/share/pixmaps/apt-offline-gui/
 apt_offline_gui/*	/usr/share/pyshared/apt_offline_gui/
