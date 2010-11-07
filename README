@@ -1,5 +1,5 @@
 apt-offline -- An Offline Package Manager 
-(C) 2005, 2009 Ritesh Raj Sarraf <rrs@researchut.com> 
+(C) 2005 - 2010 Ritesh Raj Sarraf <rrs@researchut.com> 
 
 
 apt-offline is an offline package management tool written in the Python Programming Language.
