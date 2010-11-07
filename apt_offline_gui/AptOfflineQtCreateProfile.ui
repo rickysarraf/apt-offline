@@ -32,7 +32,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Create Profile</string>
+   <string>Generate Signature</string>
   </property>
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
@@ -204,7 +204,7 @@ p, li { white-space: pre-wrap; }
           <item>
            <widget class="QLabel" name="lblSaveProfile">
             <property name="text">
-             <string>Save Profile As </string>
+             <string>Save Signature As </string>
             </property>
            </widget>
           </item>

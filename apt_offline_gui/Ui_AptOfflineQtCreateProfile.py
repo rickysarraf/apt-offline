@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtCreateProfile.ui'
 #
-# Created: Sat Nov  6 14:22:11 2010
+# Created: Sun Nov  7 20:54:51 2010
 #      by: PyQt4 UI code generator 4.7.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -149,7 +149,7 @@ class Ui_CreateProfile(object):
         QtCore.QMetaObject.connectSlotsByName(CreateProfile)
 
     def retranslateUi(self, CreateProfile):
-        CreateProfile.setWindowTitle(QtGui.QApplication.translate("CreateProfile", "Create Profile", None, QtGui.QApplication.UnicodeUTF8))
+        CreateProfile.setWindowTitle(QtGui.QApplication.translate("CreateProfile", "Generate Signature", None, QtGui.QApplication.UnicodeUTF8))
         self.lblInstallType.setText(QtGui.QApplication.translate("CreateProfile", "Installation Type", None, QtGui.QApplication.UnicodeUTF8))
         self.updateCheckBox.setText(QtGui.QApplication.translate("CreateProfile", "Update", None, QtGui.QApplication.UnicodeUTF8))
         self.upgradePackagesRadioBox.setText(QtGui.QApplication.translate("CreateProfile", "Upgrade Packages", None, QtGui.QApplication.UnicodeUTF8))
@@ -160,7 +160,7 @@ class Ui_CreateProfile(object):
 "</style></head><body style=\" font-family:\'DejaVu Sans\'; font-size:8pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Install these packages</p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:7pt;\">separate by comma</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblSaveProfile.setText(QtGui.QApplication.translate("CreateProfile", "Save Profile As ", None, QtGui.QApplication.UnicodeUTF8))
+        self.lblSaveProfile.setText(QtGui.QApplication.translate("CreateProfile", "Save Signature As ", None, QtGui.QApplication.UnicodeUTF8))
         self.browseFilePathButton.setText(QtGui.QApplication.translate("CreateProfile", "Browse", None, QtGui.QApplication.UnicodeUTF8))
         self.lblConsoleOutput.setText(QtGui.QApplication.translate("CreateProfile", "Console Output:", None, QtGui.QApplication.UnicodeUTF8))
         self.createProfileButton.setText(QtGui.QApplication.translate("CreateProfile", "Create", None, QtGui.QApplication.UnicodeUTF8))
