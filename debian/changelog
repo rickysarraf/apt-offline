@@ -1,3 +1,12 @@
+apt-offline (1.0) UNRELEASED; urgency=low
+
+  * New Feature Release
+    + This release bring a new GUI tool for apt-offline. Kudos to
+      Abhishek Mishra and Manish Sinha
+  * Introduce the new apt-offline-gui package
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Sun, 07 Nov 2010 18:56:47 +0530
+
 apt-offline (0.9.9squeeze3) unstable; urgency=low
 
   * Fix checksum error for MD5 checksums 
