@@ -6,4 +6,4 @@ override_dh_auto_install:
 	dh_auto_install
 	[ ! -e debian/apt-offline-gui/usr/share/pyshared/apt_offline_gui/icons ] || rm -rf debian/apt-offline-gui/usr/share/pyshared/apt_offline_gui/icons
 
-.PHONE: override_dh_auto_install
+.PHONY: override_dh_auto_install
