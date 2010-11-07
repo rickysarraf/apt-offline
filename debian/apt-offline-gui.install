@@ -1,2 +1,2 @@
 usr/bin/apt-offline-gui
-usr/share/pyshared/apt_offline_gui/*
+usr/share/pyshared/apt_offline_gui/
