@@ -21,6 +21,7 @@
 
 import os
 import sys
+import time
 import shutil
 import platform
 import string
@@ -29,7 +30,7 @@ import Queue
 import threading
 import socket
 import tempfile
-
+import random   # to generate random directory names for installing multiple bundles in on go
 import zipfile
 
 # Given the merits of argparse, I hope it'll soon be part
@@ -50,13 +51,12 @@ except ImportError:
 
 import AptOfflineMagicLib
 
-guiBool = True
-try:
-        from qt import *
-        from AptOfflineGUI import pyptofflineguiForm
-except ImportError:
-        guiBool = False
-    
+#INFO: added to handle GUI interaction
+guiBool = False
+guiTerminateSignal = False     # cancelling a download
+guiMetaCompleted = False
+totalSize = [0,0]              # total_size, current_total
+
 #INFO: Check if python-apt is installed
 PythonApt = True
 try:
@@ -67,6 +67,7 @@ except ImportError:
 PythonApt = False #Remove it after porting to python-apt
     
 import AptOfflineLib
+import apt_offline_gui.QtProgressBar
 
 #INFO: Set the default timeout to 30 seconds for the packages that are being downloaded.
 socket.setdefaulttimeout(30)
@@ -99,6 +100,11 @@ IgnoredBugTypes = ["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items
 LINE_OVERWRITE_SMALL = " " * 10
 LINE_OVERWRITE_MID = " " * 30
 LINE_OVERWRITE_FULL = " " * 60
+
+Bool_Verbose = False
+#Bool_TestWindows = True
+                
+log = AptOfflineLib.Log( Bool_Verbose, lock=True )
 
        
 class FetchBugReports( AptOfflineLib.Archiver ):
@@ -206,17 +212,9 @@ def find_first_match(cache_dir=None, filename=None):
                                 return os.path.join(path, file)
                 return False
         
-        
-class DownloadFromWeb(AptOfflineLib.ProgressBar):
-        '''Class for DownloadFromWeb
-        This class also inherits progressbar functionalities from
-        parent class, ProgressBar'''
-        
-        def __init__(self, width, total_items):
-                '''width = Progress Bar width'''
-                AptOfflineLib.ProgressBar.__init__(self, width=width, total_items=total_items)
-        
-        def download_from_web(self, url, file, download_dir):
+
+class GenericDownloadFunction():
+    def download_from_web(self, url, file, download_dir):
                 '''url = url to fetch
                 file = file to save to
                 donwload_dir = download path'''
@@ -260,6 +258,13 @@ class DownloadFromWeb(AptOfflineLib.ProgressBar):
                                 i += block_size
                                 counter += 1
                                 self.updateValue(increment)
+                                #REAL_PROGRESS: update current total in totalSize
+                                if guiBool and not guiTerminateSignal:
+                                        totalSize[1] += block_size
+                                if guiTerminateSignal:
+                                        data.close()
+                                        temp.close()
+                                        return False
                         self.completed()
                         data.close()
                         temp.close()
@@ -287,6 +292,24 @@ class DownloadFromWeb(AptOfflineLib.ProgressBar):
                                 errfunc(e.code, e.reason, file)
                 except socket.timeout:
                         errfunc(10054, "Socket timeout.\n", url)
+     
+class DownloadFromWeb(AptOfflineLib.ProgressBar, GenericDownloadFunction):
+        '''Class for DownloadFromWeb
+        This class also inherits progressbar functionalities from
+        parent class, ProgressBar'''
+        
+        def __init__(self, width, total_items):
+                '''width = Progress Bar width'''
+                AptOfflineLib.ProgressBar.__init__(self, width=width, total_items=total_items)
+        
+class QtDownloadFromWeb(apt_offline_gui.QtProgressBar.QtProgressBar, GenericDownloadFunction):
+        '''Class for DownloadFromWeb
+        This class also inherits progressbar functionalities from
+        parent class, ProgressBar'''
+        
+        def __init__(self,progressbar,label, total_items):
+                '''width = Progress Bar width'''
+                apt_offline_gui.QtProgressBar.QtProgressBar.__init__(self,progressbar=progressbar,label=label, total_items=total_items)
 
 
 def stripper(item):
@@ -418,6 +441,7 @@ def fetcher( args ):
         #Bool_GetUpdate = args.get_update
         #Bool_GetUpgrade = args.get_upgrade
         Bool_BugReports = args.deb_bugs
+        global guiTerminateSignal
         
         if Int_SocketTimeout:
                 try:
@@ -453,11 +477,22 @@ def fetcher( args ):
                         AptOfflineLib.Archiver.__init__( self, lock=lock )
                         #self.lock = lock
         
+        class QtFetcherClass( QtDownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum ):
+            def __init__( self, progress_bar, progress_label ,lock, total_items ):
+                        QtDownloadFromWeb.__init__( self, progressbar=progress_bar, label=progress_label, total_items=total_items )
+                        #ProgressBar.__init__(self, width)
+                        #self.width = width
+                        AptOfflineLib.Archiver.__init__( self, lock=lock )
+                        #self.lock = lock
+        
         if Str_DownloadDir is None:
                 tempdir = tempfile.gettempdir()
                 if os.access( tempdir, os.W_OK ) is True:
                         pidname = os.getpid()
-                        tempdir = os.path.join(tempdir , "apt-offline-downloads-" + str(pidname) )
+                        randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
+                        # 5 byte random junk to make mkdir possible multiple times
+                        # use-case -> download many sigs of different machines using one instance
+                        tempdir = os.path.join(tempdir , "apt-offline-downloads-" + str(pidname) + randomjunk)
                         os.mkdir(tempdir)
                                 
                         Str_DownloadDir = os.path.abspath(tempdir)
@@ -519,7 +554,12 @@ def fetcher( args ):
         total_items = len(FetchData['Item'])
         
         #global FetcherInstance
-        FetcherInstance = FetcherClass( width=30, lock=True, total_items=total_items )
+        try:
+            gui = args.qt_gui
+            FetcherInstance = QtFetcherClass(progress_bar=args.progress, progress_label=args.progress_label, lock=True, total_items=total_items )
+        except AttributeError:
+            FetcherInstance = FetcherClass( width=30, lock=True, total_items=total_items )
+        
         
         #INFO: Thread Support
         if Int_NumOfThreads > 2:
@@ -767,7 +807,8 @@ def fetcher( args ):
                                 SupportedFormats.remove(PackageFormat) #Remove the already tried format
                         
                         log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
-                        if DownloadPackages(url) is False:
+                        if DownloadPackages(url) is False and guiTerminateSignal is False:
+                                # dont proceed retry if Ctrl+C in cli
                                 errlist.append(url)
                                 
                                 # We could fail with the Packages format of what apt gave us. We can try the rest of the formats that apt or the archive could support
@@ -779,24 +820,75 @@ def fetcher( args ):
                                                 break
                                         else:
                                                 errlist.append(NewUrl)
-                        
+
         # Create two Queues for the requests and responses
         requestQueue = Queue.Queue()
         responseQueue = Queue.Queue()
-        
-        
-        ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
-        
+
+        # create size metadata for progress
+        for key in FetchData.keys():
+                for item in FetchData.get(key):
+                        if guiBool:
+                            #REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
+                            if guiTerminateSignal:
+                                break
+                            try:
+                                (url, file, download_size, checksum) = stripper(item)
+                                size = int(download_size)
+                                if size == 0:
+                                    log.msg("MSG_START")
+                                    temp = urllib2.urlopen(url)
+                                    headers = temp.info()
+                                    size = int(headers['Content-Length'])
+                                totalSize[0] += size
+                            except:
+                                ''' some int parsing problem '''
+            
+        if not guiTerminateSignal:
+            ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
+            
         ConnectThread.startThreads()
-        
         # Queue up the requests.
         #for item in raw_data_list: requestQueue.put(item)
         for key in FetchData.keys():
-                for item in FetchData.get(key):
-                        ConnectThread.populateQueue( (key, item) )
-        ConnectThread.stopThreads()
-        ConnectThread.stopQueue()
-        
+            for item in FetchData.get(key):
+                ConnectThread.populateQueue( (key, item) )
+            
+        if guiBool:
+            log.msg("MSG_END")
+            guiMetaCompleted=True
+            # For the sake of a responsive GUI
+            while (ConnectThread.threads_finished < ConnectThread.threads):
+                # handle signals from gui here
+                if guiTerminateSignal:
+                    # stop all ongoing work
+                    #TODO: find a way to stop those threads here
+                    ConnectThread.guiTerminateSignal=True
+                    for thread in ConnectThread.thread_pool:
+                        thread.guiTerminateSignal=True
+                    ConnectThread.stopThreads()
+                    ConnectThread.stopQueue(timeout=0.2)
+                    return
+                ConnectThread.stopThreads()
+                ConnectThread.stopQueue(timeout=0.2)    # let them work for 0.2s
+                log.msg ("[%d/%d]" %(totalSize[1], totalSize[0]))
+        else:
+            # else go by the normal CLI way
+            while ConnectThread.threads_finished < ConnectThread.threads:
+                try:
+                    ConnectThread.stopThreads()
+                    ConnectThread.stopQueue(0.2)
+                except KeyboardInterrupt:
+                    # user pressed Ctrl-c, signal all threads to exit
+                    guiTerminateSignal=True # this would signal download_from_web to stop
+                    ConnectThread.guiTerminateSignal=True
+                    for thread in ConnectThread.thread_pool:
+                        thread.guiTerminateSignal=True      # tell all threads to exit
+                    ConnectThread.stopThreads()
+                    ConnectThread.stopQueue()
+                    log.err("\nInterrupted by user. Exiting!\n")
+                    sys.exit(0)
+                    
                 
         # Print the failed files
         if len(errlist) > 0:
@@ -858,7 +950,10 @@ def installer( args ):
                 tempdir = tempfile.gettempdir()
                 if os.access( tempdir, os.W_OK ) is True:
                         pidname = os.getpid()
-                        tempdir = os.path.join(tempdir , "apt-offline-src-downloads-" + str(pidname) )
+                        randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
+                        # 5 byte random junk to make mkdir possible multiple times
+                        # use-case -> installing multiple bundles with one dialog
+                        tempdir = os.path.join(tempdir , "apt-offline-src-downloads-" + str(pidname) + randomjunk )
                         os.mkdir(tempdir)
                                 
                         Str_InstallSrcPath = os.path.abspath(tempdir)
@@ -1013,11 +1108,21 @@ def installer( args ):
                         log.err( "I couldn't understand file type %s.\n" % ( filename ) )
                 
                 if retval:
+                        #CHANGE: track progress
+                        totalSize[0]+=1 
+                        if guiBool:
+                            log.msg("[%d/%d]" % (totalSize[0], totalSize[1]))
+                        #ENDCHANGE
                         log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
+
         
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
                 file = zipfile.ZipFile( install_file_path, "r" )
+                #CHANGE: for progress tracking
+                totalSize[1] = len(file.namelist())
+                totalSize[0] = 0
+                #ENDCHANGE
                 
                 SrcPkgDict = {}
                 for filename in file.namelist():
@@ -1086,7 +1191,6 @@ def installer( args ):
                                                         shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
                                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                                         continue
-                                                
                                                 magic_check_and_uncompress( archive_file, filename )
                                                 data.file.close()
                                         sys.exit( 0 )
@@ -1143,7 +1247,7 @@ def installer( args ):
                                         shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                         continue
-                                
+                                    
                                 magic_check_and_uncompress( archive_file, filename )
                                 data.file.close()
                         #else:
@@ -1298,7 +1402,8 @@ def installer( args ):
                         
 
 def setter(args):
-        log.verbose(str(args) )
+        #log.verbose(str(args))
+        # commented to keep setter UI sane for time
         Str_SetArg = args.set
         List_SetInstallPackages = args.set_install_packages
         List_SetInstallSrcPackages = args.set_install_src_packages

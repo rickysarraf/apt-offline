@@ -532,6 +532,8 @@ class MyThread( threading.Thread ):
                 self.requestQueue = requestQueue
                 self.responseQueue = responseQueue
                 self.threads = NumOfThreads
+                self.threads_finished = 0   # used by gui to understand if things got over
+                self.guiTerminateSignal=False
                 self.WorkerFunction = WorkerFunction
                 self.thread_pool = [
                        threading.Thread( 
@@ -540,6 +542,8 @@ class MyThread( threading.Thread ):
                               )
                        for i in range( self.threads )
                        ]
+                for thread in self.thread_pool:
+                       thread.guiTerminateSignal=False
         
         def startThreads( self ):
                 for thread in self.thread_pool:
@@ -554,18 +558,29 @@ class MyThread( threading.Thread ):
         def populateQueue( self, item ):
                 self.requestQueue.put( item )
                 
-        def stopQueue( self ):
+        def stopQueue( self, timeout=0 ):
                 '''Don't end the program prematurely.
                 (Note that because Queue.get() is blocking by
                 defualt this isn't strictly necessary. But if
                 you were, say, handling responses in another
                 thread, you'd want something like this in your
                 main thread.)'''
+                if timeout !=0:
+                        self.threads_finished = 0   # recount finished threads if gui handler needs
                 for thread in self.thread_pool:
-                        thread.join()
+                        if timeout==0: 
+                                thread.join()
+                        else:
+                                # let threads also lookout for gui signals of cancellation
+                                thread.join(timeout)
+                                if not thread.isAlive():
+                                        self.threads_finished += 1
                         
         def run( self, item=None):
                 while True:
+                        if threading.currentThread().guiTerminateSignal:
+                                #print threading.currentThread().getName(), "has been stopped :D"
+                                break
                         if self.requestQueue is not None:
                                 item = self.requestQueue.get()
                                 
@@ -579,4 +594,4 @@ class MyThread( threading.Thread ):
                                 exit_status = self.responseQueue.get()
                         else:
                                 self.WorkerFunction( item, thread_name )
-                                
+

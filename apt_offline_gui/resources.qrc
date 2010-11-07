@@ -1,0 +1,13 @@
+<RCC>
+  <qresource prefix="icons" >
+    <file>icons/help-about.png</file>
+    <file>icons/application-exit.png</file>
+    <file>icons/contact-new.png</file>
+    <file>icons/dialog-cancel.png</file>
+    <file>icons/dialog-ok-apply.png</file>
+    <file>icons/document-save.png</file>
+    <file>icons/go-down.png</file>
+    <file>icons/help-contents.png</file>
+    <file>icons/install.png</file>
+  </qresource>
+</RCC>
