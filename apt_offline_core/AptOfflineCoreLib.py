@@ -80,7 +80,7 @@ figuring out if the packages are in the local cache, handling exceptions and man
 
 
 app_name = "apt-offline"
-version = "0.9.9"
+version = "1.0"
 copyright = "(C) 2005 - 2010 Ritesh Raj Sarraf"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
