@@ -1,3 +1,9 @@
+apt-offline (1.0.1) unstable; urgency=low
+
+  * Reupload to sid 
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Thu, 10 Feb 2011 12:14:56 +0530
+
 apt-offline (1.0) experimental; urgency=low
 
   * New Feature Release
