@@ -438,6 +438,8 @@ def fetcher( args ):
         Bool_DisableMD5Check = args.disable_md5check
         Int_NumOfThreads = args.num_of_threads
         Str_BundleFile = args.bundle_file
+        Str_ProxyHost = args.proxy_host
+        Str_ProxyPort = args.proxy_port
         #Bool_GetUpdate = args.get_update
         #Bool_GetUpgrade = args.get_upgrade
         Bool_BugReports = args.deb_bugs
@@ -451,6 +453,25 @@ def fetcher( args ):
                 except AttributeError:
                         log.err( "Incorrect value set for socket timeout.\n" )
                         sys.exit( 1 )
+
+        if Str_ProxyHost:
+            if Str_ProxyPort:
+                try:
+                    log.verbose(Str_ProxyHost + ":" + Str_ProxyPort)
+                    proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost + ":" + Str_ProxyPort})
+                    opener = urllib2.build_opener(proxy_support)
+                    urllib2.install_opener(opener)
+                except :
+                    log.err("Handle this exception.\n")
+                    sys.exit(1)
+            else:
+                try:
+                    proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost})
+                    opener = urllib2.build_opener(proxy_support)
+                    urllib2.install_opener(opener)
+                except:
+                    log.err("Handle this exception.\n")
+                    sys.exit(1)
         
         #INFO: Python 2.5 has hashlib which supports sha256
         # If we don't have Python 2.5, disable MD5/SHA256 checksum
@@ -1847,6 +1868,12 @@ def main():
         
         parser_get.add_argument("--bug-reports", dest="deb_bugs",
                           help="Fetch bug reports from the BTS", action="store_true" )
+        
+        parser_get.add_argument("--proxy-host", dest="proxy_host",
+						help="Proxy Host to use", type=str, default=None)
+        
+        parser_get.add_argument("--proxy-port", dest="proxy_port",
+						help="Proxy port number to use", type=str, default=None)
         
         # INSTALL command options
         parser_install = subparsers.add_parser('install', parents=[global_options])
