@@ -1749,23 +1749,6 @@ def setter(args):
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
         
-def gui(args):
-        Bool_GUI = args.gui
-        log.msg("Graphical Interface is currently not ready.\n")
-        if Bool_GUI:
-                if guiBool is True:
-                        class GUI( pyptofflineguiForm ):
-                                pass
-                        app = QApplication( sys.argv )
-                        QObject.connect( app, SIGNAL( "lastWindowClosed()" ), app, SLOT( "quit()" ) )
-                        w = GUI()
-                        app.setMainWidget( w )
-                        w.show()
-                        app.exec_loop()
-                else:
-                        log.err( "Incomplete installation. PyQT or apt-offline GUI libraries not available.\n" )
-                        sys.exit( 1 )
-        
 class AptPython:
         def __init__( self ):
                 if PythonApt:
@@ -1892,10 +1875,6 @@ def main():
         parser_install.add_argument("--allow-unauthenticated", dest="allow_unauthenticated",
                                     help="Ignore apt gpg signatures mismatch", action="store_true")
         
-        # GUI options
-        parser_gui = subparsers.add_parser('gui', parents=[global_options])
-        parser_gui.set_defaults(func=gui)
-        parser_gui.add_argument('gui', help="Run apt-offline in Graphical mode", action="store_true")
         
         args = parser.parse_args()
         
