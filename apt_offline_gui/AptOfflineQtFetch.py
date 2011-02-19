@@ -8,6 +8,8 @@ from apt_offline_gui.UiDataStructs import GetterArgs
 from apt_offline_gui import AptOfflineQtCommon as guicommon
 import apt_offline_core.AptOfflineCoreLib
 
+from apt_offline_gui.AptOfflineQtFetchOptions import AptOfflineQtFetchOptions
+
 class Worker(QtCore.QThread):
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
@@ -70,6 +72,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
         QtGui.QWidget.__init__(self, parent)
         self.ui = Ui_AptOfflineQtFetch()
         self.ui.setupUi(self)
+        self.advancedOptionsDialog = AptOfflineQtFetchOptions()
         
         # Connect the clicked signal of the Signature File Browse button to it's slot
         QtCore.QObject.connect(self.ui.browseFilePathButton, QtCore.SIGNAL("clicked()"),
@@ -96,6 +99,12 @@ class AptOfflineQtFetch(QtGui.QDialog):
                         self.controlStartDownloadBox )
         QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
                         self.controlStartDownloadBox )
+        
+        QtCore.QObject.connect(self.ui.advancedOptionsButton, QtCore.SIGNAL("clicked()"),
+                        self.showAdvancedOptions )
+        
+        
+        
         self.worker = Worker(parent=self)
         QtCore.QObject.connect(self.worker, QtCore.SIGNAL("output(QString)"),
                         self.updateLog )
@@ -107,6 +116,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
                         self.finishedWork )
         QtCore.QObject.connect(self.worker, QtCore.SIGNAL("terminated()"),
                         self.finishedWork )
+        
 
         #INFO: inform CLI that it's a gui app
         apt_offline_core.AptOfflineCoreLib.guiBool = True
@@ -115,6 +125,9 @@ class AptOfflineQtFetch(QtGui.QDialog):
         apt_offline_core.AptOfflineCoreLib.LINE_OVERWRITE_MID=""
         apt_offline_core.AptOfflineCoreLib.LINE_OVERWRITE_FULL=""
 
+    def showAdvancedOptions(self):
+            self.advancedOptionsDialog.show()
+    
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
         directory = QtGui.QFileDialog.getOpenFileName(self, u'Select the signature file')
@@ -247,7 +260,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
         apt_offline_core.AptOfflineCoreLib.totalSize = [0,0]
         self.ui.profileFilePath.setText("")
         self.ui.zipFilePath.setText("")
-        self.ui.spinThreads.setValue(1)
+        #self.ui.spinThreads.setValue(1)
         self.ui.rawLogHolder.setText("")
         self.ui.statusProgressBar.setValue(0)
         self.updateStatus("Ready")

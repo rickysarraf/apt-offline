@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtAbout.ui'
 #
-# Created: Sat Feb 19 21:24:02 2011
+# Created: Sat Feb 19 23:02:11 2011
 #      by: PyQt4 UI code generator 4.7.3
 #
 # WARNING! All changes made in this file will be lost!
