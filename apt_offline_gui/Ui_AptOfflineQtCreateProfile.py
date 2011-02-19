@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtCreateProfile.ui'
 #
-# Created: Sun Nov  7 20:54:51 2010
+# Created: Sat Feb 19 21:24:01 2011
 #      by: PyQt4 UI code generator 4.7.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -46,12 +46,12 @@ class Ui_CreateProfile(object):
         self.updateCheckBox = QtGui.QCheckBox(self.verticalLayoutWidget)
         self.updateCheckBox.setObjectName("updateCheckBox")
         self.verticalLayout_4.addWidget(self.updateCheckBox)
-        self.upgradePackagesRadioBox = QtGui.QCheckBox(self.verticalLayoutWidget)
-        self.upgradePackagesRadioBox.setObjectName("upgradePackagesRadioBox")
-        self.verticalLayout_4.addWidget(self.upgradePackagesRadioBox)
-        self.installPackagesRadioBox = QtGui.QCheckBox(self.verticalLayoutWidget)
-        self.installPackagesRadioBox.setObjectName("installPackagesRadioBox")
-        self.verticalLayout_4.addWidget(self.installPackagesRadioBox)
+        self.upgradePackagesCheckBox = QtGui.QCheckBox(self.verticalLayoutWidget)
+        self.upgradePackagesCheckBox.setObjectName("upgradePackagesCheckBox")
+        self.verticalLayout_4.addWidget(self.upgradePackagesCheckBox)
+        self.installPackagesCheckBox = QtGui.QCheckBox(self.verticalLayoutWidget)
+        self.installPackagesCheckBox.setObjectName("installPackagesCheckBox")
+        self.verticalLayout_4.addWidget(self.installPackagesCheckBox)
         self.horizontalLayout.addLayout(self.verticalLayout_4)
         spacerItem = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
@@ -152,8 +152,8 @@ class Ui_CreateProfile(object):
         CreateProfile.setWindowTitle(QtGui.QApplication.translate("CreateProfile", "Generate Signature", None, QtGui.QApplication.UnicodeUTF8))
         self.lblInstallType.setText(QtGui.QApplication.translate("CreateProfile", "Installation Type", None, QtGui.QApplication.UnicodeUTF8))
         self.updateCheckBox.setText(QtGui.QApplication.translate("CreateProfile", "Update", None, QtGui.QApplication.UnicodeUTF8))
-        self.upgradePackagesRadioBox.setText(QtGui.QApplication.translate("CreateProfile", "Upgrade Packages", None, QtGui.QApplication.UnicodeUTF8))
-        self.installPackagesRadioBox.setText(QtGui.QApplication.translate("CreateProfile", "Install Packages", None, QtGui.QApplication.UnicodeUTF8))
+        self.upgradePackagesCheckBox.setText(QtGui.QApplication.translate("CreateProfile", "Upgrade Packages", None, QtGui.QApplication.UnicodeUTF8))
+        self.installPackagesCheckBox.setText(QtGui.QApplication.translate("CreateProfile", "Install Packages", None, QtGui.QApplication.UnicodeUTF8))
         self.lblPackageList.setText(QtGui.QApplication.translate("CreateProfile", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
