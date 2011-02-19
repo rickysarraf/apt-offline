@@ -448,7 +448,7 @@ def fetcher( args ):
             if Str_ProxyPort:
                 try:
                     log.verbose(Str_ProxyHost + ":" + Str_ProxyPort)
-                    proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost + ":" + Str_ProxyPort})
+                    proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
                     opener = urllib2.build_opener(proxy_support)
                     urllib2.install_opener(opener)
                 except :
@@ -1833,7 +1833,7 @@ def main():
 						help="Proxy Host to use", type=str, default=None)
         
         parser_get.add_argument("--proxy-port", dest="proxy_port",
-						help="Proxy port number to use", type=str, default=None)
+						help="Proxy port number to use", type=int, default=None)
         
         # INSTALL command options
         parser_install = subparsers.add_parser('install', parents=[global_options])
