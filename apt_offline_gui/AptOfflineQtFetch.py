@@ -8,7 +8,6 @@ from apt_offline_gui.UiDataStructs import GetterArgs
 from apt_offline_gui import AptOfflineQtCommon as guicommon
 import apt_offline_core.AptOfflineCoreLib
 
-
 class Worker(QtCore.QThread):
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
