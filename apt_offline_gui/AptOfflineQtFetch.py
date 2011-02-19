@@ -260,7 +260,6 @@ class AptOfflineQtFetch(QtGui.QDialog):
         apt_offline_core.AptOfflineCoreLib.totalSize = [0,0]
         self.ui.profileFilePath.setText("")
         self.ui.zipFilePath.setText("")
-        #self.ui.spinThreads.setValue(1)
         self.ui.rawLogHolder.setText("")
         self.ui.statusProgressBar.setValue(0)
         self.updateStatus("Ready")
