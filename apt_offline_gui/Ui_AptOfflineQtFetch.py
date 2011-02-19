@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetch.ui'
 #
-# Created: Sat Feb 19 21:24:01 2011
+# Created: Sat Feb 19 23:02:10 2011
 #      by: PyQt4 UI code generator 4.7.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -81,17 +81,17 @@ class Ui_AptOfflineQtFetch(object):
         self.zipFilePath = QtGui.QLineEdit(AptOfflineQtFetch)
         self.zipFilePath.setGeometry(QtCore.QRect(30, 98, 270, 30))
         self.zipFilePath.setObjectName("zipFilePath")
-        self.spinThreads = QtGui.QSpinBox(AptOfflineQtFetch)
-        self.spinThreads.setGeometry(QtCore.QRect(122, 148, 40, 30))
-        self.spinThreads.setMinimum(1)
-        self.spinThreads.setMaximum(10)
-        self.spinThreads.setObjectName("spinThreads")
-        self.lblThreads = QtGui.QLabel(AptOfflineQtFetch)
-        self.lblThreads.setGeometry(QtCore.QRect(32, 149, 81, 30))
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.lblThreads.setFont(font)
-        self.lblThreads.setObjectName("lblThreads")
+        self.advancedOptionsButton = QtGui.QPushButton(AptOfflineQtFetch)
+        self.advancedOptionsButton.setEnabled(True)
+        self.advancedOptionsButton.setGeometry(QtCore.QRect(31, 148, 131, 30))
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(":/icons/icons/configure.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.advancedOptionsButton.setIcon(icon2)
+        self.advancedOptionsButton.setShortcut("None")
+        self.advancedOptionsButton.setCheckable(False)
+        self.advancedOptionsButton.setChecked(False)
+        self.advancedOptionsButton.setFlat(False)
+        self.advancedOptionsButton.setObjectName("advancedOptionsButton")
 
         self.retranslateUi(AptOfflineQtFetch)
         QtCore.QMetaObject.connectSlotsByName(AptOfflineQtFetch)
@@ -106,6 +106,7 @@ class Ui_AptOfflineQtFetch(object):
         self.progressStatusDescription.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Ready", None, QtGui.QApplication.UnicodeUTF8))
         self.browseZipFileButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Browse", None, QtGui.QApplication.UnicodeUTF8))
         self.lblSaveAs.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Save archive as", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblThreads.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Use threads", None, QtGui.QApplication.UnicodeUTF8))
+        self.advancedOptionsButton.setToolTip(QtGui.QApplication.translate("AptOfflineQtFetch", "Additional options for download", None, QtGui.QApplication.UnicodeUTF8))
+        self.advancedOptionsButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Options", None, QtGui.QApplication.UnicodeUTF8))
 
 import resources_rc
