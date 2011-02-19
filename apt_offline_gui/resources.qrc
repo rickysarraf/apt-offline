@@ -1,5 +1,6 @@
 <RCC>
-  <qresource prefix="icons" >
+  <qresource prefix="icons">
+    <file>icons/configure.png</file>
     <file>icons/help-about.png</file>
     <file>icons/application-exit.png</file>
     <file>icons/contact-new.png</file>
