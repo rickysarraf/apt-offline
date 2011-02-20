@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetchOptions.ui'
 #
-# Created: Sat Feb 19 23:02:11 2011
+# Created: Sun Feb 20 05:01:00 2011
 #      by: PyQt4 UI code generator 4.7.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -99,13 +99,13 @@ class Ui_downloadOptionsDialog(object):
         self.proxyPortLineEdit.setGeometry(QtCore.QRect(280, 36, 61, 31))
         self.proxyPortLineEdit.setText("")
         self.proxyPortLineEdit.setObjectName("proxyPortLineEdit")
-        self.checkBox = QtGui.QCheckBox(self.proxyGroupBox)
-        self.checkBox.setGeometry(QtCore.QRect(0, 0, 89, 21))
+        self.useProxyCheckBox = QtGui.QCheckBox(self.proxyGroupBox)
+        self.useProxyCheckBox.setGeometry(QtCore.QRect(0, 0, 89, 21))
         font = QtGui.QFont()
         font.setWeight(75)
         font.setBold(True)
-        self.checkBox.setFont(font)
-        self.checkBox.setObjectName("checkBox")
+        self.useProxyCheckBox.setFont(font)
+        self.useProxyCheckBox.setObjectName("useProxyCheckBox")
         self.lblProxyPort = QtGui.QLabel(downloadOptionsDialog)
         self.lblProxyPort.setGeometry(QtCore.QRect(290, 186, 138, 30))
         font = QtGui.QFont()
@@ -124,14 +124,16 @@ class Ui_downloadOptionsDialog(object):
 
     def retranslateUi(self, downloadOptionsDialog):
         downloadOptionsDialog.setWindowTitle(QtGui.QApplication.translate("downloadOptionsDialog", "Advanced options for download", None, QtGui.QApplication.UnicodeUTF8))
+        self.lblThreads.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Number of parallel connections", None, QtGui.QApplication.UnicodeUTF8))
         self.lblThreads.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Use threads", None, QtGui.QApplication.UnicodeUTF8))
+        self.spinThreads.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Number of parallel connections", None, QtGui.QApplication.UnicodeUTF8))
         self.downloadOptionDialogOkButton.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Ok", None, QtGui.QApplication.UnicodeUTF8))
         self.lblSocketTimeo.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Nework timeout in seconds", None, QtGui.QApplication.UnicodeUTF8))
         self.lblSocketTimeo.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Network Timeout", None, QtGui.QApplication.UnicodeUTF8))
         self.spinTimeout.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Nework timeout in seconds", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblTmpDownload.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Nework timeout in seconds", None, QtGui.QApplication.UnicodeUTF8))
+        self.lblTmpDownload.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Temporary download directory", None, QtGui.QApplication.UnicodeUTF8))
         self.lblTmpDownload.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Temporary Download", None, QtGui.QApplication.UnicodeUTF8))
-        self.tempDirLineEdit.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Nework timeout in seconds", None, QtGui.QApplication.UnicodeUTF8))
+        self.tempDirLineEdit.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Temporary download directory", None, QtGui.QApplication.UnicodeUTF8))
         self.tempDirBrowseButton.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Browse", None, QtGui.QApplication.UnicodeUTF8))
         self.cacheDirLineEdit.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Cache folder to search for", None, QtGui.QApplication.UnicodeUTF8))
         self.cacheDirBrowseButton.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Browse", None, QtGui.QApplication.UnicodeUTF8))
@@ -143,7 +145,7 @@ class Ui_downloadOptionsDialog(object):
         self.fetchBugReportsCheckBox.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Fetch Bug Reports", None, QtGui.QApplication.UnicodeUTF8))
         self.proxyHostLineEdit.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Proxy Server Host/IP Address", None, QtGui.QApplication.UnicodeUTF8))
         self.proxyPortLineEdit.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Proxy Server Port Address", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Proxy", None, QtGui.QApplication.UnicodeUTF8))
+        self.useProxyCheckBox.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Proxy", None, QtGui.QApplication.UnicodeUTF8))
         self.lblProxyPort.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Cache folder to search for", None, QtGui.QApplication.UnicodeUTF8))
         self.lblProxyPort.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Port", None, QtGui.QApplication.UnicodeUTF8))
         self.lblProxyHost.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Cache folder to search for", None, QtGui.QApplication.UnicodeUTF8))

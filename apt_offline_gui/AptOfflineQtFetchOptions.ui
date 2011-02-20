@@ -55,6 +55,9 @@
      <pointsize>10</pointsize>
     </font>
    </property>
+   <property name="toolTip">
+    <string>Number of parallel connections</string>
+   </property>
    <property name="text">
     <string>Use threads</string>
    </property>
@@ -67,6 +70,9 @@
      <width>40</width>
      <height>30</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Number of parallel connections</string>
    </property>
    <property name="minimum">
     <number>1</number>
@@ -150,7 +156,7 @@
     </font>
    </property>
    <property name="toolTip">
-    <string>Nework timeout in seconds</string>
+    <string>Temporary download directory</string>
    </property>
    <property name="text">
     <string>Temporary Download</string>
@@ -166,7 +172,7 @@
     </rect>
    </property>
    <property name="toolTip">
-    <string>Nework timeout in seconds</string>
+    <string>Temporary download directory</string>
    </property>
   </widget>
   <widget class="QPushButton" name="tempDirBrowseButton">
@@ -314,7 +320,7 @@
      <string/>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBox">
+   <widget class="QCheckBox" name="useProxyCheckBox">
     <property name="geometry">
      <rect>
       <x>0</x>

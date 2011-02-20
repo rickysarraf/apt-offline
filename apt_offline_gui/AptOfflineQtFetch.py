@@ -191,9 +191,13 @@ class AptOfflineQtFetch(QtGui.QDialog):
                 else:
                     return
 
-        self.num_of_threads=self.ui.spinThreads.value() 
+        
         args = GetterArgs(filename=self.filepath, bundle_file= self.zipfilepath, progress_bar=self.ui.statusProgressBar, 
-                        progress_label=self.ui.progressStatusDescription, num_of_threads=self.num_of_threads)
+                        progress_label=self.ui.progressStatusDescription, proxy_host=self.advancedOptionsDialog.proxy_host,
+                        proxy_port=self.advancedOptionsDialog.proxy_port, num_of_threads=self.advancedOptionsDialog.num_of_threads,
+                        socket_timeout=self.advancedOptionsDialog.socket_timeout, cache_dir=self.advancedOptionsDialog.cache_dir,
+                        download_dir=self.advancedOptionsDialog.download_dir, disable_md5check=self.advancedOptionsDialog.disable_md5check,
+                        deb_bugs=self.advancedOptionsDialog.deb_bugs)
         
         #returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
         # TODO: deal with return status laters
