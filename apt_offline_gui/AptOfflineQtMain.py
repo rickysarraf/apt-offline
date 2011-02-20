@@ -73,6 +73,8 @@ class AptOfflineQtMain(QtGui.QMainWindow):
         
     
     def CreateProfile(self):
+        if os.geteuid() != 0:
+                QtGui.QMessageBox.critical(myapp, "Error", "You need to run with root priviliges")
         # Code for creating Modal Dialog for Create Profile
         self.createProfileDialog.resetUI()
         self.createProfileDialog.show()
@@ -83,6 +85,8 @@ class AptOfflineQtMain(QtGui.QMainWindow):
         self.createDownloadDialog.show()
 
     def InstallPackagesUpgrades(self):
+        if os.geteuid() != 0:
+                QtGui.QMessageBox.critical(myapp, "Error", "You need to run with root priviliges")
         # Code for creating Modal Dialog for Installing Packages/Upgrades
         self.createInstallDialog.show()
     
