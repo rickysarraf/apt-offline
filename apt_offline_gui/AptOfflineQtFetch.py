@@ -204,8 +204,10 @@ class AptOfflineQtFetch(QtGui.QDialog):
         
         self.ui.cancelButton.setText("Cancel")
         self.disableAction()
+        self.disableAtDownload()
         self.worker.setArgs (args)
         self.worker.start()
+        
         #if (returnStatus):
         ''' TODO: do something with self.zipfilepath '''
             
@@ -251,6 +253,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
                     # we can't just stop threads, we need to pass message
                     apt_offline_core.AptOfflineCoreLib.guiTerminateSignal=True
                     self.updateStatus(guicommon.style("Download aborted","red"))
+                    self.enableAtStop()
                     self.ui.cancelButton.setText("Close")
             else:
                 self.reject()
@@ -268,12 +271,23 @@ class AptOfflineQtFetch(QtGui.QDialog):
         self.ui.statusProgressBar.setValue(0)
         self.updateStatus("Ready")
         self.enableAction()
+        self.enableAtStop()
 
     def disableAction(self):
         self.ui.startDownloadButton.setEnabled(False)
-
+    
+    def disableAtDownload(self):
+        self.ui.advancedOptionsButton.setEnabled(False)
+        self.ui.browseZipFileButton.setEnabled(False)
+        self.ui.browseFilePathButton.setEnabled(False)
+            
     def enableAction(self):
         self.ui.startDownloadButton.setEnabled(True)
+
+    def enableAtStop(self):
+        self.ui.advancedOptionsButton.setEnabled(True)
+        self.ui.browseZipFileButton.setEnabled(True)
+        self.ui.browseFilePathButton.setEnabled(True)
 
     def finishedWork(self):
         ''' do nothing '''
