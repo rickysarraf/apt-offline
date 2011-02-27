@@ -23,6 +23,8 @@ class AptOfflineQtFetchOptions(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.tempDirBrowseButton, QtCore.SIGNAL("clicked()"),
                         self.populateTempDir )
         
+        QtCore.QObject.connect(self.ui.cacheDirBrowseButton, QtCore.SIGNAL("clicked()"),
+                        self.populateCacheDir )
         
         # defaults
         self.num_of_threads = 1
@@ -97,6 +99,12 @@ class AptOfflineQtFetchOptions(QtGui.QDialog):
             directory = QtGui.QFileDialog.getExistingDirectory(None, u'Temporary directory to store data')
             self.ui.tempDirLineEdit.setText(directory)
             self._download_dir = directory
+            
+    def populateCacheDir(self):
+            directory = QtGui.QFileDialog.getExistingDirectory(None, u'Provide path to APT\'s Cache Dir')
+            self.ui.cacheDirLineEdit.setText(directory)
+            self._cache_dir = directory
+            
     
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
