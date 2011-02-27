@@ -1,4 +1,5 @@
 import sys, os
+import tempfile
 from PyQt4 import QtCore, QtGui
 
 from apt_offline_gui.Ui_AptOfflineQtFetchOptions import Ui_downloadOptionsDialog
@@ -8,6 +9,8 @@ class AptOfflineQtFetchOptions(QtGui.QDialog):
         QtGui.QWidget.__init__(self, parent)
         self.ui = Ui_downloadOptionsDialog()
         self.ui.setupUi(self)
+        self.tempdir = tempfile.gettempdir()
+        self.ui.tempDirLineEdit.setText(self.tempdir)
         
         # Connect the clicked signal of the Ok button to it's slot
         QtCore.QObject.connect(self.ui.downloadOptionDialogOkButton, QtCore.SIGNAL("clicked()"),
@@ -16,6 +19,9 @@ class AptOfflineQtFetchOptions(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.useProxyCheckBox, QtCore.SIGNAL("toggled(bool)"),
                         self.toggleProxyControls )
         
+        # Connect the clicked signal of the Browse button to it's slot
+        QtCore.QObject.connect(self.ui.tempDirBrowseButton, QtCore.SIGNAL("clicked()"),
+                        self.populateTempDir )
         
         
         # defaults
@@ -54,7 +60,7 @@ class AptOfflineQtFetchOptions(QtGui.QDialog):
                     return
             
             if len(self._download_dir) > 0 and not os.access(self._download_dir, os.W_OK) :
-                    QtGui.QMessageBox.critical(self, "Error", "Could not locate temporary download directory")
+                    QtGui.QMessageBox.critical(self, "Error", "Could not locate temporary download directory or invalid permissions")
                     return
                     
             if self._proxy_port:
@@ -87,6 +93,10 @@ class AptOfflineQtFetchOptions(QtGui.QDialog):
                     self.ui.proxyHostLineEdit.setEnabled(False)
                     self.ui.proxyPortLineEdit.setEnabled(False)
                     
+    def populateTempDir(self):
+            directory = QtGui.QFileDialog.getExistingDirectory(None, u'Temporary directory to store data')
+            self.ui.tempDirLineEdit.setText(directory)
+            self._download_dir = directory
     
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
