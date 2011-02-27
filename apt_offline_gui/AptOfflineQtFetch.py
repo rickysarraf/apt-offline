@@ -280,6 +280,8 @@ class AptOfflineQtFetch(QtGui.QDialog):
         self.ui.advancedOptionsButton.setEnabled(False)
         self.ui.browseZipFileButton.setEnabled(False)
         self.ui.browseFilePathButton.setEnabled(False)
+        self.ui.zipFilePath.setEnabled(False)
+        self.ui.profileFilePath.setEnabled(False)
             
     def enableAction(self):
         self.ui.startDownloadButton.setEnabled(True)
@@ -288,6 +290,8 @@ class AptOfflineQtFetch(QtGui.QDialog):
         self.ui.advancedOptionsButton.setEnabled(True)
         self.ui.browseZipFileButton.setEnabled(True)
         self.ui.browseFilePathButton.setEnabled(True)
+        self.ui.zipFilePath.setEnabled(True)
+        self.ui.profileFilePath.setEnabled(True)
 
     def finishedWork(self):
         ''' do nothing '''
