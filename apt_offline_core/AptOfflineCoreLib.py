@@ -803,7 +803,7 @@ def fetcher( args ):
                         #INFO: Handle the multiple Packages formats.
                         # See DTBS #583502
                         SupportedFormats = ["bz2", "gz", "lzma"]
-                        
+
                         #INFO: We are a package update
                         PackageName = url
                         PackageFile = url.split("/")[-1]
@@ -814,13 +814,13 @@ def fetcher( args ):
                         log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
                         if DownloadPackages(url) is False and guiTerminateSignal is False:
                                 # dont proceed retry if Ctrl+C in cli
-                                errlist.append(url)
+                                log.verbose("%s failed. Retry with the remaining possible formats" % (url) )
                                 
                                 # We could fail with the Packages format of what apt gave us. We can try the rest of the formats that apt or the archive could support
                                 for Format in SupportedFormats:
                                         NewPackageFile = PackageFile.split(".")[0] + "." + Format
                                         NewUrl = url.strip(url.split("/")[-1]) + NewPackageFile
-                                        log.msg("Retry download %s.%s\n" % (NewUrl, LINE_OVERWRITE_MID) ) 
+                                        log.verbose("Retry download %s.%s\n" % (NewUrl, LINE_OVERWRITE_MID) ) 
                                         if DownloadPackages(NewUrl) is True:
                                                 break
                                         else:
