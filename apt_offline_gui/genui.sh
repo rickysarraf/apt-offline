@@ -1,4 +1,8 @@
 #!/bin/sh
+# Todo : after adding a new UI file to dialig, also add
+#        its corresponding Ui_ script generator here
+#
+
 echo "Compiling Ui files"
 pyuic4 AptOfflineQtMain.ui > Ui_AptOfflineQtMain.py
 pyuic4 AptOfflineQtCreateProfile.ui > Ui_AptOfflineQtCreateProfile.py
