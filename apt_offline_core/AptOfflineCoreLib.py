@@ -132,6 +132,9 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                         ( num_of_bugs, header, self.bugs_list ) = AptOfflineDebianBtsLib.get_reports( PackageName )
                 except socket.timeout:
                         return 0
+                except NoNetwork:
+                        return 0
+                        
                 
                 if num_of_bugs:
                         atleast_one_bug_report_downloaded = False
