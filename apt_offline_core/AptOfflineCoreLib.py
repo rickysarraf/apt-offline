@@ -158,6 +158,10 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                                         data = AptOfflineDebianBtsLib.get_report( bug_num, followups=True )
                                                 except socket.timeout:
                                                         break
+                                                
+                                                if data is None:
+                                                        break
+                                                
                                                 if Filename == None:
                                                         self.fileName = PackageName + "." + bug_num + "." + self.apt_bug
                                                         file_handle = open( self.fileName, 'w' )
