@@ -133,6 +133,7 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                 except socket.timeout:
                         return 0
                 except NoNetwork:
+                        log.verbose("Network connection to the BTS couldn't be established")
                         return 0
                         
                 
