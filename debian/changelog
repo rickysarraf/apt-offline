@@ -1,3 +1,10 @@
+apt-offline (1.0.2) unstable; urgency=low
+
+  * cherry pick b35ef11d1d4b282f (Closes: #613617)
+    Thanks to Julian Taylor for the report
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Tue, 08 Mar 2011 14:14:17 +0530
+
 apt-offline (1.0.1) unstable; urgency=low
 
   * Reupload to sid 
