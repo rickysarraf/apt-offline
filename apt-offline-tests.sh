@@ -7,7 +7,7 @@ CACHE_DIR="/var/cache/apt/archives"
 DOWNLOAD_DIR="/tmp/apt-offline-tests-$PPID"
 BUNDLE_FILE="/tmp/apt-offline-tests-$PPID.zip"
 THREADS=5
-APT_OFFLINE="./apt-offline"
+APT_OFFLINE="./apt-offline --verbose"
 
 set_features () {
 	if [ ! -z $1 ]; then
@@ -16,8 +16,8 @@ set_features () {
 	echo "Executing command 'set $URI'"
 	$APT_OFFLINE set $URI
 
-	echo "Executing command 'set $URI --simulate --verbose'"
-	$APT_OFFLINE set $URI --simulate --verbose
+	echo "Executing command 'set $URI --simulate '"
+	$APT_OFFLINE set $URI --simulate 
 
 	echo "Executing command 'set $URI --update'"
 	$APT_OFFLINE set $URI --update
@@ -58,8 +58,8 @@ get_features () {
 	if [ ! -z $1 ]; then
 		URI=$1
 	fi
-	echo "Executing command 'get $URI --verbose'"
-	$APT_OFFLINE get $URI --verbose
+	echo "Executing command 'get $URI '"
+	$APT_OFFLINE get $URI 
 
 	echo "Executing command 'get $URI --threads $THREADS'"
 	$APT_OFFLINE get $URI --threads $THREADS
@@ -89,8 +89,8 @@ install_features () {
 		DOWNLOAD_DIR=$1
 		BUNDLE_FILE=$1
 	fi
-	echo "Executing command 'install $DOWNLOAD_DIR --verbose --skip-bug-reports'"
-	$APT_OFFLINE install $DOWNLOAD_DIR --verbose --skip-bug-reports
+	echo "Executing command 'install $DOWNLOAD_DIR  --skip-bug-reports'"
+	$APT_OFFLINE install $DOWNLOAD_DIR  --skip-bug-reports
 
 	echo "Executing command 'install $DOWNLOAD_DIR --simulate --skip-bug-reports'"
 	$APT_OFFLINE install $DOWNLOAD_DIR --simulate --skip-bug-reports
@@ -101,8 +101,8 @@ install_features () {
 	echo "Executing command 'install $DOWNLOAD_DIR --skip-bug-reports --allow-unauthenticated'"
 	$APT_OFFLINE install $DOWNLOAD_DIR --simulate --skip-bug-reports  --allow-unauthenticated
 
-	echo "Executing command 'install $BUNDLE_FILE --verbose --skip-bug-reports'"
-	$APT_OFFLINE install $BUNDLE_FILE --verbose --skip-bug-reports
+	echo "Executing command 'install $BUNDLE_FILE  --skip-bug-reports'"
+	$APT_OFFLINE install $BUNDLE_FILE  --skip-bug-reports
 
 	echo "Executing command 'install $BUNDLE_FILE --simulate --skip-bug-reports'"
 	$APT_OFFLINE install $BUNDLE_FILE --simulate --skip-bug-reports
@@ -119,8 +119,8 @@ install_features_prompt () {
 		DOWNLOAD_DIR=$1
 		BUNDLE_FILE=$1
 	fi
-	echo "Executing command 'install $DOWNLOAD_DIR --verbose'"
-	$APT_OFFLINE install $DOWNLOAD_DIR --verbose
+	echo "Executing command 'install $DOWNLOAD_DIR '"
+	$APT_OFFLINE install $DOWNLOAD_DIR 
 
 	echo "Executing command 'install $DOWNLOAD_DIR --simulate'"
 	$APT_OFFLINE install $DOWNLOAD_DIR --simulate
@@ -131,8 +131,8 @@ install_features_prompt () {
 	echo "Executing command 'install $DOWNLOAD_DIR --allow-unauthenticated'"
 	$APT_OFFLINE install $DOWNLOAD_DIR --simulate --allow-unauthenticated
 
-	echo "Executing command 'install $BUNDLE_FILE --verbose'"
-	$APT_OFFLINE install $BUNDLE_FILE --verbose
+	echo "Executing command 'install $BUNDLE_FILE '"
+	$APT_OFFLINE install $BUNDLE_FILE 
 
 	echo "Executing command 'install $BUNDLE_FILE --simulate'"
 	$APT_OFFLINE install $BUNDLE_FILE --simulate
