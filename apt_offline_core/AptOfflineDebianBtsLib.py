@@ -26,6 +26,7 @@
 
 import sgmllib, glob, os, re, rfc822, time, urllib
 from AptOffline_urlutils import open_url
+from AptOffline_reportbug_exceptions import NoNetwork
 import sys
 
 import mailbox
@@ -761,8 +762,11 @@ def parse_mbox_report(number, url, http_proxy, followups=False):
 
 def get_cgi_reports(package, system='debian', http_proxy='', archived=False,
                     source=False, version=None):
-    page = open_url(cgi_package_url(system, package, archived, source,
+    try:
+	    page = open_url(cgi_package_url(system, package, archived, source,
                                     version=version), http_proxy)
+    except NoNetwork:
+	    page = None
     if not page:
         return (0, None, None)
 
