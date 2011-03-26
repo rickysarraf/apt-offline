@@ -57,7 +57,7 @@ class AptOfflineQtFetchOptions(QtGui.QDialog):
     def validateOptions(self):
             self.storeOptions()
             
-            if len(self._cache_dir) > 0 and not os.access(self._cache_dir, os.W_OK) :
+            if len(self._cache_dir) > 0 and not (os.access(self._cache_dir, os.W_OK) or os.access(self._cache_dir, os.R_OK) ):
                     QtGui.QMessageBox.critical(self, "Error", "Could not locate cache directory")
                     return
             
