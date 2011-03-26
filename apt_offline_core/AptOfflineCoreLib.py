@@ -324,7 +324,12 @@ def stripper(item):
 
         url = string.rstrip(string.lstrip(''.join(item[0]), chars="'"), chars="'")
         file = string.rstrip(string.lstrip(''.join(item[1]), chars="'"), chars="'")
-        size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
+	try:
+		size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
+	except ValueError:
+		log.verbose("%s is malformed\n" % (" ".join(item) ) )
+		size = 0
+
         #INFO: md5 ends up having '\n' with it.
         # That needs to be stripped too.
 	try:
