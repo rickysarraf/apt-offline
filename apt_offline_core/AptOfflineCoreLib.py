@@ -382,54 +382,6 @@ def errfunc(errno, errormsg, filename):
                 sys.exit(errno)
         else:
                 log.err("I don't understand this error code %s\nPlease file a bug report" % (errno))
-        
-        
-def get_pager_cmd(pager_cmd = None):
-        if os.name == 'posix':
-                default_pager_cmd = 'less -r'
-        elif os.name in ['nt', 'dos']:
-                default_pager_cmd = 'type'
-        
-        if pager_cmd is None:
-                try:
-                        pager_cmd = os.environ['PAGER']
-                except:
-                        pager_cmd = default_pager_cmd
-                return pager_cmd
-
-
-class PagerCmd:
-        '''Tries to automatically detect and set the pager on the running OS'''
-        def __init__(self, pager_cmd = None):
-                if os.name == 'posix':
-                        self.default_pager_cmd = 'less -r'
-                elif os.name in ['nt', 'dos']:
-                        self.default_pager_cmd = 'type'
-                
-                if pager_cmd is None:
-                        try:
-                                self.pager_cmd = os.environ['PAGER']
-                        except:
-                                self.pager_cmd = self.default_pager_cmd
-        
-        def send_to_pager(self, String = None):
-                '''Writes the String to the pager'''
-                if String is None:
-                        return False
-                else:
-                        try:
-                                retval = None # None is correct. On success, None is returned
-                                pager = os.popen(self.pager_cmd, 'w')
-                                pager.write(String)
-                                retval = pager.close()
-                        except IOError,msg:  # broken pipe when user quits
-                                if msg.args == (32,'Broken pipe'):
-                                        retval = None
-                                else:
-                                        retval = 1
-                        except OSError:
-                                retval = 1
-                        return retval
             
 
 def fetcher( args ):
