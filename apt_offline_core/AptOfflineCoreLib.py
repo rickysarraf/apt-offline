@@ -32,6 +32,7 @@ import socket
 import tempfile
 import random   # to generate random directory names for installing multiple bundles in on go
 import zipfile
+import pydoc
 
 # Given the merits of argparse, I hope it'll soon be part
 # of the Python Standard Library.
@@ -1227,10 +1228,7 @@ def installer( args ):
                                                 response = get_response()
                 
                                         if found:
-                                                display_pager = PagerCmd()
-                                                retval = display_pager.send_to_pager( file.read( bug_file_to_display ) )
-                                                if retval == 1:
-                                                        log.err( "Broken pager. Can't display the bug details.\n" )
+                                                pydoc.pager(file.read(bug_file_to_display) )
                                                 # Redisplay the menu
                                                 # FIXME: See a pythonic possibility of cleaning the screen at this stage
                                                 response = get_response()
@@ -1364,11 +1362,8 @@ def installer( args ):
                                                 log.err( "Incorrect bug number %s provided.\n" % ( response ) )
                                                 response = get_response()
                                         if found:
-                                                display_pager = PagerCmd()
                                                 file = open(bug_file_to_display, 'r')
-                                                retval = display_pager.send_to_pager(file.read())
-                                                if retval == 1:
-                                                        log.err( "Broken pager. Can't display the bug details.\n" )
+                                                pydoc.pager(file.read() )
                                                 # Redisplay the menu
                                                 # FIXME: See a pythonic possibility of cleaning the screen at this stage
                                                 response = get_response()
