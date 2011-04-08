@@ -161,7 +161,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
                     guicommon.style("%s does not exist." % self.filepath,'red'))
             return
         
-        # TODO: check for zip file's presense
+        # TODO: check for zip file's presence
         self.zipfilepath = str(self.ui.zipFilePath.text())
         
         # if file has write permission
