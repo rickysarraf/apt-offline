@@ -224,38 +224,39 @@
     </rect>
    </property>
   </widget>
-  <widget class="QSpinBox" name="spinThreads">
+  <widget class="QPushButton" name="advancedOptionsButton">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="geometry">
     <rect>
-     <x>122</x>
+     <x>31</x>
      <y>148</y>
-     <width>40</width>
+     <width>131</width>
      <height>30</height>
     </rect>
    </property>
-   <property name="minimum">
-    <number>1</number>
-   </property>
-   <property name="maximum">
-    <number>10</number>
-   </property>
-  </widget>
-  <widget class="QLabel" name="lblThreads">
-   <property name="geometry">
-    <rect>
-     <x>32</x>
-     <y>149</y>
-     <width>81</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-    </font>
+   <property name="toolTip">
+    <string>Additional options for download</string>
    </property>
    <property name="text">
-    <string>Use threads</string>
+    <string>Options</string>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/configure.png</normaloff>:/icons/icons/configure.png</iconset>
+   </property>
+   <property name="shortcut">
+    <string notr="true"/>
+   </property>
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="flat">
+    <bool>false</bool>
    </property>
   </widget>
  </widget>

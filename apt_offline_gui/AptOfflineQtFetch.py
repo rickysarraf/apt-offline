@@ -8,6 +8,7 @@ from apt_offline_gui.UiDataStructs import GetterArgs
 from apt_offline_gui import AptOfflineQtCommon as guicommon
 import apt_offline_core.AptOfflineCoreLib
 
+from apt_offline_gui.AptOfflineQtFetchOptions import AptOfflineQtFetchOptions
 class Worker(QtCore.QThread):
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
@@ -70,6 +71,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
         QtGui.QWidget.__init__(self, parent)
         self.ui = Ui_AptOfflineQtFetch()
         self.ui.setupUi(self)
+        self.advancedOptionsDialog = AptOfflineQtFetchOptions()
         
         # Connect the clicked signal of the Signature File Browse button to it's slot
         QtCore.QObject.connect(self.ui.browseFilePathButton, QtCore.SIGNAL("clicked()"),
@@ -96,6 +98,12 @@ class AptOfflineQtFetch(QtGui.QDialog):
                         self.controlStartDownloadBox )
         QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
                         self.controlStartDownloadBox )
+        
+        QtCore.QObject.connect(self.ui.advancedOptionsButton, QtCore.SIGNAL("clicked()"),
+                        self.showAdvancedOptions )
+        
+        
+        
         self.worker = Worker(parent=self)
         QtCore.QObject.connect(self.worker, QtCore.SIGNAL("output(QString)"),
                         self.updateLog )
@@ -107,6 +115,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
                         self.finishedWork )
         QtCore.QObject.connect(self.worker, QtCore.SIGNAL("terminated()"),
                         self.finishedWork )
+        
 
         #INFO: inform CLI that it's a gui app
         apt_offline_core.AptOfflineCoreLib.guiBool = True
@@ -115,6 +124,9 @@ class AptOfflineQtFetch(QtGui.QDialog):
         apt_offline_core.AptOfflineCoreLib.LINE_OVERWRITE_MID=""
         apt_offline_core.AptOfflineCoreLib.LINE_OVERWRITE_FULL=""
 
+    def showAdvancedOptions(self):
+            self.advancedOptionsDialog.show()
+    
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
         directory = QtGui.QFileDialog.getOpenFileName(self, u'Select the signature file')
@@ -148,7 +160,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
                     guicommon.style("%s does not exist." % self.filepath,'red'))
             return
         
-        # TODO: check for zip file's presense
+        # TODO: check for zip file's presence
         self.zipfilepath = str(self.ui.zipFilePath.text())
         
         # if file has write permission
@@ -178,17 +190,23 @@ class AptOfflineQtFetch(QtGui.QDialog):
                 else:
                     return
 
-        self.num_of_threads=self.ui.spinThreads.value() 
+        
         args = GetterArgs(filename=self.filepath, bundle_file= self.zipfilepath, progress_bar=self.ui.statusProgressBar, 
-                        progress_label=self.ui.progressStatusDescription, num_of_threads=self.num_of_threads)
+                        progress_label=self.ui.progressStatusDescription, proxy_host=self.advancedOptionsDialog.proxy_host,
+                        proxy_port=self.advancedOptionsDialog.proxy_port, num_of_threads=self.advancedOptionsDialog.num_of_threads,
+                        socket_timeout=self.advancedOptionsDialog.socket_timeout, cache_dir=self.advancedOptionsDialog.cache_dir,
+                        download_dir=self.advancedOptionsDialog.download_dir, disable_md5check=self.advancedOptionsDialog.disable_md5check,
+                        deb_bugs=self.advancedOptionsDialog.deb_bugs)
         
         #returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
         # TODO: deal with return status laters
         
         self.ui.cancelButton.setText("Cancel")
         self.disableAction()
+        self.disableAtDownload()
         self.worker.setArgs (args)
         self.worker.start()
+        
         #if (returnStatus):
         ''' TODO: do something with self.zipfilepath '''
             
@@ -234,6 +252,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
                     # we can't just stop threads, we need to pass message
                     apt_offline_core.AptOfflineCoreLib.guiTerminateSignal=True
                     self.updateStatus(guicommon.style("Download aborted","red"))
+                    self.enableAtStop()
                     self.ui.cancelButton.setText("Close")
             else:
                 self.reject()
@@ -247,17 +266,31 @@ class AptOfflineQtFetch(QtGui.QDialog):
         apt_offline_core.AptOfflineCoreLib.totalSize = [0,0]
         self.ui.profileFilePath.setText("")
         self.ui.zipFilePath.setText("")
-        self.ui.spinThreads.setValue(1)
         self.ui.rawLogHolder.setText("")
         self.ui.statusProgressBar.setValue(0)
         self.updateStatus("Ready")
         self.enableAction()
+        self.enableAtStop()
 
     def disableAction(self):
         self.ui.startDownloadButton.setEnabled(False)
-
+    
+    def disableAtDownload(self):
+        self.ui.advancedOptionsButton.setEnabled(False)
+        self.ui.browseZipFileButton.setEnabled(False)
+        self.ui.browseFilePathButton.setEnabled(False)
+        self.ui.zipFilePath.setEnabled(False)
+        self.ui.profileFilePath.setEnabled(False)
+            
     def enableAction(self):
         self.ui.startDownloadButton.setEnabled(True)
+
+    def enableAtStop(self):
+        self.ui.advancedOptionsButton.setEnabled(True)
+        self.ui.browseZipFileButton.setEnabled(True)
+        self.ui.browseFilePathButton.setEnabled(True)
+        self.ui.zipFilePath.setEnabled(True)
+        self.ui.profileFilePath.setEnabled(True)
 
     def finishedWork(self):
         ''' do nothing '''

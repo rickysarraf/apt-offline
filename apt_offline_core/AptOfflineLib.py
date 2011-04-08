@@ -367,18 +367,26 @@ class Archiver:
                         if self.lock:
                                 self.ZipLock.acquire( True )
                         filename = zipfile.ZipFile( zip_file_name, "a" )
+                        fileOpened = True
                 except IOError:
                         #INFO: By design zipfile throws an IOError exception when you open
                         # in "append" mode and the file is not present.
-                        filename = zipfile.ZipFile( zip_file_name, "w" )
-                finally: #Supported from Python 2.5 ??
+
+                        fileOpened = False
+                        try:
+                            filename = zipfile.ZipFile( zip_file_name, "w" )
+                            fileOpened = True
+                        except IOError:
+                            fileOpened = False
+                if fileOpened: #Supported from Python 2.5 ??
                         filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )                        
                         filename.close()
         
                         if self.lock:
                                 self.ZipLock.release()
-            
                         return True
+                else:
+                        return False
 
         def decompress_the_file( self, archive_file, target_file, archive_type ):
                 '''Extracts all the files from a single condensed archive file'''

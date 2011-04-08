@@ -36,7 +36,7 @@ class GetterArgs():
 
     def __init__(self, filename=None, bundle_file=None, socket_timeout=30, \
                     num_of_threads=1, disable_md5check=True, deb_bugs=False,
-                        download_dir=None, cache_dir=None, progress_bar=None, progress_label=None):
+                        download_dir=None, cache_dir=None, proxy_host=None, proxy_port=None, progress_bar=None, progress_label=None):
 
         self.get = filename
 
@@ -50,7 +50,9 @@ class GetterArgs():
         self.download_dir = download_dir
         self.cache_dir = cache_dir
         
-        self.qt_gui = True
+        self.proxy_host = proxy_host
+        self.proxy_port = proxy_port
+        
         self.progress_bar = progress_bar
         self.progress_label = progress_label
 
@@ -88,6 +90,5 @@ class InstallerArgs():
         self.allow_unauthenticated = allow_unauthenticated
         self.install_src_path = install_src_path
         
-        self.qt_gui = True
         self.progress_bar = progress_bar
         self.progress_label = progress_label

@@ -1,4 +1,4 @@
-.TH apt-offline 8 "November, 2010" "version 1.0" "USER COMMANDS"
+.TH apt-offline 8 "April, 2011" "version 1.1" "USER COMMANDS"
 .SH NAME
 apt-offline \- Offline APT Package manager
 .SH SYNOPSIS
@@ -58,7 +58,7 @@ Type of upgrade you would like to perform. Default is
 Other valid types are
 .B "dist-upgrade" and "dselect-upgrade"
 
-.SS get [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] apt-offline.sig
+.SS get [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] [--proxy-host] [--proxy-port] apt-offline.sig
 
 .PP
 
@@ -92,6 +92,12 @@ Create an archive file FILENAME. The file is archived in zip format
 .IP "\fB\-\-bug\-reports\fP" 10
 Download bug reports for packages that are being downloaded. Currently only
 the Debian BTS is supported.
+
+.IP "\fB\-\-proxy\-host\fP" 10
+Specify the Proxy Host to be used.
+
+.IP "\fB\-\-proxy\-port\fP" 10
+Specify the Proxy port number to be used.
 
 .SS install [-h] [--skip-bug-reports ] [--install-src-path PATH] [--allow-unauthenticated] FILE/FOLDER
 

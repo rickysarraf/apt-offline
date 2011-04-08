@@ -27,21 +27,21 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
                         self.reject )
         
         # Disable or Enable the Package List field
-        QtCore.QObject.connect(self.ui.installPackagesRadioBox, QtCore.SIGNAL("toggled(bool)"),
+        QtCore.QObject.connect(self.ui.installPackagesCheckBox, QtCore.SIGNAL("toggled(bool)"),
                         self.PackageListFieldStatus )
         
     def PackageListFieldStatus(self):
         # If Install Packages Box is selected
-        self.isFieldChecked = self.ui.installPackagesRadioBox.isChecked()
+        self.isFieldChecked = self.ui.installPackagesCheckBox.isChecked()
         self.ui.packageList.setEnabled(self.isFieldChecked)
     
     def CreateProfile(self):
         # Is the Update requested
         self.updateChecked = self.ui.updateCheckBox.isChecked()
         # Is Upgrade requested
-        self.upgradeChecked = self.ui.upgradePackagesRadioBox.isChecked()
+        self.upgradeChecked = self.ui.upgradePackagesCheckBox.isChecked()
         # Is Install Requested
-        self.installChecked = self.ui.installPackagesRadioBox.isChecked()
+        self.installChecked = self.ui.installPackagesCheckBox.isChecked()
 
         # Clear the consoleOutputHolder
         self.ui.consoleOutputHolder.setText("")
@@ -99,8 +99,8 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
 
     def resetUI(self):
         self.ui.updateCheckBox.setChecked(False)
-        self.ui.upgradePackagesRadioBox.setChecked(False)
-        self.ui.installPackagesRadioBox.setChecked(False)
+        self.ui.upgradePackagesCheckBox.setChecked(False)
+        self.ui.installPackagesCheckBox.setChecked(False)
         self.ui.cancelButton.setText("Close")
         self.ui.createProfileButton.setEnabled(True)
         self.ui.consoleOutputHolder.setText("")

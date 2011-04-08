@@ -32,6 +32,7 @@ import socket
 import tempfile
 import random   # to generate random directory names for installing multiple bundles in on go
 import zipfile
+import pydoc
 
 # Given the merits of argparse, I hope it'll soon be part
 # of the Python Standard Library.
@@ -79,8 +80,8 @@ figuring out if the packages are in the local cache, handling exceptions and man
 
 
 app_name = "apt-offline"
-version = "1.0"
-copyright = "(C) 2005 - 2010 Ritesh Raj Sarraf"
+version = "1.1"
+copyright = "(C) 2005 - 2011 Ritesh Raj Sarraf"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
 the GNU GPL Version 3 (or later) License\n"
@@ -132,6 +133,10 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                         ( num_of_bugs, header, self.bugs_list ) = AptOfflineDebianBtsLib.get_reports( PackageName )
                 except socket.timeout:
                         return 0
+                except NoNetwork:
+                        log.verbose("Network connection to the BTS couldn't be established")
+                        return 0
+                        
                 
                 if num_of_bugs:
                         atleast_one_bug_report_downloaded = False
@@ -153,7 +158,11 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                                 try:
                                                         data = AptOfflineDebianBtsLib.get_report( bug_num, followups=True )
                                                 except socket.timeout:
-                                                        return False
+                                                        break
+                                                
+                                                if data is None:
+                                                        break
+                                                
                                                 if Filename == None:
                                                         self.fileName = PackageName + "." + bug_num + "." + self.apt_bug
                                                         file_handle = open( self.fileName, 'w' )
@@ -316,7 +325,12 @@ def stripper(item):
 
         url = string.rstrip(string.lstrip(''.join(item[0]), chars="'"), chars="'")
         file = string.rstrip(string.lstrip(''.join(item[1]), chars="'"), chars="'")
-        size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
+	try:
+		size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
+	except ValueError:
+		log.verbose("%s is malformed\n" % (" ".join(item) ) )
+		size = 0
+
         #INFO: md5 ends up having '\n' with it.
         # That needs to be stripped too.
 	try:
@@ -368,54 +382,6 @@ def errfunc(errno, errormsg, filename):
                 sys.exit(errno)
         else:
                 log.err("I don't understand this error code %s\nPlease file a bug report" % (errno))
-        
-        
-def get_pager_cmd(pager_cmd = None):
-        if os.name == 'posix':
-                default_pager_cmd = 'less -r'
-        elif os.name in ['nt', 'dos']:
-                default_pager_cmd = 'type'
-        
-        if pager_cmd is None:
-                try:
-                        pager_cmd = os.environ['PAGER']
-                except:
-                        pager_cmd = default_pager_cmd
-                return pager_cmd
-
-
-class PagerCmd:
-        '''Tries to automatically detect and set the pager on the running OS'''
-        def __init__(self, pager_cmd = None):
-                if os.name == 'posix':
-                        self.default_pager_cmd = 'less -r'
-                elif os.name in ['nt', 'dos']:
-                        self.default_pager_cmd = 'type'
-                
-                if pager_cmd is None:
-                        try:
-                                self.pager_cmd = os.environ['PAGER']
-                        except:
-                                self.pager_cmd = self.default_pager_cmd
-        
-        def send_to_pager(self, String = None):
-                '''Writes the String to the pager'''
-                if String is None:
-                        return False
-                else:
-                        try:
-                                retval = None # None is correct. On success, None is returned
-                                pager = os.popen(self.pager_cmd, 'w')
-                                pager.write(String)
-                                retval = pager.close()
-                        except IOError,msg:  # broken pipe when user quits
-                                if msg.args == (32,'Broken pipe'):
-                                        retval = None
-                                else:
-                                        retval = 1
-                        except OSError:
-                                retval = 1
-                        return retval
             
 
 def fetcher( args ):
@@ -428,6 +394,8 @@ def fetcher( args ):
         Bool_DisableMD5Check = args.disable_md5check
         Int_NumOfThreads = args.num_of_threads
         Str_BundleFile = args.bundle_file
+        Str_ProxyHost = args.proxy_host
+        Str_ProxyPort = args.proxy_port
         #Bool_GetUpdate = args.get_update
         #Bool_GetUpgrade = args.get_upgrade
         Bool_BugReports = args.deb_bugs
@@ -441,6 +409,25 @@ def fetcher( args ):
                 except AttributeError:
                         log.err( "Incorrect value set for socket timeout.\n" )
                         sys.exit( 1 )
+
+        if Str_ProxyHost:
+            if Str_ProxyPort:
+                try:
+                    log.verbose(Str_ProxyHost + ":" + Str_ProxyPort)
+                    proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
+                    opener = urllib2.build_opener(proxy_support)
+                    urllib2.install_opener(opener)
+                except :
+                    log.err("Handle this exception.\n")
+                    sys.exit(1)
+            else:
+                try:
+                    proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost})
+                    opener = urllib2.build_opener(proxy_support)
+                    urllib2.install_opener(opener)
+                except:
+                    log.err("Handle this exception.\n")
+                    sys.exit(1)
         
         #INFO: Python 2.5 has hashlib which supports sha256
         # If we don't have Python 2.5, disable MD5/SHA256 checksum
@@ -500,7 +487,14 @@ def fetcher( args ):
                 if os.access(Str_BundleFile, os.F_OK ):
                         log.err( "%s already present.\nRemove it first.\n" % ( Str_BundleFile ) )
                         sys.exit( 1 )
-        
+                else:
+                    try:
+                        f = open(Str_BundleFile, 'w')
+                    except IOError:
+                        log.err("Cannot write to file %s\n" % (Str_BundleFile) )
+                        sys.exit(1)
+                    os.unlink(Str_BundleFile)
+
         if Bool_BugReports:
                 if DebianBTS is True:
                         if Str_BundleFile is not None:
@@ -775,7 +769,7 @@ def fetcher( args ):
                         #INFO: Handle the multiple Packages formats.
                         # See DTBS #583502
                         SupportedFormats = ["bz2", "gz", "lzma"]
-                        
+
                         #INFO: We are a package update
                         PackageName = url
                         PackageFile = url.split("/")[-1]
@@ -786,13 +780,13 @@ def fetcher( args ):
                         log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
                         if DownloadPackages(url) is False and guiTerminateSignal is False:
                                 # dont proceed retry if Ctrl+C in cli
-                                errlist.append(url)
+                                log.verbose("%s failed. Retry with the remaining possible formats" % (url) )
                                 
                                 # We could fail with the Packages format of what apt gave us. We can try the rest of the formats that apt or the archive could support
                                 for Format in SupportedFormats:
                                         NewPackageFile = PackageFile.split(".")[0] + "." + Format
                                         NewUrl = url.strip(url.split("/")[-1]) + NewPackageFile
-                                        log.msg("Retry download %s.%s\n" % (NewUrl, LINE_OVERWRITE_MID) ) 
+                                        log.verbose("Retry download %s.%s\n" % (NewUrl, LINE_OVERWRITE_MID) ) 
                                         if DownloadPackages(NewUrl) is True:
                                                 break
                                         else:
@@ -1186,10 +1180,7 @@ def installer( args ):
                                                 response = get_response()
                 
                                         if found:
-                                                display_pager = PagerCmd()
-                                                retval = display_pager.send_to_pager( file.read( bug_file_to_display ) )
-                                                if retval == 1:
-                                                        log.err( "Broken pager. Can't display the bug details.\n" )
+                                                pydoc.pager(file.read(bug_file_to_display) )
                                                 # Redisplay the menu
                                                 # FIXME: See a pythonic possibility of cleaning the screen at this stage
                                                 response = get_response()
@@ -1323,11 +1314,8 @@ def installer( args ):
                                                 log.err( "Incorrect bug number %s provided.\n" % ( response ) )
                                                 response = get_response()
                                         if found:
-                                                display_pager = PagerCmd()
                                                 file = open(bug_file_to_display, 'r')
-                                                retval = display_pager.send_to_pager(file.read())
-                                                if retval == 1:
-                                                        log.err( "Broken pager. Can't display the bug details.\n" )
+                                                pydoc.pager(file.read() )
                                                 # Redisplay the menu
                                                 # FIXME: See a pythonic possibility of cleaning the screen at this stage
                                                 response = get_response()
@@ -1705,23 +1693,6 @@ def setter(args):
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
         
-def gui(args):
-        Bool_GUI = args.gui
-        log.msg("Graphical Interface is currently not ready.\n")
-        if Bool_GUI:
-                if guiBool is True:
-                        class GUI( pyptofflineguiForm ):
-                                pass
-                        app = QApplication( sys.argv )
-                        QObject.connect( app, SIGNAL( "lastWindowClosed()" ), app, SLOT( "quit()" ) )
-                        w = GUI()
-                        app.setMainWidget( w )
-                        w.show()
-                        app.exec_loop()
-                else:
-                        log.err( "Incomplete installation. PyQT or apt-offline GUI libraries not available.\n" )
-                        sys.exit( 1 )
-        
 class AptPython:
         def __init__( self ):
                 if PythonApt:
@@ -1825,6 +1796,12 @@ def main():
         parser_get.add_argument("--bug-reports", dest="deb_bugs",
                           help="Fetch bug reports from the BTS", action="store_true" )
         
+        parser_get.add_argument("--proxy-host", dest="proxy_host",
+						help="Proxy Host to use", type=str, default=None)
+        
+        parser_get.add_argument("--proxy-port", dest="proxy_port",
+						help="Proxy port number to use", type=int, default=None)
+        
         # INSTALL command options
         parser_install = subparsers.add_parser('install', parents=[global_options])
         parser_install.set_defaults(func=installer)
@@ -1842,10 +1819,6 @@ def main():
         parser_install.add_argument("--allow-unauthenticated", dest="allow_unauthenticated",
                                     help="Ignore apt gpg signatures mismatch", action="store_true")
         
-        # GUI options
-        parser_gui = subparsers.add_parser('gui', parents=[global_options])
-        parser_gui.set_defaults(func=gui)
-        parser_gui.add_argument('gui', help="Run apt-offline in Graphical mode", action="store_true")
         
         args = parser.parse_args()
         

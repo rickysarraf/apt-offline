@@ -4,7 +4,7 @@ Content-type: text/html
 <HTML><HEAD><TITLE>Man page of apt-offline</TITLE>
 </HEAD><BODY>
 <H1>apt-offline</H1>
-Section: USER COMMANDS (8)<BR>Updated: October, 2009<BR><A HREF="#index">Index</A>
+Section: USER COMMANDS (8)<BR>Updated: April, 2011<BR><A HREF="#index">Index</A>
 <A HREF="/cgi-bin/man/man2html">Return to Main Contents</A><HR>
 
 <A NAME="lbAB">&nbsp;</A>
@@ -89,7 +89,7 @@ Other valid types are
 <P>
 </DL>
 <A NAME="lbAF">&nbsp;</A>
-<H3>get [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] apt-offline.sig</H3>
+<H3>get [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] [--proxy-host] [--proxy-port] apt-offline.sig</H3>
 
 <P>
 <P>
@@ -131,6 +131,12 @@ Create an archive file FILENAME. The file is archived in zip format
 <DT><B>--bug-reports</B><DD>
 Download bug reports for packages that are being downloaded. Currently only
 the Debian BTS is supported.
+<P>
+<DT><B>--proxy-host</B><DD>
+Specify the Proxy Host to be used.
+<P>
+<DT><B>--proxy-port</B><DD>
+Specify the Proxy port number to be used.
 <P>
 </DL>
 <A NAME="lbAG">&nbsp;</A>
@@ -286,7 +292,7 @@ This software is dedicated to the memory of my father Santosh Kumar Sarraf. We m
 <DT><A HREF="#lbAD">DESCRIPTION</A><DD>
 <DL>
 <DT><A HREF="#lbAE">set [-h] [--install-packages PKG...PKG_N] [--install-src-packages PKG...PKG_N] --src-build-dep [--release release_name] [--update] [--upgrade] [--upgrade-type upgrade] apt-offline.sig</A><DD>
-<DT><A HREF="#lbAF">get [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] apt-offline.sig</A><DD>
+<DT><A HREF="#lbAF">get [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] [--proxy-host] [--proxy-port] apt-offline.sig</A><DD>
 <DT><A HREF="#lbAG">install [-h] [--skip-bug-reports ] [--install-src-path PATH] [--allow-unauthenticated] FILE/FOLDER</A><DD>
 </DL>
 <DT><A HREF="#lbAH">GLOBAL OPTIONS</A><DD>
@@ -300,6 +306,6 @@ This software is dedicated to the memory of my father Santosh Kumar Sarraf. We m
 This document was created by
 <A HREF="/cgi-bin/man/man2html">man2html</A>,
 using the manual pages.<BR>
-Time: 16:30:31 GMT, November 07, 2010
+Time: 12:43:47 GMT, April 06, 2011
 </BODY>
 </HTML>
