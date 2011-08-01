@@ -1,3 +1,13 @@
+apt-offline (1.1.1) unstable; urgency=low
+
+  * [ad257b7] Switch to dh_python2.
+    Thanks to Julian Taylor (Closes: 631419)
+  * [c09d819] Manpage spell-check fixes.
+    Thanks to A. Costa (Closes: 624745)
+  * [d871f89] Update Standards Version to 3.9.2. No changes required.
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Mon, 01 Aug 2011 14:41:15 +0530
+
 apt-offline (1.1) unstable; urgency=low
 
   * New Bugfix Release (Closes: #593690, #615976) 
