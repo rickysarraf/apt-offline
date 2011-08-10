@@ -493,7 +493,6 @@ def fetcher( args ):
                     except IOError:
                         log.err("Cannot write to file %s\n" % (Str_BundleFile) )
                         sys.exit(1)
-                    os.unlink(Str_BundleFile)
 
         if Bool_BugReports:
                 if DebianBTS is True:
