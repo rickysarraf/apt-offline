@@ -1,3 +1,17 @@
+apt-offline (1.2) unstable; urgency=low
+
+  * New Bugfix Release
+  * [6b6c051] Remove non-existent unlink.
+    Thanks to Michael Druckenmiller
+  * [d98bd6b] Update manpage and correct argument positions.
+    Thanks to Pawel Sadkowski (Closes: #647214)
+  * [035a0b6] Fix gpg signature verfication (Closes: #664654)
+  * [c42b435] Bump Standards Version to 3.9.3. No changes required.
+  * [cb9140d] Fix typos in package description.
+    Thanks to Erik Esterer (Closes: #644487)
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Wed, 25 Apr 2012 19:05:58 +0530
+
 apt-offline (1.1.1) unstable; urgency=low
 
   * [ad257b7] Switch to dh_python2.
