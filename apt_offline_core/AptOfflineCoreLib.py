@@ -80,7 +80,7 @@ figuring out if the packages are in the local cache, handling exceptions and man
 
 
 app_name = "apt-offline"
-version = "1.1"
+version = "1.2"
 copyright = "(C) 2005 - 2011 Ritesh Raj Sarraf"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
@@ -493,7 +493,6 @@ def fetcher( args ):
                     except IOError:
                         log.err("Cannot write to file %s\n" % (Str_BundleFile) )
                         sys.exit(1)
-                    os.unlink(Str_BundleFile)
 
         if Bool_BugReports:
                 if DebianBTS is True:
@@ -522,6 +521,24 @@ def fetcher( args ):
                         
                 FetchData['Item'] = []
                 for item in raw_data_list:
+			# Interim fix for Debian bug #664654
+			(ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
+			if ItemURL.endswith("InRelease"):
+				log.verbose("APT uses new InRelease auth mechanism")
+				ExtraItemURL = ItemURL.rstrip(ItemURL.split("/")[-1])
+				GPGItemURL = "'" + ExtraItemURL + "Release.gpg"
+				ReleaseItemURL = "'" + ExtraItemURL + "Release"
+				ExtraItemFile = ItemFile.rstrip(ItemFile.split("_")[-1])
+				GPGItemFile = ExtraItemFile + "Release.gpg"
+				ReleaseItemFile = ExtraItemFile + "Release"
+
+				FetchData['Item'].append(GPGItemURL + " " + GPGItemFile + " " + str(ItemSize) + " " + ItemChecksum)
+				log.verbose("Printing GPG URL/Files")
+				log.verbose("%s %s" % (GPGItemURL, GPGItemFile) )
+
+				FetchData['Item'].append(ReleaseItemURL + " " + ReleaseItemFile + " " + str(ItemSize) + " " + ItemChecksum)
+				log.verbose("Printing Release URL/Files")
+				log.verbose("%s %s" % (ReleaseItemURL, ReleaseItemFile) )
                         FetchData['Item'].append( item )
         del raw_data_list
         
