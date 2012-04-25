@@ -41,7 +41,7 @@ or
 commands must be provided.
 <P>
 <A NAME="lbAE">&nbsp;</A>
-<H3>set [-h] [--install-packages PKG...PKG_N] [--install-src-packages PKG...PKG_N] --src-build-dep [--release release_name] [--update] [--upgrade] [--upgrade-type upgrade] apt-offline.sig</H3>
+<H3>set FILENAME [-h] [--install-packages PKG...PKG_N] [--install-src-packages PKG...PKG_N] --src-build-dep [--release release_name] [--update] [--upgrade] [--upgrade-type upgrade]</H3>
 
 <P>
 <P>
@@ -89,7 +89,7 @@ Other valid types are
 <P>
 </DL>
 <A NAME="lbAF">&nbsp;</A>
-<H3>get [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] [--proxy-host] [--proxy-port] apt-offline.sig</H3>
+<H3>get FILENAME [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] [--proxy-host] [--proxy-port]</H3>
 
 <P>
 <P>
@@ -140,7 +140,7 @@ Specify the Proxy port number to be used.
 <P>
 </DL>
 <A NAME="lbAG">&nbsp;</A>
-<H3>install [-h] [--skip-bug-reports ] [--install-src-path PATH] [--allow-unauthenticated] FILE/FOLDER</H3>
+<H3>install FILE/FOLDER [-h] [--skip-bug-reports ] [--install-src-path PATH] [--allow-unauthenticated]</H3>
 
 <P>
 <P>
@@ -188,7 +188,7 @@ Run in verbose mode
 Developer only. Used for testing on windows
 <P>
 <DT>-v, --version<DD>
-Display the version of the progream
+Display the version of the program
 <P>
 <P>
 </DL>
@@ -255,14 +255,6 @@ absolute FOLDER path or the archive FILE path can be specified.
 <B>apt-offline is written by Ritesh Raj Sarraf (<A HREF="mailto:rrs@researchut.com">rrs@researchut.com</A>)</B>
 
 <P>
-<A NAME="lbAK">&nbsp;</A>
-<H2>BUGS</H2>
-
-Signal hanling is executed only in the Main Thread, thus leading to CTRL + C not exiting during the
-<B>get</B>
-
-operation. This is more a python gil problem. Google python + gil for more details
-<P>
 If you wish to report a bug in apt-offline, please see 
 <B><A HREF="http://apt-offline.alioth.debian.org">http://apt-offline.alioth.debian.org</A></B>
 
@@ -270,7 +262,7 @@ or send an email to me at
 <B><A HREF="mailto:rrs@researchut.com">rrs@researchut.com</A></B>
 
 <P>
-<A NAME="lbAL">&nbsp;</A>
+<A NAME="lbAK">&nbsp;</A>
 <H2>SEE ALSO</H2>
 
 <A HREF="/cgi-bin/man/man2html?8+apt-get">apt-get</A>(8),
@@ -278,7 +270,7 @@ or send an email to me at
 <A HREF="/cgi-bin/man/man2html?8+dpkg">dpkg</A>(8),
 <A HREF="/cgi-bin/man/man2html?8+aptitude">aptitude</A>(8),
 <P>
-<A NAME="lbAM">&nbsp;</A>
+<A NAME="lbAL">&nbsp;</A>
 <H2>DEDICATION</H2>
 
 This software is dedicated to the memory of my father Santosh Kumar Sarraf. We miss you a lot.
@@ -291,21 +283,20 @@ This software is dedicated to the memory of my father Santosh Kumar Sarraf. We m
 <DT><A HREF="#lbAC">SYNOPSIS</A><DD>
 <DT><A HREF="#lbAD">DESCRIPTION</A><DD>
 <DL>
-<DT><A HREF="#lbAE">set [-h] [--install-packages PKG...PKG_N] [--install-src-packages PKG...PKG_N] --src-build-dep [--release release_name] [--update] [--upgrade] [--upgrade-type upgrade] apt-offline.sig</A><DD>
-<DT><A HREF="#lbAF">get [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] [--proxy-host] [--proxy-port] apt-offline.sig</A><DD>
-<DT><A HREF="#lbAG">install [-h] [--skip-bug-reports ] [--install-src-path PATH] [--allow-unauthenticated] FILE/FOLDER</A><DD>
+<DT><A HREF="#lbAE">set FILENAME [-h] [--install-packages PKG...PKG_N] [--install-src-packages PKG...PKG_N] --src-build-dep [--release release_name] [--update] [--upgrade] [--upgrade-type upgrade]</A><DD>
+<DT><A HREF="#lbAF">get FILENAME [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] [--proxy-host] [--proxy-port]</A><DD>
+<DT><A HREF="#lbAG">install FILE/FOLDER [-h] [--skip-bug-reports ] [--install-src-path PATH] [--allow-unauthenticated]</A><DD>
 </DL>
 <DT><A HREF="#lbAH">GLOBAL OPTIONS</A><DD>
 <DT><A HREF="#lbAI">EXAMPLES</A><DD>
 <DT><A HREF="#lbAJ">AUTHOR</A><DD>
-<DT><A HREF="#lbAK">BUGS</A><DD>
-<DT><A HREF="#lbAL">SEE ALSO</A><DD>
-<DT><A HREF="#lbAM">DEDICATION</A><DD>
+<DT><A HREF="#lbAK">SEE ALSO</A><DD>
+<DT><A HREF="#lbAL">DEDICATION</A><DD>
 </DL>
 <HR>
 This document was created by
 <A HREF="/cgi-bin/man/man2html">man2html</A>,
 using the manual pages.<BR>
-Time: 12:43:47 GMT, April 06, 2011
+Time: 12:40:17 GMT, April 25, 2012
 </BODY>
 </HTML>
