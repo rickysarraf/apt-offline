@@ -12,40 +12,40 @@ Vcs-Browser: http://git.debian.org/?p=apt-offline/apt-offline.git
 Package: apt-offline
 Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}, python-argparse, python, apt, less
-Description: offline apt package manager
- apt-offline is an Offline APT Package Manager
+Description: offline APT package manager
+ apt-offline is an Offline APT Package Manager.
  .
  apt-offline can fully update and upgrade an APT based distribution without
- connecting to the network, all of it transparent to apt
+ connecting to the network, all of it transparent to APT.
  .
  apt-offline can be used to generate a signature on a machine (with no network).
- This signature contains all download information required for the apt database
+ This signature contains all download information required for the APT database
  system. This signature file can be used on another machine connected to the
  internet (which need not be a Debian box and can even be running windows) to
  download the updates.
- The downloaded data will contain all updates in a format understood by apt and
+ The downloaded data will contain all updates in a format understood by APT and
  this data can be used by apt-offline to update the non-networked machine.
  .
- apt-offline can also fetch bug reports and make them available offline
+ apt-offline can also fetch bug reports and make them available offline.
 
 Package: apt-offline-gui
 Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}, apt-offline (= ${binary:Version}),
  python-qt4
-Description: offline apt package manager - GUI
- apt-offline is an Offline APT Package Manager
+Description: offline APT package manager - GUI
+ apt-offline is an Offline APT Package Manager.
  .
  apt-offline can fully update and upgrade an APT based distribution without
- connecting to the network, all of it transparent to apt
+ connecting to the network, all of it transparent to APT.
  .
  apt-offline can be used to generate a signature on a machine (with no network).
- This signature contains all download information required for the apt database
+ This signature contains all download information required for the APT database
  system. This signature file can be used on another machine connected to the
  internet (which need not be a Debian box and can even be running windows) to
  download the updates.
- The downloaded data will contain all updates in a format understood by apt and
+ The downloaded data will contain all updates in a format understood by APT and
  this data can be used by apt-offline to update the non-networked machine.
  .
- apt-offline can also fetch bug reports and make them available offline
+ apt-offline can also fetch bug reports and make them available offline.
  .
- This package contains the Graphical User Interface to apt-offline
+ This package contains the graphical user interface to apt-offline.
