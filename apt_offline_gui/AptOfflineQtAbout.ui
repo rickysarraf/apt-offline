@@ -271,7 +271,15 @@ This is a Graphical User Interface which exposes the functionality of apt-offlin
       </font>
      </property>
      <property name="plainText">
-      <string>LICENSE not found. Please contact the developers immediately.</string>
+      <string>                    GNU GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2007
+
+ Copyright (C) 2007 Free Software Foundation, Inc. &lt;http://fsf.org/&gt;
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+
+
+apt-offline is Copyright (C) - Ritesh Raj Sarraf</string>
      </property>
     </widget>
    </widget>
