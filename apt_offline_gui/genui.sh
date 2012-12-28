@@ -10,4 +10,5 @@ pyuic4  AptOfflineQtFetch.ui > Ui_AptOfflineQtFetch.py
 pyuic4 AptOfflineQtInstall.ui > Ui_AptOfflineQtInstall.py
 pyuic4 AptOfflineQtAbout.ui > Ui_AptOfflineQtAbout.py
 pyuic4  AptOfflineQtFetchOptions.ui > Ui_AptOfflineQtFetchOptions.py
+pyuic4  AptOfflineQtInstallBugList.ui > Ui_AptOfflineQtInstallBugList.py
 echo "Done"
