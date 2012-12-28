@@ -7,6 +7,8 @@ from apt_offline_gui.UiDataStructs import InstallerArgs
 from apt_offline_gui import AptOfflineQtCommon as guicommon
 import apt_offline_core.AptOfflineCoreLib
 
+from apt_offline_gui.AptOfflineQtInstallBugList import AptOfflineQtInstallBugList
+
 class Worker(QtCore.QThread):
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
@@ -78,6 +80,9 @@ class AptOfflineQtInstall(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
                         self.reject )
         
+        QtCore.QObject.connect(self.ui.bugReportsButton, QtCore.SIGNAL("clicked()"),
+                        self.showBugReports )
+        
         QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("editingFinished()"),
                         self.ControlStartInstallBox )
 
@@ -120,6 +125,24 @@ class AptOfflineQtInstall(QtGui.QDialog):
         self.worker.setArgs (args)
         self.worker.start()
 
+    def showBugReports(self):
+
+        self.filepath = str(self.ui.zipFilePath.text())
+
+        if os.path.isfile(self.filepath) == False:
+            if (len(self.filepath) == 0):
+                self.ui.rawLogHolder.setText ( \
+                    guicommon.style("Please select a zip file!",'red'))
+            else:
+                self.ui.rawLogHolder.setText ( \
+                    guicommon.style("%s does not exist." % self.filepath,'red'))
+            return
+
+        self.bugReportsDialog = AptOfflineQtInstallBugList(self.filepath)
+        self.bugReportsDialog.filepath= self.filepath
+        self.bugReportsDialog.show()
+        
+
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
         directory = QtGui.QFileDialog.getOpenFileName(self, u'Select the Zip File')
@@ -130,8 +153,11 @@ class AptOfflineQtInstall(QtGui.QDialog):
     def ControlStartInstallBox(self):
         if self.ui.zipFilePath.text().isEmpty():
             self.ui.startInstallButton.setEnabled(False)
+	    # We do the same for bug reports button
+            self.ui.bugReportsButton.setEnabled(False)
         else:
             self.ui.startInstallButton.setEnabled(True)
+            self.ui.bugReportsButton.setEnabled(True)
             
     def updateLog(self,text):
         guicommon.updateInto (self.ui.rawLogHolder,text)
@@ -157,14 +183,17 @@ class AptOfflineQtInstall(QtGui.QDialog):
     def disableActions(self):
         self.ui.cancelButton.setEnabled(False)
         self.ui.startInstallButton.setEnabled(False)
+        self.ui.bugReportsButton.setEnabled(False)
         self.ui.browseFilePathButton.setEnabled(False)
         self.ui.zipFilePath.setEnabled(False)
 
     def enableActions(self):
         self.ui.cancelButton.setEnabled(True)
         self.ui.startInstallButton.setEnabled(True)
+        self.ui.bugReportsButton.setEnabled(True)
         self.ui.browseFilePathButton.setEnabled(True)
         self.ui.zipFilePath.setEnabled(True)
+
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)

@@ -2,16 +2,21 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtAbout.ui'
 #
-# Created: Sun Feb 20 05:01:00 2011
-#      by: PyQt4 UI code generator 4.7.3
+# Created: Sat Dec 29 02:30:59 2012
+#      by: PyQt4 UI code generator 4.9.3
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt4 import QtCore, QtGui
 
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    _fromUtf8 = lambda s: s
+
 class Ui_AboutAptOffline(object):
     def setupUi(self, AboutAptOffline):
-        AboutAptOffline.setObjectName("AboutAptOffline")
+        AboutAptOffline.setObjectName(_fromUtf8("AboutAptOffline"))
         AboutAptOffline.setWindowModality(QtCore.Qt.ApplicationModal)
         AboutAptOffline.resize(526, 378)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
@@ -27,82 +32,82 @@ class Ui_AboutAptOffline(object):
         font.setPointSize(16)
         self.label.setFont(font)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.label.setObjectName("label")
+        self.label.setObjectName(_fromUtf8("label"))
         self.tabWidget = QtGui.QTabWidget(AboutAptOffline)
         self.tabWidget.setGeometry(QtCore.QRect(7, 90, 510, 241))
-        self.tabWidget.setObjectName("tabWidget")
+        self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
         self.aboutTab = QtGui.QWidget()
-        self.aboutTab.setObjectName("aboutTab")
+        self.aboutTab.setObjectName(_fromUtf8("aboutTab"))
         self.label_3 = QtGui.QLabel(self.aboutTab)
         self.label_3.setGeometry(QtCore.QRect(10, 20, 491, 31))
         self.label_3.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
         self.label_3.setWordWrap(True)
-        self.label_3.setObjectName("label_3")
+        self.label_3.setObjectName(_fromUtf8("label_3"))
         self.label_14 = QtGui.QLabel(self.aboutTab)
         self.label_14.setGeometry(QtCore.QRect(10, 46, 481, 61))
         self.label_14.setWordWrap(True)
-        self.label_14.setObjectName("label_14")
-        self.tabWidget.addTab(self.aboutTab, "")
+        self.label_14.setObjectName(_fromUtf8("label_14"))
+        self.tabWidget.addTab(self.aboutTab, _fromUtf8(""))
         self.authorTab = QtGui.QWidget()
-        self.authorTab.setObjectName("authorTab")
+        self.authorTab.setObjectName(_fromUtf8("authorTab"))
         self.label_4 = QtGui.QLabel(self.authorTab)
         self.label_4.setGeometry(QtCore.QRect(10, 10, 111, 16))
-        self.label_4.setObjectName("label_4")
+        self.label_4.setObjectName(_fromUtf8("label_4"))
         self.label_5 = QtGui.QLabel(self.authorTab)
         self.label_5.setGeometry(QtCore.QRect(30, 30, 271, 16))
-        self.label_5.setObjectName("label_5")
+        self.label_5.setObjectName(_fromUtf8("label_5"))
         self.label_6 = QtGui.QLabel(self.authorTab)
         self.label_6.setGeometry(QtCore.QRect(10, 60, 131, 16))
-        self.label_6.setObjectName("label_6")
+        self.label_6.setObjectName(_fromUtf8("label_6"))
         self.label_7 = QtGui.QLabel(self.authorTab)
         self.label_7.setGeometry(QtCore.QRect(30, 80, 261, 16))
-        self.label_7.setObjectName("label_7")
+        self.label_7.setObjectName(_fromUtf8("label_7"))
         self.label_8 = QtGui.QLabel(self.authorTab)
         self.label_8.setGeometry(QtCore.QRect(30, 100, 271, 16))
-        self.label_8.setObjectName("label_8")
-        self.tabWidget.addTab(self.authorTab, "")
+        self.label_8.setObjectName(_fromUtf8("label_8"))
+        self.tabWidget.addTab(self.authorTab, _fromUtf8(""))
         self.thanksTab = QtGui.QWidget()
-        self.thanksTab.setObjectName("thanksTab")
+        self.thanksTab.setObjectName(_fromUtf8("thanksTab"))
         self.label_9 = QtGui.QLabel(self.thanksTab)
         self.label_9.setGeometry(QtCore.QRect(10, 10, 221, 16))
-        self.label_9.setObjectName("label_9")
+        self.label_9.setObjectName(_fromUtf8("label_9"))
         self.label_10 = QtGui.QLabel(self.thanksTab)
         self.label_10.setGeometry(QtCore.QRect(10, 30, 141, 16))
-        self.label_10.setObjectName("label_10")
+        self.label_10.setObjectName(_fromUtf8("label_10"))
         self.label_11 = QtGui.QLabel(self.thanksTab)
         self.label_11.setGeometry(QtCore.QRect(10, 50, 161, 16))
-        self.label_11.setObjectName("label_11")
+        self.label_11.setObjectName(_fromUtf8("label_11"))
         self.label_12 = QtGui.QLabel(self.thanksTab)
         self.label_12.setGeometry(QtCore.QRect(10, 70, 161, 16))
-        self.label_12.setObjectName("label_12")
+        self.label_12.setObjectName(_fromUtf8("label_12"))
         self.label_13 = QtGui.QLabel(self.thanksTab)
         self.label_13.setGeometry(QtCore.QRect(10, 110, 301, 31))
         self.label_13.setWordWrap(True)
-        self.label_13.setObjectName("label_13")
-        self.tabWidget.addTab(self.thanksTab, "")
+        self.label_13.setObjectName(_fromUtf8("label_13"))
+        self.tabWidget.addTab(self.thanksTab, _fromUtf8(""))
         self.licenseTab = QtGui.QWidget()
-        self.licenseTab.setObjectName("licenseTab")
+        self.licenseTab.setObjectName(_fromUtf8("licenseTab"))
         self.licenseText = QtGui.QPlainTextEdit(self.licenseTab)
         self.licenseText.setGeometry(QtCore.QRect(4, 4, 490, 203))
         font = QtGui.QFont()
         font.setPointSize(8)
         self.licenseText.setFont(font)
-        self.licenseText.setObjectName("licenseText")
-        self.tabWidget.addTab(self.licenseTab, "")
+        self.licenseText.setObjectName(_fromUtf8("licenseText"))
+        self.tabWidget.addTab(self.licenseTab, _fromUtf8(""))
         self.label_2 = QtGui.QLabel(AboutAptOffline)
         self.label_2.setGeometry(QtCore.QRect(10, 60, 511, 16))
         self.label_2.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_2.setObjectName("label_2")
+        self.label_2.setObjectName(_fromUtf8("label_2"))
         self.pushButton = QtGui.QPushButton(AboutAptOffline)
         self.pushButton.setGeometry(QtCore.QRect(416, 340, 101, 31))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/icons/dialog-cancel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/dialog-cancel.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.pushButton.setIcon(icon)
-        self.pushButton.setObjectName("pushButton")
+        self.pushButton.setObjectName(_fromUtf8("pushButton"))
 
         self.retranslateUi(AboutAptOffline)
         self.tabWidget.setCurrentIndex(3)
-        QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL("clicked()"), AboutAptOffline.close)
+        QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL(_fromUtf8("clicked()")), AboutAptOffline.close)
         QtCore.QMetaObject.connectSlotsByName(AboutAptOffline)
 
     def retranslateUi(self, AboutAptOffline):
@@ -125,7 +130,15 @@ class Ui_AboutAptOffline(object):
         self.label_12.setText(QtGui.QApplication.translate("AboutAptOffline", "Dennis Lee Bieber", None, QtGui.QApplication.UnicodeUTF8))
         self.label_13.setText(QtGui.QApplication.translate("AboutAptOffline", "The awesome Directi people for their office space required for the mini hackfests", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.thanksTab), QtGui.QApplication.translate("AboutAptOffline", "Thanks To", None, QtGui.QApplication.UnicodeUTF8))
-        self.licenseText.setPlainText(QtGui.QApplication.translate("AboutAptOffline", "LICENSE not found. Please contact the developers immediately.", None, QtGui.QApplication.UnicodeUTF8))
+        self.licenseText.setPlainText(QtGui.QApplication.translate("AboutAptOffline", "                    GNU GENERAL PUBLIC LICENSE\n"
+"                       Version 3, 29 June 2007\n"
+"\n"
+" Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>\n"
+" Everyone is permitted to copy and distribute verbatim copies\n"
+" of this license document, but changing it is not allowed.\n"
+"\n"
+"\n"
+"apt-offline is Copyright (C) - Ritesh Raj Sarraf", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.licenseTab), QtGui.QApplication.translate("AboutAptOffline", "License", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("AboutAptOffline", "A GUI for apt-offline - an offline APT Package Manager", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton.setText(QtGui.QApplication.translate("AboutAptOffline", "Close", None, QtGui.QApplication.UnicodeUTF8))
