@@ -63,7 +63,7 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>90</x>
+     <x>31</x>
      <y>75</y>
      <width>130</width>
      <height>30</height>
@@ -80,9 +80,9 @@
   <widget class="QPushButton" name="cancelButton">
    <property name="geometry">
     <rect>
-     <x>240</x>
+     <x>320</x>
      <y>75</y>
-     <width>140</width>
+     <width>110</width>
      <height>30</height>
     </rect>
    </property>
@@ -169,6 +169,26 @@
      <width>411</width>
      <height>191</height>
     </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="bugReportsButton">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>172</x>
+     <y>75</y>
+     <width>130</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Bug Reports</string>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/help-about.png</normaloff>:/icons/icons/help-about.png</iconset>
    </property>
   </widget>
  </widget>

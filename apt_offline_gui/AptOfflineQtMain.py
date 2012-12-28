@@ -86,9 +86,9 @@ class AptOfflineQtMain(QtGui.QMainWindow):
         self.createDownloadDialog.show()
 
     def InstallPackagesUpgrades(self):
-        if os.geteuid() != 0:
-                QtGui.QMessageBox.critical(self, "Error", "You need to run with root priviliges")
-                return
+        #if os.geteuid() != 0:
+        #        QtGui.QMessageBox.critical(self, "Error", "You need to run with root priviliges")
+        #        return
         # Code for creating Modal Dialog for Installing Packages/Upgrades
         self.createInstallDialog.show()
     
