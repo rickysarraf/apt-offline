@@ -34,6 +34,10 @@ class AptOfflineQtInstallBugList(QtGui.QDialog):
                 myCursor = self.ui.bugListplainTextEdit.textCursor()
                 myCursor.movePosition(myCursor.Start)
                 self.ui.bugListplainTextEdit.setTextCursor(myCursor)
+        
+        def noBugPopulateBugListPlainTextEdit(self):
+                self.ui.bugListplainTextEdit.clear()
+                self.ui.bugListplainTextEdit.appendPlainText("No Bug Reports Found")
 
         def populateBugList(self, path):
                 
@@ -55,15 +59,29 @@ class AptOfflineQtInstallBugList(QtGui.QDialog):
                                                         break
                                         temp.file.close()
                                         
-                        for eachItem in self.bugList.keys():
-                                item = QtGui.QListWidgetItem(eachItem)
-                                self.ui.bugListViewWindow.addItem(item)        
-
                 elif os.path.isdir(path):
-                        print "Do something"
+                        for filename in os.listdir( path ):
+                                if filename.endswith( AptOfflineCoreLib.apt_bug_file_format ):
+                                        filename = os.path.join(path, filename)
+                                        temp = open(filename, 'r')
+                                        for bug_subject_identifier in temp.readlines():
+                                                if bug_subject_identifier.startswith( '#' ):
+                                                        bug_subject_identifier = bug_subject_identifier.rstrip("\n")
+                                                        temp.seek(0)
+                                                        self.bugList[bug_subject_identifier] = temp.readlines()
+                                                        break
+                                        temp.close()
                 else:
                         print "Invalid Path"
                         return False
+
+                if len(self.bugList.keys()) is 0:
+                        self.noBugPopulateBugListPlainTextEdit()
+                else:
+                        for eachItem in self.bugList.keys():
+                                item = QtGui.QListWidgetItem(eachItem)
+                                self.ui.bugListViewWindow.addItem(item)
+                        
                     
 #    def StartInstall(self):
 #         gui validation
