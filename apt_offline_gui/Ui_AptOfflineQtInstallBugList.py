@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtInstallBugList.ui'
 #
-# Created: Sat Dec 29 02:31:00 2012
+# Created: Sat Dec 29 03:10:31 2012
 #      by: PyQt4 UI code generator 4.9.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -36,9 +36,11 @@ class Ui_AptOfflineQtInstallBugList(object):
         self.label = QtGui.QLabel(AptOfflineQtInstallBugList)
         self.label.setGeometry(QtCore.QRect(30, 10, 231, 16))
         self.label.setObjectName(_fromUtf8("label"))
-        self.bugListDetailsViewWindow = QtGui.QListView(AptOfflineQtInstallBugList)
-        self.bugListDetailsViewWindow.setGeometry(QtCore.QRect(30, 160, 581, 451))
-        self.bugListDetailsViewWindow.setObjectName(_fromUtf8("bugListDetailsViewWindow"))
+        self.bugListplainTextEdit = QtGui.QPlainTextEdit(AptOfflineQtInstallBugList)
+        self.bugListplainTextEdit.setGeometry(QtCore.QRect(30, 160, 581, 441))
+        self.bugListplainTextEdit.setAcceptDrops(False)
+        self.bugListplainTextEdit.setReadOnly(True)
+        self.bugListplainTextEdit.setObjectName(_fromUtf8("bugListplainTextEdit"))
 
         self.retranslateUi(AptOfflineQtInstallBugList)
         QtCore.QMetaObject.connectSlotsByName(AptOfflineQtInstallBugList)

@@ -65,14 +65,20 @@
     <string>List of bugs</string>
    </property>
   </widget>
-  <widget class="QListView" name="bugListDetailsViewWindow">
+  <widget class="QPlainTextEdit" name="bugListplainTextEdit">
    <property name="geometry">
     <rect>
      <x>30</x>
      <y>160</y>
      <width>581</width>
-     <height>451</height>
+     <height>441</height>
     </rect>
+   </property>
+   <property name="acceptDrops">
+    <bool>false</bool>
+   </property>
+   <property name="readOnly">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>
