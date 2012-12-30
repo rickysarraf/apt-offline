@@ -11,14 +11,13 @@ class AptOfflineQtInstallBugList(QtGui.QDialog):
         def __init__(self, filepath, parent=None):
             QtGui.QWidget.__init__(self, parent)
             self.ui = Ui_AptOfflineQtInstallBugList()
-
+            
             self.bugList = {}
             self.filepath = filepath
             
             self.ui.setupUi(self)
-            self.analyzePath(self.filepath)            
+            self.populateBugList(self.filepath)            
             
-            #self.ui.bugListViewWindow.itemClicked.connect(self.populateBugListPlainTextEdit)
             self.ui.bugListViewWindow.itemSelectionChanged.connect(self.populateBugListPlainTextEdit)
             
             # Connect the clicked signal of the Browse button to it's slot
@@ -26,14 +25,19 @@ class AptOfflineQtInstallBugList(QtGui.QDialog):
                             self.reject )
 
         def populateBugListPlainTextEdit(self):
-                print "In populateBugList PlainTextEdit() Function"
                 self.ui.bugListplainTextEdit.clear()
-                self.ui.bugListplainTextEdit.appendPlainText("Ritesh Raj Sarraf")
+                textItem = str(self.ui.bugListViewWindow.currentItem().text() )
+                
+                extractedText = self.bugList[textItem]
+                self.ui.bugListplainTextEdit.appendPlainText(" ".join(extractedText))
+                
+                myCursor = self.ui.bugListplainTextEdit.textCursor()
+                myCursor.movePosition(myCursor.Start)
+                self.ui.bugListplainTextEdit.setTextCursor(myCursor)
 
-        def analyzePath(self, path):
+        def populateBugList(self, path):
                 
                 if os.path.isfile(path):
-                        print "Do something"
                         file = zipfile.ZipFile(path, "r")
                         
                         for filename in file.namelist():
