@@ -129,15 +129,6 @@ class AptOfflineQtInstall(QtGui.QDialog):
 
         self.filepath = str(self.ui.zipFilePath.text())
 
-        if os.path.isfile(self.filepath) == False:
-            if (len(self.filepath) == 0):
-                self.ui.rawLogHolder.setText ( \
-                    guicommon.style("Please select a zip file!",'red'))
-            else:
-                self.ui.rawLogHolder.setText ( \
-                    guicommon.style("%s does not exist." % self.filepath,'red'))
-            return
-
         self.bugReportsDialog = AptOfflineQtInstallBugList(self.filepath)
         self.bugReportsDialog.filepath= self.filepath
         self.bugReportsDialog.show()
