@@ -5,46 +5,56 @@ from PyQt4 import QtCore, QtGui
 import zipfile, tempfile
 
 from apt_offline_gui.Ui_AptOfflineQtInstallBugList import Ui_AptOfflineQtInstallBugList
-#from apt_offline_gui.Ui_AptOfflineQtInstall import Ui_AptOfflineQtInstall
 import apt_offline_core.AptOfflineCoreLib as AptOfflineCoreLib
 
 class AptOfflineQtInstallBugList(QtGui.QDialog):
         def __init__(self, filepath, parent=None):
             QtGui.QWidget.__init__(self, parent)
             self.ui = Ui_AptOfflineQtInstallBugList()
+
+            self.bugList = {}
             self.filepath = filepath
+            
             self.ui.setupUi(self)
-            self.analyzePath(self.filepath)
+            self.analyzePath(self.filepath)            
+            
+            #self.ui.bugListViewWindow.itemClicked.connect(self.populateBugListPlainTextEdit)
+            self.ui.bugListViewWindow.itemSelectionChanged.connect(self.populateBugListPlainTextEdit)
+            
             # Connect the clicked signal of the Browse button to it's slot
             QtCore.QObject.connect(self.ui.closeButton, QtCore.SIGNAL("clicked()"),
                             self.reject )
-                            
-            # Connect the clicked signal of the Save to it's Slot - accept
-            QtCore.QObject.connect(self.ui.detailsButton, QtCore.SIGNAL("clicked()"),
-                            self.detailsButton )
-                        
+
+        def populateBugListPlainTextEdit(self):
+                print "In populateBugList PlainTextEdit() Function"
+                self.ui.bugListplainTextEdit.clear()
+                self.ui.bugListplainTextEdit.appendPlainText("Ritesh Raj Sarraf")
 
         def analyzePath(self, path):
-                self.listWidget = QtGui.QListWidget()
+                
                 if os.path.isfile(path):
                         print "Do something"
                         file = zipfile.ZipFile(path, "r")
+                        
                         for filename in file.namelist():
                                 if filename.endswith( AptOfflineCoreLib.apt_bug_file_format ):
-                                        item = QtGui.QListWidgetItem(file.read(filename))
-                                        self.ui.bugListViewWindow.addItem(item)
-#                                        temp = tempfile.NamedTemporaryFile()
-#                                        temp.file.write( file.read( filename ) )
-#                                        temp.file.flush()
-#                                        temp.file.seek( 0 ) #Let's go back to the start of the file
-#                                        for bug_subject_identifier in temp.file.readlines():
-#                                                if bug_subject_identifier.startswith( '#' ):
-#                                                        subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
-#                                                        subject = subject.rstrip( "\n" )
-#                                                        break
-#                                        bugs_number[filename] = subject
-#                                        temp.file.close()
-        
+
+                                        temp = tempfile.NamedTemporaryFile()
+                                        temp.file.write( file.read( filename ) )
+                                        temp.file.flush()
+                                        temp.file.seek( 0 ) #Let's go back to the start of the file
+                                        for bug_subject_identifier in temp.file.readlines():
+                                                if bug_subject_identifier.startswith( '#' ):
+                                                        bug_subject_identifier = bug_subject_identifier.rstrip("\n")
+                                                        temp.file.seek(0)
+                                                        self.bugList[bug_subject_identifier] = temp.file.readlines()
+                                                        break
+                                        temp.file.close()
+                                        
+                        for eachItem in self.bugList.keys():
+                                item = QtGui.QListWidgetItem(eachItem)
+                                self.ui.bugListViewWindow.addItem(item)        
+
                 elif os.path.isdir(path):
                         print "Do something"
                 else:
@@ -120,9 +130,6 @@ class AptOfflineQtInstallBugList(QtGui.QDialog):
 #        self.ui.startInstallButton.setEnabled(True)
 #        self.ui.browseFilePathButton.setEnabled(True)
 #        self.ui.zipFilePath.setEnabled(True)
-
-        def detailsButton(self):
-            self.ui.detailsButton.setEnabled(True)
 
 if __name__ == "__main__":
         app = QtGui.QApplication(sys.argv)

@@ -182,6 +182,12 @@
      <height>211</height>
     </rect>
    </property>
+   <property name="acceptDrops">
+    <bool>false</bool>
+   </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QPushButton" name="browseZipFileButton">
    <property name="geometry">
