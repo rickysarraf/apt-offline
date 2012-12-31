@@ -217,7 +217,7 @@
     </font>
    </property>
    <property name="text">
-    <string>Save archive as</string>
+    <string>Save data as</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="zipFilePath">
@@ -263,6 +263,19 @@
    </property>
    <property name="flat">
     <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="saveDatacheckBox">
+   <property name="geometry">
+    <rect>
+     <x>321</x>
+     <y>80</y>
+     <width>110</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Is Directory</string>
    </property>
   </widget>
  </widget>
