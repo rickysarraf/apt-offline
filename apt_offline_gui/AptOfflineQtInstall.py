@@ -105,17 +105,7 @@ class AptOfflineQtInstall(QtGui.QDialog):
         # gui validation
         # Clear the consoleOutputHolder
         self.ui.rawLogHolder.setText("")
-
         self.filepath = str(self.ui.zipFilePath.text())
-
-        if os.path.isfile(self.filepath) == False:
-            if (len(self.filepath) == 0):
-                self.ui.rawLogHolder.setText ( \
-                    guicommon.style("Please select a zip file!",'red'))
-            else:
-                self.ui.rawLogHolder.setText ( \
-                    guicommon.style("%s does not exist." % self.filepath,'red'))
-            return
 
         # parse args
         args = InstallerArgs(filename=self.filepath, progress_bar=self.ui.statusProgressBar, progress_label=self.ui.progressStatusDescription )
@@ -135,8 +125,13 @@ class AptOfflineQtInstall(QtGui.QDialog):
         
 
     def popupDirectoryDialog(self):
+
         # Popup a Directory selection box
-        directory = QtGui.QFileDialog.getOpenFileName(self, u'Select the Zip File')
+        if self.ui.browseFileFoldercheckBox.isChecked() is True:
+                directory  = QtGui.QFileDialog.getExistingDirectory(self, u'Select the folder')
+        else:
+                directory = QtGui.QFileDialog.getOpenFileName(self, u'Select the Zip File')
+        
         # Show the selected file path in the field marked for showing directory path
         self.ui.zipFilePath.setText(directory)
         self.ui.zipFilePath.setFocus()
@@ -187,7 +182,7 @@ class AptOfflineQtInstall(QtGui.QDialog):
 
 
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
-    myapp = AptOfflineQtInstall()
-    myapp.show()
-    sys.exit(app.exec_())
+        app = QtGui.QApplication(sys.argv)
+        myapp = AptOfflineQtInstall()
+        myapp.show()
+        sys.exit(app.exec_())

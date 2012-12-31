@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtInstall.ui'
 #
-# Created: Sat Dec 29 03:10:30 2012
+# Created: Mon Dec 31 15:13:47 2012
 #      by: PyQt4 UI code generator 4.9.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -77,6 +77,9 @@ class Ui_AptOfflineQtInstall(object):
         icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/icons/help-about.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.bugReportsButton.setIcon(icon2)
         self.bugReportsButton.setObjectName(_fromUtf8("bugReportsButton"))
+        self.browseFileFoldercheckBox = QtGui.QCheckBox(AptOfflineQtInstall)
+        self.browseFileFoldercheckBox.setGeometry(QtCore.QRect(322, 10, 101, 18))
+        self.browseFileFoldercheckBox.setObjectName(_fromUtf8("browseFileFoldercheckBox"))
 
         self.retranslateUi(AptOfflineQtInstall)
         QtCore.QMetaObject.connectSlotsByName(AptOfflineQtInstall)
@@ -86,9 +89,10 @@ class Ui_AptOfflineQtInstall(object):
         self.browseFilePathButton.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Browse", None, QtGui.QApplication.UnicodeUTF8))
         self.startInstallButton.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Install", None, QtGui.QApplication.UnicodeUTF8))
         self.cancelButton.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Close", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Select the zip file", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Specify file or folder path", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Status:", None, QtGui.QApplication.UnicodeUTF8))
         self.progressStatusDescription.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Ready", None, QtGui.QApplication.UnicodeUTF8))
         self.bugReportsButton.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Bug Reports", None, QtGui.QApplication.UnicodeUTF8))
+        self.browseFileFoldercheckBox.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Is Directory", None, QtGui.QApplication.UnicodeUTF8))
 
 import resources_rc

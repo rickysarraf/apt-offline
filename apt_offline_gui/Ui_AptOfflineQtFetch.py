@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetch.ui'
 #
-# Created: Sat Dec 29 03:10:30 2012
+# Created: Mon Dec 31 15:13:47 2012
 #      by: PyQt4 UI code generator 4.9.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -73,6 +73,8 @@ class Ui_AptOfflineQtFetch(object):
         self.progressStatusDescription.setObjectName(_fromUtf8("progressStatusDescription"))
         self.rawLogHolder = QtGui.QTextEdit(AptOfflineQtFetch)
         self.rawLogHolder.setGeometry(QtCore.QRect(30, 252, 411, 211))
+        self.rawLogHolder.setAcceptDrops(False)
+        self.rawLogHolder.setReadOnly(True)
         self.rawLogHolder.setObjectName(_fromUtf8("rawLogHolder"))
         self.browseZipFileButton = QtGui.QPushButton(AptOfflineQtFetch)
         self.browseZipFileButton.setGeometry(QtCore.QRect(320, 98, 110, 30))
