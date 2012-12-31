@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtAbout.ui'
 #
-# Created: Mon Dec 31 15:13:47 2012
+# Created: Mon Dec 31 16:02:37 2012
 #      by: PyQt4 UI code generator 4.9.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -44,7 +44,8 @@ class Ui_AboutAptOffline(object):
         self.label_3.setWordWrap(True)
         self.label_3.setObjectName(_fromUtf8("label_3"))
         self.label_14 = QtGui.QLabel(self.aboutTab)
-        self.label_14.setGeometry(QtCore.QRect(10, 46, 481, 61))
+        self.label_14.setGeometry(QtCore.QRect(10, 60, 481, 111))
+        self.label_14.setScaledContents(True)
         self.label_14.setWordWrap(True)
         self.label_14.setObjectName(_fromUtf8("label_14"))
         self.tabWidget.addTab(self.aboutTab, _fromUtf8(""))
@@ -81,7 +82,8 @@ class Ui_AboutAptOffline(object):
         self.label_12.setGeometry(QtCore.QRect(10, 70, 161, 16))
         self.label_12.setObjectName(_fromUtf8("label_12"))
         self.label_13 = QtGui.QLabel(self.thanksTab)
-        self.label_13.setGeometry(QtCore.QRect(10, 110, 301, 31))
+        self.label_13.setGeometry(QtCore.QRect(10, 110, 471, 51))
+        self.label_13.setScaledContents(True)
         self.label_13.setWordWrap(True)
         self.label_13.setObjectName(_fromUtf8("label_13"))
         self.tabWidget.addTab(self.thanksTab, _fromUtf8(""))
@@ -92,6 +94,9 @@ class Ui_AboutAptOffline(object):
         font = QtGui.QFont()
         font.setPointSize(8)
         self.licenseText.setFont(font)
+        self.licenseText.setAcceptDrops(False)
+        self.licenseText.setUndoRedoEnabled(False)
+        self.licenseText.setReadOnly(True)
         self.licenseText.setObjectName(_fromUtf8("licenseText"))
         self.tabWidget.addTab(self.licenseTab, _fromUtf8(""))
         self.label_2 = QtGui.QLabel(AboutAptOffline)

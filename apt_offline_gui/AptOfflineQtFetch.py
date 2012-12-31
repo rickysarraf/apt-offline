@@ -137,8 +137,13 @@ class AptOfflineQtFetch(QtGui.QDialog):
         self.controlStartDownloadBox()
     
     def popupZipFileDialog(self):
-        # Popup a Zip File selection box
-        filename = QtGui.QFileDialog.getSaveFileName(self, u'Select the zip file to save downloads')
+        
+        if self.ui.saveDatacheckBox.isChecked() is True:
+                filename = QtGui.QFileDialog.getExistingDirectory(self, u'Select the folder to save downlaods to')
+        else:
+                # Popup a Zip File selection box
+                filename = QtGui.QFileDialog.getSaveFileName(self, u'Select the zip file to save downloads')
+        
         # Show the selected file path in the field marked for showing directory path
         self.ui.zipFilePath.setText(filename)
         
@@ -164,39 +169,62 @@ class AptOfflineQtFetch(QtGui.QDialog):
         # TODO: check for zip file's presence
         self.zipfilepath = str(self.ui.zipFilePath.text())
         
-        # if file has write permission
-        if os.access(os.path.dirname(self.zipfilepath), os.W_OK) == False:
-            if (len(self.zipfilepath) == 0):
-                guicommon.updateInto (self.ui.rawLogHolder, 
-                            guicommon.style("Please select a zip file to create archive!",'red'))
-            else:
-                guicommon.updateInto (self.ui.rawLogHolder, 
-                    guicommon.style("%s does not have write access." % self.zipfilepath,'red'))
-            return
         
-        # if file already exists
-        if os.path.exists(self.zipfilepath):
-                ret = QMessageBox.warning(self, "Replace archive file?",
-                   "The file %s already exists.\n"
-                      "Do you want to overwrite it?" % self.zipfilepath,
-                           QMessageBox.Yes | QMessageBox.No
-                           , QMessageBox.Yes)
-                if ret == QMessageBox.Yes:
-                    # delete the file
-                    try:
-                        os.remove(self.zipfilepath)
-                    except:
+        if os.path.isfile(self.zipfilepath):
+                # if file has write permission
+                if os.access(os.path.dirname(self.zipfilepath), os.W_OK) == False:
+                    if (len(self.zipfilepath) == 0):
                         guicommon.updateInto (self.ui.rawLogHolder, 
-                            guicommon.style("Could'nt write to %s!" % self.zipfilepath,'red'))
-                else:
+                                    guicommon.style("Please select a zip file to create archive!",'red'))
+                    else:
+                        guicommon.updateInto (self.ui.rawLogHolder, 
+                            guicommon.style("%s does not have write access." % self.zipfilepath,'red'))
                     return
+                
+                # if file already exists
+                if os.path.exists(self.zipfilepath):
+                        ret = QMessageBox.warning(self, "Replace archive file?",
+                           "The file %s already exists.\n"
+                              "Do you want to overwrite it?" % self.zipfilepath,
+                                   QMessageBox.Yes | QMessageBox.No
+                                   , QMessageBox.Yes)
+                        if ret == QMessageBox.Yes:
+                            # delete the file
+                            try:
+                                os.remove(self.zipfilepath)
+                            except:
+                                guicommon.updateInto (self.ui.rawLogHolder, 
+                                    guicommon.style("Could'nt write to %s!" % self.zipfilepath,'red'))
+                        else:
+                            return
+                    
+                targetFilePath = self.zipfilepath
+                targetDirPath = None
+                    
+        elif os.path.isdir(self.zipfilepath):
+                # if path has write permission
+                if os.access(os.path.dirname(self.zipfilepath), os.W_OK) == False:
+                    if (len(self.zipfilepath) == 0):
+                        guicommon.updateInto (self.ui.rawLogHolder, 
+                                    guicommon.style("Please select a folder",'red'))
+                    else:
+                        guicommon.updateInto (self.ui.rawLogHolder, 
+                            guicommon.style("%s does not have write access." % self.zipfilepath,'red'))
+                    return
+                
+
+                targetFilePath = None
+                targetDirPath = self.zipfilepath
+        else:
+                print "Invalid Path"
+                return False
 
         
-        args = GetterArgs(filename=self.filepath, bundle_file= self.zipfilepath, progress_bar=self.ui.statusProgressBar, 
+        args = GetterArgs(filename=self.filepath, bundle_file=targetFilePath, progress_bar=self.ui.statusProgressBar, 
                         progress_label=self.ui.progressStatusDescription, proxy_host=self.advancedOptionsDialog.proxy_host,
                         proxy_port=self.advancedOptionsDialog.proxy_port, num_of_threads=self.advancedOptionsDialog.num_of_threads,
                         socket_timeout=self.advancedOptionsDialog.socket_timeout, cache_dir=self.advancedOptionsDialog.cache_dir,
-                        download_dir=self.advancedOptionsDialog.download_dir, disable_md5check=self.advancedOptionsDialog.disable_md5check,
+                        download_dir=targetDirPath, disable_md5check=self.advancedOptionsDialog.disable_md5check,
                         deb_bugs=self.advancedOptionsDialog.deb_bugs)
         
         #returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
@@ -282,6 +310,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
         self.ui.browseFilePathButton.setEnabled(False)
         self.ui.zipFilePath.setEnabled(False)
         self.ui.profileFilePath.setEnabled(False)
+        self.ui.saveDatacheckBox.setEnabled(False)
             
     def enableAction(self):
         self.ui.startDownloadButton.setEnabled(True)
@@ -292,6 +321,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
         self.ui.browseFilePathButton.setEnabled(True)
         self.ui.zipFilePath.setEnabled(True)
         self.ui.profileFilePath.setEnabled(True)
+        self.ui.saveDatacheckBox.setEnabled(True)
 
     def finishedWork(self):
         ''' do nothing '''

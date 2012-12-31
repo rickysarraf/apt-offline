@@ -94,15 +94,18 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>46</y>
+       <y>60</y>
        <width>481</width>
-       <height>61</height>
+       <height>111</height>
       </rect>
      </property>
      <property name="text">
       <string>apt-offline can fully update/upgrade your disconnected Debian box without the need of connecting it to the network.  
 
 This is a Graphical User Interface which exposes the functionality of apt-offline.</string>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -240,12 +243,15 @@ This is a Graphical User Interface which exposes the functionality of apt-offlin
       <rect>
        <x>10</x>
        <y>110</y>
-       <width>301</width>
-       <height>31</height>
+       <width>471</width>
+       <height>51</height>
       </rect>
      </property>
      <property name="text">
       <string>The awesome Directi people for their office space required for the mini hackfests</string>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -269,6 +275,15 @@ This is a Graphical User Interface which exposes the functionality of apt-offlin
       <font>
        <pointsize>8</pointsize>
       </font>
+     </property>
+     <property name="acceptDrops">
+      <bool>false</bool>
+     </property>
+     <property name="undoRedoEnabled">
+      <bool>false</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
      </property>
      <property name="plainText">
       <string>                    GNU GENERAL PUBLIC LICENSE

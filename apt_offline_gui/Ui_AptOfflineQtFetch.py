@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetch.ui'
 #
-# Created: Mon Dec 31 15:13:47 2012
+# Created: Mon Dec 31 16:02:36 2012
 #      by: PyQt4 UI code generator 4.9.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -99,6 +99,9 @@ class Ui_AptOfflineQtFetch(object):
         self.advancedOptionsButton.setChecked(False)
         self.advancedOptionsButton.setFlat(False)
         self.advancedOptionsButton.setObjectName(_fromUtf8("advancedOptionsButton"))
+        self.saveDatacheckBox = QtGui.QCheckBox(AptOfflineQtFetch)
+        self.saveDatacheckBox.setGeometry(QtCore.QRect(321, 80, 110, 18))
+        self.saveDatacheckBox.setObjectName(_fromUtf8("saveDatacheckBox"))
 
         self.retranslateUi(AptOfflineQtFetch)
         QtCore.QMetaObject.connectSlotsByName(AptOfflineQtFetch)
@@ -112,8 +115,9 @@ class Ui_AptOfflineQtFetch(object):
         self.lblStatus.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Status:", None, QtGui.QApplication.UnicodeUTF8))
         self.progressStatusDescription.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Ready", None, QtGui.QApplication.UnicodeUTF8))
         self.browseZipFileButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Browse", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblSaveAs.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Save archive as", None, QtGui.QApplication.UnicodeUTF8))
+        self.lblSaveAs.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Save data as", None, QtGui.QApplication.UnicodeUTF8))
         self.advancedOptionsButton.setToolTip(QtGui.QApplication.translate("AptOfflineQtFetch", "Additional options for download", None, QtGui.QApplication.UnicodeUTF8))
         self.advancedOptionsButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Options", None, QtGui.QApplication.UnicodeUTF8))
+        self.saveDatacheckBox.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Is Directory", None, QtGui.QApplication.UnicodeUTF8))
 
 import resources_rc
