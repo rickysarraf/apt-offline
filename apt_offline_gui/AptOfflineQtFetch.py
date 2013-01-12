@@ -166,7 +166,6 @@ class AptOfflineQtFetch(QtGui.QDialog):
                     guicommon.style("%s does not exist." % self.filepath,'red'))
             return
         
-        # TODO: check for zip file's presence
         self.zipfilepath = str(self.ui.zipFilePath.text())
         
         # First we need to determine if the input is a file path or a directory path
@@ -181,7 +180,8 @@ class AptOfflineQtFetch(QtGui.QDialog):
                         if ret == QMessageBox.Yes:
                                 # delete the file
                                 try:
-                                        os.remove(self.zipfilepath)
+                                        #TODO: If "/" is the path, then os.unlink quietly fails crashing the GUI
+                                        os.unlink(self.zipfilepath)
                                 except:
                                         guicommon.updateInto (self.ui.rawLogHolder, 
                                                               guicommon.style("Could'nt write to %s!" % self.zipfilepath,'red'))
