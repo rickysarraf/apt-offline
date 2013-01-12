@@ -168,10 +168,6 @@ class AptOfflineQtFetch(QtGui.QDialog):
         
         # TODO: check for zip file's presence
         self.zipfilepath = str(self.ui.zipFilePath.text())
-
-        if (len(self.zipfilepath) == 0):
-                guicommon.updateInto (self.ui.rawLogHolder, 
-                                      guicommon.style("Please select a file/folder to save data to",'red'))        
         
         # First we need to determine if the input is a file path or a directory path
         if self.ui.saveDatacheckBox.isChecked() is not True: 
