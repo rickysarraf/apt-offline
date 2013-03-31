@@ -11,4 +11,7 @@ pyuic4 AptOfflineQtInstall.ui > Ui_AptOfflineQtInstall.py
 pyuic4 AptOfflineQtAbout.ui > Ui_AptOfflineQtAbout.py
 pyuic4  AptOfflineQtFetchOptions.ui > Ui_AptOfflineQtFetchOptions.py
 pyuic4  AptOfflineQtInstallBugList.ui > Ui_AptOfflineQtInstallBugList.py
+
+echo "Compiling Resources files"
+pyrcc4 -o resources_rc.py resources.qrc
 echo "Done"
