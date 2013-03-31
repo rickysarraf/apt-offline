@@ -1683,9 +1683,9 @@ def setter(args):
                                 else:
                                         AptInst.Upgrade("upgrade", ReleaseType=Str_SetInstallRelease)
                         elif Str_SetUpgradeType == "dist-upgrade":
-                                AptInst.Upgrade("dist-upgrade")
+                                AptInst.Upgrade("dist-upgrade", ReleaseType=Str_SetInstallRelease)
                         elif Str_SetUpgradeType == "dselect-upgrade":
-                                AptInst.Upgrade("dselect-upgrade")
+                                AptInst.Upgrade("dselect-upgrade", ReleaseType=Str_SetInstallRelease)
                         else:
                                 log.err( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
                 else:
