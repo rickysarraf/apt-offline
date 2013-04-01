@@ -1,29 +1,24 @@
 @echo pypt-offline Test Cases
 
-python.exe apt-offline --fetch-update C:\update.uris --threads 5 --zip -d C:\test
+python.exe apt-offline get C:\signature.uris --threads 5 -d C:\test
 rmdir /q /s C:\test
 ping -n 10 localhost 1>null
 
-python.exe apt-offline --fetch-update C:\update.uris --threads 5 --zip
-rmdir /q /s pypt-downloads
+python.exe apt-offline get C:\signature.uris --threads 5 --bundle C:\apt-offline-bundle.zip
+rmdir /q /s C:\apt-offline-bundle.zip
 ping -n 10 localhost 1>null
 
-python.exe apt-offline --fetch-update C:\update.uris --threads 5
-rmdir /q /s pypt-downloads
+python.exe apt-offline get C:\signature.uris --threads 5
 ping -n 10 localhost 1>null
 
-python.exe apt-offline --fetch-update C:\update.uris --zip
-rmdir /q /s pypt-downloads
+python.exe apt-offline get C:\signature.uris --bundle C:\apt-offline-bundle.zip
+rmdir /q /s C:\apt-offline-bundle.zip
 ping -n 10 localhost 1>null
 
-python.exe apt-offline --fetch-update C:\update.uris --threads 5 -d C:\test
+python.exe apt-offline get C:\signature.uris -d C:\test
 rmdir /q /s C:\test
 ping -n 10 localhost 1>null
 
-python.exe apt-offline --fetch-upgrade C:\upgrade.uris --threads 5 --zip -d C:\test
-rmdir /q /s C:\test
-ping -n 10 localhost 1>null
-
-python.exe apt-offline --fetch-upgrade C:\upgrade.uris --threads 5 --zip -d C:\test --fetch-bug-reports
+python.exe apt-offline get C:\signature.uris --threads 5 --bug-reports --download C:\test
 rmdir /q /s C:\test
 ping -n 10 localhost 1>null
