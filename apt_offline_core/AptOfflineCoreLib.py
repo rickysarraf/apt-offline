@@ -34,6 +34,13 @@ import random   # to generate random directory names for installing multiple bun
 import zipfile
 import pydoc
 
+FCNTL_LOCK = True
+try:
+        import fcntl
+except ImportError:
+        # Only available on platform Unix
+        FCNTL_LOCK = False
+                
 # Given the merits of argparse, I hope it'll soon be part
 # of the Python Standard Library.
 # http://code.google.com/argparse
@@ -91,6 +98,10 @@ supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
 apt_update_target_path = '/var/lib/apt/lists/partial'
 apt_update_final_path = '/var/lib/apt/lists/'
 apt_package_target_path = '/var/cache/apt/archives/'
+
+# Locks
+apt_lists_lock = '/var/lib/apt/lists/lock'
+apt_packages_lock = '/var/cache/apt/archives/lock'
 
 apt_bug_file_format = "__apt__bug__report"
 IgnoredBugTypes = ["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"]
@@ -923,6 +934,46 @@ def installer( args ):
                                 return False
                 
         
+        class LockAPT:
+                '''Manipulate locks on the APT Database'''
+                
+                def __init__(self, lists, packages):
+                        
+                        try:
+                                self.listLock = os.open(lists, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
+                                self.pkgLock = os.open(packages, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
+                        except:
+                                log.err("Couldn't open lockfile\n")
+                                return False
+                                
+                def lockLists(self):
+                        try:
+                                fcntl.lockf(self.listLock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                                return True
+                        except:
+                                return False
+                        
+                def lockPackages(self):
+                        try:
+                                fcntl.lockf(self.pkgLock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                                return True
+                        except:
+                                return False
+                        
+                def unlockLists(self):
+                        try:
+                                fcntl.lockf(self.listLock, fcntl.LOCK_UN)
+                                return True
+                        except:
+                                return False
+                
+                def unlockPackages(self):
+                        try:
+                                fcntl.lockf(self.pkgLock, fcntl.LOCK_UN)
+                                return True
+                        except:
+                                return False
+                        
         # install opts
         Str_InstallArg = args.install
         Bool_TestWindows = args.simulate
@@ -1007,10 +1058,26 @@ def installer( args ):
         archive = AptOfflineLib.Archiver()
         archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
         
+        # Prepare for APT Datbase's Locks
+        if FCNTL_LOCK is False:
+                log.err("Locking framework in not available on your platform")
+                sys.exit(1)
+        else:
+                AptLock = LockAPT(apt_lists_lock, apt_packages_lock)
+                if AptLock is False:
+                        log.err("Couldn't acquire lock on the APT Database\n")
+                        log.err("Is another process using it\n")
+                        sys.exit(1)
+
         if not Bool_Untrusted:
                 AptSecure = APTVerifySigs()
                 
         try:
+                # Acquire APT lock
+                if AptLock.lockLists() is False:
+                        log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (apt_update_target_path))
+                        sys.exit(1)
+                
                 #INFO: Let's clean the partial database
                 for x in os.listdir(apt_update_target_path):
                         x = os.path.join(apt_update_target_path, x)
@@ -1020,7 +1087,8 @@ def installer( args ):
         except OSError:
                 log.err("Cannot find APT's partial cache dir %s\n" % (apt_update_target_path) )
                 sys.exit(1)
-                
+        finally:
+                AptLock.unlockLists()
         
         def display_options():
                 log.msg( "(Y) Yes. Proceed with installation\n" )
@@ -1106,7 +1174,11 @@ def installer( args ):
         
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
-                file = zipfile.ZipFile( install_file_path, "r" )
+                try:
+                        file = zipfile.ZipFile( install_file_path, "r" )
+                except zipfile.BadZipfile:
+                        log.err("File %s is not a valid zip file\n" % (install_file_path))
+                        sys.exit(1)
                 #CHANGE: for progress tracking
                 totalSize[1] = len(file.namelist())
                 totalSize[0] = 0
@@ -1175,11 +1247,21 @@ def installer( args ):
                                                 data.file.flush()
                                                 archive_file = data.name
                                                 
-                                                if found is True:
+                                                if found is True: # found is True. That means this is a src package
                                                         shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
                                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                                         continue
-                                                magic_check_and_uncompress( archive_file, filename )
+                                                
+                                                try:
+                                                        if AptLock.lockPackages() is False:
+                                                                log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (archive_file))
+                                                                sys.exit(1)
+                                                                
+                                                        magic_check_and_uncompress( archive_file, filename )
+                                                except:
+                                                        log.err("Uncaught exception in magic_check_and_uncompress() \n")
+                                                finally:
+                                                        AptLock.unlockLists()
                                                 data.file.close()
                                         sys.exit( 0 )
                                 elif response.startswith( 'n' ) or response.startswith( 'N' ):
@@ -1228,13 +1310,24 @@ def installer( args ):
                                 data.file.flush()
                                 archive_file = data.name
                                 
-                                if found is True:
+                                if found is True: #We are src packages. And don't need a lock on the APT Database
                                         shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                         continue
-                                    
-                                magic_check_and_uncompress( archive_file, filename )
+
+                                print "Hola!!"
+                                try:
+                                        if AptLock.lockPackages() is False:
+                                                log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
+                                                sys.exit(1)
+                                        
+                                        magic_check_and_uncompress( archive_file, filename )
+                                except:
+                                        log.err("Uncaught exception in magic_check_and_uncompress() \n")
+                                finally:
+                                        AptLock.unlockPackages()
                                 data.file.close()
+                                print "Another Hola!!!"
                         #else:
                         #       log.msg( "Exiting gracefully on user request.\n" )
                         #       sys.exit( 0 )
