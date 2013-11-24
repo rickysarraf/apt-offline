@@ -1611,11 +1611,10 @@ def setter(args):
                 def __PythonAptUpdate(self):
                         log.verbose("Open file %s for write" % self.WriteTo)
                         try:
-                                writeFH = open(self.WriteTo, 'w')
+                                writeFH = open(self.WriteTo, 'a')
                         except:
                                 log.err("Failed to open file %s for write. Exiting")
                                 sys.exit(1)
-                        
                         
                         log.msg("\nGenerating database of files that are needed for an update.\n")
                         log.verbose("\nUsing python apt interface\n")
@@ -1648,6 +1647,35 @@ def setter(args):
                                 writeFH.flush()
                         writeFH.close()
                 
+                def __PythonAptUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
+                        # THis doesn't work as expected. In fact, the code fails.
+                        
+                        
+                        log.verbose("Open file %s for write" % self.WriteTo)
+                        try:
+                                writeFH = open(self.WriteTo, 'a')
+                        except:
+                                log.err("Failed to open file %s for write. Exiting")
+                                sys.exit(1)
+                        
+                        log.msg("\nGenerating database of files that are needed for an upgrade.\n")
+                        log.verbose("\nUsing python apt interface\n")
+                        
+                        #TODO: Right now, I don't know what to do with UpgradeType and Release Type in python-apt
+                        cache = apt.Cache()
+                        upgradablePkgs = filter(lambda p: p.is_upgradable, cache)
+                        
+                        for pkg in upgradablePkgs:
+                                pkg._lookupRecord(True)
+                                path = apt_pkg.TagSection(pkg._records.record)["Filename"]
+                                cand = pkg._depcache.get_candidate_ver(pkg._pkg)
+                                
+                                for (packagefile, i) in cand.file_list:
+                                        indexfile = cache._list.find_index(packagefile)
+                                        if indexfile:
+                                                uri = indexfile.archive_uri(path)
+                                                print uri
+
                 def __AptGetUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
                         self.ReleaseType = ReleaseType
                         
