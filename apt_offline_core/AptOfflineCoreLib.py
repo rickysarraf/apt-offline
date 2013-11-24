@@ -1554,6 +1554,10 @@ def setter(args):
                                 self.__AptGetUpgrade(UpgradeType, ReleaseType)
                         elif self.apt == "aptitude":
                                 pass
+                        elif self.apt == "python-apt":
+                                # Upgrade is broken in python-apt
+                                # Hence for now, redirect to apt-get
+                                self.__AptGetUpgrade(UpgradeType, ReleaseType)
                         else:
                                 log.err("Method not supported")
                                 sys.exit(1)
