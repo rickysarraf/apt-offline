@@ -335,12 +335,18 @@ def stripper(item):
 	log.verbose("Item is %s\n" % (item) )
 
         url = string.rstrip(string.lstrip(''.join(item[0]), chars="'"), chars="'")
+        log.verbose("Stripped item URL is: %s\n" % url)
+        
         file = string.rstrip(string.lstrip(''.join(item[1]), chars="'"), chars="'")
-	try:
+	log.verbose("Stripped item FILE is: %s\n" % file)
+        
+        try:
 		size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
 	except ValueError:
 		log.verbose("%s is malformed\n" % (" ".join(item) ) )
 		size = 0
+        log.verbose("Stripped item SIZE is: %d\n" % size)
+        
 
         #INFO: md5 ends up having '\n' with it.
         # That needs to be stripped too.
@@ -350,6 +356,8 @@ def stripper(item):
 	except IndexError:
 		if item[1].endswith("_Release") or item[1].endswith("_Release.gpg"):
 			checksum = None
+        log.verbose("Stripped item CHECKSUM is: %s\n" % checksum)
+        
         return url, file, size, checksum
 
 
@@ -808,7 +816,7 @@ def fetcher( args ):
                         log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
                         if DownloadPackages(url) is False and guiTerminateSignal is False:
                                 # dont proceed retry if Ctrl+C in cli
-                                log.verbose("%s failed. Retry with the remaining possible formats" % (url) )
+                                log.verbose("%s failed. Retry with the remaining possible formats\n" % (url) )
                                 
                                 # We could fail with the Packages format of what apt gave us. We can try the rest of the formats that apt or the archive could support
                                 for Format in SupportedFormats:
@@ -1502,7 +1510,7 @@ def setter(args):
                 Bool_SetUpgrade = True
                 
         class AptManip:
-                def __init__(self, OutputFile, Simulate=False, AptType="apt"):
+                def __init__(self, OutputFile, Simulate=False, AptType="python-apt"):
                         
                         self.WriteTo = OutputFile
                         self.Simulate = Simulate
@@ -1512,8 +1520,7 @@ def setter(args):
                         elif AptType == "aptitude":
                                 self.apt = "aptitude"
                         elif AptType == "python-apt":
-                                #TODO:
-                                pass
+                                self.apt = "python-apt"
                         else:
                                 self.apt = "apt-get"
                                 
@@ -1535,6 +1542,8 @@ def setter(args):
                                 self.__AptGetUpdate()
                         elif self.apt == "aptitude":
                                 pass
+                        elif self.apt == "python-apt":
+                                self.__PythonAptUpdate()
                         else:
                                 log.err("Method not supported")
                                 sys.exit(1)
@@ -1600,7 +1609,44 @@ def setter(args):
                         pass
                 
                 def __PythonAptUpdate(self):
-                        pass
+                        log.verbose("Open file %s for write" % self.WriteTo)
+                        try:
+                                writeFH = open(self.WriteTo, 'w')
+                        except:
+                                log.err("Failed to open file %s for write. Exiting")
+                                sys.exit(1)
+                        
+                        
+                        log.msg("\nGenerating database of files that are needed for an update.\n")
+                        log.verbose("\nUsing python apt interface\n")
+                        
+                        apt_pkg.init_config()
+                        apt_pkg.init_system()
+                        
+                        acquire = apt_pkg.Acquire()
+                        slist = apt_pkg.SourceList()
+                        
+                        # Read the main list
+                        slist.read_main_list()
+                        
+                        # Add all indexes to the fetcher
+                        slist.get_indexes(acquire, True)
+                        
+                        # Now write the URI of every item
+                        for item in acquire.items:
+                                
+                                #INFO: For update files, there's no checksum present.
+                                # Also, their size is not determined.
+                                # Hence filesize is always returned '0'
+                                # And checksum is something I'm writing as ':'
+                                
+                                # We strip item.destfile because that's how apt-get had historically presented it to us
+                                destFile = item.destfile.split("/")[-1]
+
+                                writeFH.write("'" + item.desc_uri + "'" + " " + destFile + " " + str(item.filesize) + " " + ":" + "\n")
+                                log.verbose("Writing string %s %s %d %s to file %s\n" % (item.desc_uri, destFile, item.filesize, ":", self.WriteTo) )
+                                writeFH.flush()
+                        writeFH.close()
                 
                 def __AptGetUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
                         self.ReleaseType = ReleaseType
@@ -1723,7 +1769,7 @@ def setter(args):
         
         
         #Instantiate Apt based on what we have. For now, fall to apt only
-        AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt")
+        AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="python-apt")
         
         if Bool_SetUpdate:
                 if platform.system() in supported_platforms:
