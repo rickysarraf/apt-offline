@@ -1601,7 +1601,7 @@ def setter(args):
                         os.environ['LANG'] = "C"
                         log.verbose( "Set environment variable for LANG from %s to %s temporarily.\n" % ( old_environ, os.environ['LANG'] ) )
                         
-                        if self.__ExecSystemCmd('/usr/bin/apt-get -qq --print-uris --simulate update >> $__apt_set_update') is False:
+                        if self.__ExecSystemCmd('/usr/bin/apt-get -q --print-uris update >> $__apt_set_update') is False:
                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
                         log.verbose( "Set environment variable for LANG back to its original from %s to %s.\n" % ( os.environ['LANG'], old_environ ) )
                         os.environ['LANG'] = old_environ
