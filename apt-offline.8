@@ -99,7 +99,7 @@ Specify the Proxy Host to be used.
 .IP "\fB\-\-proxy\-port\fP" 10
 Specify the Proxy port number to be used.
 
-.SS install FILE/FOLDER [-h] [--skip-bug-reports ] [--install-src-path PATH] [--allow-unauthenticated]
+.SS install [-h] [--skip-bug-reports ] [--install-src-path PATH] [--allow-unauthenticated] FILE | FOLDER
 
 .PP
 
@@ -145,9 +145,6 @@ Display the version of the program
 
 .SH EXAMPLES
 .TP
-.B To keep your disconnected machine  up-to-date, here is a typical workflow
-
-.TP
 .B NOTE: argument/option handling
 apt\-offline relies on argparse for argument/option parsing. To explicitly instruct apt\-offline about an argument, you can pass it with the \-\- delimiter.
 
@@ -184,6 +181,27 @@ This command will sync the data downloaded by
 to the APT Package Database and update it.
 Depending on where the data was downloaded to or packed into, either the
 absolute FOLDER path or the archive FILE path can be specified.
+
+.TP
+The following sequence of commands will keep a machine up to date, with the package lists one step ahead of the upgrade:
+.B apt-offline set \-\-upgrade \-\-update foo.sig
+Requests the packages needed to upgrade the machine, based on the current package lists. Also, requests the new package lists for the next update.
+
+.B apt-offline get -d FOLDER foo.sig
+Downloads the packages for upgrading the machine, along with the package lists for the next time apt-offline set \-\-upgrade is run.
+
+.B apt-offline install FOLDER | FILE
+Positions the packages for the upgrade, along with new the package lists.
+
+.B apt-get upgrade
+Upgrades to the state of the earlier package lists.
+
+.B NOTE:
+On a freshly installed box, that was installed without the network, the pacakge database is null. In that case, you first need to run 
+.B apt-offline 
+with just the 
+.B \-\-update 
+option to ensure you have a meaningful pacakge database
 
 .SH AUTHOR
 .B apt-offline is written by Ritesh Raj Sarraf (rrs@researchut.com)
