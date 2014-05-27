@@ -1538,6 +1538,7 @@ def setter(args):
                                 return True
                 
                 def Update(self):
+                        log.verbose("APT Update Method is of type: %s\n" % self.apt)
                         if self.apt == "apt-get":
                                 self.__AptGetUpdate()
                         elif self.apt == "aptitude":
@@ -1550,6 +1551,7 @@ def setter(args):
                                 
                                 
                 def Upgrade(self, UpgradeType="upgrade", ReleaseType=None):
+                        log.verbose("APT Upgrade Method is of type: %s\n" % self.apt)
                         if self.apt == "apt-get":
                                 self.__AptGetUpgrade(UpgradeType, ReleaseType)
                         elif self.apt == "aptitude":
@@ -1563,14 +1565,20 @@ def setter(args):
                                 sys.exit(1)
                 
                 def InstallPackages(self, PackageList, ReleaseType):
+                        log.verbose("APT Install Method is of type: %s\n" % self.apt)
                         if self.apt == "apt-get":
+                                self.__AptInstallPackage(PackageList, ReleaseType)
+                        elif self.apt == "python-apt":
                                 self.__AptInstallPackage(PackageList, ReleaseType)
                         else:
                                 log.err("Method not supported")
                                 sys.exit(1)
                                 
                 def InstallSrcPackages(self, SrcPackageList, ReleaseType, BuildDependency):
+                        log.verbose("APT Install Source Method is of type: %s\n" % self.apt)
                         if self.apt == "apt-get":
+                                self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
+                        elif self.apt == "python-apt":
                                 self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
                         else:
                                 log.err("Method not supported")
