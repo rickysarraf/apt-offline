@@ -804,7 +804,7 @@ def fetcher( args ):
                                 
                         #INFO: Handle the multiple Packages formats.
                         # See DTBS #583502
-                        SupportedFormats = ["bz2", "gz", "lzma"]
+                        SupportedFormats = ["bz2", "gz", "lzma", None]
 
                         #INFO: We are a package update
                         PackageName = url
@@ -820,7 +820,11 @@ def fetcher( args ):
                                 
                                 # We could fail with the Packages format of what apt gave us. We can try the rest of the formats that apt or the archive could support
                                 for Format in SupportedFormats:
-                                        NewPackageFile = PackageFile.split(".")[0] + "." + Format
+                                        if Format is None:
+                                                NewPackageFile = PackageFile.split(".")[0]
+                                        else:
+                                                NewPackageFile = PackageFile.split(".")[0] + "." + Format
+                                        
                                         NewUrl = url.strip(url.split("/")[-1]) + NewPackageFile
                                         log.verbose("Retry download %s.%s\n" % (NewUrl, LINE_OVERWRITE_MID) )
                                         if DownloadPackages(NewUrl) is True:
