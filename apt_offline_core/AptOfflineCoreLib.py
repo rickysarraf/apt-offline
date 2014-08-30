@@ -1323,7 +1323,6 @@ def installer( args ):
                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                         continue
 
-                                print "Hola!!"
                                 try:
                                         if AptLock.lockPackages() is False:
                                                 log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
@@ -1335,7 +1334,6 @@ def installer( args ):
                                 finally:
                                         AptLock.unlockPackages()
                                 data.file.close()
-                                print "Another Hola!!!"
                         #else:
                         #       log.msg( "Exiting gracefully on user request.\n" )
                         #       sys.exit( 0 )
