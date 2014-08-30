@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DISLIKED_PACKAGES="emacs eclipse gnome"
+DISLIKED_PACKAGES="lxde icewm xserver-xorg"
 RELEASE="unstable"
 URI="/tmp/set-$PPID.uris"
 CACHE_DIR="/var/cache/apt/archives"
