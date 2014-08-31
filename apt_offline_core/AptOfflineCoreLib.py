@@ -144,6 +144,9 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                         ( num_of_bugs, header, self.bugs_list ) = AptOfflineDebianBtsLib.get_reports( PackageName )
                 except socket.timeout:
                         return 0
+                except NoNetwork:
+                        log.verbose("Network connection to the BTS couldn't be established")
+                        return 0
                         
                 
                 if num_of_bugs:
