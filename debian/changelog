@@ -1,3 +1,18 @@
+apt-offline (1.4) unstable; urgency=medium
+
+  [ Ritesh Raj Sarraf ]
+  * [320714a] Hard code the license in case it is not found by us
+  * [e513eac] Provide ReleaseType to Upgrade() when requesting for upgradable packages
+    (Closes: #700703)
+  * [948d2b3] apt's commandline parser is more stricted now
+  * [458d808] Update manpage.
+    Thanks to Dev Rana
+
+  [ Hans-Christoph Steiner ]
+  * [1ad1073] bash completion script for apt-offline
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Sun, 31 Aug 2014 15:54:05 +0530
+
 apt-offline (1.3.1) unstable; urgency=low
 
   * Upload to unstable
