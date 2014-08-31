@@ -1988,7 +1988,7 @@ def main():
                                 action="store", type=str, metavar="apt-offline-bundle.zip")
         
         parser_get.add_argument("--bug-reports", dest="deb_bugs",
-                          help="Fetch bug reports from the BTS", action="store_true" )
+                          help="Fetch bug reports from the BTS", action="store_false" )
         
         parser_get.add_argument("--proxy-host", dest="proxy_host",
 						help="Proxy Host to use", type=str, default=None)
