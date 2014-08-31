@@ -57,6 +57,8 @@ try:
 except ImportError:
         DebianBTS = False
 
+from AptOffline_reportbug_exceptions import NoNetwork
+
 import AptOfflineMagicLib
 
 #INFO: added to handle GUI interaction
