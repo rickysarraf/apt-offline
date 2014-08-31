@@ -1,0 +1,8 @@
+apt-offline (1.4) unstable; urgency=medium
+
+  In this release, the bug report functionality has been disabled.
+  The Debian BTS seems to have changed its interface, thus making the
+  old python module fail. If time permits, we may have the module
+  fixed in time for the Jessie release.
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Sun, 31 Aug 2014 17:02:40 +0530
