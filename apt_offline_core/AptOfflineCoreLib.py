@@ -34,6 +34,13 @@ import random   # to generate random directory names for installing multiple bun
 import zipfile
 import pydoc
 
+FCNTL_LOCK = True
+try:
+        import fcntl
+except ImportError:
+        # Only available on platform Unix
+        FCNTL_LOCK = False
+                
 # Given the merits of argparse, I hope it'll soon be part
 # of the Python Standard Library.
 # http://code.google.com/argparse
@@ -49,6 +56,8 @@ try:
         import AptOfflineDebianBtsLib
 except ImportError:
         DebianBTS = False
+
+from AptOffline_reportbug_exceptions import NoNetwork
 
 import AptOfflineMagicLib
 
@@ -80,8 +89,8 @@ figuring out if the packages are in the local cache, handling exceptions and man
 
 
 app_name = "apt-offline"
-version = "1.3"
-copyright = "(C) 2005 - 2013 Ritesh Raj Sarraf"
+version = "1.4"
+copyright = "(C) 2005 - 2014 Ritesh Raj Sarraf"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
 the GNU GPL Version 3 (or later) License\n"
@@ -91,6 +100,10 @@ supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
 apt_update_target_path = '/var/lib/apt/lists/partial'
 apt_update_final_path = '/var/lib/apt/lists/'
 apt_package_target_path = '/var/cache/apt/archives/'
+
+# Locks
+apt_lists_lock = '/var/lib/apt/lists/lock'
+apt_packages_lock = '/var/cache/apt/archives/lock'
 
 apt_bug_file_format = "__apt__bug__report"
 IgnoredBugTypes = ["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"]
@@ -324,12 +337,18 @@ def stripper(item):
 	log.verbose("Item is %s\n" % (item) )
 
         url = string.rstrip(string.lstrip(''.join(item[0]), chars="'"), chars="'")
+        log.verbose("Stripped item URL is: %s\n" % url)
+        
         file = string.rstrip(string.lstrip(''.join(item[1]), chars="'"), chars="'")
-	try:
+	log.verbose("Stripped item FILE is: %s\n" % file)
+        
+        try:
 		size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
 	except ValueError:
 		log.verbose("%s is malformed\n" % (" ".join(item) ) )
 		size = 0
+        log.verbose("Stripped item SIZE is: %d\n" % size)
+        
 
         #INFO: md5 ends up having '\n' with it.
         # That needs to be stripped too.
@@ -339,6 +358,8 @@ def stripper(item):
 	except IndexError:
 		if item[1].endswith("_Release") or item[1].endswith("_Release.gpg"):
 			checksum = None
+        log.verbose("Stripped item CHECKSUM is: %s\n" % checksum)
+        
         return url, file, size, checksum
 
 
@@ -366,7 +387,7 @@ def errfunc(errno, errormsg, filename):
         # 13 is for "Permission Denied" when you don't have privileges to access the destination 
         if errno in error_codes:
                 log.err("%s - %s - %s.%s\n" % (filename, errno, errormsg, LINE_OVERWRITE_MID))
-                log.verbose("Will still try with other package uris\n")
+                log.err("Will still try with other package uris\n")
                 pass
         elif errno == 10054:
                 log.verbose("%s - %s - %s.%s\n" % (filename, errno, errormsg, LINE_OVERWRITE_SMALL) )
@@ -797,13 +818,13 @@ def fetcher( args ):
                         log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
                         if DownloadPackages(url) is False and guiTerminateSignal is False:
                                 # dont proceed retry if Ctrl+C in cli
-                                log.verbose("%s failed. Retry with the remaining possible formats" % (url) )
+                                log.verbose("%s failed. Retry with the remaining possible formats\n" % (url) )
                                 
                                 # We could fail with the Packages format of what apt gave us. We can try the rest of the formats that apt or the archive could support
                                 for Format in SupportedFormats:
                                         NewPackageFile = PackageFile.split(".")[0] + "." + Format
                                         NewUrl = url.strip(url.split("/")[-1]) + NewPackageFile
-                                        log.verbose("Retry download %s.%s\n" % (NewUrl, LINE_OVERWRITE_MID) ) 
+                                        log.verbose("Retry download %s.%s\n" % (NewUrl, LINE_OVERWRITE_MID) )
                                         if DownloadPackages(NewUrl) is True:
                                                 break
                                         else:
@@ -923,6 +944,46 @@ def installer( args ):
                                 return False
                 
         
+        class LockAPT:
+                '''Manipulate locks on the APT Database'''
+                
+                def __init__(self, lists, packages):
+                        
+                        try:
+                                self.listLock = os.open(lists, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
+                                self.pkgLock = os.open(packages, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
+                        except:
+                                log.err("Couldn't open lockfile\n")
+                                return False
+                                
+                def lockLists(self):
+                        try:
+                                fcntl.lockf(self.listLock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                                return True
+                        except:
+                                return False
+                        
+                def lockPackages(self):
+                        try:
+                                fcntl.lockf(self.pkgLock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                                return True
+                        except:
+                                return False
+                        
+                def unlockLists(self):
+                        try:
+                                fcntl.lockf(self.listLock, fcntl.LOCK_UN)
+                                return True
+                        except:
+                                return False
+                
+                def unlockPackages(self):
+                        try:
+                                fcntl.lockf(self.pkgLock, fcntl.LOCK_UN)
+                                return True
+                        except:
+                                return False
+                        
         # install opts
         Str_InstallArg = args.install
         Bool_TestWindows = args.simulate
@@ -1007,10 +1068,26 @@ def installer( args ):
         archive = AptOfflineLib.Archiver()
         archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
         
+        # Prepare for APT Datbase's Locks
+        if FCNTL_LOCK is False:
+                log.err("Locking framework in not available on your platform")
+                sys.exit(1)
+        else:
+                AptLock = LockAPT(apt_lists_lock, apt_packages_lock)
+                if AptLock is False:
+                        log.err("Couldn't acquire lock on the APT Database\n")
+                        log.err("Is another process using it\n")
+                        sys.exit(1)
+
         if not Bool_Untrusted:
                 AptSecure = APTVerifySigs()
                 
         try:
+                # Acquire APT lock
+                if AptLock.lockLists() is False:
+                        log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (apt_update_target_path))
+                        sys.exit(1)
+                
                 #INFO: Let's clean the partial database
                 for x in os.listdir(apt_update_target_path):
                         x = os.path.join(apt_update_target_path, x)
@@ -1020,7 +1097,8 @@ def installer( args ):
         except OSError:
                 log.err("Cannot find APT's partial cache dir %s\n" % (apt_update_target_path) )
                 sys.exit(1)
-                
+        finally:
+                AptLock.unlockLists()
         
         def display_options():
                 log.msg( "(Y) Yes. Proceed with installation\n" )
@@ -1106,7 +1184,11 @@ def installer( args ):
         
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
-                file = zipfile.ZipFile( install_file_path, "r" )
+                try:
+                        file = zipfile.ZipFile( install_file_path, "r" )
+                except zipfile.BadZipfile:
+                        log.err("File %s is not a valid zip file\n" % (install_file_path))
+                        sys.exit(1)
                 #CHANGE: for progress tracking
                 totalSize[1] = len(file.namelist())
                 totalSize[0] = 0
@@ -1175,11 +1257,21 @@ def installer( args ):
                                                 data.file.flush()
                                                 archive_file = data.name
                                                 
-                                                if found is True:
+                                                if found is True: # found is True. That means this is a src package
                                                         shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
                                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                                         continue
-                                                magic_check_and_uncompress( archive_file, filename )
+                                                
+                                                try:
+                                                        if AptLock.lockPackages() is False:
+                                                                log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (archive_file))
+                                                                sys.exit(1)
+                                                                
+                                                        magic_check_and_uncompress( archive_file, filename )
+                                                except:
+                                                        log.err("Uncaught exception in magic_check_and_uncompress() \n")
+                                                finally:
+                                                        AptLock.unlockLists()
                                                 data.file.close()
                                         sys.exit( 0 )
                                 elif response.startswith( 'n' ) or response.startswith( 'N' ):
@@ -1228,12 +1320,21 @@ def installer( args ):
                                 data.file.flush()
                                 archive_file = data.name
                                 
-                                if found is True:
+                                if found is True: #We are src packages. And don't need a lock on the APT Database
                                         shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                         continue
-                                    
-                                magic_check_and_uncompress( archive_file, filename )
+
+                                try:
+                                        if AptLock.lockPackages() is False:
+                                                log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
+                                                sys.exit(1)
+                                        
+                                        magic_check_and_uncompress( archive_file, filename )
+                                except:
+                                        log.err("Uncaught exception in magic_check_and_uncompress() \n")
+                                finally:
+                                        AptLock.unlockPackages()
                                 data.file.close()
                         #else:
                         #       log.msg( "Exiting gracefully on user request.\n" )
@@ -1409,7 +1510,7 @@ def setter(args):
                 Bool_SetUpgrade = True
                 
         class AptManip:
-                def __init__(self, OutputFile, Simulate=False, AptType="apt"):
+                def __init__(self, OutputFile, Simulate=False, AptType="python-apt"):
                         
                         self.WriteTo = OutputFile
                         self.Simulate = Simulate
@@ -1419,8 +1520,7 @@ def setter(args):
                         elif AptType == "aptitude":
                                 self.apt = "aptitude"
                         elif AptType == "python-apt":
-                                #TODO:
-                                pass
+                                self.apt = "python-apt"
                         else:
                                 self.apt = "apt-get"
                                 
@@ -1438,33 +1538,47 @@ def setter(args):
                                 return True
                 
                 def Update(self):
+                        log.verbose("APT Update Method is of type: %s\n" % self.apt)
                         if self.apt == "apt-get":
                                 self.__AptGetUpdate()
                         elif self.apt == "aptitude":
                                 pass
+                        elif self.apt == "python-apt":
+                                self.__PythonAptUpdate()
                         else:
                                 log.err("Method not supported")
                                 sys.exit(1)
                                 
                                 
                 def Upgrade(self, UpgradeType="upgrade", ReleaseType=None):
+                        log.verbose("APT Upgrade Method is of type: %s\n" % self.apt)
                         if self.apt == "apt-get":
                                 self.__AptGetUpgrade(UpgradeType, ReleaseType)
                         elif self.apt == "aptitude":
                                 pass
+                        elif self.apt == "python-apt":
+                                # Upgrade is broken in python-apt
+                                # Hence for now, redirect to apt-get
+                                self.__AptGetUpgrade(UpgradeType, ReleaseType)
                         else:
                                 log.err("Method not supported")
                                 sys.exit(1)
                 
                 def InstallPackages(self, PackageList, ReleaseType):
+                        log.verbose("APT Install Method is of type: %s\n" % self.apt)
                         if self.apt == "apt-get":
+                                self.__AptInstallPackage(PackageList, ReleaseType)
+                        elif self.apt == "python-apt":
                                 self.__AptInstallPackage(PackageList, ReleaseType)
                         else:
                                 log.err("Method not supported")
                                 sys.exit(1)
                                 
                 def InstallSrcPackages(self, SrcPackageList, ReleaseType, BuildDependency):
+                        log.verbose("APT Install Source Method is of type: %s\n" % self.apt)
                         if self.apt == "apt-get":
+                                self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
+                        elif self.apt == "python-apt":
                                 self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
                         else:
                                 log.err("Method not supported")
@@ -1495,7 +1609,7 @@ def setter(args):
                         os.environ['LANG'] = "C"
                         log.verbose( "Set environment variable for LANG from %s to %s temporarily.\n" % ( old_environ, os.environ['LANG'] ) )
                         
-                        if self.__ExecSystemCmd('/usr/bin/apt-get -qq --print-uris --simulate update >> $__apt_set_update') is False:
+                        if self.__ExecSystemCmd('/usr/bin/apt-get -q --print-uris update >> $__apt_set_update') is False:
                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
                         log.verbose( "Set environment variable for LANG back to its original from %s to %s.\n" % ( os.environ['LANG'], old_environ ) )
                         os.environ['LANG'] = old_environ
@@ -1507,8 +1621,73 @@ def setter(args):
                         pass
                 
                 def __PythonAptUpdate(self):
-                        pass
+                        log.verbose("Open file %s for write" % self.WriteTo)
+                        try:
+                                writeFH = open(self.WriteTo, 'a')
+                        except:
+                                log.err("Failed to open file %s for write. Exiting")
+                                sys.exit(1)
+                        
+                        log.msg("\nGenerating database of files that are needed for an update.\n")
+                        log.verbose("\nUsing python apt interface\n")
+                        
+                        apt_pkg.init_config()
+                        apt_pkg.init_system()
+                        
+                        acquire = apt_pkg.Acquire()
+                        slist = apt_pkg.SourceList()
+                        
+                        # Read the main list
+                        slist.read_main_list()
+                        
+                        # Add all indexes to the fetcher
+                        slist.get_indexes(acquire, True)
+                        
+                        # Now write the URI of every item
+                        for item in acquire.items:
+                                
+                                #INFO: For update files, there's no checksum present.
+                                # Also, their size is not determined.
+                                # Hence filesize is always returned '0'
+                                # And checksum is something I'm writing as ':'
+                                
+                                # We strip item.destfile because that's how apt-get had historically presented it to us
+                                destFile = item.destfile.split("/")[-1]
+
+                                writeFH.write("'" + item.desc_uri + "'" + " " + destFile + " " + str(item.filesize) + " " + ":" + "\n")
+                                log.verbose("Writing string %s %s %d %s to file %s\n" % (item.desc_uri, destFile, item.filesize, ":", self.WriteTo) )
+                                writeFH.flush()
+                        writeFH.close()
                 
+                def __PythonAptUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
+                        # THis doesn't work as expected. In fact, the code fails.
+                        
+                        
+                        log.verbose("Open file %s for write" % self.WriteTo)
+                        try:
+                                writeFH = open(self.WriteTo, 'a')
+                        except:
+                                log.err("Failed to open file %s for write. Exiting")
+                                sys.exit(1)
+                        
+                        log.msg("\nGenerating database of files that are needed for an upgrade.\n")
+                        log.verbose("\nUsing python apt interface\n")
+                        
+                        #TODO: Right now, I don't know what to do with UpgradeType and Release Type in python-apt
+                        cache = apt.Cache()
+                        upgradablePkgs = filter(lambda p: p.is_upgradable, cache)
+                        
+                        for pkg in upgradablePkgs:
+                                pkg._lookupRecord(True)
+                                path = apt_pkg.TagSection(pkg._records.record)["Filename"]
+                                cand = pkg._depcache.get_candidate_ver(pkg._pkg)
+                                
+                                for (packagefile, i) in cand.file_list:
+                                        indexfile = cache._list.find_index(packagefile)
+                                        if indexfile:
+                                                uri = indexfile.archive_uri(path)
+                                                print uri
+
                 def __AptGetUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
                         self.ReleaseType = ReleaseType
                         
@@ -1630,7 +1809,7 @@ def setter(args):
         
         
         #Instantiate Apt based on what we have. For now, fall to apt only
-        AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt")
+        AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="python-apt")
         
         if Bool_SetUpdate:
                 if platform.system() in supported_platforms:
@@ -1683,9 +1862,9 @@ def setter(args):
                                 else:
                                         AptInst.Upgrade("upgrade", ReleaseType=Str_SetInstallRelease)
                         elif Str_SetUpgradeType == "dist-upgrade":
-                                AptInst.Upgrade("dist-upgrade")
+                                AptInst.Upgrade("dist-upgrade", ReleaseType=Str_SetInstallRelease)
                         elif Str_SetUpgradeType == "dselect-upgrade":
-                                AptInst.Upgrade("dselect-upgrade")
+                                AptInst.Upgrade("dselect-upgrade", ReleaseType=Str_SetInstallRelease)
                         else:
                                 log.err( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
                 else:
@@ -1811,7 +1990,7 @@ def main():
                                 action="store", type=str, metavar="apt-offline-bundle.zip")
         
         parser_get.add_argument("--bug-reports", dest="deb_bugs",
-                          help="Fetch bug reports from the BTS", action="store_true" )
+                          help="Fetch bug reports from the BTS", action="store_false" )
         
         parser_get.add_argument("--proxy-host", dest="proxy_host",
 						help="Proxy Host to use", type=str, default=None)

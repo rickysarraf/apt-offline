@@ -1,13 +1,13 @@
 #!/bin/sh
 
-DISLIKED_PACKAGES="emacs eclipse gnome"
+DISLIKED_PACKAGES="lxde icewm "
 RELEASE="unstable"
 URI="/tmp/set-$PPID.uris"
 CACHE_DIR="/var/cache/apt/archives"
 DOWNLOAD_DIR="/tmp/apt-offline-tests-$PPID"
 BUNDLE_FILE="/tmp/apt-offline-tests-$PPID.zip"
 THREADS=5
-APT_OFFLINE="./apt-offline --verbose"
+APT_OFFLINE="./apt-offline "
 
 set_features () {
 	if [ ! -z $1 ]; then

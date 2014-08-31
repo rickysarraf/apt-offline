@@ -9,6 +9,7 @@ from apt_offline_gui import AptOfflineQtCommon as guicommon
 import apt_offline_core.AptOfflineCoreLib
 
 from apt_offline_gui.AptOfflineQtFetchOptions import AptOfflineQtFetchOptions
+
 class Worker(QtCore.QThread):
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
@@ -165,58 +166,57 @@ class AptOfflineQtFetch(QtGui.QDialog):
                     guicommon.style("%s does not exist." % self.filepath,'red'))
             return
         
-        # TODO: check for zip file's presence
         self.zipfilepath = str(self.ui.zipFilePath.text())
         
-        
-        if os.path.isfile(self.zipfilepath):
-                # if file has write permission
-                if os.access(os.path.dirname(self.zipfilepath), os.W_OK) == False:
-                    if (len(self.zipfilepath) == 0):
-                        guicommon.updateInto (self.ui.rawLogHolder, 
-                                    guicommon.style("Please select a zip file to create archive!",'red'))
-                    else:
-                        guicommon.updateInto (self.ui.rawLogHolder, 
-                            guicommon.style("%s does not have write access." % self.zipfilepath,'red'))
-                    return
-                
+        # First we need to determine if the input is a file path or a directory path
+        if self.ui.saveDatacheckBox.isChecked() is not True: 
+                #Input is a file path
+
                 # if file already exists
                 if os.path.exists(self.zipfilepath):
-                        ret = QMessageBox.warning(self, "Replace archive file?",
-                           "The file %s already exists.\n"
-                              "Do you want to overwrite it?" % self.zipfilepath,
-                                   QMessageBox.Yes | QMessageBox.No
-                                   , QMessageBox.Yes)
+                        ret = QMessageBox.warning(self, "Replace archive file?", "The file %s already exists.\n" 
+                                                  "Do you want to overwrite it?" % self.zipfilepath,
+                                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
                         if ret == QMessageBox.Yes:
-                            # delete the file
-                            try:
-                                os.remove(self.zipfilepath)
-                            except:
-                                guicommon.updateInto (self.ui.rawLogHolder, 
-                                    guicommon.style("Could'nt write to %s!" % self.zipfilepath,'red'))
+                                # delete the file
+                                try:
+                                        #TODO: If "/" is the path, then os.unlink quietly fails crashing the GUI
+                                        os.unlink(self.zipfilepath)
+                                except:
+                                        guicommon.updateInto (self.ui.rawLogHolder, 
+                                                              guicommon.style("Could'nt write to %s!" % self.zipfilepath,'red'))
                         else:
-                            return
-                    
+                                return
+                else:
+                        if not os.access(os.path.dirname(self.zipfilepath), os.W_OK):
+                                guicommon.updateInto (self.ui.rawLogHolder,
+                                                      guicommon.style("%s does not have write access." % self.zipfilepath,'red'))
+                                return
                 targetFilePath = self.zipfilepath
                 targetDirPath = None
                     
-        elif os.path.isdir(self.zipfilepath):
-                # if path has write permission
-                if os.access(os.path.dirname(self.zipfilepath), os.W_OK) == False:
-                    if (len(self.zipfilepath) == 0):
-                        guicommon.updateInto (self.ui.rawLogHolder, 
-                                    guicommon.style("Please select a folder",'red'))
-                    else:
-                        guicommon.updateInto (self.ui.rawLogHolder, 
-                            guicommon.style("%s does not have write access." % self.zipfilepath,'red'))
-                    return
-                
-
+        else:
+                if os.path.exists(self.zipfilepath):
+                        if os.access(self.zipfilepath, os.W_OK) == False:
+                                guicommon.updateInto (self.ui.rawLogHolder,
+                                                      guicommon.style("%s does not have write access." % self.zipfilepath,'red'))
+                        return
+                else:
+                        ret = QMessageBox.warning(self, "No such directory", "No such directory %s\n"
+                                                  "Do you want to create it?" % self.zipfilepath,
+                                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+                        if ret == QMessageBox.Yes:
+                                # delete the file
+                                try:
+                                        os.mkdir(self.zipfilepath)
+                                except:
+                                        guicommon.updateInto (self.ui.rawLogHolder, 
+                                                              guicommon.style("Couldn't create directory %s!" % self.zipfilepath,'red'))
+                                        return
+                        else:
+                                return
                 targetFilePath = None
                 targetDirPath = self.zipfilepath
-        else:
-                print "Invalid Path"
-                return False
 
         
         args = GetterArgs(filename=self.filepath, bundle_file=targetFilePath, progress_bar=self.ui.statusProgressBar, 
