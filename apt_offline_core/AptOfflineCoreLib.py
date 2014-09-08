@@ -144,54 +144,43 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                 sys.exit( 1 )
                 
                 try:
-                        ( num_of_bugs, header, self.bugs_list ) = debianbts.get_bugs( 'package', PackageName )
+                        #( num_of_bugs, header, self.bugs_list ) = debianbts.get_bugs( 'package', PackageName )
+                        self.bugs_list = debianbts.get_bugs( 'package', PackageName )
+                        num_of_bugs = len(self.bugs_list)
                 except socket.timeout:
                         return 0
                         
                 
                 if num_of_bugs:
                         atleast_one_bug_report_downloaded = False
-                        for x in self.bugs_list:
-                                ( sub_bugs_header, sub_bugs_list ) = x
+                        for eachBug in self.bugs_list:
                                 
-                                #INFO: We filter all the IgnoredBugTypes that we think aren't necessary.
-                                #We don't download those low priority bug reports
-                                for BugType in self.IgnoredBugTypes:
-                                        if BugType in sub_bugs_header:
-                                                bug_flag = 0
-                                                break
-                                        bug_flag = 1
+                                # Fetch bug report..
+                                # TODO: Handle exceptions later
+                                bugReport = debianbts.get_bug_log(eachBug)
                                 
-                                if bug_flag:
-                                        for x in sub_bugs_list:
-                                                break_bugs = x.split( ' ' )
-                                                bug_num = string.lstrip( break_bugs[0], '#' )
-                                                try:
-                                                        data = debianbts.get_bug_log( bug_num, followups=True )
-                                                except socket.timeout:
-                                                        break
-                                                
-                                                if data is None:
-                                                        break
-                                                
-                                                if Filename == None:
-                                                        self.fileName = PackageName + "." + bug_num + "." + self.apt_bug
-                                                        file_handle = open( self.fileName, 'w' )
-                                                else:
-                                                        self.fileName = Filename
-                                                        file_handle = open( self.fileName, 'a' )
-                            
-                                                file_handle.write( data[0] + "\n\n" )
-                                                for x in data[1]:
-                                                        file_handle.write( x )
-                                                        file_handle.write( "\n" )
-                                                file_handle.write( "\n" * 3 )
-                                                file_handle.flush()
-                                                file_handle.close()
-                                                #We're adding to an archive file here.
-                                                if self.lock:
-                                                        self.AddToArchive( self.ArchiveFile, self.fileName )
-                                                atleast_one_bug_report_downloaded = True
+                                # This tells us how many follow-ups for the bug report are present.
+                                bugReportLength = bugReport.__len__()
+                                writeBugReport = 0
+                                
+                                if Filename == None:
+                                        self.fileName = PackageName + "." + str(eachBug) + "." + self.apt_bug
+                                        file_handle = open( self.fileName, 'w' )
+                                else:
+                                        self.fileName = Filename
+                                        file_handle = open( self.fileName, 'a' )
+            
+                                while writeBugReport < bugReportLength:
+                                    file_handle.write(bugReport[writeBugReport]['body'].encode('utf8'))
+                                    file_handle.write("\n\n".encode('utf8'))
+                                    writeBugReport += 1
+                                file_handle.flush()
+                                file_handle.close()
+
+                                #We're adding to an archive file here.
+                                if self.lock:
+                                        self.AddToArchive( self.ArchiveFile, self.fileName )
+                                atleast_one_bug_report_downloaded = True
                         if atleast_one_bug_report_downloaded:
                                 return 2
                         else:
