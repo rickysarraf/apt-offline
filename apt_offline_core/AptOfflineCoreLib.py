@@ -53,11 +53,12 @@ except ImportError:
 # On Debian, python-debianbts package provides this library
 DebianBTS = True
 try:
-        import AptOfflineDebianBtsLib
+        import debianbts
 except ImportError:
-        DebianBTS = False
-
-from AptOffline_reportbug_exceptions import NoNetwork
+        try:
+            import AptOfflineDebianBtsLib as debianbts
+        except ImportError:
+            DebianBTS = False
 
 import AptOfflineMagicLib
 
@@ -143,11 +144,8 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                 sys.exit( 1 )
                 
                 try:
-                        ( num_of_bugs, header, self.bugs_list ) = AptOfflineDebianBtsLib.get_reports( PackageName )
+                        ( num_of_bugs, header, self.bugs_list ) = debianbts.get_bugs( 'package', PackageName )
                 except socket.timeout:
-                        return 0
-                except NoNetwork:
-                        log.verbose("Network connection to the BTS couldn't be established")
                         return 0
                         
                 
@@ -169,7 +167,7 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                                 break_bugs = x.split( ' ' )
                                                 bug_num = string.lstrip( break_bugs[0], '#' )
                                                 try:
-                                                        data = AptOfflineDebianBtsLib.get_report( bug_num, followups=True )
+                                                        data = debianbts.get_bug_log( bug_num, followups=True )
                                                 except socket.timeout:
                                                         break
                                                 
@@ -1990,7 +1988,7 @@ def main():
                                 action="store", type=str, metavar="apt-offline-bundle.zip")
         
         parser_get.add_argument("--bug-reports", dest="deb_bugs",
-                          help="Fetch bug reports from the BTS", action="store_false" )
+                          help="Fetch bug reports from the BTS", action="store_true" )
         
         parser_get.add_argument("--proxy-host", dest="proxy_host",
 						help="Proxy Host to use", type=str, default=None)
