@@ -1056,7 +1056,9 @@ def installer( args ):
         archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
         
         # Prepare for APT Datbase's Locks
-        if FCNTL_LOCK is False:
+        if Bool_TestWindows:
+                log.verbose("In simulate mode. No locking required\n")
+        elif FCNTL_LOCK is False:
                 log.err("Locking framework in not available on your platform")
                 sys.exit(1)
         else:
@@ -1070,8 +1072,10 @@ def installer( args ):
                 AptSecure = APTVerifySigs()
                 
         try:
+                if Bool_TestWindows:
+                    log.verbose("In simulate mode. No locking required\n")
                 # Acquire APT lock
-                if AptLock.lockLists() is False:
+                elif AptLock.lockLists() is False:
                         log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (apt_update_target_path))
                         sys.exit(1)
                 
@@ -1085,7 +1089,10 @@ def installer( args ):
                 log.err("Cannot find APT's partial cache dir %s\n" % (apt_update_target_path) )
                 sys.exit(1)
         finally:
-                AptLock.unlockLists()
+                if Bool_TestWindows:
+                    log.verbose("In simulate mode. No locking required\n")
+                else:
+                    AptLock.unlockLists()
         
         def display_options():
                 log.msg( "(Y) Yes. Proceed with installation\n" )
