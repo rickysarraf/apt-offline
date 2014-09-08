@@ -1113,13 +1113,13 @@ def installer( args ):
                 value => subject string
                 '''
                 log.msg( "\n\nFollowing are the list of bugs present.\n" )
-		sortedKeyList = dictList.keys()
-		sortedKeyList.sort()
+                sortedKeyList = dictList.keys()
+                sortedKeyList.sort()
                 for each_bug in sortedKeyList:
-			pkg_name = each_bug.split( '.' )[-3].split('/')[-1]
-                        bug_num = each_bug.split( '.' )[-2]
-                        bug_subject = dictList[each_bug]
-                        log.msg( "%s\t%s\t%s\n" % ( pkg_name, bug_num, bug_subject ) )
+                    pkg_name = each_bug.split( '.' )[-3].split('/')[-1]
+                    bug_num = each_bug.split( '.' )[-2]
+                    bug_subject = dictList[each_bug]
+                    log.msg( "%s\t%s\t%s\n" % ( pkg_name, bug_num, bug_subject ) )
             
         def magic_check_and_uncompress( archive_file=None, filename=None):
                 retval = False
