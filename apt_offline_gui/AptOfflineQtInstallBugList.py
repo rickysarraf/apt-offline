@@ -46,13 +46,15 @@ class AptOfflineQtInstallBugList(QtGui.QDialog):
                         
                         for filename in file.namelist():
                                 if filename.endswith( AptOfflineCoreLib.apt_bug_file_format ):
+                                        bugNumber = filename.split(".")[1]
 
                                         temp = tempfile.NamedTemporaryFile()
                                         temp.file.write( file.read( filename ) )
                                         temp.file.flush()
                                         temp.file.seek( 0 ) #Let's go back to the start of the file
                                         for bug_subject_identifier in temp.file.readlines():
-                                                if bug_subject_identifier.startswith( '#' ):
+                                                if bug_subject_identifier.startswith( 'Subject:' ):
+                                                        bug_subject_identifier = str(bugNumber) + ": " + bug_subject_identifier.lstrip("Subject:")
                                                         bug_subject_identifier = bug_subject_identifier.rstrip("\n")
                                                         temp.file.seek(0)
                                                         self.bugList[bug_subject_identifier] = temp.file.readlines()
@@ -62,10 +64,12 @@ class AptOfflineQtInstallBugList(QtGui.QDialog):
                 elif os.path.isdir(path):
                         for filename in os.listdir( path ):
                                 if filename.endswith( AptOfflineCoreLib.apt_bug_file_format ):
+                                        bugNumber = filename.split(".")[1]
                                         filename = os.path.join(path, filename)
                                         temp = open(filename, 'r')
                                         for bug_subject_identifier in temp.readlines():
-                                                if bug_subject_identifier.startswith( '#' ):
+                                                if bug_subject_identifier.startswith( 'Subject:' ):
+                                                        bug_subject_identifier = str(bugNumber) + ": " + bug_subject_identifier.lstrip("Subject:")
                                                         bug_subject_identifier = bug_subject_identifier.rstrip("\n")
                                                         temp.seek(0)
                                                         self.bugList[bug_subject_identifier] = temp.readlines()
