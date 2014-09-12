@@ -174,6 +174,7 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                 for line in bugReport[writeBugReport]['header'].encode('utf8').split("\n"):
                                     if line.startswith("Subject:"):
                                         file_handle.write(line)
+                                        file_handle.write("\n")
                                         break
                                     
                                 while writeBugReport < bugReportLength:
