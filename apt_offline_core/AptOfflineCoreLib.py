@@ -170,6 +170,12 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                         self.fileName = Filename
                                         file_handle = open( self.fileName, 'a' )
             
+                                #TODO: Can we manipulate these headers in a more efficient way???
+                                for line in bugReport[writeBugReport]['header'].encode('utf8').split("\n"):
+                                    if line.startswith("Subject:"):
+                                        file_handle.write(line)
+                                        break
+                                    
                                 while writeBugReport < bugReportLength:
                                     file_handle.write(bugReport[writeBugReport]['body'].encode('utf8'))
                                     file_handle.write("\n\n".encode('utf8'))
@@ -1386,7 +1392,7 @@ def installer( args ):
                                         filename = os.path.join(install_file_path, filename)
                                         temp = open(filename, 'r')
                                         for bug_subject_identifier in temp.readlines():
-                                                if bug_subject_identifier.startswith( '#' ):
+                                                if bug_subject_identifier.decode('utf8').startswith( 'Subject:' ):
                                                         subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
                                                         subject = subject.rstrip( "\n" )
                                                         break
