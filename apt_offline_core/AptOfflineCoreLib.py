@@ -1184,18 +1184,24 @@ def installer( args ):
                         #ENDCHANGE
                         log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
 
-        def displayBugs():
+        def displayBugs(type=None):
+                ''' Takes keywords "file" or "dir" as type input '''
+            
+                if type is None:
+                    return False
+                
                 # Display the list of bugs
                 list_bugs(bugs_number)
                 display_options()
                 response = get_response()
+                
                 while True:
                         if response == "?":
                                 display_options()
                                 response = get_response()
                         elif response.startswith( 'y' ) or response.startswith( 'Y' ):
-                            if os.path.isfile(install_file_path):
-                                for filename in file.namelist():
+                            if type is "file":
+                                for filename in zipBugFile.namelist():
                                         
                                         #INFO: Take care of Src Pkgs
                                         found = False
@@ -1205,7 +1211,7 @@ def installer( args ):
                                                         break
                                                 
                                         data = tempfile.NamedTemporaryFile()
-                                        data.file.write( file.read( filename ) )
+                                        data.file.write( zipBugFile.read( filename ) )
                                         data.file.flush()
                                         archive_file = data.name
                                         
@@ -1226,7 +1232,7 @@ def installer( args ):
                                                 AptLock.unlockLists()
                                         data.file.close()
                                 sys.exit( 0 )
-                            if os.path.isdir(install_file_path):
+                            if type is "dir":
                                     if DirInstallPackages(install_file_path) is True:
                                         sys.exit(0)
                                     else:
@@ -1246,15 +1252,15 @@ def installer( args ):
                                         log.err( "Incorrect bug number %s provided.\n" % ( response ) )
                                         response = get_response()
                                 if found:
-                                    if os.path.isfile(install_file_path):
-                                            pydoc.pager(file.read(bug_file_to_display) )
+                                    if type is "file":
+                                            pydoc.pager(zipBugFile.read(bug_file_to_display) )
                                             # Redisplay the menu
                                             # FIXME: See a pythonic possibility of cleaning the screen at this stage
                                             response = get_response()
         
-                                    if os.path.isdir(install_file_path):
-                                            file = open(bug_file_to_display, 'r')
-                                            pydoc.pager(file.read() )
+                                    if type is "dir":
+                                            tempFile = open(bug_file_to_display, 'r')
+                                            pydoc.pager(tempFile.read() )
                                             # Redisplay the menu
                                             # FIXME: See a pythonic possibility of cleaning the screen at this stage
                                             response = get_response()
@@ -1268,21 +1274,21 @@ def installer( args ):
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
                 try:
-                        file = zipfile.ZipFile( install_file_path, "r" )
+                        zipBugFile = zipfile.ZipFile( install_file_path, "r" )
                 except zipfile.BadZipfile:
                         log.err("File %s is not a valid zip file\n" % (install_file_path))
                         sys.exit(1)
                 #CHANGE: for progress tracking
-                totalSize[1] = len(file.namelist())
+                totalSize[1] = len(zipBugFile.namelist())
                 totalSize[0] = 0
                 #ENDCHANGE
                 
                 SrcPkgDict = {}
-                for filename in file.namelist():
+                for filename in zipBugFile.namelist():
                         if filename.endswith(".dsc"):
                                 SrcPkgName = filename.split('_')[0]
                                 temp = tempfile.NamedTemporaryFile()
-                                temp.file.write( file.read( filename ) )
+                                temp.file.write( zipBugFile.read( filename ) )
                                 temp.file.flush()
                                 temp.file.seek( 0 ) #Let's go back to the start of the file
                                 SrcPkgDict[SrcPkgName] = []
@@ -1301,14 +1307,14 @@ def installer( args ):
                 if Bool_SkipBugReports:
                         log.verbose("Skipping bug report check as requested")
                 else:
-                        for filename in file.namelist():
+                        for filename in zipBugFile.namelist():
                                 if filename.endswith( apt_bug_file_format ):
                                         temp = tempfile.NamedTemporaryFile()
-                                        temp.file.write( file.read( filename ) )
+                                        temp.file.write( zipBugFile.read( filename ) )
                                         temp.file.flush()
                                         temp.file.seek( 0 ) #Let's go back to the start of the file
                                         for bug_subject_identifier in temp.file.readlines():
-                                                if bug_subject_identifier.startswith( '#' ):
+                                                if bug_subject_identifier.decode('utf8').startswith( 'Subject:' ):
                                                         subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
                                                         subject = subject.rstrip( "\n" )
                                                         break
@@ -1317,14 +1323,14 @@ def installer( args ):
                                         
                 log.verbose(str(bugs_number) + "\n")
                 if bugs_number:
-                        displayBugs()
+                        displayBugs(type="file")
                 else:
                         log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
                         #response = raw_input( "Continue with Installation. Y/N ?" )
                         #response = response.rstrip( "\r" )
                         #if response.endswith( 'y' ) or response.endswith( 'Y' ):
                         #        log.verbose( "Continuing with syncing the files.\n" )
-                        for filename in file.namelist():
+                        for filename in zipBugFile.namelist():
                                 
                                 #INFO: Take care of Src Pkgs
                                 found = False
@@ -1334,7 +1340,7 @@ def installer( args ):
                                                 break
                                         
                                 data = tempfile.NamedTemporaryFile()
-                                data.file.write( file.read( filename ) )
+                                data.file.write( zipBugFile.read( filename ) )
                                 data.file.flush()
                                 archive_file = data.name
                                 
@@ -1418,7 +1424,7 @@ def installer( args ):
                                         temp.close()
                 log.verbose(str(bugs_number) + "\n")
                 if bugs_number:
-                        displayBugs()
+                        displayBugs(type="dir")
                 else:
                         log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
                         DirInstallPackages(install_file_path)
@@ -1434,20 +1440,20 @@ def installer( args ):
                 lFileList= os.listdir(apt_update_target_path)
                 lFileList.sort()
                 lVerifiedWhitelist = []
-                for file in lFileList:
-                        file = os.path.join(apt_update_target_path, file)
-                        if file.endswith('.gpg'):
-                                log.verbose("%s\n" % (file) )
-                                file = os.path.abspath(file)
-                                if AptSecure.VerifySig(file, file.rstrip(".gpg") ):
-                                        file = file.rstrip("Release.gpg")
-                                        file = file[:-1] #Remove the trailing _ underscore
-                                        file = file.split("/")[-1]
-                                        lVerifiedWhitelist.append(file)
-                                        log.verbose("%s is gpg clean\n" % (file) )
+                for localFile in lFileList:
+                        localFile = os.path.join(apt_update_target_path, localFile)
+                        if localFile.endswith('.gpg'):
+                                log.verbose("%s\n" % (localFile) )
+                                localFile = os.path.abspath(localFile)
+                                if AptSecure.VerifySig(localFile, localFile.rstrip(".gpg") ):
+                                        localFile = localFile.rstrip("Release.gpg")
+                                        localFile = localFile[:-1] #Remove the trailing _ underscore
+                                        localFile = localFile.split("/")[-1]
+                                        lVerifiedWhitelist.append(localFile)
+                                        log.verbose("%s is gpg clean\n" % (localFile) )
                                 else:
                                         # Bad sig.
-                                        log.err("%s bad signature. Not syncing because in strict mode.\n" % (file) )
+                                        log.err("%s bad signature. Not syncing because in strict mode.\n" % (localFile) )
                 if lVerifiedWhitelist != []:
                         log.verbose (str(lVerifiedWhitelist) + "\n")
                         for whitelist_item in lVerifiedWhitelist:
