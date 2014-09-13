@@ -1221,12 +1221,13 @@ def installer( args ):
                                                 continue
                                         
                                             
-                                        if AptLock.lockPackages() is False:
-                                                log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (archive_file))
-                                                sys.exit(1)
+                                        if Bool_TestWindows:
+                                            log.verbose("In simulate mode. No locking required\n")
+                                        elif AptLock.lockPackages() is False:
+                                            log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (archive_file))
+                                            sys.exit(1)
                                                 
                                         magic_check_and_uncompress( archive_file, filename )
-                                        log.err("Uncaught exception in magic_check_and_uncompress() \n")
 
                                         if Bool_TestWindows:
                                             log.verbose("In simulate mode. No locking required\n")
@@ -1351,20 +1352,19 @@ def installer( args ):
                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                         continue
 
-                                if AptLock.lockPackages() is False:
-                                        log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
-                                        sys.exit(1)
+                                if Bool_TestWindows:
+                                    log.verbose("In simulate mode. No locking required.\n")
+                                elif AptLock.lockPackages() is False:
+                                    log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
+                                    sys.exit(1)
                                 
                                 magic_check_and_uncompress( archive_file, filename )
-                                log.err("Uncaught exception in magic_check_and_uncompress() \n")
+
                                 if Bool_TestWindows:
                                     log.verbose("In simulate mode. No locking required\n")
                                 else:
                                     AptLock.unlockPackages()
                                 data.file.close()
-                        #else:
-                        #       log.msg( "Exiting gracefully on user request.\n" )
-                        #       sys.exit( 0 )
                                 
         elif os.path.isdir(install_file_path):
                 
