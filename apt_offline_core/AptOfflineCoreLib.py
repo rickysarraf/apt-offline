@@ -181,7 +181,7 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                     file_handle.write(bugReport[writeBugReport]['body'].encode('utf8'))
                                     file_handle.write("\n\n".encode('utf8'))
                                     writeBugReport += 1
-                                    if writeBugReport <= bugReportLength:
+                                    if writeBugReport < bugReportLength:
                                         file_handle.write("Follow-Up #%d\n\n".encode('utf8') % writeBugReport)
                                 file_handle.flush()
                                 file_handle.close()
