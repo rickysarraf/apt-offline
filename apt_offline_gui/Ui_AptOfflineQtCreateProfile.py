@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtCreateProfile.ui'
 #
-# Created: Mon Dec 31 16:02:36 2012
-#      by: PyQt4 UI code generator 4.9.3
+# Created: Sat Sep 13 15:09:28 2014
+#      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_CreateProfile(object):
     def setupUi(self, CreateProfile):
@@ -156,21 +165,21 @@ class Ui_CreateProfile(object):
         QtCore.QMetaObject.connectSlotsByName(CreateProfile)
 
     def retranslateUi(self, CreateProfile):
-        CreateProfile.setWindowTitle(QtGui.QApplication.translate("CreateProfile", "Generate Signature", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblInstallType.setText(QtGui.QApplication.translate("CreateProfile", "Installation Type", None, QtGui.QApplication.UnicodeUTF8))
-        self.updateCheckBox.setText(QtGui.QApplication.translate("CreateProfile", "Update", None, QtGui.QApplication.UnicodeUTF8))
-        self.upgradePackagesCheckBox.setText(QtGui.QApplication.translate("CreateProfile", "Upgrade Packages", None, QtGui.QApplication.UnicodeUTF8))
-        self.installPackagesCheckBox.setText(QtGui.QApplication.translate("CreateProfile", "Install Packages", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblPackageList.setText(QtGui.QApplication.translate("CreateProfile", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        CreateProfile.setWindowTitle(_translate("CreateProfile", "Generate Signature", None))
+        self.lblInstallType.setText(_translate("CreateProfile", "Installation Type", None))
+        self.updateCheckBox.setText(_translate("CreateProfile", "Update", None))
+        self.upgradePackagesCheckBox.setText(_translate("CreateProfile", "Upgrade Packages", None))
+        self.installPackagesCheckBox.setText(_translate("CreateProfile", "Install Packages", None))
+        self.lblPackageList.setText(_translate("CreateProfile", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'DejaVu Sans\'; font-size:8pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Install these packages</p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:7pt;\">separate by comma</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblSaveProfile.setText(QtGui.QApplication.translate("CreateProfile", "Save Signature As ", None, QtGui.QApplication.UnicodeUTF8))
-        self.browseFilePathButton.setText(QtGui.QApplication.translate("CreateProfile", "Browse", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblConsoleOutput.setText(QtGui.QApplication.translate("CreateProfile", "Console Output:", None, QtGui.QApplication.UnicodeUTF8))
-        self.createProfileButton.setText(QtGui.QApplication.translate("CreateProfile", "Create", None, QtGui.QApplication.UnicodeUTF8))
-        self.cancelButton.setText(QtGui.QApplication.translate("CreateProfile", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:7pt;\">separate by comma</span></p></body></html>", None))
+        self.lblSaveProfile.setText(_translate("CreateProfile", "Save Signature As ", None))
+        self.browseFilePathButton.setText(_translate("CreateProfile", "Browse", None))
+        self.lblConsoleOutput.setText(_translate("CreateProfile", "Console Output:", None))
+        self.createProfileButton.setText(_translate("CreateProfile", "Create", None))
+        self.cancelButton.setText(_translate("CreateProfile", "Cancel", None))
 
 import resources_rc

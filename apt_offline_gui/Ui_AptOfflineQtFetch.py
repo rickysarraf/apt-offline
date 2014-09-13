@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetch.ui'
 #
-# Created: Mon Dec 31 16:02:36 2012
-#      by: PyQt4 UI code generator 4.9.3
+# Created: Sat Sep 13 15:09:29 2014
+#      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_AptOfflineQtFetch(object):
     def setupUi(self, AptOfflineQtFetch):
@@ -107,17 +116,17 @@ class Ui_AptOfflineQtFetch(object):
         QtCore.QMetaObject.connectSlotsByName(AptOfflineQtFetch)
 
     def retranslateUi(self, AptOfflineQtFetch):
-        AptOfflineQtFetch.setWindowTitle(QtGui.QApplication.translate("AptOfflineQtFetch", "Fetch Packages or Updates", None, QtGui.QApplication.UnicodeUTF8))
-        self.browseFilePathButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Browse", None, QtGui.QApplication.UnicodeUTF8))
-        self.startDownloadButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Download", None, QtGui.QApplication.UnicodeUTF8))
-        self.cancelButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Close", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblSelectSig.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Select the signature file", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblStatus.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Status:", None, QtGui.QApplication.UnicodeUTF8))
-        self.progressStatusDescription.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Ready", None, QtGui.QApplication.UnicodeUTF8))
-        self.browseZipFileButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Browse", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblSaveAs.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Save data as", None, QtGui.QApplication.UnicodeUTF8))
-        self.advancedOptionsButton.setToolTip(QtGui.QApplication.translate("AptOfflineQtFetch", "Additional options for download", None, QtGui.QApplication.UnicodeUTF8))
-        self.advancedOptionsButton.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Options", None, QtGui.QApplication.UnicodeUTF8))
-        self.saveDatacheckBox.setText(QtGui.QApplication.translate("AptOfflineQtFetch", "Is Directory", None, QtGui.QApplication.UnicodeUTF8))
+        AptOfflineQtFetch.setWindowTitle(_translate("AptOfflineQtFetch", "Fetch Packages or Updates", None))
+        self.browseFilePathButton.setText(_translate("AptOfflineQtFetch", "Browse", None))
+        self.startDownloadButton.setText(_translate("AptOfflineQtFetch", "Download", None))
+        self.cancelButton.setText(_translate("AptOfflineQtFetch", "Close", None))
+        self.lblSelectSig.setText(_translate("AptOfflineQtFetch", "Select the signature file", None))
+        self.lblStatus.setText(_translate("AptOfflineQtFetch", "Status:", None))
+        self.progressStatusDescription.setText(_translate("AptOfflineQtFetch", "Ready", None))
+        self.browseZipFileButton.setText(_translate("AptOfflineQtFetch", "Browse", None))
+        self.lblSaveAs.setText(_translate("AptOfflineQtFetch", "Save data as", None))
+        self.advancedOptionsButton.setToolTip(_translate("AptOfflineQtFetch", "Additional options for download", None))
+        self.advancedOptionsButton.setText(_translate("AptOfflineQtFetch", "Options", None))
+        self.saveDatacheckBox.setText(_translate("AptOfflineQtFetch", "Is Directory", None))
 
 import resources_rc
