@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtInstall.ui'
 #
-# Created: Mon Dec 31 16:02:36 2012
-#      by: PyQt4 UI code generator 4.9.3
+# Created: Sat Sep 13 15:09:29 2014
+#      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_AptOfflineQtInstall(object):
     def setupUi(self, AptOfflineQtInstall):
@@ -69,6 +78,10 @@ class Ui_AptOfflineQtInstall(object):
         self.progressStatusDescription.setObjectName(_fromUtf8("progressStatusDescription"))
         self.rawLogHolder = QtGui.QTextEdit(AptOfflineQtInstall)
         self.rawLogHolder.setGeometry(QtCore.QRect(30, 180, 411, 191))
+        self.rawLogHolder.setTabChangesFocus(True)
+        self.rawLogHolder.setUndoRedoEnabled(False)
+        self.rawLogHolder.setReadOnly(True)
+        self.rawLogHolder.setAcceptRichText(False)
         self.rawLogHolder.setObjectName(_fromUtf8("rawLogHolder"))
         self.bugReportsButton = QtGui.QPushButton(AptOfflineQtInstall)
         self.bugReportsButton.setEnabled(False)
@@ -85,14 +98,14 @@ class Ui_AptOfflineQtInstall(object):
         QtCore.QMetaObject.connectSlotsByName(AptOfflineQtInstall)
 
     def retranslateUi(self, AptOfflineQtInstall):
-        AptOfflineQtInstall.setWindowTitle(QtGui.QApplication.translate("AptOfflineQtInstall", "Install Packages", None, QtGui.QApplication.UnicodeUTF8))
-        self.browseFilePathButton.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Browse", None, QtGui.QApplication.UnicodeUTF8))
-        self.startInstallButton.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Install", None, QtGui.QApplication.UnicodeUTF8))
-        self.cancelButton.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Close", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Specify file or folder path", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Status:", None, QtGui.QApplication.UnicodeUTF8))
-        self.progressStatusDescription.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Ready", None, QtGui.QApplication.UnicodeUTF8))
-        self.bugReportsButton.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Bug Reports", None, QtGui.QApplication.UnicodeUTF8))
-        self.browseFileFoldercheckBox.setText(QtGui.QApplication.translate("AptOfflineQtInstall", "Is Directory", None, QtGui.QApplication.UnicodeUTF8))
+        AptOfflineQtInstall.setWindowTitle(_translate("AptOfflineQtInstall", "Install Packages", None))
+        self.browseFilePathButton.setText(_translate("AptOfflineQtInstall", "Browse", None))
+        self.startInstallButton.setText(_translate("AptOfflineQtInstall", "Install", None))
+        self.cancelButton.setText(_translate("AptOfflineQtInstall", "Close", None))
+        self.label.setText(_translate("AptOfflineQtInstall", "Specify file or folder path", None))
+        self.label_2.setText(_translate("AptOfflineQtInstall", "Status:", None))
+        self.progressStatusDescription.setText(_translate("AptOfflineQtInstall", "Ready", None))
+        self.bugReportsButton.setText(_translate("AptOfflineQtInstall", "Bug Reports", None))
+        self.browseFileFoldercheckBox.setText(_translate("AptOfflineQtInstall", "Is Directory", None))
 
 import resources_rc

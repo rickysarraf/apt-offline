@@ -16,8 +16,24 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>642</width>
+    <height>674</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>642</width>
+    <height>674</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>List of Bugs</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/icons/icons/help-about.png</normaloff>:/icons/icons/help-about.png</iconset>
   </property>
   <property name="modal">
    <bool>true</bool>
@@ -26,30 +42,31 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>40</y>
+     <y>30</y>
      <width>581</width>
-     <height>81</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="closeButton">
-   <property name="geometry">
-    <rect>
-     <x>500</x>
-     <y>630</y>
-     <width>107</width>
-     <height>24</height>
+     <height>121</height>
     </rect>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Close this window&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>Bug List</string>
    </property>
-   <property name="text">
-    <string>Close</string>
+   <property name="statusTip">
+    <string>Bug List</string>
    </property>
-   <property name="icon">
-    <iconset resource="resources.qrc">
-     <normaloff>:/icons/icons/application-exit.png</normaloff>:/icons/icons/application-exit.png</iconset>
+   <property name="whatsThis">
+    <string>Bug List</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::WinPanel</enum>
+   </property>
+   <property name="tabKeyNavigation">
+    <bool>false</bool>
+   </property>
+   <property name="resizeMode">
+    <enum>QListView::Adjust</enum>
+   </property>
+   <property name="sortingEnabled">
+    <bool>true</bool>
    </property>
   </widget>
   <widget class="QLabel" name="label">
@@ -69,16 +86,60 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>160</y>
+     <y>170</y>
      <width>581</width>
-     <height>441</height>
+     <height>461</height>
     </rect>
    </property>
    <property name="acceptDrops">
     <bool>false</bool>
    </property>
+   <property name="toolTip">
+    <string>Bug Report Content</string>
+   </property>
+   <property name="statusTip">
+    <string>Bug Report Content</string>
+   </property>
+   <property name="whatsThis">
+    <string>Bug Report Content</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Panel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Sunken</enum>
+   </property>
+   <property name="tabChangesFocus">
+    <bool>true</bool>
+   </property>
+   <property name="undoRedoEnabled">
+    <bool>false</bool>
+   </property>
    <property name="readOnly">
     <bool>true</bool>
+   </property>
+   <property name="textInteractionFlags">
+    <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="closeButton">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>640</y>
+     <width>100</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Close this window</string>
+   </property>
+   <property name="text">
+    <string>Close</string>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/icons/application-exit.png</normaloff>:/icons/icons/application-exit.png</iconset>
    </property>
   </widget>
  </widget>
