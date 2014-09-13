@@ -1220,19 +1220,18 @@ def installer( args ):
                                                 log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                                 continue
                                         
-                                        try:
-                                                if AptLock.lockPackages() is False:
-                                                        log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (archive_file))
-                                                        sys.exit(1)
-                                                        
-                                                magic_check_and_uncompress( archive_file, filename )
-                                        except:
-                                                log.err("Uncaught exception in magic_check_and_uncompress() \n")
-                                        finally:
-                                                if Bool_TestWindows:
-                                                    log.verbose("In simulate mode. No locking required\n")
-                                                else:
-                                                    AptLock.unlockLists()
+                                            
+                                        if AptLock.lockPackages() is False:
+                                                log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (archive_file))
+                                                sys.exit(1)
+                                                
+                                        magic_check_and_uncompress( archive_file, filename )
+                                        log.err("Uncaught exception in magic_check_and_uncompress() \n")
+
+                                        if Bool_TestWindows:
+                                            log.verbose("In simulate mode. No locking required\n")
+                                        else:
+                                            AptLock.unlockLists()
                                         data.file.close()
                                 sys.exit( 0 )
                             if type is "dir":
@@ -1352,19 +1351,16 @@ def installer( args ):
                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                         continue
 
-                                try:
-                                        if AptLock.lockPackages() is False:
-                                                log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
-                                                sys.exit(1)
-                                        
-                                        magic_check_and_uncompress( archive_file, filename )
-                                except:
-                                        log.err("Uncaught exception in magic_check_and_uncompress() \n")
-                                finally:
-                                        if Bool_TestWindows:
-                                            log.verbose("In simulate mode. No locking required\n")
-                                        else:
-                                            AptLock.unlockPackages()
+                                if AptLock.lockPackages() is False:
+                                        log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
+                                        sys.exit(1)
+                                
+                                magic_check_and_uncompress( archive_file, filename )
+                                log.err("Uncaught exception in magic_check_and_uncompress() \n")
+                                if Bool_TestWindows:
+                                    log.verbose("In simulate mode. No locking required\n")
+                                else:
+                                    AptLock.unlockPackages()
                                 data.file.close()
                         #else:
                         #       log.msg( "Exiting gracefully on user request.\n" )
