@@ -1184,7 +1184,87 @@ def installer( args ):
                         #ENDCHANGE
                         log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
 
+        def displayBugs():
+                # Display the list of bugs
+                list_bugs(bugs_number)
+                display_options()
+                response = get_response()
+                while True:
+                        if response == "?":
+                                display_options()
+                                response = get_response()
+                        elif response.startswith( 'y' ) or response.startswith( 'Y' ):
+                            if os.path.isfile(install_file_path):
+                                for filename in file.namelist():
+                                        
+                                        #INFO: Take care of Src Pkgs
+                                        found = False
+                                        for item in SrcPkgDict.keys():
+                                                if filename in SrcPkgDict[item]:
+                                                        found = True
+                                                        break
+                                                
+                                        data = tempfile.NamedTemporaryFile()
+                                        data.file.write( file.read( filename ) )
+                                        data.file.flush()
+                                        archive_file = data.name
+                                        
+                                        if found is True: # found is True. That means this is a src package
+                                                shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
+                                                log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                                continue
+                                        
+                                        try:
+                                                if AptLock.lockPackages() is False:
+                                                        log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (archive_file))
+                                                        sys.exit(1)
+                                                        
+                                                magic_check_and_uncompress( archive_file, filename )
+                                        except:
+                                                log.err("Uncaught exception in magic_check_and_uncompress() \n")
+                                        finally:
+                                                AptLock.unlockLists()
+                                        data.file.close()
+                                sys.exit( 0 )
+                            if os.path.isdir(install_file_path):
+                                    if DirInstallPackages(install_file_path) is True:
+                                        sys.exit(0)
+                                    else:
+                                        log.err("Failed during install operation on %s.\n" % (install_file_path) )
+                                        sys.exit(1)
+                        elif response.startswith( 'n' ) or response.startswith( 'N' ):
+                                log.err( "Exiting gracefully on user request.\n\n" )
+                                sys.exit( 0 )
+                        elif response.isdigit() is True:
+                                found = False
+                                for full_bug_file_name in bugs_number:
+                                        if response in full_bug_file_name:
+                                                bug_file_to_display = full_bug_file_name
+                                                found = True
+                                                break
+                                if found == False:
+                                        log.err( "Incorrect bug number %s provided.\n" % ( response ) )
+                                        response = get_response()
+                                if found:
+                                    if os.path.isfile(install_file_path):
+                                            pydoc.pager(file.read(bug_file_to_display) )
+                                            # Redisplay the menu
+                                            # FIXME: See a pythonic possibility of cleaning the screen at this stage
+                                            response = get_response()
         
+                                    if os.path.isdir(install_file_path):
+                                            file = open(bug_file_to_display, 'r')
+                                            pydoc.pager(file.read() )
+                                            # Redisplay the menu
+                                            # FIXME: See a pythonic possibility of cleaning the screen at this stage
+                                            response = get_response()
+                        elif response.startswith( 'r' ) or response.startswith( 'R' ):
+                                list_bugs(bugs_number)
+                                response = get_response()
+                        else:
+                                log.err( 'Incorrect choice. Exiting\n' )
+                                sys.exit( 1 )
+
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
                 try:
@@ -1237,72 +1317,7 @@ def installer( args ):
                                         
                 log.verbose(str(bugs_number) + "\n")
                 if bugs_number:
-                        # Display the list of bugs
-                        list_bugs(bugs_number)
-                        display_options()
-                        response = get_response()
-                        while True:
-                                if response == "?":
-                                        display_options()
-                                        response = get_response()
-                                elif response.startswith( 'y' ) or response.startswith( 'Y' ):
-                                        for filename in file.namelist():
-                                                
-                                                #INFO: Take care of Src Pkgs
-                                                found = False
-                                                for item in SrcPkgDict.keys():
-                                                        if filename in SrcPkgDict[item]:
-                                                                found = True
-                                                                break
-                                                        
-                                                data = tempfile.NamedTemporaryFile()
-                                                data.file.write( file.read( filename ) )
-                                                data.file.flush()
-                                                archive_file = data.name
-                                                
-                                                if found is True: # found is True. That means this is a src package
-                                                        shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
-                                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
-                                                        continue
-                                                
-                                                try:
-                                                        if AptLock.lockPackages() is False:
-                                                                log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (archive_file))
-                                                                sys.exit(1)
-                                                                
-                                                        magic_check_and_uncompress( archive_file, filename )
-                                                except:
-                                                        log.err("Uncaught exception in magic_check_and_uncompress() \n")
-                                                finally:
-                                                        AptLock.unlockLists()
-                                                data.file.close()
-                                        sys.exit( 0 )
-                                elif response.startswith( 'n' ) or response.startswith( 'N' ):
-                                        log.err( "Exiting gracefully on user request.\n\n" )
-                                        sys.exit( 0 )
-                                elif response.isdigit() is True:
-                                        found = False
-                                        for full_bug_file_name in bugs_number:
-                                                if response in full_bug_file_name:
-                                                        bug_file_to_display = full_bug_file_name
-                                                        found = True
-                                                        break
-                                        if found == False:
-                                                log.err( "Incorrect bug number %s provided.\n" % ( response ) )
-                                                response = get_response()
-                
-                                        if found:
-                                                pydoc.pager(file.read(bug_file_to_display) )
-                                                # Redisplay the menu
-                                                # FIXME: See a pythonic possibility of cleaning the screen at this stage
-                                                response = get_response()
-                
-                                elif response.startswith( 'r' ) or response.startswith( 'R' ):
-                                        list_bugs(bugs_number)
-                                        response = get_response()
-                                else:
-                                        log.err( 'Incorrect choice. Exiting\n' )
-                                        sys.exit( 1 )
+                        displayBugs()
                 else:
                         log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
                         #response = raw_input( "Continue with Installation. Y/N ?" )
@@ -1403,51 +1418,7 @@ def installer( args ):
                                         temp.close()
                 log.verbose(str(bugs_number) + "\n")
                 if bugs_number:
-                        #Give the choice to the user
-                        list_bugs(bugs_number)
-                        display_options()
-                        response = get_response()
-                        
-                        while True:
-                                if response == "?":
-                                        display_options()
-                                        response = get_response()
-                                        
-                                elif response.startswith( 'y' ) or response.startswith( 'Y' ):
-                                        if DirInstallPackages(install_file_path) is True:
-                                                sys.exit(0)
-                                        else:
-                                                log.err("Failed during install operation on %s.\n" % (install_file_path) )
-                                                sys.exit(1)
-                                        
-                                elif response.startswith( 'n' ) or response.startswith( 'N' ):
-                                        log.err( "Exiting gracefully on user request.\n\n" )
-                                        sys.exit( 0 )
-                                        
-                                elif response.isdigit() is True:
-                                        found = False
-                                        for full_bug_file_name in bugs_number:
-                                                if response in full_bug_file_name:
-                                                        bug_file_to_display = full_bug_file_name
-                                                        found = True
-                                                        break
-                                        if found == False:
-                                                log.err( "Incorrect bug number %s provided.\n" % ( response ) )
-                                                response = get_response()
-                                        if found:
-                                                file = open(bug_file_to_display, 'r')
-                                                pydoc.pager(file.read() )
-                                                # Redisplay the menu
-                                                # FIXME: See a pythonic possibility of cleaning the screen at this stage
-                                                response = get_response()
-                
-                                elif response.startswith( 'r' ) or response.startswith( 'R' ):
-                                        list_bugs(bugs_number)
-                                        response = get_response()
-                
-                                else:
-                                        log.err( 'Incorrect choice. Exiting\n' )
-                                        sys.exit( 1 )
+                        displayBugs()
                 else:
                         log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
                         DirInstallPackages(install_file_path)
