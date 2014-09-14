@@ -1565,12 +1565,12 @@ def setter(args):
                         
                         
                 def __FixAptSigs(self):
-                        for file in os.listdir(apt_update_target_path):
-                                if file.endswith(".gpg.reverify"):
-                                        sig_file = file.rstrip(".reverify")
-                                        log.verbose("Recovering gpg signature %s.\n" % (file) )
-                                        file = os.path.join(apt_update_target_path, file)
-                                        os.rename(file, os.path.join(apt_update_final_path + sig_file) )
+                        for localFile in os.listdir(apt_update_target_path):
+                                if localFile.endswith(".gpg.reverify"):
+                                        sig_file = localFile.rstrip(".reverify")
+                                        log.verbose("Recovering gpg signature %s.\n" % (localFile) )
+                                        localFile = os.path.join(apt_update_target_path, localFile)
+                                        os.rename(localFile, os.path.join(apt_update_final_path + sig_file) )
                                         
                                         
                 def __AptGetUpdate(self):
