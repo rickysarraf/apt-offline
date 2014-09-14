@@ -324,39 +324,39 @@ def stripper(item):
         '''Strips extra characters from "item".
         Breaks "item" into:
         url - The URL
-        file - The actual package file
+        localFile - The actual package file
         size - The file size
         checksum - The checksum string
         and returns them.'''
     
         item = item.split(' ')
-	log.verbose("Item is %s\n" % (item) )
+        log.verbose("Item is %s\n" % (item) )
 
         url = string.rstrip(string.lstrip(''.join(item[0]), chars="'"), chars="'")
         log.verbose("Stripped item URL is: %s\n" % url)
         
-        file = string.rstrip(string.lstrip(''.join(item[1]), chars="'"), chars="'")
-	log.verbose("Stripped item FILE is: %s\n" % file)
+        localFile = string.rstrip(string.lstrip(''.join(item[1]), chars="'"), chars="'")
+        log.verbose("Stripped item FILE is: %s\n" % localFile)
         
         try:
-		size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
-	except ValueError:
-		log.verbose("%s is malformed\n" % (" ".join(item) ) )
-		size = 0
+                size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
+        except ValueError:
+                log.verbose("%s is malformed\n" % (" ".join(item) ) )
+                size = 0
         log.verbose("Stripped item SIZE is: %d\n" % size)
         
 
         #INFO: md5 ends up having '\n' with it.
         # That needs to be stripped too.
-	try:
-		checksum = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
-        	checksum = string.rstrip(checksum, chars = "\n")
-	except IndexError:
-		if item[1].endswith("_Release") or item[1].endswith("_Release.gpg"):
-			checksum = None
+        try:
+                checksum = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
+                checksum = string.rstrip(checksum, chars = "\n")
+        except IndexError:
+                if item[1].endswith("_Release") or item[1].endswith("_Release.gpg"):
+                        checksum = None
         log.verbose("Stripped item CHECKSUM is: %s\n" % checksum)
         
-        return url, file, size, checksum
+        return url, localFile, size, checksum
 
 
 def errfunc(errno, errormsg, filename):
@@ -428,23 +428,23 @@ def fetcher( args ):
                         sys.exit( 1 )
 
         if Str_ProxyHost:
-            if Str_ProxyPort:
-                try:
-                    log.verbose(Str_ProxyHost + ":" + Str_ProxyPort)
-                    proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
-                    opener = urllib2.build_opener(proxy_support)
-                    urllib2.install_opener(opener)
-                except :
-                    log.err("Handle this exception.\n")
-                    sys.exit(1)
-            else:
-                try:
-                    proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost})
-                    opener = urllib2.build_opener(proxy_support)
-                    urllib2.install_opener(opener)
-                except:
-                    log.err("Handle this exception.\n")
-                    sys.exit(1)
+                if Str_ProxyPort:
+                        try:
+                                log.verbose(Str_ProxyHost + ":" + Str_ProxyPort)
+                                proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
+                                opener = urllib2.build_opener(proxy_support)
+                                urllib2.install_opener(opener)
+                        except:
+                                log.err("Handle this exception.\n")
+                                sys.exit(1)
+                else:
+                        try:
+                                proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost})
+                                opener = urllib2.build_opener(proxy_support)
+                                urllib2.install_opener(opener)
+                        except:
+                                log.err("Handle this exception.\n")
+                                sys.exit(1)
         
         #INFO: Python 2.5 has hashlib which supports sha256
         # If we don't have Python 2.5, disable MD5/SHA256 checksum
@@ -505,11 +505,11 @@ def fetcher( args ):
                         log.err( "%s already present.\nRemove it first.\n" % ( Str_BundleFile ) )
                         sys.exit( 1 )
                 else:
-                    try:
-                        f = open(Str_BundleFile, 'w')
-                    except IOError:
-                        log.err("Cannot write to file %s\n" % (Str_BundleFile) )
-                        sys.exit(1)
+                        try:
+                                open(Str_BundleFile, 'w')
+                        except IOError:
+                                log.err("Cannot write to file %s\n" % (Str_BundleFile) )
+                                sys.exit(1)
 
         if Bool_BugReports:
                 if DebianBTS is True:
