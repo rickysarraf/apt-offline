@@ -1080,7 +1080,7 @@ def installer( args ):
                 
         try:
                 if Bool_TestWindows:
-                    log.verbose("In simulate mode. No locking required\n")
+                        log.verbose("In simulate mode. No locking required\n")
                 # Acquire APT lock
                 elif AptLock.lockLists() is False:
                         log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (apt_update_target_path))
@@ -1097,9 +1097,9 @@ def installer( args ):
                 sys.exit(1)
         finally:
                 if Bool_TestWindows:
-                    log.verbose("In simulate mode. No locking required\n")
+                        log.verbose("In simulate mode. No locking required\n")
                 else:
-                    AptLock.unlockLists()
+                        AptLock.unlockLists()
         
         def display_options():
                 log.msg( "(Y) Yes. Proceed with installation\n" )
@@ -1123,10 +1123,10 @@ def installer( args ):
                 sortedKeyList = dictList.keys()
                 sortedKeyList.sort()
                 for each_bug in sortedKeyList:
-                    pkg_name = each_bug.split( '.' )[-3].split('/')[-1]
-                    bug_num = each_bug.split( '.' )[-2]
-                    bug_subject = dictList[each_bug]
-                    log.msg( "%s\t%s\t%s\n" % ( pkg_name, bug_num, bug_subject ) )
+                        pkg_name = each_bug.split( '.' )[-3].split('/')[-1]
+                        bug_num = each_bug.split( '.' )[-2]
+                        bug_subject = dictList[each_bug]
+                        log.msg( "%s\t%s\t%s\n" % ( pkg_name, bug_num, bug_subject ) )
             
         def magic_check_and_uncompress( archive_file=None, filename=None):
                 retval = False
@@ -1178,7 +1178,7 @@ def installer( args ):
                         #CHANGE: track progress
                         totalSize[0]+=1 
                         if guiBool:
-                            log.msg("[%d/%d]" % (totalSize[0], totalSize[1]))
+                                log.msg("[%d/%d]" % (totalSize[0], totalSize[1]))
                         #ENDCHANGE
                         log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
 
