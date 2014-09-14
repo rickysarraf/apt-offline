@@ -538,24 +538,24 @@ def fetcher( args ):
                         
                 FetchData['Item'] = []
                 for item in raw_data_list:
-			# Interim fix for Debian bug #664654
-			(ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
-			if ItemURL.endswith("InRelease"):
-				log.verbose("APT uses new InRelease auth mechanism")
-				ExtraItemURL = ItemURL.rstrip(ItemURL.split("/")[-1])
-				GPGItemURL = "'" + ExtraItemURL + "Release.gpg"
-				ReleaseItemURL = "'" + ExtraItemURL + "Release"
-				ExtraItemFile = ItemFile.rstrip(ItemFile.split("_")[-1])
-				GPGItemFile = ExtraItemFile + "Release.gpg"
-				ReleaseItemFile = ExtraItemFile + "Release"
+                        # Interim fix for Debian bug #664654
+                        (ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
+                        if ItemURL.endswith("InRelease"):
+                                log.verbose("APT uses new InRelease auth mechanism")
+                                ExtraItemURL = ItemURL.rstrip(ItemURL.split("/")[-1])
+                                GPGItemURL = "'" + ExtraItemURL + "Release.gpg"
+                                ReleaseItemURL = "'" + ExtraItemURL + "Release"
+                                ExtraItemFile = ItemFile.rstrip(ItemFile.split("_")[-1])
+                                GPGItemFile = ExtraItemFile + "Release.gpg"
+                                ReleaseItemFile = ExtraItemFile + "Release"
+                                
+                                FetchData['Item'].append(GPGItemURL + " " + GPGItemFile + " " + str(ItemSize) + " " + ItemChecksum)
+                                log.verbose("Printing GPG URL/Files")
+                                log.verbose("%s %s" % (GPGItemURL, GPGItemFile) )
 
-				FetchData['Item'].append(GPGItemURL + " " + GPGItemFile + " " + str(ItemSize) + " " + ItemChecksum)
-				log.verbose("Printing GPG URL/Files")
-				log.verbose("%s %s" % (GPGItemURL, GPGItemFile) )
-
-				FetchData['Item'].append(ReleaseItemURL + " " + ReleaseItemFile + " " + str(ItemSize) + " " + ItemChecksum)
-				log.verbose("Printing Release URL/Files")
-				log.verbose("%s %s" % (ReleaseItemURL, ReleaseItemFile) )
+                                FetchData['Item'].append(ReleaseItemURL + " " + ReleaseItemFile + " " + str(ItemSize) + " " + ItemChecksum)
+                                log.verbose("Printing Release URL/Files")
+                                log.verbose("%s %s" % (ReleaseItemURL, ReleaseItemFile) )
                         FetchData['Item'].append( item )
         del raw_data_list
         
@@ -586,12 +586,12 @@ def fetcher( args ):
                 
                 (key, item) = request
 
-		# On many boxes, the cdrom apt repository will be enabled.
-		# For now, let's skip the cdrom repository items.
-		if item.startswith("\'cdrom"):
-			log.verbose("cdrom apt repository not supported. Skipping\n")
-			log.verbose(item)
-			return True
+                # On many boxes, the cdrom apt repository will be enabled.
+                # For now, let's skip the cdrom repository items.
+                if item.startswith("\'cdrom"):
+                        log.verbose("cdrom apt repository not supported. Skipping\n")
+                        log.verbose(item)
+                        return True
                 
                 #INFO: Everything
                 (url, pkgFile, download_size, checksum) = stripper(item)
