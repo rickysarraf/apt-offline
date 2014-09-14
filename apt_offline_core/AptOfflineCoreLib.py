@@ -1889,15 +1889,14 @@ def main():
         global_options.add_argument("--simulate", dest="simulate", help="Just simulate. Very helpful when debugging",
                             action="store_true" )
         
-	if argparse.__version__ >= 1.1:
-		parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
+        if argparse.__version__ >= 1.1:
+                parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
                                           epilog=myCopyright + " - " + terminal_license, parents=[global_options])
-		parser.add_argument("-v", "--version", action='version', version=version)
-	else:
-		# Remain backward compatible with older argparse versions 
-		parser = argparse.ArgumentParser( prog=app_name, version=app_name + " - " + version,
-				description="Offline APT Package Manager", epilog=myCopyright + " - " + terminal_license,
-				parents=[global_options])
+                parser.add_argument("-v", "--version", action='version', version=version)
+        else:
+                # Remain backward compatible with older argparse versions 
+                parser = argparse.ArgumentParser( prog=app_name, version=app_name + " - " + version,
+                                                  description="Offline APT Package Manager", epilog=myCopyright + " - " + terminal_license, parents=[global_options])
         
         # We need subparsers for set/get/install
         subparsers = parser.add_subparsers()
@@ -1998,17 +1997,14 @@ def main():
         args = parser.parse_args()
         
         try:
-                # Sanitize the options/arguments
-                #
-        	# Global opts
-        	Bool_Verbose = args.verbose
-        	Bool_TestWindows = args.simulate
+                # Global opts
+                Bool_Verbose = args.verbose
+                Bool_TestWindows = args.simulate
                 
-        	global log
-        	log = AptOfflineLib.Log( Bool_Verbose, lock=True )
-        	log.verbose(str(args) + "\n")
-        
-        	args.func(args)
+                global log
+                log = AptOfflineLib.Log( Bool_Verbose, lock=True )
+                log.verbose(str(args) + "\n")
+                args.func(args)
             
         except KeyboardInterrupt:
                 log.err("\nInterrupted by user. Exiting!\n")
