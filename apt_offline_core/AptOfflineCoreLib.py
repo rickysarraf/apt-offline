@@ -1833,10 +1833,10 @@ def setter(args):
                                                         indexfile = PythonAptQuery.cache._list.FindIndex( packagefile )
                                                         if indexfile:
                                                                 uri = indexfile.ArchiveURI( path )
-                                                                file = uri.split( '/' )[ - 1]
+                                                                localFile = uri.split( '/' )[ - 1]
                                                                 if checksum.__str__() in dup_records:
                                                                         continue
-                                                                install_file.write( uri + ' ' + file + ' ' + size + ' ' + checksum + "\n" )
+                                                                install_file.write( uri + ' ' + localFile + ' ' + size + ' ' + checksum + "\n" )
                                                                 dup_records.append( checksum.__str__() )
                                 else:
                                         AptInst.Upgrade("upgrade", ReleaseType=Str_SetInstallRelease)
