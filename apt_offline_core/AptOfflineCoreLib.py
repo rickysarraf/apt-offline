@@ -834,67 +834,66 @@ def fetcher( args ):
         for key in FetchData.keys():
                 for item in FetchData.get(key):
                         if guiBool:
-                            #REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
-                            if guiTerminateSignal:
-                                break
-                            try:
-                                (url, pkgFile, download_size, checksum) = stripper(item)
-                                size = int(download_size)
-                                if size == 0:
-                                    log.msg("MSG_START")
-                                    temp = urllib2.urlopen(url)
-                                    headers = temp.info()
-                                    size = int(headers['Content-Length'])
-                                totalSize[0] += size
-                            except:
-                                ''' some int parsing problem '''
+                                #REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
+                                if guiTerminateSignal:
+                                        break
+                                try:
+                                        (url, pkgFile, download_size, checksum) = stripper(item)
+                                        size = int(download_size)
+                                        if size == 0:
+                                                log.msg("MSG_START")
+                                                temp = urllib2.urlopen(url)
+                                                headers = temp.info()
+                                                size = int(headers['Content-Length'])
+                                        totalSize[0] += size
+                                except:
+                                        log.err("some int parsing problem\n")
+
             
         if not guiTerminateSignal:
-            ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
+                ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
             
         ConnectThread.startThreads()
         # Queue up the requests.
         #for item in raw_data_list: requestQueue.put(item)
         for key in FetchData.keys():
-            for item in FetchData.get(key):
-                ConnectThread.populateQueue( (key, item) )
-            
+                for item in FetchData.get(key):
+                        ConnectThread.populateQueue( (key, item) )
         if guiBool:
-            log.msg("MSG_END")
-            guiMetaCompleted=True
-            # For the sake of a responsive GUI
-            while (ConnectThread.threads_finished < ConnectThread.threads):
-                # handle signals from gui here
-                if guiTerminateSignal:
-                    # stop all ongoing work
-                    #TODO: find a way to stop those threads here
-                    ConnectThread.guiTerminateSignal=True
-                    for thread in ConnectThread.thread_pool:
-                        thread.guiTerminateSignal=True
-                    ConnectThread.stopThreads()
-                    ConnectThread.stopQueue(timeout=0.2)
-                    return
-                ConnectThread.stopThreads()
-                ConnectThread.stopQueue(timeout=0.2)    # let them work for 0.2s
-                log.msg ("[%d/%d]" %(totalSize[1], totalSize[0]))
+                log.msg("MSG_END")
+                guiMetaCompleted=True
+                # For the sake of a responsive GUI
+                while (ConnectThread.threads_finished < ConnectThread.threads):
+                        # handle signals from gui here
+                        if guiTerminateSignal:
+                                # stop all ongoing work
+                                #TODO: find a way to stop those threads here
+                                ConnectThread.guiTerminateSignal=True
+                                for thread in ConnectThread.thread_pool:
+                                        thread.guiTerminateSignal=True
+                                ConnectThread.stopThreads()
+                                ConnectThread.stopQueue(timeout=0.2)
+                                return
+                        ConnectThread.stopThreads()
+                        ConnectThread.stopQueue(timeout=0.2)    # let them work for 0.2s
+                        log.msg ("[%d/%d]" %(totalSize[1], totalSize[0]))
         else:
-            # else go by the normal CLI way
-            while ConnectThread.threads_finished < ConnectThread.threads:
-                try:
-                    ConnectThread.stopThreads()
-                    ConnectThread.stopQueue(0.2)
-                except KeyboardInterrupt:
-                    # user pressed Ctrl-c, signal all threads to exit
-                    guiTerminateSignal=True # this would signal download_from_web to stop
-                    ConnectThread.guiTerminateSignal=True
-                    for thread in ConnectThread.thread_pool:
-                        thread.guiTerminateSignal=True      # tell all threads to exit
-                    ConnectThread.stopThreads()
-                    ConnectThread.stopQueue()
-                    log.err("\nInterrupted by user. Exiting!\n")
-                    sys.exit(0)
-                    
-                
+                # else go by the normal CLI way
+                while ConnectThread.threads_finished < ConnectThread.threads:
+                        try:
+                                ConnectThread.stopThreads()
+                                ConnectThread.stopQueue(0.2)
+                        except KeyboardInterrupt:
+                                # user pressed Ctrl-c, signal all threads to exit
+                                guiTerminateSignal=True # this would signal download_from_web to stop
+                                ConnectThread.guiTerminateSignal=True
+                                for thread in ConnectThread.thread_pool:
+                                        thread.guiTerminateSignal=True      # tell all threads to exit
+                                ConnectThread.stopThreads()
+                                ConnectThread.stopQueue()
+                                log.err("\nInterrupted by user. Exiting!\n")
+                                sys.exit(0)
+            
         # Print the failed files
         if len(errlist) > 0:
                 log.msg("\n\n")
