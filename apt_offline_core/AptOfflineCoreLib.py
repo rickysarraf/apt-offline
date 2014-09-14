@@ -231,9 +231,9 @@ def find_first_match(cache_dir=None, filename=None):
         
 
 class GenericDownloadFunction():
-    def download_from_web(self, url, file, download_dir):
+        def download_from_web(self, url, localFile, download_dir):
                 '''url = url to fetch
-                file = file to save to
+                localFile = file to save to
                 donwload_dir = download path'''
                 try:
                         block_size = 4096
@@ -244,7 +244,7 @@ class GenericDownloadFunction():
                         temp = urllib2.urlopen(url)
                         headers = temp.info()
                         size = int(headers['Content-Length'])
-                        data = open(file,'wb')
+                        data = open(localFile,'wb')
             
                         #INFO: Add the download thread into the Global ProgressBar Thread
                         self.addItem(size)
@@ -264,7 +264,7 @@ class GenericDownloadFunction():
                                         errfunc(101010, "Max timeout retry count reached. Discontinuing download.\n", url)
                                         
                                         # Clean the half downloaded file.
-                                        os.unlink(file)
+                                        os.unlink(localFile)
                                         return False
                                 
                                 if socket_timeout is True:
@@ -306,7 +306,7 @@ class GenericDownloadFunction():
                         if hasattr(e, 'reason'):
                                 log.err("%s\n" % (e.reason))
                         if hasattr(e, 'code') and hasattr(e, 'reason'):
-                                errfunc(e.code, e.reason, file)
+                                errfunc(e.code, e.reason, localFile)
                 except socket.timeout:
                         errfunc(10054, "Socket timeout.\n", url)
      
