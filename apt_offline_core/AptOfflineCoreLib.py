@@ -1130,8 +1130,7 @@ def installer( args ):
             
         def magic_check_and_uncompress( archive_file=None, filename=None):
                 retval = False
-                if AptOfflineMagicLib.file( archive_file ) == "application/x-bzip2" or \
-                AptOfflineMagicLib.file( archive_file ) == "application/x-gzip":
+                if AptOfflineMagicLib.file( archive_file ) == "application/x-bzip2" or AptOfflineMagicLib.file( archive_file ) == "application/x-gzip":
                         temp_filename = os.path.join(apt_update_target_path, filename + app_name)
                         filename = os.path.join(apt_update_target_path, filename)
                         if AptOfflineMagicLib.file( archive_file ) == "application/x-bzip2":
@@ -1144,8 +1143,6 @@ def installer( args ):
                                 os.rename(temp_filename, filename)
                         else:
                                 os.unlink(temp_filename)
-                elif AptOfflineMagicLib.file( archive_file ) == "application/zip":
-                        retval = archive.decompress_the_file( os.path.join( install_file_path, eachfile ), apt_update_target_path, eachfile, "zip" )
                 elif AptOfflineMagicLib.file( archive_file ) == "PGP armored data":
                         filename = os.path.join(apt_update_target_path, filename)
                         shutil.copy2(archive_file, filename)
