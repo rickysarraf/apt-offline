@@ -1182,11 +1182,11 @@ def installer( args ):
                         #ENDCHANGE
                         log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
 
-        def displayBugs(type=None):
+        def displayBugs(dataType=None):
                 ''' Takes keywords "file" or "dir" as type input '''
             
-                if type is None:
-                    return False
+                if dataType is None:
+                        return False
                 
                 # Display the list of bugs
                 list_bugs(bugs_number)
@@ -1198,47 +1198,47 @@ def installer( args ):
                                 display_options()
                                 response = get_response()
                         elif response.startswith( 'y' ) or response.startswith( 'Y' ):
-                            if type is "file":
-                                for filename in zipBugFile.namelist():
-                                        
-                                        #INFO: Take care of Src Pkgs
-                                        found = False
-                                        for item in SrcPkgDict.keys():
-                                                if filename in SrcPkgDict[item]:
-                                                        found = True
-                                                        break
+                                if dataType is "file":
+                                        for filename in zipBugFile.namelist():
                                                 
-                                        data = tempfile.NamedTemporaryFile()
-                                        data.file.write( zipBugFile.read( filename ) )
-                                        data.file.flush()
-                                        archive_file = data.name
-                                        
-                                        if found is True: # found is True. That means this is a src package
-                                                shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
-                                                log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
-                                                continue
-                                        
-                                            
-                                        if Bool_TestWindows:
-                                            log.verbose("In simulate mode. No locking required\n")
-                                        elif AptLock.lockPackages() is False:
-                                            log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (archive_file))
-                                            sys.exit(1)
+                                                #INFO: Take care of Src Pkgs
+                                                found = False
+                                                for item in SrcPkgDict.keys():
+                                                        if filename in SrcPkgDict[item]:
+                                                                found = True
+                                                                break
+                                                        
+                                                data = tempfile.NamedTemporaryFile()
+                                                data.file.write( zipBugFile.read( filename ) )
+                                                data.file.flush()
+                                                archive_file = data.name
                                                 
-                                        magic_check_and_uncompress( archive_file, filename )
-
-                                        if Bool_TestWindows:
-                                            log.verbose("In simulate mode. No locking required\n")
+                                                if found is True: # found is True. That means this is a src package
+                                                        shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
+                                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                                        continue
+                                                
+                                                    
+                                                if Bool_TestWindows:
+                                                        log.verbose("In simulate mode. No locking required\n")
+                                                elif AptLock.lockPackages() is False:
+                                                        log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (archive_file))
+                                                        sys.exit(1)
+                                                        
+                                                magic_check_and_uncompress( archive_file, filename )
+        
+                                                if Bool_TestWindows:
+                                                        log.verbose("In simulate mode. No locking required\n")
+                                                else:
+                                                        AptLock.unlockLists()
+                                                data.file.close()
+                                        sys.exit( 0 )
+                                if dataType is "dir":
+                                        if DirInstallPackages(install_file_path) is True:
+                                                sys.exit(0)
                                         else:
-                                            AptLock.unlockLists()
-                                        data.file.close()
-                                sys.exit( 0 )
-                            if type is "dir":
-                                    if DirInstallPackages(install_file_path) is True:
-                                        sys.exit(0)
-                                    else:
-                                        log.err("Failed during install operation on %s.\n" % (install_file_path) )
-                                        sys.exit(1)
+                                                log.err("Failed during install operation on %s.\n" % (install_file_path) )
+                                                sys.exit(1)
                         elif response.startswith( 'n' ) or response.startswith( 'N' ):
                                 log.err( "Exiting gracefully on user request.\n\n" )
                                 sys.exit( 0 )
@@ -1253,18 +1253,17 @@ def installer( args ):
                                         log.err( "Incorrect bug number %s provided.\n" % ( response ) )
                                         response = get_response()
                                 if found:
-                                    if type is "file":
-                                            pydoc.pager(zipBugFile.read(bug_file_to_display) )
-                                            # Redisplay the menu
-                                            # FIXME: See a pythonic possibility of cleaning the screen at this stage
-                                            response = get_response()
-        
-                                    if type is "dir":
-                                            tempFile = open(bug_file_to_display, 'r')
-                                            pydoc.pager(tempFile.read() )
-                                            # Redisplay the menu
-                                            # FIXME: See a pythonic possibility of cleaning the screen at this stage
-                                            response = get_response()
+                                        if dataType is "file":
+                                                pydoc.pager(zipBugFile.read(bug_file_to_display) )
+                                                # Redisplay the menu
+                                                # FIXME: See a pythonic possibility of cleaning the screen at this stage
+                                                response = get_response()
+                                        if dataType is "dir":
+                                                tempFile = open(bug_file_to_display, 'r')
+                                                pydoc.pager(tempFile.read() )
+                                                # Redisplay the menu
+                                                # FIXME: See a pythonic possibility of cleaning the screen at this stage
+                                                response = get_response()
                         elif response.startswith( 'r' ) or response.startswith( 'R' ):
                                 list_bugs(bugs_number)
                                 response = get_response()
@@ -1351,17 +1350,17 @@ def installer( args ):
                                         continue
 
                                 if Bool_TestWindows:
-                                    log.verbose("In simulate mode. No locking required.\n")
+                                        log.verbose("In simulate mode. No locking required.\n")
                                 elif AptLock.lockPackages() is False:
-                                    log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
-                                    sys.exit(1)
+                                        log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
+                                        sys.exit(1)
                                 
                                 magic_check_and_uncompress( archive_file, filename )
 
                                 if Bool_TestWindows:
-                                    log.verbose("In simulate mode. No locking required\n")
+                                        log.verbose("In simulate mode. No locking required\n")
                                 else:
-                                    AptLock.unlockPackages()
+                                        AptLock.unlockPackages()
                                 data.file.close()
                                 
         elif os.path.isdir(install_file_path):
