@@ -172,17 +172,17 @@ class FetchBugReports( AptOfflineLib.Archiver ):
             
                                 #TODO: Can we manipulate these headers in a more efficient way???
                                 for line in bugReport[writeBugReport]['header'].encode('utf8').split("\n"):
-                                    if line.startswith("Subject:"):
-                                        file_handle.write(line)
-                                        file_handle.write("\n")
-                                        break
+                                        if line.startswith("Subject:"):
+                                                file_handle.write(line)
+                                                file_handle.write("\n")
+                                                break
                                     
                                 while writeBugReport < bugReportLength:
-                                    file_handle.write(bugReport[writeBugReport]['body'].encode('utf8'))
-                                    file_handle.write("\n\n".encode('utf8'))
-                                    writeBugReport += 1
-                                    if writeBugReport < bugReportLength:
-                                        file_handle.write("Follow-Up #%d\n\n".encode('utf8') % writeBugReport)
+                                        file_handle.write(bugReport[writeBugReport]['body'].encode('utf8'))
+                                        file_handle.write("\n\n".encode('utf8'))
+                                        writeBugReport += 1
+                                        if writeBugReport < bugReportLength:
+                                                file_handle.write("Follow-Up #%d\n\n".encode('utf8') % writeBugReport)
                                 file_handle.flush()
                                 file_handle.close()
 
