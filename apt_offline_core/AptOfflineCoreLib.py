@@ -1323,7 +1323,7 @@ def installer( args ):
                                         
                 log.verbose(str(bugs_number) + "\n")
                 if bugs_number:
-                        displayBugs(type="file")
+                        displayBugs(dataType="file")
                 else:
                         log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
                         #response = raw_input( "Continue with Installation. Y/N ?" )
@@ -1423,7 +1423,7 @@ def installer( args ):
                                         temp.close()
                 log.verbose(str(bugs_number) + "\n")
                 if bugs_number:
-                        displayBugs(type="dir")
+                        displayBugs(dataType="dir")
                 else:
                         log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
                         DirInstallPackages(install_file_path)
