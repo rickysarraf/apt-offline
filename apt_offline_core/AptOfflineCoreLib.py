@@ -91,7 +91,7 @@ figuring out if the packages are in the local cache, handling exceptions and man
 
 app_name = "apt-offline"
 version = "1.4"
-copyright = "(C) 2005 - 2014 Ritesh Raj Sarraf"
+myCopyright = "(C) 2005 - 2014 Ritesh Raj Sarraf"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
 the GNU GPL Version 3 (or later) License\n"
@@ -1894,12 +1894,12 @@ def main():
         
 	if argparse.__version__ >= 1.1:
 		parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
-                                          epilog=copyright + " - " + terminal_license, parents=[global_options])
+                                          epilog=myCopyright + " - " + terminal_license, parents=[global_options])
 		parser.add_argument("-v", "--version", action='version', version=version)
 	else:
 		# Remain backward compatible with older argparse versions 
 		parser = argparse.ArgumentParser( prog=app_name, version=app_name + " - " + version,
-				description="Offline APT Package Manager", epilog=copyright + " - " + terminal_license,
+				description="Offline APT Package Manager", epilog=myCopyright + " - " + terminal_license,
 				parents=[global_options])
         
         # We need subparsers for set/get/install
