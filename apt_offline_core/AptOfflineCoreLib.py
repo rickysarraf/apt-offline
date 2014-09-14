@@ -207,8 +207,8 @@ class FetchBugReports( AptOfflineLib.Archiver ):
         
 def files(root): 
         for path, folders, files in os.walk(root): 
-                for file in files: 
-                        yield path, file 
+                for localFile in files:
+                        yield path, localFile
     
     
 def find_first_match(cache_dir=None, filename=None):
