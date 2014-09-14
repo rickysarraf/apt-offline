@@ -224,9 +224,9 @@ def find_first_match(cache_dir=None, filename=None):
         elif os.path.isdir(cache_dir) is False:
                 return False
         else:
-                for path, file in files(cache_dir): 
-                        if file == filename:
-                                return os.path.join(path, file)
+                for path, localFile in files(cache_dir):
+                        if localFile == filename:
+                                return os.path.join(path, localFile)
                 return False
         
 
