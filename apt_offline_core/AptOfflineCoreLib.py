@@ -1061,7 +1061,6 @@ def installer( args ):
                                 sys.exit(1)
                                 
         archive = AptOfflineLib.Archiver()
-        archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
         
         # Prepare for APT Datbase's Locks
         if Bool_TestWindows:
