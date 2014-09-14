@@ -56,9 +56,9 @@ try:
         import debianbts
 except ImportError:
         try:
-            import AptOfflineDebianBtsLib as debianbts
+                import AptOfflineDebianBtsLib as debianbts
         except ImportError:
-            DebianBTS = False
+                DebianBTS = False
 
 import AptOfflineMagicLib
 
