@@ -523,6 +523,7 @@ def fetcher( args ):
                                 FetchBugReportsDebian = FetchBugReports( apt_bug_file_format, IgnoredBugTypes )
                 else:
                         log.err( "Couldn't find debianbts module.\n Cannot fetch Bug Reports.\n" )
+                        Bool_BugReports = False
         
         FetchData = {} #Info: Initialize an empty dictionary.
         
