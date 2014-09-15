@@ -29,9 +29,13 @@ import zipfile
 import bz2
 import gzip
 
-# Test Comment
-# For Forest
-
+# LZMA is not native to Python in 2.x
+modLZMA = True
+try:
+        import lzma
+except ImportError:
+        modLZMA = False
+                
 WindowColor = True
 try:
         import WConio
@@ -390,7 +394,7 @@ class Archiver:
 
         def decompress_the_file( self, archive_file, target_file, archive_type ):
                 '''Extracts all the files from a single condensed archive file'''
-                if archive_type == "bzip2" or archive_type == "gzip":
+                if archive_type == "bzip2" or archive_type == "gzip" or archive_type == "xz":
                         if archive_type == "bzip2":
                                 try:
                                         read_from = bz2.BZ2File( archive_file, 'r' )
@@ -400,6 +404,14 @@ class Archiver:
                                 try:
                                         read_from = gzip.GzipFile( archive_file, 'r' )
                                 except IOError:
+                                        return False
+                        elif archive_type == "xz":
+                                if modLZMA is True:
+                                        try:
+                                                read_from = lzma.LZMAFile(archive_file, 'rb')
+                                        except IOError:
+                                                return False
+                                else:
                                         return False
                         else:
                                 return False
