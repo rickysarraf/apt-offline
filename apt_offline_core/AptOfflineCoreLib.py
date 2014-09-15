@@ -167,7 +167,8 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                 writeBugReport = 0
                                 
                                 if Filename == None:
-                                        self.fileName = PackageName + "." + str(eachBug) + "." + self.apt_bug
+                                        #INFO: '{}' is the bug split identifier - Used at other places also
+                                        self.fileName = PackageName + "{}" + str(eachBug) + "{}" + self.apt_bug
                                         file_handle = open( self.fileName, 'w' )
                                 else:
                                         self.fileName = Filename
@@ -1127,10 +1128,11 @@ def installer( args ):
                 sortedKeyList = dictList.keys()
                 sortedKeyList.sort()
                 for each_bug in sortedKeyList:
-                        pkg_name = each_bug.split( '.' )[-3].split('/')[-1]
-                        bug_num = each_bug.split( '.' )[-2]
+                        #INFO: '{}' is the bug split identifier - Used at another place also
+                        pkg_name = each_bug.split( '{}' )[-3].split('/')[-1]
+                        bug_num = each_bug.split( '{}' )[-2]
                         bug_subject = dictList[each_bug]
-                        log.msg( "%s\t%s\t%s\n" % ( pkg_name, bug_num, bug_subject ) )
+                        log.msg( "%s\t%s\t%s\n" % ( bug_num, pkg_name, bug_subject ) )
             
         def magic_check_and_uncompress( archive_file=None, filename=None):
                 
@@ -1252,7 +1254,8 @@ def installer( args ):
                         elif response.isdigit() is True:
                                 found = False
                                 for full_bug_file_name in bugs_number:
-                                        if response in full_bug_file_name:
+                                        full_bug_number = full_bug_file_name.split("{}")[1]
+                                        if response == full_bug_number:
                                                 bug_file_to_display = full_bug_file_name
                                                 found = True
                                                 break
