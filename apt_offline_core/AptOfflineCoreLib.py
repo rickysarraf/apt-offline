@@ -1250,7 +1250,8 @@ def installer( args ):
                         elif response.isdigit() is True:
                                 found = False
                                 for full_bug_file_name in bugs_number:
-                                        if response in full_bug_file_name:
+                                        full_bug_number = full_bug_file_name.split("{}")[1]
+                                        if response == full_bug_number:
                                                 bug_file_to_display = full_bug_file_name
                                                 found = True
                                                 break
