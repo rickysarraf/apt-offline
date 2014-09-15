@@ -1134,26 +1134,28 @@ def installer( args ):
                 magicMIME.load()
                 
                 retval = False
-                if magicMIME.file( archive_file ) == "application/x-bzip2" or magicMIME.file( archive_file ) == "application/x-gzip":
+                if magicMIME.file( archive_file ) == "application/x-bzip2" or magicMIME.file( archive_file ) == "application/gzip" or magicMIME.file(archive_file) == "application/x-xz":
                         temp_filename = os.path.join(apt_update_target_path, filename + app_name)
                         filename = os.path.join(apt_update_target_path, filename)
                         if magicMIME.file( archive_file ) == "application/x-bzip2":
                                 retval = archive.decompress_the_file( archive_file, temp_filename, "bzip2" )
-                        elif magicMIME.file( archive_file ) == "application/x-gzip":
+                        elif magicMIME.file( archive_file ) == "application/gzip":
                                 retval = archive.decompress_the_file( archive_file, temp_filename, "gzip" )
+                        elif magicMIME.file(archive_file) == "application/x-xz":
+                                retval = archive.decompress_the_file(archive_file, temp_filename, "xz")
                         else:
                                 retval = False
                         if retval is True:
                                 os.rename(temp_filename, filename)
                         else:
                                 os.unlink(temp_filename)
-                elif magicMIME.file( archive_file ) == "PGP armored data":
+                elif magicMIME.file( archive_file ) == "application/x-gnupg-keyring":
                         filename = os.path.join(apt_update_target_path, filename)
                         shutil.copy2(archive_file, filename)
                         # PGP armored data should be bypassed
                         log.verbose("File is %s, hence 'True'.\n" % (filename) )
                         retval = True
-                elif magicMIME.file( archive_file ) == "application/x-dpkg":
+                elif magicMIME.file( archive_file ) == "application/vnd.debian.binary-package":
                         filename = os.path.join(apt_package_target_path, filename)
                         if os.access( apt_package_target_path, os.W_OK ):
                                 shutil.copy2( archive_file, filename )
@@ -1164,7 +1166,7 @@ def installer( args ):
                                 sys.exit( 1 )
                 elif filename.endswith( apt_bug_file_format ):
                         pass
-                elif magicMIME.file( archive_file ) == "ASCII text":
+                elif magicMIME.file( archive_file ) == "text/plain":
                         filename = os.path.join(apt_update_target_path, filename)
                         if os.access( apt_update_target_path, os.W_OK ):
                                 shutil.copy( archive_file, filename )
