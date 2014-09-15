@@ -1,3 +1,15 @@
+apt-offline (1.5) unstable; urgency=medium
+
+  * New Major Release
+  * [9b15df2] Add the new DebianBTS module based on SOAP interface
+  * [b628801] Check if simulate is enabled before acquiring locks
+  * [353519c] Common code for bug display list
+  * [6ebe117] Add support for LZMA compression
+  * [b9db6bc] Add Recommends for python-magic and python-soappy
+  * [d9e8b28] Update copyright with new licenses
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Tue, 16 Sep 2014 00:11:36 +0530
+
 apt-offline (1.4) unstable; urgency=medium
 
   [ Ritesh Raj Sarraf ]
