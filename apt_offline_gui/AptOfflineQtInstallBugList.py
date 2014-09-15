@@ -46,7 +46,8 @@ class AptOfflineQtInstallBugList(QtGui.QDialog):
                         
                         for filename in file.namelist():
                                 if filename.endswith( AptOfflineCoreLib.apt_bug_file_format ):
-                                        bugNumber = filename.split(".")[1]
+                                        #INFO: The splitter is use is "{}". Also used at other places
+                                        bugNumber = filename.split("{}")[1]
 
                                         temp = tempfile.NamedTemporaryFile()
                                         temp.file.write( file.read( filename ) )
