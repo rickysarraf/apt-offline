@@ -60,7 +60,10 @@ except ImportError:
         except ImportError:
                 DebianBTS = False
 
-import AptOfflineMagicLib
+try:
+    import AptOfflineMagicLib
+except TypeError:
+        ''' On Windows, the file magic library does not work '''
 
 #INFO: added to handle GUI interaction
 guiBool = False
@@ -522,7 +525,7 @@ def fetcher( args ):
                                 # Data will be stored in the Str_DownloadDir folder
                                 FetchBugReportsDebian = FetchBugReports( apt_bug_file_format, IgnoredBugTypes )
                 else:
-                        log.err( "Couldn't find debianbts module.\n Cannot fetch Bug Reports.\n" )
+                        log.err( "Couldn't find debianbts module. Cannot fetch Bug Reports.\n" )
                         Bool_BugReports = False
         
         FetchData = {} #Info: Initialize an empty dictionary.
