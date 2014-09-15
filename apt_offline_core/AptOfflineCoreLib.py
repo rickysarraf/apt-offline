@@ -1129,13 +1129,17 @@ def installer( args ):
                         log.msg( "%s\t%s\t%s\n" % ( pkg_name, bug_num, bug_subject ) )
             
         def magic_check_and_uncompress( archive_file=None, filename=None):
+                
+                magicMIME = AptOfflineMagicLib.open(AptOfflineMagicLib.MAGIC_MIME_TYPE)
+                magicMIME.load()
+                
                 retval = False
-                if AptOfflineMagicLib.file( archive_file ) == "application/x-bzip2" or AptOfflineMagicLib.file( archive_file ) == "application/x-gzip":
+                if magicMIME.file( archive_file ) == "application/x-bzip2" or magicMIME.file( archive_file ) == "application/x-gzip":
                         temp_filename = os.path.join(apt_update_target_path, filename + app_name)
                         filename = os.path.join(apt_update_target_path, filename)
-                        if AptOfflineMagicLib.file( archive_file ) == "application/x-bzip2":
+                        if magicMIME.file( archive_file ) == "application/x-bzip2":
                                 retval = archive.decompress_the_file( archive_file, temp_filename, "bzip2" )
-                        elif AptOfflineMagicLib.file( archive_file ) == "application/x-gzip":
+                        elif magicMIME.file( archive_file ) == "application/x-gzip":
                                 retval = archive.decompress_the_file( archive_file, temp_filename, "gzip" )
                         else:
                                 retval = False
@@ -1143,13 +1147,13 @@ def installer( args ):
                                 os.rename(temp_filename, filename)
                         else:
                                 os.unlink(temp_filename)
-                elif AptOfflineMagicLib.file( archive_file ) == "PGP armored data":
+                elif magicMIME.file( archive_file ) == "PGP armored data":
                         filename = os.path.join(apt_update_target_path, filename)
                         shutil.copy2(archive_file, filename)
                         # PGP armored data should be bypassed
                         log.verbose("File is %s, hence 'True'.\n" % (filename) )
                         retval = True
-                elif AptOfflineMagicLib.file( archive_file ) == "application/x-dpkg":
+                elif magicMIME.file( archive_file ) == "application/x-dpkg":
                         filename = os.path.join(apt_package_target_path, filename)
                         if os.access( apt_package_target_path, os.W_OK ):
                                 shutil.copy2( archive_file, filename )
@@ -1160,7 +1164,7 @@ def installer( args ):
                                 sys.exit( 1 )
                 elif filename.endswith( apt_bug_file_format ):
                         pass
-                elif AptOfflineMagicLib.file( archive_file ) == "ASCII text":
+                elif magicMIME.file( archive_file ) == "ASCII text":
                         filename = os.path.join(apt_update_target_path, filename)
                         if os.access( apt_update_target_path, os.W_OK ):
                                 shutil.copy( archive_file, filename )
