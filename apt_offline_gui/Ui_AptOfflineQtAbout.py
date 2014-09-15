@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtAbout.ui'
 #
-# Created: Mon Dec 31 16:02:37 2012
-#      by: PyQt4 UI code generator 4.9.3
+# Created: Sat Sep 13 15:37:48 2014
+#      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_AboutAptOffline(object):
     def setupUi(self, AboutAptOffline):
@@ -116,26 +125,26 @@ class Ui_AboutAptOffline(object):
         QtCore.QMetaObject.connectSlotsByName(AboutAptOffline)
 
     def retranslateUi(self, AboutAptOffline):
-        AboutAptOffline.setWindowTitle(QtGui.QApplication.translate("AboutAptOffline", "About Apt-Offline", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("AboutAptOffline", "Apt-Offline", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("AboutAptOffline", "apt-offline is an Offline APT Package Manager for Debian and derivatives. ", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_14.setText(QtGui.QApplication.translate("AboutAptOffline", "apt-offline can fully update/upgrade your disconnected Debian box without the need of connecting it to the network.  \n"
+        AboutAptOffline.setWindowTitle(_translate("AboutAptOffline", "About Apt-Offline", None))
+        self.label.setText(_translate("AboutAptOffline", "Apt-Offline", None))
+        self.label_3.setText(_translate("AboutAptOffline", "apt-offline is an Offline APT Package Manager for Debian and derivatives. ", None))
+        self.label_14.setText(_translate("AboutAptOffline", "apt-offline can fully update/upgrade your disconnected Debian box without the need of connecting it to the network.  \n"
 "\n"
-"This is a Graphical User Interface which exposes the functionality of apt-offline.", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.aboutTab), QtGui.QApplication.translate("AboutAptOffline", "About", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_4.setText(QtGui.QApplication.translate("AboutAptOffline", "Written by:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_5.setText(QtGui.QApplication.translate("AboutAptOffline", "Ritesh Raj Sarraf <rrs@researchut.com>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_6.setText(QtGui.QApplication.translate("AboutAptOffline", "GUI written by:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_7.setText(QtGui.QApplication.translate("AboutAptOffline", "Manish Sinha <mail@manishsinha.net>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_8.setText(QtGui.QApplication.translate("AboutAptOffline", "Abhishek Mishra <ideamonk@gmail.com>", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.authorTab), QtGui.QApplication.translate("AboutAptOffline", "Author", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_9.setText(QtGui.QApplication.translate("AboutAptOffline", "Peter Otten", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_10.setText(QtGui.QApplication.translate("AboutAptOffline", "Duncan Booth", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_11.setText(QtGui.QApplication.translate("AboutAptOffline", "Simon Forman", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_12.setText(QtGui.QApplication.translate("AboutAptOffline", "Dennis Lee Bieber", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_13.setText(QtGui.QApplication.translate("AboutAptOffline", "The awesome Directi people for their office space required for the mini hackfests", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.thanksTab), QtGui.QApplication.translate("AboutAptOffline", "Thanks To", None, QtGui.QApplication.UnicodeUTF8))
-        self.licenseText.setPlainText(QtGui.QApplication.translate("AboutAptOffline", "                    GNU GENERAL PUBLIC LICENSE\n"
+"This is a Graphical User Interface which exposes the functionality of apt-offline.", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.aboutTab), _translate("AboutAptOffline", "About", None))
+        self.label_4.setText(_translate("AboutAptOffline", "Written by:", None))
+        self.label_5.setText(_translate("AboutAptOffline", "Ritesh Raj Sarraf <rrs@researchut.com>", None))
+        self.label_6.setText(_translate("AboutAptOffline", "GUI written by:", None))
+        self.label_7.setText(_translate("AboutAptOffline", "Manish Sinha <mail@manishsinha.net>", None))
+        self.label_8.setText(_translate("AboutAptOffline", "Abhishek Mishra <ideamonk@gmail.com>", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.authorTab), _translate("AboutAptOffline", "Author", None))
+        self.label_9.setText(_translate("AboutAptOffline", "Peter Otten", None))
+        self.label_10.setText(_translate("AboutAptOffline", "Duncan Booth", None))
+        self.label_11.setText(_translate("AboutAptOffline", "Simon Forman", None))
+        self.label_12.setText(_translate("AboutAptOffline", "Dennis Lee Bieber", None))
+        self.label_13.setText(_translate("AboutAptOffline", "The awesome Directi people for their office space required for the mini hackfests", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.thanksTab), _translate("AboutAptOffline", "Thanks To", None))
+        self.licenseText.setPlainText(_translate("AboutAptOffline", "                    GNU GENERAL PUBLIC LICENSE\n"
 "                       Version 3, 29 June 2007\n"
 "\n"
 " Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>\n"
@@ -143,9 +152,9 @@ class Ui_AboutAptOffline(object):
 " of this license document, but changing it is not allowed.\n"
 "\n"
 "\n"
-"apt-offline is Copyright (C) - Ritesh Raj Sarraf", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.licenseTab), QtGui.QApplication.translate("AboutAptOffline", "License", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("AboutAptOffline", "A GUI for apt-offline - an offline APT Package Manager", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton.setText(QtGui.QApplication.translate("AboutAptOffline", "Close", None, QtGui.QApplication.UnicodeUTF8))
+"apt-offline is Copyright (C) - Ritesh Raj Sarraf", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.licenseTab), _translate("AboutAptOffline", "License", None))
+        self.label_2.setText(_translate("AboutAptOffline", "A GUI for apt-offline - an offline APT Package Manager", None))
+        self.pushButton.setText(_translate("AboutAptOffline", "Close", None))
 
 import resources_rc

@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetchOptions.ui'
 #
-# Created: Mon Dec 31 16:02:37 2012
-#      by: PyQt4 UI code generator 4.9.3
+# Created: Sat Sep 13 15:37:48 2014
+#      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_downloadOptionsDialog(object):
     def setupUi(self, downloadOptionsDialog):
@@ -116,28 +125,28 @@ class Ui_downloadOptionsDialog(object):
         QtCore.QMetaObject.connectSlotsByName(downloadOptionsDialog)
 
     def retranslateUi(self, downloadOptionsDialog):
-        downloadOptionsDialog.setWindowTitle(QtGui.QApplication.translate("downloadOptionsDialog", "Advanced options for download", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblThreads.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Number of parallel connections", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblThreads.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Use threads", None, QtGui.QApplication.UnicodeUTF8))
-        self.spinThreads.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Number of parallel connections", None, QtGui.QApplication.UnicodeUTF8))
-        self.downloadOptionDialogOkButton.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Ok", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblSocketTimeo.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Nework timeout in seconds", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblSocketTimeo.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Network Timeout", None, QtGui.QApplication.UnicodeUTF8))
-        self.spinTimeout.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Nework timeout in seconds", None, QtGui.QApplication.UnicodeUTF8))
-        self.cacheDirLineEdit.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Cache folder to search for", None, QtGui.QApplication.UnicodeUTF8))
-        self.cacheDirBrowseButton.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Browse", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblCacheDir.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Cache folder to search for", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblCacheDir.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Cache Directory", None, QtGui.QApplication.UnicodeUTF8))
-        self.disableChecksumCheckBox.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Disables checksum verification of downloaded items. Enable only if you know what you are doing", None, QtGui.QApplication.UnicodeUTF8))
-        self.disableChecksumCheckBox.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Disable Checksum", None, QtGui.QApplication.UnicodeUTF8))
-        self.fetchBugReportsCheckBox.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Fetch Bug Reports", None, QtGui.QApplication.UnicodeUTF8))
-        self.fetchBugReportsCheckBox.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Fetch Bug Reports", None, QtGui.QApplication.UnicodeUTF8))
-        self.proxyHostLineEdit.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Proxy Server Host/IP Address", None, QtGui.QApplication.UnicodeUTF8))
-        self.proxyPortLineEdit.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Proxy Server Port Address", None, QtGui.QApplication.UnicodeUTF8))
-        self.useProxyCheckBox.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Proxy", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblProxyPort.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Cache folder to search for", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblProxyPort.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Port", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblProxyHost.setToolTip(QtGui.QApplication.translate("downloadOptionsDialog", "Cache folder to search for", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblProxyHost.setText(QtGui.QApplication.translate("downloadOptionsDialog", "Host", None, QtGui.QApplication.UnicodeUTF8))
+        downloadOptionsDialog.setWindowTitle(_translate("downloadOptionsDialog", "Advanced options for download", None))
+        self.lblThreads.setToolTip(_translate("downloadOptionsDialog", "Number of parallel connections", None))
+        self.lblThreads.setText(_translate("downloadOptionsDialog", "Use threads", None))
+        self.spinThreads.setToolTip(_translate("downloadOptionsDialog", "Number of parallel connections", None))
+        self.downloadOptionDialogOkButton.setText(_translate("downloadOptionsDialog", "Ok", None))
+        self.lblSocketTimeo.setToolTip(_translate("downloadOptionsDialog", "Nework timeout in seconds", None))
+        self.lblSocketTimeo.setText(_translate("downloadOptionsDialog", "Network Timeout", None))
+        self.spinTimeout.setToolTip(_translate("downloadOptionsDialog", "Nework timeout in seconds", None))
+        self.cacheDirLineEdit.setToolTip(_translate("downloadOptionsDialog", "Cache folder to search for", None))
+        self.cacheDirBrowseButton.setText(_translate("downloadOptionsDialog", "Browse", None))
+        self.lblCacheDir.setToolTip(_translate("downloadOptionsDialog", "Cache folder to search for", None))
+        self.lblCacheDir.setText(_translate("downloadOptionsDialog", "Cache Directory", None))
+        self.disableChecksumCheckBox.setToolTip(_translate("downloadOptionsDialog", "Disables checksum verification of downloaded items. Enable only if you know what you are doing", None))
+        self.disableChecksumCheckBox.setText(_translate("downloadOptionsDialog", "Disable Checksum", None))
+        self.fetchBugReportsCheckBox.setToolTip(_translate("downloadOptionsDialog", "Fetch Bug Reports", None))
+        self.fetchBugReportsCheckBox.setText(_translate("downloadOptionsDialog", "Fetch Bug Reports", None))
+        self.proxyHostLineEdit.setToolTip(_translate("downloadOptionsDialog", "Proxy Server Host/IP Address", None))
+        self.proxyPortLineEdit.setToolTip(_translate("downloadOptionsDialog", "Proxy Server Port Address", None))
+        self.useProxyCheckBox.setText(_translate("downloadOptionsDialog", "Proxy", None))
+        self.lblProxyPort.setToolTip(_translate("downloadOptionsDialog", "Cache folder to search for", None))
+        self.lblProxyPort.setText(_translate("downloadOptionsDialog", "Port", None))
+        self.lblProxyHost.setToolTip(_translate("downloadOptionsDialog", "Cache folder to search for", None))
+        self.lblProxyHost.setText(_translate("downloadOptionsDialog", "Host", None))
 
 import resources_rc

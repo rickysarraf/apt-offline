@@ -53,13 +53,17 @@ except ImportError:
 # On Debian, python-debianbts package provides this library
 DebianBTS = True
 try:
-        import AptOfflineDebianBtsLib
+        import debianbts
 except ImportError:
-        DebianBTS = False
+        try:
+                import AptOfflineDebianBtsLib as debianbts
+        except ImportError:
+                DebianBTS = False
 
-from AptOffline_reportbug_exceptions import NoNetwork
-
-import AptOfflineMagicLib
+try:
+    import AptOfflineMagicLib
+except TypeError:
+        ''' On Windows, the file magic library does not work '''
 
 #INFO: added to handle GUI interaction
 guiBool = False
@@ -89,8 +93,8 @@ figuring out if the packages are in the local cache, handling exceptions and man
 
 
 app_name = "apt-offline"
-version = "1.4"
-copyright = "(C) 2005 - 2014 Ritesh Raj Sarraf"
+version = "1.5"
+myCopyright = "(C) 2005 - 2014 Ritesh Raj Sarraf"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
 the GNU GPL Version 3 (or later) License\n"
@@ -143,57 +147,53 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                 sys.exit( 1 )
                 
                 try:
-                        ( num_of_bugs, header, self.bugs_list ) = AptOfflineDebianBtsLib.get_reports( PackageName )
+                        #( num_of_bugs, header, self.bugs_list ) = debianbts.get_bugs( 'package', PackageName )
+                        self.bugs_list = debianbts.get_bugs( 'package', PackageName )
+                        num_of_bugs = len(self.bugs_list)
                 except socket.timeout:
-                        return 0
-                except NoNetwork:
-                        log.verbose("Network connection to the BTS couldn't be established")
                         return 0
                         
                 
                 if num_of_bugs:
                         atleast_one_bug_report_downloaded = False
-                        for x in self.bugs_list:
-                                ( sub_bugs_header, sub_bugs_list ) = x
+                        for eachBug in self.bugs_list:
                                 
-                                #INFO: We filter all the IgnoredBugTypes that we think aren't necessary.
-                                #We don't download those low priority bug reports
-                                for BugType in self.IgnoredBugTypes:
-                                        if BugType in sub_bugs_header:
-                                                bug_flag = 0
+                                # Fetch bug report..
+                                # TODO: Handle exceptions later
+                                bugReport = debianbts.get_bug_log(eachBug)
+                                
+                                # This tells us how many follow-ups for the bug report are present.
+                                bugReportLength = bugReport.__len__()
+                                writeBugReport = 0
+                                
+                                if Filename == None:
+                                        #INFO: '{}' is the bug split identifier - Used at other places also
+                                        self.fileName = PackageName + "{}" + str(eachBug) + "{}" + self.apt_bug
+                                        file_handle = open( self.fileName, 'w' )
+                                else:
+                                        self.fileName = Filename
+                                        file_handle = open( self.fileName, 'a' )
+            
+                                #TODO: Can we manipulate these headers in a more efficient way???
+                                for line in bugReport[writeBugReport]['header'].encode('utf8').split("\n"):
+                                        if line.startswith("Subject:"):
+                                                file_handle.write(line)
+                                                file_handle.write("\n")
                                                 break
-                                        bug_flag = 1
-                                
-                                if bug_flag:
-                                        for x in sub_bugs_list:
-                                                break_bugs = x.split( ' ' )
-                                                bug_num = string.lstrip( break_bugs[0], '#' )
-                                                try:
-                                                        data = AptOfflineDebianBtsLib.get_report( bug_num, followups=True )
-                                                except socket.timeout:
-                                                        break
-                                                
-                                                if data is None:
-                                                        break
-                                                
-                                                if Filename == None:
-                                                        self.fileName = PackageName + "." + bug_num + "." + self.apt_bug
-                                                        file_handle = open( self.fileName, 'w' )
-                                                else:
-                                                        self.fileName = Filename
-                                                        file_handle = open( self.fileName, 'a' )
-                            
-                                                file_handle.write( data[0] + "\n\n" )
-                                                for x in data[1]:
-                                                        file_handle.write( x )
-                                                        file_handle.write( "\n" )
-                                                file_handle.write( "\n" * 3 )
-                                                file_handle.flush()
-                                                file_handle.close()
-                                                #We're adding to an archive file here.
-                                                if self.lock:
-                                                        self.AddToArchive( self.ArchiveFile, self.fileName )
-                                                atleast_one_bug_report_downloaded = True
+                                    
+                                while writeBugReport < bugReportLength:
+                                        file_handle.write(bugReport[writeBugReport]['body'].encode('utf8'))
+                                        file_handle.write("\n\n".encode('utf8'))
+                                        writeBugReport += 1
+                                        if writeBugReport < bugReportLength:
+                                                file_handle.write("Follow-Up #%d\n\n".encode('utf8') % writeBugReport)
+                                file_handle.flush()
+                                file_handle.close()
+
+                                #We're adding to an archive file here.
+                                if self.lock:
+                                        self.AddToArchive( self.ArchiveFile, self.fileName )
+                                atleast_one_bug_report_downloaded = True
                         if atleast_one_bug_report_downloaded:
                                 return 2
                         else:
@@ -211,8 +211,8 @@ class FetchBugReports( AptOfflineLib.Archiver ):
         
 def files(root): 
         for path, folders, files in os.walk(root): 
-                for file in files: 
-                        yield path, file 
+                for localFile in files:
+                        yield path, localFile
     
     
 def find_first_match(cache_dir=None, filename=None):
@@ -228,16 +228,16 @@ def find_first_match(cache_dir=None, filename=None):
         elif os.path.isdir(cache_dir) is False:
                 return False
         else:
-                for path, file in files(cache_dir): 
-                        if file == filename:
-                                return os.path.join(path, file)
+                for path, localFile in files(cache_dir):
+                        if localFile == filename:
+                                return os.path.join(path, localFile)
                 return False
         
 
 class GenericDownloadFunction():
-    def download_from_web(self, url, file, download_dir):
+        def download_from_web(self, url, localFile, download_dir):
                 '''url = url to fetch
-                file = file to save to
+                localFile = file to save to
                 donwload_dir = download path'''
                 try:
                         block_size = 4096
@@ -248,7 +248,7 @@ class GenericDownloadFunction():
                         temp = urllib2.urlopen(url)
                         headers = temp.info()
                         size = int(headers['Content-Length'])
-                        data = open(file,'wb')
+                        data = open(localFile,'wb')
             
                         #INFO: Add the download thread into the Global ProgressBar Thread
                         self.addItem(size)
@@ -268,7 +268,7 @@ class GenericDownloadFunction():
                                         errfunc(101010, "Max timeout retry count reached. Discontinuing download.\n", url)
                                         
                                         # Clean the half downloaded file.
-                                        os.unlink(file)
+                                        os.unlink(localFile)
                                         return False
                                 
                                 if socket_timeout is True:
@@ -310,7 +310,7 @@ class GenericDownloadFunction():
                         if hasattr(e, 'reason'):
                                 log.err("%s\n" % (e.reason))
                         if hasattr(e, 'code') and hasattr(e, 'reason'):
-                                errfunc(e.code, e.reason, file)
+                                errfunc(e.code, e.reason, localFile)
                 except socket.timeout:
                         errfunc(10054, "Socket timeout.\n", url)
      
@@ -328,39 +328,39 @@ def stripper(item):
         '''Strips extra characters from "item".
         Breaks "item" into:
         url - The URL
-        file - The actual package file
+        localFile - The actual package file
         size - The file size
         checksum - The checksum string
         and returns them.'''
     
         item = item.split(' ')
-	log.verbose("Item is %s\n" % (item) )
+        log.verbose("Item is %s\n" % (item) )
 
         url = string.rstrip(string.lstrip(''.join(item[0]), chars="'"), chars="'")
         log.verbose("Stripped item URL is: %s\n" % url)
         
-        file = string.rstrip(string.lstrip(''.join(item[1]), chars="'"), chars="'")
-	log.verbose("Stripped item FILE is: %s\n" % file)
+        localFile = string.rstrip(string.lstrip(''.join(item[1]), chars="'"), chars="'")
+        log.verbose("Stripped item FILE is: %s\n" % localFile)
         
         try:
-		size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
-	except ValueError:
-		log.verbose("%s is malformed\n" % (" ".join(item) ) )
-		size = 0
+                size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
+        except ValueError:
+                log.verbose("%s is malformed\n" % (" ".join(item) ) )
+                size = 0
         log.verbose("Stripped item SIZE is: %d\n" % size)
         
 
         #INFO: md5 ends up having '\n' with it.
         # That needs to be stripped too.
-	try:
-		checksum = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
-        	checksum = string.rstrip(checksum, chars = "\n")
-	except IndexError:
-		if item[1].endswith("_Release") or item[1].endswith("_Release.gpg"):
-			checksum = None
+        try:
+                checksum = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
+                checksum = string.rstrip(checksum, chars = "\n")
+        except IndexError:
+                if item[1].endswith("_Release") or item[1].endswith("_Release.gpg"):
+                        checksum = None
         log.verbose("Stripped item CHECKSUM is: %s\n" % checksum)
         
-        return url, file, size, checksum
+        return url, localFile, size, checksum
 
 
 def errfunc(errno, errormsg, filename):
@@ -432,23 +432,23 @@ def fetcher( args ):
                         sys.exit( 1 )
 
         if Str_ProxyHost:
-            if Str_ProxyPort:
-                try:
-                    log.verbose(Str_ProxyHost + ":" + Str_ProxyPort)
-                    proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
-                    opener = urllib2.build_opener(proxy_support)
-                    urllib2.install_opener(opener)
-                except :
-                    log.err("Handle this exception.\n")
-                    sys.exit(1)
-            else:
-                try:
-                    proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost})
-                    opener = urllib2.build_opener(proxy_support)
-                    urllib2.install_opener(opener)
-                except:
-                    log.err("Handle this exception.\n")
-                    sys.exit(1)
+                if Str_ProxyPort:
+                        try:
+                                log.verbose(Str_ProxyHost + ":" + Str_ProxyPort)
+                                proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
+                                opener = urllib2.build_opener(proxy_support)
+                                urllib2.install_opener(opener)
+                        except:
+                                log.err("Handle this exception.\n")
+                                sys.exit(1)
+                else:
+                        try:
+                                proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost})
+                                opener = urllib2.build_opener(proxy_support)
+                                urllib2.install_opener(opener)
+                        except:
+                                log.err("Handle this exception.\n")
+                                sys.exit(1)
         
         #INFO: Python 2.5 has hashlib which supports sha256
         # If we don't have Python 2.5, disable MD5/SHA256 checksum
@@ -509,11 +509,11 @@ def fetcher( args ):
                         log.err( "%s already present.\nRemove it first.\n" % ( Str_BundleFile ) )
                         sys.exit( 1 )
                 else:
-                    try:
-                        f = open(Str_BundleFile, 'w')
-                    except IOError:
-                        log.err("Cannot write to file %s\n" % (Str_BundleFile) )
-                        sys.exit(1)
+                        try:
+                                open(Str_BundleFile, 'w')
+                        except IOError:
+                                log.err("Cannot write to file %s\n" % (Str_BundleFile) )
+                                sys.exit(1)
 
         if Bool_BugReports:
                 if DebianBTS is True:
@@ -526,7 +526,8 @@ def fetcher( args ):
                                 # Data will be stored in the Str_DownloadDir folder
                                 FetchBugReportsDebian = FetchBugReports( apt_bug_file_format, IgnoredBugTypes )
                 else:
-                        log.err( "Couldn't find debianbts module.\n Cannot fetch Bug Reports.\n" )
+                        log.err( "Couldn't find debianbts module. Cannot fetch Bug Reports.\n" )
+                        Bool_BugReports = False
         
         FetchData = {} #Info: Initialize an empty dictionary.
         
@@ -542,24 +543,24 @@ def fetcher( args ):
                         
                 FetchData['Item'] = []
                 for item in raw_data_list:
-			# Interim fix for Debian bug #664654
-			(ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
-			if ItemURL.endswith("InRelease"):
-				log.verbose("APT uses new InRelease auth mechanism")
-				ExtraItemURL = ItemURL.rstrip(ItemURL.split("/")[-1])
-				GPGItemURL = "'" + ExtraItemURL + "Release.gpg"
-				ReleaseItemURL = "'" + ExtraItemURL + "Release"
-				ExtraItemFile = ItemFile.rstrip(ItemFile.split("_")[-1])
-				GPGItemFile = ExtraItemFile + "Release.gpg"
-				ReleaseItemFile = ExtraItemFile + "Release"
+                        # Interim fix for Debian bug #664654
+                        (ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
+                        if ItemURL.endswith("InRelease"):
+                                log.verbose("APT uses new InRelease auth mechanism")
+                                ExtraItemURL = ItemURL.rstrip(ItemURL.split("/")[-1])
+                                GPGItemURL = "'" + ExtraItemURL + "Release.gpg"
+                                ReleaseItemURL = "'" + ExtraItemURL + "Release"
+                                ExtraItemFile = ItemFile.rstrip(ItemFile.split("_")[-1])
+                                GPGItemFile = ExtraItemFile + "Release.gpg"
+                                ReleaseItemFile = ExtraItemFile + "Release"
+                                
+                                FetchData['Item'].append(GPGItemURL + " " + GPGItemFile + " " + str(ItemSize) + " " + ItemChecksum)
+                                log.verbose("Printing GPG URL/Files")
+                                log.verbose("%s %s" % (GPGItemURL, GPGItemFile) )
 
-				FetchData['Item'].append(GPGItemURL + " " + GPGItemFile + " " + str(ItemSize) + " " + ItemChecksum)
-				log.verbose("Printing GPG URL/Files")
-				log.verbose("%s %s" % (GPGItemURL, GPGItemFile) )
-
-				FetchData['Item'].append(ReleaseItemURL + " " + ReleaseItemFile + " " + str(ItemSize) + " " + ItemChecksum)
-				log.verbose("Printing Release URL/Files")
-				log.verbose("%s %s" % (ReleaseItemURL, ReleaseItemFile) )
+                                FetchData['Item'].append(ReleaseItemURL + " " + ReleaseItemFile + " " + str(ItemSize) + " " + ItemChecksum)
+                                log.verbose("Printing Release URL/Files")
+                                log.verbose("%s %s" % (ReleaseItemURL, ReleaseItemFile) )
                         FetchData['Item'].append( item )
         del raw_data_list
         
@@ -590,35 +591,35 @@ def fetcher( args ):
                 
                 (key, item) = request
 
-		# On many boxes, the cdrom apt repository will be enabled.
-		# For now, let's skip the cdrom repository items.
-		if item.startswith("\'cdrom"):
-			log.verbose("cdrom apt repository not supported. Skipping\n")
-			log.verbose(item)
-			return True
+                # On many boxes, the cdrom apt repository will be enabled.
+                # For now, let's skip the cdrom repository items.
+                if item.startswith("\'cdrom"):
+                        log.verbose("cdrom apt repository not supported. Skipping\n")
+                        log.verbose(item)
+                        return True
                 
                 #INFO: Everything
-                (url, file, download_size, checksum) = stripper(item)
+                (url, pkgFile, download_size, checksum) = stripper(item)
                 thread_name = threading.currentThread().getName()
                 log.verbose("Thread is %s\n" % (thread_name) )
                 
                 if url.endswith(".deb"):
                         try:
-                                PackageName = file.split("_")[0]
+                                PackageName = pkgFile.split("_")[0]
                         except IndexError:
                                 log.err("Not getting a package name here is problematic. Better bail out.\n")
                                 sys.exit(1)
                         
                         #INFO: For Package version, we don't want to fail
                         try:
-                                PackageVersion = file.split("_")[1]
+                                PackageVersion = pkgFile.split("_")[1]
                         except IndexError:
                                 PackageVersion = "NA"
                                 log.verbose("Weird!! Package version not present. Is it really a deb file?\n")
                         
                         
                         #INFO: find_first_match() returns False or a file name with absolute path
-                        full_file_path = func(Str_CacheDir, file)
+                        full_file_path = func(Str_CacheDir, pkgFile)
                         #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
                         if full_file_path != False:
                                 # We'll first check for its md5 checksum
@@ -639,7 +640,7 @@ def fetcher( args ):
                                                         if FetcherInstance.compress_the_file(Str_BundleFile, full_file_path) is True:
                                                                 log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
                                                         else:
-                                                                log.err("Couldn't add %s to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
+                                                                log.err("Couldn't add %s to archive %s.%s\n" % (pkgFile, Str_BundleFile, LINE_OVERWRITE_MID) )
                                                                 sys.exit(1)
                                                 #INFO: If no zip option enabled, simply copy the downloaded package file
                                                 # along with the downloaded bug reports.
@@ -648,7 +649,7 @@ def fetcher( args ):
                                                                 shutil.copy(full_file_path, Str_DownloadDir)
                                                                 log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
                                                         except shutil.Error:
-                                                                log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (file, Str_DownloadDir, LINE_OVERWRITE_MID) )
+                                                                log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (pkgFile, Str_DownloadDir, LINE_OVERWRITE_MID) )
                                                         
                                                         if bug_fetched is True:
                                                                 for x in os.listdir(os.curdir):
@@ -662,18 +663,18 @@ def fetcher( args ):
                                         #INFO: Damn!! The md5chesum didn't match :-(
                                         # The file is corrupted and we need to download a new copy from the internet
                                         else:
-                                                log.verbose("%s checksum mismatch. Skipping file.%s\n" % (file, LINE_OVERWRITE_FULL) )
+                                                log.verbose("%s checksum mismatch. Skipping file.%s\n" % (pkgFile, LINE_OVERWRITE_FULL) )
                                                 log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
-                                                if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
+                                                if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir) == True:
                                                         log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                         
                                                         #Add to Str_CacheDir if possible
                                                         if Str_CacheDir and os.access(Str_CacheDir, os.W_OK) == True:
                                                                 try:
-                                                                        shutil.copy(file, Str_CacheDir)
-                                                                        log.verbose("%s copied to local cache directory %s.%s\n" % (file, Str_CacheDir, LINE_OVERWRITE_MID) )
+                                                                        shutil.copy(pkgFile, Str_CacheDir)
+                                                                        log.verbose("%s copied to local cache directory %s.%s\n" % (pkgFile, Str_CacheDir, LINE_OVERWRITE_MID) )
                                                                 except shutil.Error:
-                                                                        log.verbose("Couldn't copy %s to %s.%s\n" % (file, Str_CacheDir, LINE_OVERWRITE_FULL) )
+                                                                        log.verbose("Couldn't copy %s to %s.%s\n" % (pkgFile, Str_CacheDir, LINE_OVERWRITE_FULL) )
                                                         else:
                                                                 log.verbose("cache_dir %s is not writeable. Skipping copy to it.\n" % (Str_CacheDir) )
                                                         
@@ -685,12 +686,12 @@ def fetcher( args ):
                                                                 else:
                                                                         log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                         if Str_BundleFile:
-                                                                if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
-                                                                        log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                if FetcherInstance.compress_the_file( Str_BundleFile, pkgFile ) != True:
+                                                                        log.err( "Couldn't archive %s to file %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                                         sys.exit( 1 )
                                                                 else:
-                                                                        log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                        os.unlink( os.path.join( Str_DownloadDir, file ) )
+                                                                        log.verbose( "%s added to archive %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                        os.unlink( os.path.join( Str_DownloadDir, pkgFile ) )
                                 #INFO: You're and idiot.
                                 # You should NOT disable md5checksum for any files
                                 else:
@@ -708,19 +709,19 @@ def fetcher( args ):
                                         #file = file[len(file) - 1]
                                         #file = download_path + "/" + file
                                         if Str_BundleFile:
-                                                if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
-                                                        log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                if FetcherInstance.compress_the_file( Str_BundleFile, pkgFile ) != True:
+                                                        log.err( "Couldn't archive %s to file %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                         sys.exit( 1 )
                                                 else:
-                                                        log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                        os.unlink( os.path.join( Str_DownloadDir, file ) )
+                                                        log.verbose( "%s added to archive %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                        os.unlink( os.path.join( Str_DownloadDir, pkgFile ) )
                                         else:
                                                 # Since zip file option is not enabled let's copy the file to the target folder
                                                 try:
                                                         shutil.copy( full_file_path, Str_DownloadDir )
-                                                        log.success( "%s copied from local cache directory %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_SMALL ) )
+                                                        log.success( "%s copied from local cache directory %s.%s\n" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_SMALL ) )
                                                 except shutil.Error:
-                                                        log.verbose( "%s already available in dest_dir. Skipping copy!!!%s\n" % ( file, LINE_OVERWRITE_SMALL ) )
+                                                        log.verbose( "%s already available in dest_dir. Skipping copy!!!%s\n" % ( pkgFile, LINE_OVERWRITE_SMALL ) )
                             
                                                 # And also the bug reports
                                                 if bug_fetched is True:
@@ -732,20 +733,20 @@ def fetcher( args ):
                         else:
                                 #INFO: This block gets executed if the file is not found in local Str_CacheDir or Str_CacheDir is None
                                 # We go ahead and try to download it from the internet
-                                log.verbose( "%s not available in local cache %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
+                                log.verbose( "%s not available in local cache %s.%s\n" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_MID ) )
                                 log.msg( "Downloading %s %s - %s %s\n" % ( PackageName, PackageVersion, log.calcSize( download_size / 1024 ), LINE_OVERWRITE_MID ) )
-                                if FetcherInstance.download_from_web( url, file, Str_DownloadDir ) == True:
+                                if FetcherInstance.download_from_web( url, pkgFile, Str_DownloadDir ) == True:
                                         #INFO: This block gets executed if md5checksum is allowed
                                         if Bool_DisableMD5Check is False:
                                                 #INFO: Debian moved to SHA256. So we use that now. Older systems could have md5
-                                                log.verbose( "File %s has checksum %s\n" % ( file, checksum ) )
-                                                if FetcherInstance.CheckHashDigest( file, checksum ) is True:
+                                                log.verbose( "File %s has checksum %s\n" % ( pkgFile, checksum ) )
+                                                if FetcherInstance.CheckHashDigest( pkgFile, checksum ) is True:
                                                         if Str_CacheDir and os.access( Str_CacheDir, os.W_OK ) == True:
                                                                 try:
-                                                                        shutil.copy( file, Str_CacheDir )
-                                                                        log.verbose( "%s copied to local cache directory %s.%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
+                                                                        shutil.copy( pkgFile, Str_CacheDir )
+                                                                        log.verbose( "%s copied to local cache directory %s.%s\n" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_MID ) )
                                                                 except shutil.Error:
-                                                                        log.verbose( "%s already available in %s. Skipping copy!!!%s\n" % ( file, Str_CacheDir, LINE_OVERWRITE_MID ) )
+                                                                        log.verbose( "%s already available in %s. Skipping copy!!!%s\n" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_MID ) )
                                                         else:
                                                                 log.verbose( "Str_CacheDir %s is not writeable. Skipping copy to it.\n" % ( Str_CacheDir ) )
                                     
@@ -757,12 +758,12 @@ def fetcher( args ):
                                                                         log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                     
                                                         if Str_BundleFile:
-                                                                if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
-                                                                        log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                if FetcherInstance.compress_the_file( Str_BundleFile, pkgFile ) != True:
+                                                                        log.err( "Couldn't archive %s to file %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                                         sys.exit( 1 )
                                                                 else:
-                                                                        log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                        os.unlink( os.path.join( Str_DownloadDir, file ) )
+                                                                        log.verbose( "%s added to archive %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                        os.unlink( os.path.join( Str_DownloadDir, pkgFile ) )
                                                         log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
                                                 else:
                                                         #INFO MD5 Checksum is incorrect.
@@ -777,12 +778,12 @@ def fetcher( args ):
                                                                 log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                 
                                                 if Str_BundleFile:
-                                                        if FetcherInstance.compress_the_file( Str_BundleFile, file ) != True:
-                                                                log.err( "Couldn't archive %s to file %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                        if FetcherInstance.compress_the_file( Str_BundleFile, pkgFile ) != True:
+                                                                log.err( "Couldn't archive %s to file %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                                 sys.exit( 1 )
                                                         else:
-                                                                log.verbose( "%s added to archive %s.%s\n" % ( file, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
-                                                                os.unlink( os.path.join( Str_DownloadDir, file ) )
+                                                                log.verbose( "%s added to archive %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                os.unlink( os.path.join( Str_DownloadDir, pkgFile ) )
                                     
                                                 log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
                                 else:
@@ -791,15 +792,15 @@ def fetcher( args ):
                 else:
                         
                         def DownloadPackages(url):
-                                if FetcherInstance.download_from_web(url, file, Str_DownloadDir) == True:
+                                if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir) == True:
                                         log.success("\r%s done.%s\n" % (url, LINE_OVERWRITE_FULL) )
                                         if Str_BundleFile:
-                                                if FetcherInstance.compress_the_file(Str_BundleFile, file) != True:
-                                                        log.err("Couldn't archive %s to file %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_MID) )
+                                                if FetcherInstance.compress_the_file(Str_BundleFile, pkgFile) != True:
+                                                        log.err("Couldn't archive %s to file %s.%s\n" % (pkgFile, Str_BundleFile, LINE_OVERWRITE_MID) )
                                                         sys.exit(1)
                                                 else:
-                                                        log.verbose("%s added to archive %s.%s\n" % (file, Str_BundleFile, LINE_OVERWRITE_FULL) )
-                                                        os.unlink(os.path.join(Str_DownloadDir, file) )
+                                                        log.verbose("%s added to archive %s.%s\n" % (pkgFile, Str_BundleFile, LINE_OVERWRITE_FULL) )
+                                                        os.unlink(os.path.join(Str_DownloadDir, pkgFile) )
                                         return True
                                 else:
                                         return False
@@ -838,67 +839,66 @@ def fetcher( args ):
         for key in FetchData.keys():
                 for item in FetchData.get(key):
                         if guiBool:
-                            #REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
-                            if guiTerminateSignal:
-                                break
-                            try:
-                                (url, file, download_size, checksum) = stripper(item)
-                                size = int(download_size)
-                                if size == 0:
-                                    log.msg("MSG_START")
-                                    temp = urllib2.urlopen(url)
-                                    headers = temp.info()
-                                    size = int(headers['Content-Length'])
-                                totalSize[0] += size
-                            except:
-                                ''' some int parsing problem '''
+                                #REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
+                                if guiTerminateSignal:
+                                        break
+                                try:
+                                        (url, pkgFile, download_size, checksum) = stripper(item)
+                                        size = int(download_size)
+                                        if size == 0:
+                                                log.msg("MSG_START")
+                                                temp = urllib2.urlopen(url)
+                                                headers = temp.info()
+                                                size = int(headers['Content-Length'])
+                                        totalSize[0] += size
+                                except:
+                                        log.err("some int parsing problem\n")
+
             
         if not guiTerminateSignal:
-            ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
+                ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
             
         ConnectThread.startThreads()
         # Queue up the requests.
         #for item in raw_data_list: requestQueue.put(item)
         for key in FetchData.keys():
-            for item in FetchData.get(key):
-                ConnectThread.populateQueue( (key, item) )
-            
+                for item in FetchData.get(key):
+                        ConnectThread.populateQueue( (key, item) )
         if guiBool:
-            log.msg("MSG_END")
-            guiMetaCompleted=True
-            # For the sake of a responsive GUI
-            while (ConnectThread.threads_finished < ConnectThread.threads):
-                # handle signals from gui here
-                if guiTerminateSignal:
-                    # stop all ongoing work
-                    #TODO: find a way to stop those threads here
-                    ConnectThread.guiTerminateSignal=True
-                    for thread in ConnectThread.thread_pool:
-                        thread.guiTerminateSignal=True
-                    ConnectThread.stopThreads()
-                    ConnectThread.stopQueue(timeout=0.2)
-                    return
-                ConnectThread.stopThreads()
-                ConnectThread.stopQueue(timeout=0.2)    # let them work for 0.2s
-                log.msg ("[%d/%d]" %(totalSize[1], totalSize[0]))
+                log.msg("MSG_END")
+                guiMetaCompleted=True
+                # For the sake of a responsive GUI
+                while (ConnectThread.threads_finished < ConnectThread.threads):
+                        # handle signals from gui here
+                        if guiTerminateSignal:
+                                # stop all ongoing work
+                                #TODO: find a way to stop those threads here
+                                ConnectThread.guiTerminateSignal=True
+                                for thread in ConnectThread.thread_pool:
+                                        thread.guiTerminateSignal=True
+                                ConnectThread.stopThreads()
+                                ConnectThread.stopQueue(timeout=0.2)
+                                return
+                        ConnectThread.stopThreads()
+                        ConnectThread.stopQueue(timeout=0.2)    # let them work for 0.2s
+                        log.msg ("[%d/%d]" %(totalSize[1], totalSize[0]))
         else:
-            # else go by the normal CLI way
-            while ConnectThread.threads_finished < ConnectThread.threads:
-                try:
-                    ConnectThread.stopThreads()
-                    ConnectThread.stopQueue(0.2)
-                except KeyboardInterrupt:
-                    # user pressed Ctrl-c, signal all threads to exit
-                    guiTerminateSignal=True # this would signal download_from_web to stop
-                    ConnectThread.guiTerminateSignal=True
-                    for thread in ConnectThread.thread_pool:
-                        thread.guiTerminateSignal=True      # tell all threads to exit
-                    ConnectThread.stopThreads()
-                    ConnectThread.stopQueue()
-                    log.err("\nInterrupted by user. Exiting!\n")
-                    sys.exit(0)
-                    
-                
+                # else go by the normal CLI way
+                while ConnectThread.threads_finished < ConnectThread.threads:
+                        try:
+                                ConnectThread.stopThreads()
+                                ConnectThread.stopQueue(0.2)
+                        except KeyboardInterrupt:
+                                # user pressed Ctrl-c, signal all threads to exit
+                                guiTerminateSignal=True # this would signal download_from_web to stop
+                                ConnectThread.guiTerminateSignal=True
+                                for thread in ConnectThread.thread_pool:
+                                        thread.guiTerminateSignal=True      # tell all threads to exit
+                                ConnectThread.stopThreads()
+                                ConnectThread.stopQueue()
+                                log.err("\nInterrupted by user. Exiting!\n")
+                                sys.exit(0)
+            
         # Print the failed files
         if len(errlist) > 0:
                 log.msg("\n\n")
@@ -1066,10 +1066,11 @@ def installer( args ):
                                 sys.exit(1)
                                 
         archive = AptOfflineLib.Archiver()
-        archive_file_types = ['application/x-bzip2', 'application/gzip', 'application/zip']
         
         # Prepare for APT Datbase's Locks
-        if FCNTL_LOCK is False:
+        if Bool_TestWindows:
+                log.verbose("In simulate mode. No locking required\n")
+        elif FCNTL_LOCK is False:
                 log.err("Locking framework in not available on your platform")
                 sys.exit(1)
         else:
@@ -1083,8 +1084,10 @@ def installer( args ):
                 AptSecure = APTVerifySigs()
                 
         try:
+                if Bool_TestWindows:
+                        log.verbose("In simulate mode. No locking required\n")
                 # Acquire APT lock
-                if AptLock.lockLists() is False:
+                elif AptLock.lockLists() is False:
                         log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (apt_update_target_path))
                         sys.exit(1)
                 
@@ -1098,7 +1101,10 @@ def installer( args ):
                 log.err("Cannot find APT's partial cache dir %s\n" % (apt_update_target_path) )
                 sys.exit(1)
         finally:
-                AptLock.unlockLists()
+                if Bool_TestWindows:
+                        log.verbose("In simulate mode. No locking required\n")
+                else:
+                        AptLock.unlockLists()
         
         def display_options():
                 log.msg( "(Y) Yes. Proceed with installation\n" )
@@ -1119,39 +1125,43 @@ def installer( args ):
                 value => subject string
                 '''
                 log.msg( "\n\nFollowing are the list of bugs present.\n" )
-		sortedKeyList = dictList.keys()
-		sortedKeyList.sort()
+                sortedKeyList = dictList.keys()
+                sortedKeyList.sort()
                 for each_bug in sortedKeyList:
-			pkg_name = each_bug.split( '.' )[-3].split('/')[-1]
-                        bug_num = each_bug.split( '.' )[-2]
+                        #INFO: '{}' is the bug split identifier - Used at another place also
+                        pkg_name = each_bug.split( '{}' )[-3].split('/')[-1]
+                        bug_num = each_bug.split( '{}' )[-2]
                         bug_subject = dictList[each_bug]
-                        log.msg( "%s\t%s\t%s\n" % ( pkg_name, bug_num, bug_subject ) )
+                        log.msg( "%s\t%s\t%s\n" % ( bug_num, pkg_name, bug_subject ) )
             
         def magic_check_and_uncompress( archive_file=None, filename=None):
+                
+                magicMIME = AptOfflineMagicLib.open(AptOfflineMagicLib.MAGIC_MIME_TYPE)
+                magicMIME.load()
+                
                 retval = False
-                if AptOfflineMagicLib.file( archive_file ) == "application/x-bzip2" or \
-                AptOfflineMagicLib.file( archive_file ) == "application/x-gzip":
+                if magicMIME.file( archive_file ) == "application/x-bzip2" or magicMIME.file( archive_file ) == "application/gzip" or magicMIME.file(archive_file) == "application/x-xz":
                         temp_filename = os.path.join(apt_update_target_path, filename + app_name)
                         filename = os.path.join(apt_update_target_path, filename)
-                        if AptOfflineMagicLib.file( archive_file ) == "application/x-bzip2":
+                        if magicMIME.file( archive_file ) == "application/x-bzip2":
                                 retval = archive.decompress_the_file( archive_file, temp_filename, "bzip2" )
-                        elif AptOfflineMagicLib.file( archive_file ) == "application/x-gzip":
+                        elif magicMIME.file( archive_file ) == "application/gzip":
                                 retval = archive.decompress_the_file( archive_file, temp_filename, "gzip" )
+                        elif magicMIME.file(archive_file) == "application/x-xz":
+                                retval = archive.decompress_the_file(archive_file, temp_filename, "xz")
                         else:
                                 retval = False
                         if retval is True:
                                 os.rename(temp_filename, filename)
                         else:
                                 os.unlink(temp_filename)
-                elif AptOfflineMagicLib.file( archive_file ) == "application/zip":
-                        retval = archive.decompress_the_file( os.path.join( install_file_path, eachfile ), apt_update_target_path, eachfile, "zip" )
-                elif AptOfflineMagicLib.file( archive_file ) == "PGP armored data":
+                elif magicMIME.file( archive_file ) == "application/x-gnupg-keyring":
                         filename = os.path.join(apt_update_target_path, filename)
                         shutil.copy2(archive_file, filename)
                         # PGP armored data should be bypassed
                         log.verbose("File is %s, hence 'True'.\n" % (filename) )
                         retval = True
-                elif AptOfflineMagicLib.file( archive_file ) == "application/x-dpkg":
+                elif magicMIME.file( archive_file ) == "application/vnd.debian.binary-package":
                         filename = os.path.join(apt_package_target_path, filename)
                         if os.access( apt_package_target_path, os.W_OK ):
                                 shutil.copy2( archive_file, filename )
@@ -1162,7 +1172,7 @@ def installer( args ):
                                 sys.exit( 1 )
                 elif filename.endswith( apt_bug_file_format ):
                         pass
-                elif AptOfflineMagicLib.file( archive_file ) == "ASCII text":
+                elif magicMIME.file( archive_file ) == "text/plain":
                         filename = os.path.join(apt_update_target_path, filename)
                         if os.access( apt_update_target_path, os.W_OK ):
                                 shutil.copy( archive_file, filename )
@@ -1177,29 +1187,118 @@ def installer( args ):
                         #CHANGE: track progress
                         totalSize[0]+=1 
                         if guiBool:
-                            log.msg("[%d/%d]" % (totalSize[0], totalSize[1]))
+                                log.msg("[%d/%d]" % (totalSize[0], totalSize[1]))
                         #ENDCHANGE
                         log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
 
+        def displayBugs(dataType=None):
+                ''' Takes keywords "file" or "dir" as type input '''
+            
+                if dataType is None:
+                        return False
+                
+                # Display the list of bugs
+                list_bugs(bugs_number)
+                display_options()
+                response = get_response()
+                
+                while True:
+                        if response == "?":
+                                display_options()
+                                response = get_response()
+                        elif response.startswith( 'y' ) or response.startswith( 'Y' ):
+                                if dataType is "file":
+                                        for filename in zipBugFile.namelist():
+                                                
+                                                #INFO: Take care of Src Pkgs
+                                                found = False
+                                                for item in SrcPkgDict.keys():
+                                                        if filename in SrcPkgDict[item]:
+                                                                found = True
+                                                                break
+                                                        
+                                                data = tempfile.NamedTemporaryFile()
+                                                data.file.write( zipBugFile.read( filename ) )
+                                                data.file.flush()
+                                                archive_file = data.name
+                                                
+                                                if found is True: # found is True. That means this is a src package
+                                                        shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
+                                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                                        continue
+                                                
+                                                    
+                                                if Bool_TestWindows:
+                                                        log.verbose("In simulate mode. No locking required\n")
+                                                elif AptLock.lockPackages() is False:
+                                                        log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (archive_file))
+                                                        sys.exit(1)
+                                                        
+                                                magic_check_and_uncompress( archive_file, filename )
         
+                                                if Bool_TestWindows:
+                                                        log.verbose("In simulate mode. No locking required\n")
+                                                else:
+                                                        AptLock.unlockLists()
+                                                data.file.close()
+                                        sys.exit( 0 )
+                                if dataType is "dir":
+                                        if DirInstallPackages(install_file_path) is True:
+                                                sys.exit(0)
+                                        else:
+                                                log.err("Failed during install operation on %s.\n" % (install_file_path) )
+                                                sys.exit(1)
+                        elif response.startswith( 'n' ) or response.startswith( 'N' ):
+                                log.err( "Exiting gracefully on user request.\n\n" )
+                                sys.exit( 0 )
+                        elif response.isdigit() is True:
+                                found = False
+                                for full_bug_file_name in bugs_number:
+                                        full_bug_number = full_bug_file_name.split("{}")[1]
+                                        if response == full_bug_number:
+                                                bug_file_to_display = full_bug_file_name
+                                                found = True
+                                                break
+                                if found == False:
+                                        log.err( "Incorrect bug number %s provided.\n" % ( response ) )
+                                        response = get_response()
+                                if found:
+                                        if dataType is "file":
+                                                pydoc.pager(zipBugFile.read(bug_file_to_display) )
+                                                # Redisplay the menu
+                                                # FIXME: See a pythonic possibility of cleaning the screen at this stage
+                                                response = get_response()
+                                        if dataType is "dir":
+                                                tempFile = open(bug_file_to_display, 'r')
+                                                pydoc.pager(tempFile.read() )
+                                                # Redisplay the menu
+                                                # FIXME: See a pythonic possibility of cleaning the screen at this stage
+                                                response = get_response()
+                        elif response.startswith( 'r' ) or response.startswith( 'R' ):
+                                list_bugs(bugs_number)
+                                response = get_response()
+                        else:
+                                log.err( 'Incorrect choice. Exiting\n' )
+                                sys.exit( 1 )
+
         if os.path.isfile(install_file_path):
                 #INFO: For now, we support zip bundles only
                 try:
-                        file = zipfile.ZipFile( install_file_path, "r" )
+                        zipBugFile = zipfile.ZipFile( install_file_path, "r" )
                 except zipfile.BadZipfile:
                         log.err("File %s is not a valid zip file\n" % (install_file_path))
                         sys.exit(1)
                 #CHANGE: for progress tracking
-                totalSize[1] = len(file.namelist())
+                totalSize[1] = len(zipBugFile.namelist())
                 totalSize[0] = 0
                 #ENDCHANGE
                 
                 SrcPkgDict = {}
-                for filename in file.namelist():
+                for filename in zipBugFile.namelist():
                         if filename.endswith(".dsc"):
                                 SrcPkgName = filename.split('_')[0]
                                 temp = tempfile.NamedTemporaryFile()
-                                temp.file.write( file.read( filename ) )
+                                temp.file.write( zipBugFile.read( filename ) )
                                 temp.file.flush()
                                 temp.file.seek( 0 ) #Let's go back to the start of the file
                                 SrcPkgDict[SrcPkgName] = []
@@ -1218,14 +1317,14 @@ def installer( args ):
                 if Bool_SkipBugReports:
                         log.verbose("Skipping bug report check as requested")
                 else:
-                        for filename in file.namelist():
+                        for filename in zipBugFile.namelist():
                                 if filename.endswith( apt_bug_file_format ):
                                         temp = tempfile.NamedTemporaryFile()
-                                        temp.file.write( file.read( filename ) )
+                                        temp.file.write( zipBugFile.read( filename ) )
                                         temp.file.flush()
                                         temp.file.seek( 0 ) #Let's go back to the start of the file
                                         for bug_subject_identifier in temp.file.readlines():
-                                                if bug_subject_identifier.startswith( '#' ):
+                                                if bug_subject_identifier.decode('utf8').startswith( 'Subject:' ):
                                                         subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
                                                         subject = subject.rstrip( "\n" )
                                                         break
@@ -1234,79 +1333,14 @@ def installer( args ):
                                         
                 log.verbose(str(bugs_number) + "\n")
                 if bugs_number:
-                        # Display the list of bugs
-                        list_bugs(bugs_number)
-                        display_options()
-                        response = get_response()
-                        while True:
-                                if response == "?":
-                                        display_options()
-                                        response = get_response()
-                                elif response.startswith( 'y' ) or response.startswith( 'Y' ):
-                                        for filename in file.namelist():
-                                                
-                                                #INFO: Take care of Src Pkgs
-                                                found = False
-                                                for item in SrcPkgDict.keys():
-                                                        if filename in SrcPkgDict[item]:
-                                                                found = True
-                                                                break
-                                                        
-                                                data = tempfile.NamedTemporaryFile()
-                                                data.file.write( file.read( filename ) )
-                                                data.file.flush()
-                                                archive_file = data.name
-                                                
-                                                if found is True: # found is True. That means this is a src package
-                                                        shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
-                                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
-                                                        continue
-                                                
-                                                try:
-                                                        if AptLock.lockPackages() is False:
-                                                                log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (archive_file))
-                                                                sys.exit(1)
-                                                                
-                                                        magic_check_and_uncompress( archive_file, filename )
-                                                except:
-                                                        log.err("Uncaught exception in magic_check_and_uncompress() \n")
-                                                finally:
-                                                        AptLock.unlockLists()
-                                                data.file.close()
-                                        sys.exit( 0 )
-                                elif response.startswith( 'n' ) or response.startswith( 'N' ):
-                                        log.err( "Exiting gracefully on user request.\n\n" )
-                                        sys.exit( 0 )
-                                elif response.isdigit() is True:
-                                        found = False
-                                        for full_bug_file_name in bugs_number:
-                                                if response in full_bug_file_name:
-                                                        bug_file_to_display = full_bug_file_name
-                                                        found = True
-                                                        break
-                                        if found == False:
-                                                log.err( "Incorrect bug number %s provided.\n" % ( response ) )
-                                                response = get_response()
-                
-                                        if found:
-                                                pydoc.pager(file.read(bug_file_to_display) )
-                                                # Redisplay the menu
-                                                # FIXME: See a pythonic possibility of cleaning the screen at this stage
-                                                response = get_response()
-                
-                                elif response.startswith( 'r' ) or response.startswith( 'R' ):
-                                        list_bugs(bugs_number)
-                                        response = get_response()
-                                else:
-                                        log.err( 'Incorrect choice. Exiting\n' )
-                                        sys.exit( 1 )
+                        displayBugs(dataType="file")
                 else:
                         log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
                         #response = raw_input( "Continue with Installation. Y/N ?" )
                         #response = response.rstrip( "\r" )
                         #if response.endswith( 'y' ) or response.endswith( 'Y' ):
                         #        log.verbose( "Continuing with syncing the files.\n" )
-                        for filename in file.namelist():
+                        for filename in zipBugFile.namelist():
                                 
                                 #INFO: Take care of Src Pkgs
                                 found = False
@@ -1316,7 +1350,7 @@ def installer( args ):
                                                 break
                                         
                                 data = tempfile.NamedTemporaryFile()
-                                data.file.write( file.read( filename ) )
+                                data.file.write( zipBugFile.read( filename ) )
                                 data.file.flush()
                                 archive_file = data.name
                                 
@@ -1325,20 +1359,19 @@ def installer( args ):
                                         log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
                                         continue
 
-                                try:
-                                        if AptLock.lockPackages() is False:
-                                                log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
-                                                sys.exit(1)
-                                        
-                                        magic_check_and_uncompress( archive_file, filename )
-                                except:
-                                        log.err("Uncaught exception in magic_check_and_uncompress() \n")
-                                finally:
+                                if Bool_TestWindows:
+                                        log.verbose("In simulate mode. No locking required.\n")
+                                elif AptLock.lockPackages() is False:
+                                        log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
+                                        sys.exit(1)
+                                
+                                magic_check_and_uncompress( archive_file, filename )
+
+                                if Bool_TestWindows:
+                                        log.verbose("In simulate mode. No locking required\n")
+                                else:
                                         AptLock.unlockPackages()
                                 data.file.close()
-                        #else:
-                        #       log.msg( "Exiting gracefully on user request.\n" )
-                        #       sys.exit( 0 )
                                 
         elif os.path.isdir(install_file_path):
                 
@@ -1392,7 +1425,7 @@ def installer( args ):
                                         filename = os.path.join(install_file_path, filename)
                                         temp = open(filename, 'r')
                                         for bug_subject_identifier in temp.readlines():
-                                                if bug_subject_identifier.startswith( '#' ):
+                                                if bug_subject_identifier.decode('utf8').startswith( 'Subject:' ):
                                                         subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
                                                         subject = subject.rstrip( "\n" )
                                                         break
@@ -1400,51 +1433,7 @@ def installer( args ):
                                         temp.close()
                 log.verbose(str(bugs_number) + "\n")
                 if bugs_number:
-                        #Give the choice to the user
-                        list_bugs(bugs_number)
-                        display_options()
-                        response = get_response()
-                        
-                        while True:
-                                if response == "?":
-                                        display_options()
-                                        response = get_response()
-                                        
-                                elif response.startswith( 'y' ) or response.startswith( 'Y' ):
-                                        if DirInstallPackages(install_file_path) is True:
-                                                sys.exit(0)
-                                        else:
-                                                log.err("Failed during install operation on %s.\n" % (install_file_path) )
-                                                sys.exit(1)
-                                        
-                                elif response.startswith( 'n' ) or response.startswith( 'N' ):
-                                        log.err( "Exiting gracefully on user request.\n\n" )
-                                        sys.exit( 0 )
-                                        
-                                elif response.isdigit() is True:
-                                        found = False
-                                        for full_bug_file_name in bugs_number:
-                                                if response in full_bug_file_name:
-                                                        bug_file_to_display = full_bug_file_name
-                                                        found = True
-                                                        break
-                                        if found == False:
-                                                log.err( "Incorrect bug number %s provided.\n" % ( response ) )
-                                                response = get_response()
-                                        if found:
-                                                file = open(bug_file_to_display, 'r')
-                                                pydoc.pager(file.read() )
-                                                # Redisplay the menu
-                                                # FIXME: See a pythonic possibility of cleaning the screen at this stage
-                                                response = get_response()
-                
-                                elif response.startswith( 'r' ) or response.startswith( 'R' ):
-                                        list_bugs(bugs_number)
-                                        response = get_response()
-                
-                                else:
-                                        log.err( 'Incorrect choice. Exiting\n' )
-                                        sys.exit( 1 )
+                        displayBugs(dataType="dir")
                 else:
                         log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
                         DirInstallPackages(install_file_path)
@@ -1460,20 +1449,20 @@ def installer( args ):
                 lFileList= os.listdir(apt_update_target_path)
                 lFileList.sort()
                 lVerifiedWhitelist = []
-                for file in lFileList:
-                        file = os.path.join(apt_update_target_path, file)
-                        if file.endswith('.gpg'):
-                                log.verbose("%s\n" % (file) )
-                                file = os.path.abspath(file)
-                                if AptSecure.VerifySig(file, file.rstrip(".gpg") ):
-                                        file = file.rstrip("Release.gpg")
-                                        file = file[:-1] #Remove the trailing _ underscore
-                                        file = file.split("/")[-1]
-                                        lVerifiedWhitelist.append(file)
-                                        log.verbose("%s is gpg clean\n" % (file) )
+                for localFile in lFileList:
+                        localFile = os.path.join(apt_update_target_path, localFile)
+                        if localFile.endswith('.gpg'):
+                                log.verbose("%s\n" % (localFile) )
+                                localFile = os.path.abspath(localFile)
+                                if AptSecure.VerifySig(localFile, localFile.rstrip(".gpg") ):
+                                        localFile = localFile.rstrip("Release.gpg")
+                                        localFile = localFile[:-1] #Remove the trailing _ underscore
+                                        localFile = localFile.split("/")[-1]
+                                        lVerifiedWhitelist.append(localFile)
+                                        log.verbose("%s is gpg clean\n" % (localFile) )
                                 else:
                                         # Bad sig.
-                                        log.err("%s bad signature. Not syncing because in strict mode.\n" % (file) )
+                                        log.err("%s bad signature. Not syncing because in strict mode.\n" % (localFile) )
                 if lVerifiedWhitelist != []:
                         log.verbose (str(lVerifiedWhitelist) + "\n")
                         for whitelist_item in lVerifiedWhitelist:
@@ -1586,12 +1575,12 @@ def setter(args):
                         
                         
                 def __FixAptSigs(self):
-                        for file in os.listdir(apt_update_target_path):
-                                if file.endswith(".gpg.reverify"):
-                                        sig_file = file.rstrip(".reverify")
-                                        log.verbose("Recovering gpg signature %s.\n" % (file) )
-                                        file = os.path.join(apt_update_target_path, file)
-                                        os.rename(file, os.path.join(apt_update_final_path + sig_file) )
+                        for localFile in os.listdir(apt_update_target_path):
+                                if localFile.endswith(".gpg.reverify"):
+                                        sig_file = localFile.rstrip(".reverify")
+                                        log.verbose("Recovering gpg signature %s.\n" % (localFile) )
+                                        localFile = os.path.join(apt_update_target_path, localFile)
+                                        os.rename(localFile, os.path.join(apt_update_final_path + sig_file) )
                                         
                                         
                 def __AptGetUpdate(self):
@@ -1854,10 +1843,10 @@ def setter(args):
                                                         indexfile = PythonAptQuery.cache._list.FindIndex( packagefile )
                                                         if indexfile:
                                                                 uri = indexfile.ArchiveURI( path )
-                                                                file = uri.split( '/' )[ - 1]
+                                                                localFile = uri.split( '/' )[ - 1]
                                                                 if checksum.__str__() in dup_records:
                                                                         continue
-                                                                install_file.write( uri + ' ' + file + ' ' + size + ' ' + checksum + "\n" )
+                                                                install_file.write( uri + ' ' + localFile + ' ' + size + ' ' + checksum + "\n" )
                                                                 dup_records.append( checksum.__str__() )
                                 else:
                                         AptInst.Upgrade("upgrade", ReleaseType=Str_SetInstallRelease)
@@ -1910,15 +1899,14 @@ def main():
         global_options.add_argument("--simulate", dest="simulate", help="Just simulate. Very helpful when debugging",
                             action="store_true" )
         
-	if argparse.__version__ >= 1.1:
-		parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
-                                          epilog=copyright + " - " + terminal_license, parents=[global_options])
-		parser.add_argument("-v", "--version", action='version', version=version)
-	else:
-		# Remain backward compatible with older argparse versions 
-		parser = argparse.ArgumentParser( prog=app_name, version=app_name + " - " + version,
-				description="Offline APT Package Manager", epilog=copyright + " - " + terminal_license,
-				parents=[global_options])
+        if argparse.__version__ >= 1.1:
+                parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
+                                          epilog=myCopyright + " - " + terminal_license, parents=[global_options])
+                parser.add_argument("-v", "--version", action='version', version=version)
+        else:
+                # Remain backward compatible with older argparse versions 
+                parser = argparse.ArgumentParser( prog=app_name, version=app_name + " - " + version,
+                                                  description="Offline APT Package Manager", epilog=myCopyright + " - " + terminal_license, parents=[global_options])
         
         # We need subparsers for set/get/install
         subparsers = parser.add_subparsers()
@@ -1990,7 +1978,7 @@ def main():
                                 action="store", type=str, metavar="apt-offline-bundle.zip")
         
         parser_get.add_argument("--bug-reports", dest="deb_bugs",
-                          help="Fetch bug reports from the BTS", action="store_false" )
+                          help="Fetch bug reports from the BTS", action="store_true" )
         
         parser_get.add_argument("--proxy-host", dest="proxy_host",
 						help="Proxy Host to use", type=str, default=None)
@@ -2019,17 +2007,14 @@ def main():
         args = parser.parse_args()
         
         try:
-                # Sanitize the options/arguments
-                #
-        	# Global opts
-        	Bool_Verbose = args.verbose
-        	Bool_TestWindows = args.simulate
+                # Global opts
+                Bool_Verbose = args.verbose
+                Bool_TestWindows = args.simulate
                 
-        	global log
-        	log = AptOfflineLib.Log( Bool_Verbose, lock=True )
-        	log.verbose(str(args) + "\n")
-        
-        	args.func(args)
+                global log
+                log = AptOfflineLib.Log( Bool_Verbose, lock=True )
+                log.verbose(str(args) + "\n")
+                args.func(args)
             
         except KeyboardInterrupt:
                 log.err("\nInterrupted by user. Exiting!\n")

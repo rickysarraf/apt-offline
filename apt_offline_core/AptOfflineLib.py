@@ -29,9 +29,13 @@ import zipfile
 import bz2
 import gzip
 
-# Test Comment
-# For Forest
-
+# LZMA is not native to Python in 2.x
+modLZMA = True
+try:
+        import lzma
+except ImportError:
+        modLZMA = False
+                
 WindowColor = True
 try:
         import WConio
@@ -379,18 +383,29 @@ class Archiver:
                         except IOError:
                             fileOpened = False
                 if fileOpened: #Supported from Python 2.5 ??
-                        filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )                        
-                        filename.close()
+                        try:
+                                filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )                        
+                                filename.close()
+                        except UserWarning:
+                                ''' We could have multiple packages referring to the same bug report. Thus here, We get and error like:
+                                Downloading gcc-4.9 4.9.1-14 - 5 MiB                               
+                                /home/rrs/devel/apt-offline/apt-offline/apt_offline_core/AptOfflineLib.py:386: UserWarning: Duplicate name: 'libstdc++6.140201.__apt__bug__report'
+                                  filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )
+                                 21 / 35 items: [########                  /home/rrs/devel/apt-offline/apt-offline/apt_offline_core/AptOfflineLib.py:386: UserWarning: Duplicate name: 'libstdc++6.701941.__apt__bug__report'
+                                  filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )
+                                libstdc++6 4.9.1-14 done. '''
         
                         if self.lock:
                                 self.ZipLock.release()
                         return True
                 else:
+                        if self.lock:
+                                self.ZipLock.release()
                         return False
 
         def decompress_the_file( self, archive_file, target_file, archive_type ):
                 '''Extracts all the files from a single condensed archive file'''
-                if archive_type == "bzip2" or archive_type == "gzip":
+                if archive_type == "bzip2" or archive_type == "gzip" or archive_type == "xz":
                         if archive_type == "bzip2":
                                 try:
                                         read_from = bz2.BZ2File( archive_file, 'r' )
@@ -400,6 +415,14 @@ class Archiver:
                                 try:
                                         read_from = gzip.GzipFile( archive_file, 'r' )
                                 except IOError:
+                                        return False
+                        elif archive_type == "xz":
+                                if modLZMA is True:
+                                        try:
+                                                read_from = lzma.LZMAFile(archive_file, 'rb')
+                                        except IOError:
+                                                return False
+                                else:
                                         return False
                         else:
                                 return False

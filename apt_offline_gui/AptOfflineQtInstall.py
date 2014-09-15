@@ -139,11 +139,17 @@ class AptOfflineQtInstall(QtGui.QDialog):
     def ControlStartInstallBox(self):
         if self.ui.zipFilePath.text().isEmpty():
             self.ui.startInstallButton.setEnabled(False)
-	    # We do the same for bug reports button
+            # We do the same for bug reports button
             self.ui.bugReportsButton.setEnabled(False)
-        else:
+        elif os.path.isdir(self.ui.zipFilePath.text()):
             self.ui.startInstallButton.setEnabled(True)
             self.ui.bugReportsButton.setEnabled(True)
+        elif os.path.isfile(self.ui.zipFilePath.text() ):
+            self.ui.startInstallButton.setEnabled(True)
+            self.ui.bugReportsButton.setEnabled(True)
+        else:
+            self.ui.startInstallButton.setEnabled(False)
+            self.ui.bugReportsButton.setEnabled(False)
             
     def updateLog(self,text):
         guicommon.updateInto (self.ui.rawLogHolder,text)

@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtMain.ui'
 #
-# Created: Mon Dec 31 16:02:36 2012
-#      by: PyQt4 UI code generator 4.9.3
+# Created: Sat Sep 13 15:37:48 2014
+#      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_AptOfflineMain(object):
     def setupUi(self, AptOfflineMain):
@@ -137,25 +146,25 @@ class Ui_AptOfflineMain(object):
         QtCore.QMetaObject.connectSlotsByName(AptOfflineMain)
 
     def retranslateUi(self, AptOfflineMain):
-        AptOfflineMain.setWindowTitle(QtGui.QApplication.translate("AptOfflineMain", "APT Offline", None, QtGui.QApplication.UnicodeUTF8))
-        self.createProfileButton.setText(QtGui.QApplication.translate("AptOfflineMain", "Generate Signature", None, QtGui.QApplication.UnicodeUTF8))
-        self.downloadButton.setText(QtGui.QApplication.translate("AptOfflineMain", "Download Packages or Updates", None, QtGui.QApplication.UnicodeUTF8))
-        self.restoreButton.setText(QtGui.QApplication.translate("AptOfflineMain", "Install Packages or Updates", None, QtGui.QApplication.UnicodeUTF8))
-        self.descriptionField.setText(QtGui.QApplication.translate("AptOfflineMain", "Hover your mouse over the buttons to get the description", None, QtGui.QApplication.UnicodeUTF8))
-        self.exitButton.setText(QtGui.QApplication.translate("AptOfflineMain", "Exit", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("AptOfflineMain", "Description", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuOperations.setTitle(QtGui.QApplication.translate("AptOfflineMain", "Operations", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuHelp.setTitle(QtGui.QApplication.translate("AptOfflineMain", "Help", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuCreateProfile.setText(QtGui.QApplication.translate("AptOfflineMain", "Generate Signature", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuCreateProfile.setShortcut(QtGui.QApplication.translate("AptOfflineMain", "Ctrl+N", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuDownload.setText(QtGui.QApplication.translate("AptOfflineMain", "Download Packages or Updates", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuDownload.setShortcut(QtGui.QApplication.translate("AptOfflineMain", "Ctrl+O", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuInstall.setText(QtGui.QApplication.translate("AptOfflineMain", "Install Packages or Updates", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuInstall.setShortcut(QtGui.QApplication.translate("AptOfflineMain", "Ctrl+I", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuExit.setText(QtGui.QApplication.translate("AptOfflineMain", "Exit", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuExit.setShortcut(QtGui.QApplication.translate("AptOfflineMain", "Ctrl+Q", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuHelp_2.setText(QtGui.QApplication.translate("AptOfflineMain", "Help", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuHelp_2.setShortcut(QtGui.QApplication.translate("AptOfflineMain", "F1", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuAbout.setText(QtGui.QApplication.translate("AptOfflineMain", "About apt-offline", None, QtGui.QApplication.UnicodeUTF8))
+        AptOfflineMain.setWindowTitle(_translate("AptOfflineMain", "APT Offline", None))
+        self.createProfileButton.setText(_translate("AptOfflineMain", "Generate Signature", None))
+        self.downloadButton.setText(_translate("AptOfflineMain", "Download Packages or Updates", None))
+        self.restoreButton.setText(_translate("AptOfflineMain", "Install Packages or Updates", None))
+        self.descriptionField.setText(_translate("AptOfflineMain", "Hover your mouse over the buttons to get the description", None))
+        self.exitButton.setText(_translate("AptOfflineMain", "Exit", None))
+        self.label_2.setText(_translate("AptOfflineMain", "Description", None))
+        self.menuOperations.setTitle(_translate("AptOfflineMain", "Operations", None))
+        self.menuHelp.setTitle(_translate("AptOfflineMain", "Help", None))
+        self.menuCreateProfile.setText(_translate("AptOfflineMain", "Generate Signature", None))
+        self.menuCreateProfile.setShortcut(_translate("AptOfflineMain", "Ctrl+N", None))
+        self.menuDownload.setText(_translate("AptOfflineMain", "Download Packages or Updates", None))
+        self.menuDownload.setShortcut(_translate("AptOfflineMain", "Ctrl+O", None))
+        self.menuInstall.setText(_translate("AptOfflineMain", "Install Packages or Updates", None))
+        self.menuInstall.setShortcut(_translate("AptOfflineMain", "Ctrl+I", None))
+        self.menuExit.setText(_translate("AptOfflineMain", "Exit", None))
+        self.menuExit.setShortcut(_translate("AptOfflineMain", "Ctrl+Q", None))
+        self.menuHelp_2.setText(_translate("AptOfflineMain", "Help", None))
+        self.menuHelp_2.setShortcut(_translate("AptOfflineMain", "F1", None))
+        self.menuAbout.setText(_translate("AptOfflineMain", "About apt-offline", None))
 
 import resources_rc
