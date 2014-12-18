@@ -433,22 +433,16 @@ def fetcher( args ):
 
         if Str_ProxyHost:
                 if Str_ProxyPort:
-                        try:
-                                log.verbose(Str_ProxyHost + ":" + Str_ProxyPort)
-                                proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
-                                opener = urllib2.build_opener(proxy_support)
-                                urllib2.install_opener(opener)
-                        except:
-                                log.err("Handle this exception.\n")
-                                sys.exit(1)
+                        log.verbose(Str_ProxyHost + ":" + Str_ProxyPort)
+                        proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
+                        opener = urllib2.build_opener(proxy_support)
+                        urllib2.install_opener(opener)
+                        log.verbose("Proxy successfully set up with Host %s and port %d\n" % (Str_ProxyHost, Str_ProxyPort) )
                 else:
-                        try:
-                                proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost})
-                                opener = urllib2.build_opener(proxy_support)
-                                urllib2.install_opener(opener)
-                        except:
-                                log.err("Handle this exception.\n")
-                                sys.exit(1)
+                        proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost})
+                        opener = urllib2.build_opener(proxy_support)
+                        urllib2.install_opener(opener)
+                        log.verbose("Proxy successfully set up with Host %s and default port\n" % (Str_ProxyHost) )
         
         #INFO: Python 2.5 has hashlib which supports sha256
         # If we don't have Python 2.5, disable MD5/SHA256 checksum
