@@ -386,8 +386,8 @@ def errfunc(errno, errormsg, filename):
         # and better document them the next time you find it out.
         # 13 is for "Permission Denied" when you don't have privileges to access the destination 
         if errno in error_codes:
-                log.err("%s - %s - %s.%s\n" % (filename, errno, errormsg, LINE_OVERWRITE_MID))
-                log.err("Will still try with other package uris\n")
+                log.verbose("%s - %s - %s.%s\n" % (filename, errno, errormsg, LINE_OVERWRITE_MID))
+                log.verbose("Will still try with other package uris\n")
                 pass
         elif errno == 10054:
                 log.verbose("%s - %s - %s.%s\n" % (filename, errno, errormsg, LINE_OVERWRITE_SMALL) )
