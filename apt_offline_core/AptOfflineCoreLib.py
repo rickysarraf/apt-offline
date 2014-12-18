@@ -801,29 +801,48 @@ def fetcher( args ):
                                 
                         #INFO: Handle the multiple Packages formats.
                         # See DTBS #583502
-                        SupportedFormats = ["bz2", "gz", "lzma"]
+                        SupportedFormats = ["bz2", "gz", "lzma", None]
 
                         #INFO: We are a package update
                         PackageName = url
                         PackageFile = url.split("/")[-1]
                         PackageFormat = PackageFile.split(".")[-1]
-                        if PackageFormat in SupportedFormats:
-                                SupportedFormats.remove(PackageFormat) #Remove the already tried format
+                        PackageFileBase = PackageFile.split(".")[0]
+                        UrlBase = url.strip(url.split("/")[-1])
                         
                         log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
+                        DownloadSucceeded = True
                         if DownloadPackages(url) is False and guiTerminateSignal is False:
+                                DownloadSucceeded = False
                                 # dont proceed retry if Ctrl+C in cli
                                 log.verbose("%s failed. Retry with the remaining possible formats\n" % (url) )
                                 
                                 # We could fail with the Packages format of what apt gave us. We can try the rest of the formats that apt or the archive could support
                                 for Format in SupportedFormats:
-                                        NewPackageFile = PackageFile.split(".")[0] + "." + Format
-                                        NewUrl = url.strip(url.split("/")[-1]) + NewPackageFile
+                                        if Format == PackageFormat:
+                                                continue # Skip the already tried format
+
+                                        if Format is None:
+                                                NewPackageFile = PackageFileBase
+                                        else:
+                                                NewPackageFile = PackageFileBase + "." + Format
+                                        
+                                        NewUrl = UrlBase + NewPackageFile
                                         log.verbose("Retry download %s.%s\n" % (NewUrl, LINE_OVERWRITE_MID) )
                                         if DownloadPackages(NewUrl) is True:
+                                                DownloadSucceeded = True
                                                 break
+
+                        if not DownloadSucceeded:
+                                ErrorUrl = UrlBase + NewPackageFile + "["
+                                for Format in SupportedFormats:
+                                        if Format is None:
+                                                ErrorUrl += "|"
                                         else:
-                                                errlist.append(NewUrl)
+                                                ErrorUrl += "." + Format + "|"
+                                ErrorUrl = ErrorUrl[:-1] + "]"
+                                errlist.append(ErrorUrl)
+
 
         # Create two Queues for the requests and responses
         requestQueue = Queue.Queue()
