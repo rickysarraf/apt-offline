@@ -433,11 +433,11 @@ def fetcher( args ):
 
         if Str_ProxyHost:
                 if Str_ProxyPort:
-                        log.verbose(Str_ProxyHost + ":" + Str_ProxyPort)
+                        log.verbose(Str_ProxyHost + ":" + str(Str_ProxyPort))
                         proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
                         opener = urllib2.build_opener(proxy_support)
                         urllib2.install_opener(opener)
-                        log.verbose("Proxy successfully set up with Host %s and port %d\n" % (Str_ProxyHost, Str_ProxyPort) )
+                        log.verbose("Proxy successfully set up with Host %s and port %d\n" % (Str_ProxyHost, str(Str_ProxyPort)))
                 else:
                         proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost})
                         opener = urllib2.build_opener(proxy_support)
