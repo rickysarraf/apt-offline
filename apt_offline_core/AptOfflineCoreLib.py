@@ -1155,7 +1155,8 @@ def installer( args ):
                         # PGP armored data should be bypassed
                         log.verbose("File is %s, hence 'True'.\n" % (filename) )
                         retval = True
-                elif magicMIME.file( archive_file ) == "application/vnd.debian.binary-package":
+                elif magicMIME.file( archive_file ) == "application/vnd.debian.binary-package" or \
+                        magicMIME.file(archive_file) == "application/x-debian-package":
                         filename = os.path.join(apt_package_target_path, filename)
                         if os.access( apt_package_target_path, os.W_OK ):
                                 shutil.copy2( archive_file, filename )
