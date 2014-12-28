@@ -1162,6 +1162,7 @@ def installer( args ):
                                 retval = archive.decompress_the_file(archive_file, temp_filename, "xz")
                         else:
                                 retval = False
+
                         if retval is True:
                                 os.rename(temp_filename, filename)
                         else:
