@@ -913,6 +913,8 @@ def installer( args ):
         class APTVerifySigs:
                 
                 def __init__(self, gpgv=None, keyring=None):
+                        self.defaultPaths = ['/etc/apt/trusted.gpg.d/', '/usr/share/keyrings/']
+
                         if gpgv is None:
                                 self.gpgv="/usr/bin/gpgv"
                         else:
@@ -920,7 +922,17 @@ def installer( args ):
                                 
                         if keyring is None:
                                 self.opts="--keyring /etc/apt/trusted.gpg --ignore-time-conflict"
-                                self.opts += "--keyring /usr/share/keyrings/debian-archive-keyring.gpg"
+                                for eachPath in self.defaultPaths:
+                                        if os.path.exists(eachPath):
+                                                for eachGPG in os.listdir(eachPath):
+                                                        eachGPG = os.path.join(eachPath, eachGPG)
+                                                        if os.path.exists(eachGPG):
+                                                                log.verbose("Adding %s to the apt-offline keyring\n" % (eachGPG) )
+                                                                self.opts += " --keyring %s " % (eachGPG)
+                                                        else:
+                                                                log.err("Path for keyring is invalid: %s\n" % (eachGPG) )
+                                        else:
+                                                log.err("Path for keyring is invalid: %s\n" % (eachPath) )
                         else:
                                 self.opts = "--keyring %s --ignore-time-conflict" % (keyring)
                                 
