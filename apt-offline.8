@@ -158,6 +158,10 @@ command and not to the
 .B \-\-install\-packages
 option.
 
+Otherwise, you could also use it positionally next to the set command
+
+.B Ex. apt\-offline set foo.sig \-\-update \-\-upgrade \-\-install\-packages wm2
+
 .TP
 .B apt-offline set FILENAME
 This command will generate a signature file FILENAME for APT Package Database.
@@ -184,13 +188,13 @@ absolute FOLDER path or the archive FILE path can be specified.
 
 .TP
 The following sequence of commands will keep a machine up to date, with the package lists one step ahead of the upgrade:
-.B apt-offline set \-\-upgrade \-\-update foo.sig
+.B apt-offline set foo.sig \-\-upgrade \-\-update
 Requests the packages needed to upgrade the machine, based on the current package lists. Also, requests the new package lists for the next update.
 
-.B apt-offline get -d FOLDER foo.sig
+.B apt-offline get foo.sig -d FOLDER
 Downloads the packages for upgrading the machine, along with the package lists for the next time apt-offline set \-\-upgrade is run.
 
-.B apt-offline install FOLDER | FILE
+.B apt-offline install FOLDER/FILE
 Positions the packages for the upgrade, along with new the package lists.
 
 .B apt-get upgrade
