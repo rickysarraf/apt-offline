@@ -1016,7 +1016,6 @@ def installer( args ):
                 
         if Str_InstallArg:
                 if Bool_TestWindows:
-                        global apt_package_target_path
                         tempdir = tempfile.gettempdir()
                         if os.access( tempdir, os.W_OK ) is True:
                                 pidname = os.getpid()
@@ -1029,7 +1028,6 @@ def installer( args ):
                                 log.err( "%s is not writable\n" % (tempdir) ) 
                                 sys.exit(1)
                                 
-                        global apt_update_target_path
                         tempdir = tempfile.gettempdir()
                         if os.access( tempdir, os.W_OK ) is True:
                                 pidname = os.getpid()
@@ -1042,7 +1040,6 @@ def installer( args ):
                                 log.err( "%s is not writable\n" % (tempdir) ) 
                                 sys.exit(1)
                                 
-                        global apt_update_final_path
                         tempdir = tempfile.gettempdir()
                         if os.access( tempdir, os.W_OK ) is True:
                                 pidname = os.getpid()
