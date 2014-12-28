@@ -920,6 +920,7 @@ def installer( args ):
                                 
                         if keyring is None:
                                 self.opts="--keyring /etc/apt/trusted.gpg --ignore-time-conflict"
+                                self.opts += "--keyring /usr/share/keyrings/debian-archive-keyring.gpg"
                         else:
                                 self.opts = "--keyring %s --ignore-time-conflict" % (keyring)
                                 
