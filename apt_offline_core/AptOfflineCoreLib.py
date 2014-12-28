@@ -816,14 +816,18 @@ def fetcher( args ):
                                 log.verbose("%s failed. Retry with the remaining possible formats\n" % (url) )
                                 
                                 # We could fail with the Packages format of what apt gave us. We can try the rest of the formats that apt or the archive could support
+                                reallyFailed = True
                                 for Format in SupportedFormats:
                                         NewPackageFile = PackageFile.split(".")[0] + "." + Format
                                         NewUrl = url.strip(url.split("/")[-1]) + NewPackageFile
                                         log.verbose("Retry download %s.%s\n" % (NewUrl, LINE_OVERWRITE_MID) )
                                         if DownloadPackages(NewUrl) is True:
+                                                reallyFailed = False
                                                 break
                                         else:
-                                                errlist.append(NewUrl)
+                                                log.verbose("Failed with URL %s.%s\n" % (NewUrl, LINE_OVERWRITE_MID) )
+                                if reallyFailed is True:
+                                        errlist.append(NewUrl)
 
         # Create two Queues for the requests and responses
         requestQueue = Queue.Queue()
