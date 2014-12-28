@@ -1621,7 +1621,7 @@ def setter(args):
                         try:
                                 writeFH = open(self.WriteTo, 'a')
                         except:
-                                log.err("Failed to open file %s for write. Exiting")
+                                log.err("Failed to open file %s for write. Exiting\n" % (self.WriteTo))
                                 sys.exit(1)
                         
                         log.msg("\nGenerating database of files that are needed for an update.\n")
