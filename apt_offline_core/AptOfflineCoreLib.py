@@ -1152,21 +1152,15 @@ def installer( args ):
                 
                 retval = False
                 if magicMIME.file( archive_file ) == "application/x-bzip2" or magicMIME.file( archive_file ) == "application/gzip" or magicMIME.file(archive_file) == "application/x-xz":
-                        temp_filename = os.path.join(apt_update_target_path, filename + app_name)
-                        filename = os.path.join(apt_update_target_path, filename)
+                        filename = os.path.join(apt_update_target_path, filename.rsplit(".", 1)[0] )
                         if magicMIME.file( archive_file ) == "application/x-bzip2":
-                                retval = archive.decompress_the_file( archive_file, temp_filename, "bzip2" )
+                                retval = archive.decompress_the_file( archive_file, filename, "bzip2" )
                         elif magicMIME.file( archive_file ) == "application/gzip":
-                                retval = archive.decompress_the_file( archive_file, temp_filename, "gzip" )
+                                retval = archive.decompress_the_file( archive_file, filename, "gzip" )
                         elif magicMIME.file(archive_file) == "application/x-xz":
-                                retval = archive.decompress_the_file(archive_file, temp_filename, "xz")
+                                retval = archive.decompress_the_file(archive_file, filename, "xz")
                         else:
                                 retval = False
-
-                        if retval is True:
-                                os.rename(temp_filename, filename)
-                        else:
-                                os.unlink(temp_filename)
                 elif magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or magicMIME.file( archive_file ) == "application/pgp-signature":
                         filename = os.path.join(apt_update_target_path, filename)
                         shutil.copy2(archive_file, filename)
