@@ -1151,7 +1151,7 @@ def installer( args ):
                                 os.rename(temp_filename, filename)
                         else:
                                 os.unlink(temp_filename)
-                elif magicMIME.file( archive_file ) == "application/x-gnupg-keyring":
+                elif magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or magicMIME.file( archive_file ) == "application/pgp-signature":
                         filename = os.path.join(apt_update_target_path, filename)
                         shutil.copy2(archive_file, filename)
                         # PGP armored data should be bypassed
