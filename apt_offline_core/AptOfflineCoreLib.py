@@ -1475,8 +1475,8 @@ def installer( args ):
                         for whitelist_item in lVerifiedWhitelist:
                                 for final_item in lFileList:
                                         if whitelist_item in final_item:
-                                                final_item = os.path.join(apt_update_target_path, final_item)
-                                                shutil.copy2(final_item, apt_update_final_path)
+                                                partialFile = os.path.join(apt_update_target_path, final_item)
+                                                shutil.copy2(partialFile, apt_update_final_path)
                                                 log.msg("%s synced.\n" % (final_item) )
                         
 
