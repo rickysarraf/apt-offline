@@ -78,6 +78,9 @@ try:
         import apt_pkg
 except ImportError:
         PythonApt = False
+
+# Completely disable python-apt
+PythonApt = False
     
 import AptOfflineLib
 
