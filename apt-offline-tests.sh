@@ -1,7 +1,7 @@
 #!/bin/sh
 
 DISLIKED_PACKAGES="lxde icewm "
-RELEASE="unstable"
+RELEASE=`lsb_release -c -s`
 URI="/tmp/set-$PPID.uris"
 CACHE_DIR="/var/cache/apt/archives"
 DOWNLOAD_DIR="/tmp/apt-offline-tests-$PPID"
