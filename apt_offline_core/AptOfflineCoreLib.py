@@ -1162,16 +1162,16 @@ def installer( args ):
                         else:
                                 retval = False
                 elif magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or magicMIME.file( archive_file ) == "application/pgp-signature":
-                        filename = os.path.join(apt_update_target_path, filename)
-                        shutil.copy2(archive_file, filename)
+                        gpgFile = os.path.join(apt_update_target_path, filename)
+                        shutil.copy2(archive_file, gpgFile)
                         # PGP armored data should be bypassed
                         log.verbose("File is %s, hence 'True'.\n" % (filename) )
                         retval = True
                 elif magicMIME.file( archive_file ) == "application/vnd.debian.binary-package" or \
                         magicMIME.file(archive_file) == "application/x-debian-package":
-                        filename = os.path.join(apt_package_target_path, filename)
+                        debFile = os.path.join(apt_package_target_path, filename)
                         if os.access( apt_package_target_path, os.W_OK ):
-                                shutil.copy2( archive_file, filename )
+                                shutil.copy2( archive_file, debFile )
                                 log.msg("%s file synced.\n" % (filename) )
                                 retval = True
                         else:
@@ -1180,9 +1180,9 @@ def installer( args ):
                 elif filename.endswith( apt_bug_file_format ):
                         pass
                 elif magicMIME.file( archive_file ) == "text/plain":
-                        filename = os.path.join(apt_update_target_path, filename)
+                        txtFile = os.path.join(apt_update_target_path, filename)
                         if os.access( apt_update_target_path, os.W_OK ):
-                                shutil.copy( archive_file, filename )
+                                shutil.copy( archive_file, txtFile )
                                 retval = True
                         else:
                                 log.err( "Cannot write to target path %s\n" % ( apt_update_target_path ) )
