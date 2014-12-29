@@ -78,7 +78,6 @@ try:
         import apt_pkg
 except ImportError:
         PythonApt = False
-PythonApt = False #Remove it after porting to python-apt
     
 import AptOfflineLib
 
@@ -1805,7 +1804,10 @@ def setter(args):
         
         
         #Instantiate Apt based on what we have. For now, fall to apt only
-        AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="python-apt")
+        if PythonApt is True:
+                AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="python-apt")
+        else:
+                AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt")
         
         if Bool_SetUpdate:
                 if platform.system() in supported_platforms:
