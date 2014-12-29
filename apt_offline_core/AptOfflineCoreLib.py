@@ -61,7 +61,7 @@ except ImportError:
                 DebianBTS = False
 
 try:
-    import AptOfflineMagicLib
+        import AptOfflineMagicLib
 except TypeError:
         ''' On Windows, the file magic library does not work '''
 
