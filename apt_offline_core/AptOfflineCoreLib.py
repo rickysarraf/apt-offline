@@ -1514,7 +1514,7 @@ def setter(args):
                 Bool_SetUpgrade = True
                 
         class AptManip:
-                def __init__(self, OutputFile, Simulate=False, AptType="python-apt"):
+                def __init__(self, OutputFile, Simulate=False, AptType="apt"):
                         
                         self.WriteTo = OutputFile
                         self.Simulate = Simulate
@@ -1664,8 +1664,6 @@ def setter(args):
                         writeFH.close()
                 
                 def __PythonAptUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
-                        # THis doesn't work as expected. In fact, the code fails.
-                        
                         
                         log.verbose("Open file %s for write" % self.WriteTo)
                         try:
@@ -1836,38 +1834,7 @@ def setter(args):
                                 sys.exit(1)
                         #TODO: Use a more Pythonic way for it
                         if Str_SetUpgradeType == "upgrade":
-                                if PythonApt is True:
-                                        #FIXME: Adapt the new python-apt. Ideas from debdelta
-                                        log.verbose("Using the python-apt library to generate the database.\n")
-                                        PythonAptQuery = AptPython()
-                                        try:
-                                                install_file = open( Str_SetArg, 'a' )
-                                        except IOError:
-                                                log.err( "Cannot create file %s.\n" % (Str_SetArg) )
-                                                sys.exit( 1 )
-                                        upgradable = filter( lambda p: p.isUpgradable, PythonAptQuery.cache )
-                                        log.msg( "\nGenerating database of files that are needed for an upgrade.\n" )
-                                        
-                                        dup_records = []
-                                        for pkg in upgradable:
-                                                pkg._lookupRecord( True )
-                                                dpkg_params = apt_pkg.ParseSection(pkg._records.Record)
-                                                arch = dpkg_params['Architecture']
-                                                path = dpkg_params['Filename']
-                                                checksum = dpkg_params['SHA256'] #FIXME: There can be multiple checksum types
-                                                size = dpkg_params['Size']
-                                                cand = pkg._depcache.GetCandidateVer( pkg._pkg )
-                                                for ( packagefile, i ) in cand.FileList:
-                                                        indexfile = PythonAptQuery.cache._list.FindIndex( packagefile )
-                                                        if indexfile:
-                                                                uri = indexfile.ArchiveURI( path )
-                                                                localFile = uri.split( '/' )[ - 1]
-                                                                if checksum.__str__() in dup_records:
-                                                                        continue
-                                                                install_file.write( uri + ' ' + localFile + ' ' + size + ' ' + checksum + "\n" )
-                                                                dup_records.append( checksum.__str__() )
-                                else:
-                                        AptInst.Upgrade("upgrade", ReleaseType=Str_SetInstallRelease)
+                                AptInst.Upgrade("upgrade", ReleaseType=Str_SetInstallRelease)
                         elif Str_SetUpgradeType == "dist-upgrade":
                                 AptInst.Upgrade("dist-upgrade", ReleaseType=Str_SetInstallRelease)
                         elif Str_SetUpgradeType == "dselect-upgrade":
@@ -1896,11 +1863,6 @@ def setter(args):
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
         
-class AptPython:
-        def __init__( self ):
-                if PythonApt:
-                        self.cache = apt.Cache()
-                
 def main():
         '''Here we basically do the sanity checks, some validations
         and then accordingly call the corresponding functions.
