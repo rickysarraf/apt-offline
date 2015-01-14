@@ -2,3 +2,8 @@
 2. Bump version in AptOfflineCore.py
 3. Execute make "html" target to create html docs from the manpage
 4. Perhaps now, go and do a `git tag -s rel_name`
+
+
+
+git archive --format=zip --prefix=apt-offline/ v1.6  > /tmp/apt-offline-1.6.zip
+git archive --format=tar.gz --prefix=apt-offline/ v1.6  > /tmp/apt-offline-1.6.tar.gz
