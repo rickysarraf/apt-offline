@@ -1,3 +1,24 @@
+apt-offline (1.6) experimental; urgency=medium
+
+  * [2a4a7f1] Don't abuse exception handlers.
+    Thanks to R-Sommer
+  * [afc51b3] MIME type for a deb package.
+    Thanks to R-Sommer
+  * [ec2d539] Also include debian-archive-keyring.
+    Thanks to Hans-Christoph Steiner (Closes: #748082)
+  * [dc602ac] Update MIME type for .gpg
+  * [c4f9b71] Cycle through possible apt keyrings.
+    Thanks to Paul Wise (Closes: #747163)
+  * [de0fe4d] Clarify manpage for install
+  * [b5e1075] Update manpage with some doc about argparse positional
+    values to arguments
+  * [c22d64d] Port is data type integer.
+    Thanks to Roland Sommer
+  * [67edebe] autodetect release name
+  * [5803141] Disable python-apt support
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Wed, 14 Jan 2015 15:34:45 +0530
+
 apt-offline (1.5) unstable; urgency=medium
 
   * New Major Release
