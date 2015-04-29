@@ -1,3 +1,9 @@
+apt-offline (1.6.1) unstable; urgency=medium
+
+  * Upload to unstable
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Wed, 29 Apr 2015 13:24:51 +0530
+
 apt-offline (1.6) experimental; urgency=medium
 
   * [2a4a7f1] Don't abuse exception handlers.
