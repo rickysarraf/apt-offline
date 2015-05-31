@@ -456,7 +456,7 @@ def fetcher( args ):
                 if os.path.isfile(Str_GetArg):
                         log.msg( "\nFetching APT Data\n\n" )
                 else:
-                        log.err( "File not present. Check path.\n" )
+                        log.err( "File %s not present. Check path.\n" % (Str_GetArg) )
                         sys.exit( 1 )
                         
         if Str_CacheDir is not None:
