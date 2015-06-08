@@ -3,4 +3,4 @@ branches:
         - master
 script:
         - ./apt-offline get tests/set-update.uris --threads 5
-        - ./tests/apt-offline-tests.sh
+        - sudo ./tests/apt-offline-tests.sh
