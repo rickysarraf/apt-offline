@@ -2,5 +2,5 @@ language: python
 branches:
         - master
 script:
-        - ./apt-offline get tests/set-update.uris --threads 5
-        - sudo ./tests/apt-offline-tests.sh
+        - ./apt-offline get tests/set-update.uris --threads 5 1>/dev/null
+        - sudo ./tests/apt-offline-tests.sh 1>/dev/null
