@@ -1,0 +1,4 @@
+language: python
+branches:
+        - master
+script: ./apt-offline get tests/set-update.uris --threads 5
