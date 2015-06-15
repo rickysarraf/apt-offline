@@ -1504,6 +1504,7 @@ def setter(args):
         Str_SetUpgradeType = args.upgrade_type
         Bool_SrcBuildDep = args.src_build_dep
         Bool_TestWindows = args.simulate
+        Bool_SetAptReinstall = args.set_aptreinstall
         
         if Bool_SetUpdate is False and Bool_SetUpgrade is False and List_SetInstallPackages is None \
         and List_SetInstallSrcPackages is None:
@@ -1518,10 +1519,11 @@ def setter(args):
                 Bool_SetUpgrade = True
                 
         class AptManip:
-                def __init__(self, OutputFile, Simulate=False, AptType="apt"):
+                def __init__(self, OutputFile, Simulate=False, AptType="apt", AptReinstall=False):
                         
                         self.WriteTo = OutputFile
                         self.Simulate = Simulate
+                        self.AptReinstall = AptReinstall
                         
                         if AptType == "apt":
                                 self.apt = "apt-get"
@@ -1762,12 +1764,20 @@ def setter(args):
                         
                         if self.ReleaseType is not None:
                                 os.environ['__apt_set_install_release'] = self.ReleaseType
-                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release install $__apt_set_install_packages >> $__apt_set_install' ) is False:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                cmd = '/usr/bin/apt-get -qq --print-uris %s -t $__apt_set_install_release install $__apt_set_install_packages >> $__apt_set_install'
                         else:
                                 #FIXME: Find a more Pythonic implementation
-                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris install $__apt_set_install_packages >> $__apt_set_install' ) is False:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                cmd = '/usr/bin/apt-get -qq --print-uris %s install $__apt_set_install_packages >> $__apt_set_install'
+
+                        reinstall = ''
+                        if self.AptReinstall:
+                                reinstall = '--reinstall'
+
+                        cmd = cmd % reinstall
+
+                        if self.__ExecSystemCmd(cmd) is False:
+                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+
                                         
                 def __AptInstallSrcPackages(self, SrcPackageList=None, ReleaseType=None, BuildDependency=False):
                         
@@ -1818,7 +1828,7 @@ def setter(args):
         if PythonApt is True:
                 AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="python-apt")
         else:
-                AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt")
+                AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt", AptReinstall=Bool_SetAptReinstall)
         
         if Bool_SetUpdate:
                 if platform.system() in supported_platforms:
@@ -1912,6 +1922,9 @@ def main():
         parser_set.add_argument("--install-src-packages", dest="set_install_src_packages", help="Source Packages that need to be installed",
                           action="store", type=str, nargs='*', metavar="SOURCE PKG")
         
+        parser_set.add_argument("--aptreinstall", dest="set_aptreinstall", help="Generate signatures of packages that already installed in system",
+                          action="store_true")
+
         parser_set.add_argument("--src-build-dep", dest="src_build_dep", help="Install Build Dependency packages for requested source packages",
                                 action="store_true")
         
