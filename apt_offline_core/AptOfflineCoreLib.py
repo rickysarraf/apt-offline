@@ -28,7 +28,6 @@ import string
 import urllib2
 import Queue
 import threading
-import subprocess
 import socket
 import tempfile
 import random   # to generate random directory names for installing multiple bundles in on go
@@ -1505,7 +1504,6 @@ def setter(args):
         Str_SetUpgradeType = args.upgrade_type
         Bool_SrcBuildDep = args.src_build_dep
         Bool_TestWindows = args.simulate
-        Bool_SetAptReinstall = args.set_apt_reinstall
         
         if Bool_SetUpdate is False and Bool_SetUpgrade is False and List_SetInstallPackages is None \
         and List_SetInstallSrcPackages is None:
@@ -1520,11 +1518,10 @@ def setter(args):
                 Bool_SetUpgrade = True
                 
         class AptManip:
-                def __init__(self, OutputFile, Simulate=False, AptType="apt", AptReinstall=False):
+                def __init__(self, OutputFile, Simulate=False, AptType="apt"):
                         
                         self.WriteTo = OutputFile
                         self.Simulate = Simulate
-                        self.AptReinstall = AptReinstall
                         
                         if AptType == "apt":
                                 self.apt = "apt-get"
@@ -1748,11 +1745,6 @@ def setter(args):
                         
                         self.package_list = ''
                         self.ReleaseType = ReleaseType
-
-                        reinstall_opt = ''
-                        if self.AptReinstall:
-                                reinstall_opt = '--reinstall'
-                                PackageList = self.__AptGetInstalledPackagesDeps(PackageList)
                         
                         for pkg in PackageList:
                                 self.package_list += pkg + ', '
@@ -1767,48 +1759,16 @@ def setter(args):
                         # For details look at the parser.add_option line above.
                         for x in PackageList:
                                 os.environ['__apt_set_install_packages'] += x + ' '
-
+                        
                         if self.ReleaseType is not None:
                                 os.environ['__apt_set_install_release'] = self.ReleaseType
-                                cmd = '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release install $__apt_set_install_packages >> $__apt_set_install'
+                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release install $__apt_set_install_packages >> $__apt_set_install' ) is False:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
                         else:
                                 #FIXME: Find a more Pythonic implementation
-                                cmd = '/usr/bin/apt-get -qq --print-uris %s install $__apt_set_install_packages >> $__apt_set_install' % reinstall_opt
-
-                        if self.__ExecSystemCmd(cmd) is False:
-                                log.err( "FATAL: Something is wrong with the apt system.\n" )
-
-                def __AptGetInstalledPackagesDeps(self, package_list):
-                        result = set()
-
-                        cmd = '/usr/bin/apt-get clean && /usr/bin/apt-get autoremove -y'
-                        if self.__ExecSystemCmd(cmd) is False:
-                                log.err( "FATAL: Something is wrong with the apt system.\n" )
-
-                        for pkg in package_list:
-                                result.add(pkg)
-                                if self.__AptIsPackageInstalled(pkg):
-                                        result.update(self.__AptGetPackageActualDeps(pkg))
-
-                        return list(result)
-
-                def __AptGetPackageActualDeps(self, name):
-                        cmd = '/usr/bin/apt-get remove %s --assume-no | tr "\n" " " | sed -E "s/(.*no longer required:)(.+)(Use \'apt-get autoremove\'.*)/\\2/"'
-                        try:
-                                out = subprocess.check_output(cmd % name, shell=True)
-                                return out.split()
-                        except subprocess.CalledProcessError:
-                                return []
-
-
-                def __AptIsPackageInstalled(self, name):
-                        cmd = '/usr/bin/dpkg -s %s | grep "install ok installed"' % name
-                        try:
-                                out = subprocess.check_output(cmd, shell=True)
-                                return not len(out) == 0
-                        except subprocess.CalledProcessError:
-                                return False
-
+                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris install $__apt_set_install_packages >> $__apt_set_install' ) is False:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                        
                 def __AptInstallSrcPackages(self, SrcPackageList=None, ReleaseType=None, BuildDependency=False):
                         
                         self.package_list = ''
@@ -1858,7 +1818,7 @@ def setter(args):
         if PythonApt is True:
                 AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="python-apt")
         else:
-                AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt", AptReinstall=Bool_SetAptReinstall)
+                AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt")
         
         if Bool_SetUpdate:
                 if platform.system() in supported_platforms:
@@ -1952,9 +1912,6 @@ def main():
         parser_set.add_argument("--install-src-packages", dest="set_install_src_packages", help="Source Packages that need to be installed",
                           action="store", type=str, nargs='*', metavar="SOURCE PKG")
         
-        parser_set.add_argument("--apt-reinstall", dest="set_apt_reinstall", help="Generate signatures of packages that already installed in system",
-                          action="store_true")
-
         parser_set.add_argument("--src-build-dep", dest="src_build_dep", help="Install Build Dependency packages for requested source packages",
                                 action="store_true")
         
@@ -2032,9 +1989,6 @@ def main():
         
         
         args = parser.parse_args()
-
-        if args.set_apt_reinstall and args.set_install_release:
-                exit('apt-offline set: error: --release should not be used with --apt-reinstall')
         
         try:
                 # Global opts
