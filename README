@@ -2,19 +2,14 @@
 
 
 apt-offline -- An Offline Package Manager 
-(C) 2005 - 2010 Ritesh Raj Sarraf <rrs@researchut.com> 
+(C) 2005 - 2015 Ritesh Raj Sarraf
 
 
-apt-offline is an offline package management tool written in the Python Programming Language.
-This program, as of now, is intended for people using Debian (And Debian based) systems. 
+apt-offline is an offline package management tool written in the Python Programming Language. This program, as of now, is intended for people using Debian (And Debian based) systems. 
 
-This program allows leveraging the power of Debian (more precisely apt-get) onto a completely
-disconnected machine. Most of the people with slow or no internet connection (most of those in
-India/Nepal/Pakistan and nearby countries) have not considered using Debian (or Debian derived
-distributions) because Debian's real taste is experienced when it is connected to the internet.
+This program allows leveraging the power of Debian (more precisely apt-get) onto a completely disconnected machine. Most of the people with slow or no internet connection (most of those in India/Nepal/Pakistan and nearby countries) have not considered using Debian (or Debian derived distributions) because Debian's real taste is experienced when it is connected to the internet.
 
-This utility is an attempt in making that problem eradicate. I hope this utility comes to use to you.
-I'd be eager to hear your comments/suggestions. Feel free to drop an email at rrs _AT_ researchut |DOT| com
+This utility is an attempt in making that problem eradicate. I hope this utility comes of use to you. I'd be eager to hear your comments/suggestions. Feel free to drop an email at rrs _AT_ researchut |DOT| com
 
 
 
