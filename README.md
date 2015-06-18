@@ -1,10 +1,8 @@
 # Travis CI Testcase Status [![Build Status](https://travis-ci.org/rickysarraf/apt-offline.svg?branch=master)] (https://travis-ci.org/rickysarraf/apt-offline)
 
-https://travis-ci.org/rickysarraf/apt-offline.svg?branch=master
 
-
-apt-offline -- An Offline Package Manager 
-(C) 2005 - 2015 Ritesh Raj Sarraf
+## apt-offline -- An Offline Package Manager 
+## (C) 2005 - 2015 Ritesh Raj Sarraf
 
 
 apt-offline is an offline package management tool written in the Python Programming Language. This program, as of now, is intended for people using Debian (And Debian based) systems. 
@@ -19,6 +17,6 @@ This utility is an attempt in making that problem eradicate. I hope this utility
 
 
 
-Dedication
-----------
+## Dedication
+## ----------
 This software is dedicated to the memory of my father Santosh Kumar Sarraf. We miss you a lot.
