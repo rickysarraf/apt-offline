@@ -1,4 +1,6 @@
-# Travis CI Testcase Status [![Build Status](https://travis-ci.org/rickysarraf/apt-offline.svg?branch=master)](https://travis-ci.org/rickysarraf/apt-offline)
+# Travis CI Testcase Status [![Build Status](https://travis-ci.org/rickysarraf/apt-offline.svg?branch=master)] (https://travis-ci.org/rickysarraf/apt-offline)
+
+https://travis-ci.org/rickysarraf/apt-offline.svg?branch=master
 
 
 apt-offline -- An Offline Package Manager 
