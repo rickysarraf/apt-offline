@@ -1793,7 +1793,10 @@ def setter(args):
                         return list(result)
 
                 def __AptGetPackageActualDeps(self, name):
-                        cmd = '/usr/bin/apt-get remove %s --assume-no | tr "\n" " " | sed -E "s/(.*no longer required:)(.+)(Use \'apt-get autoremove\'.*)/\\2/"'
+                        cmd = ('LANG=en_US.UTF-8 /usr/bin/apt-get remove %s --assume-no | '
+                               'tr "\n" " " | '
+                               'grep "no longer required" | '
+                               'sed -E "s/(.*no longer required:)(.+)(Use \'apt-get autoremove\'.*)/\\2/"')
                         try:
                                 out = subprocess.check_output(cmd % name, shell=True)
                                 return out.split()
@@ -1801,7 +1804,7 @@ def setter(args):
                                 return []
 
                 def __AptIsPackageInstalled(self, name):
-                        cmd = '/usr/bin/dpkg -s %s | grep "install ok installed"' % name
+                        cmd = 'LANG=en_US.UTF-8 /usr/bin/dpkg -s %s | grep "install ok installed"' % name
                         try:
                                 out = subprocess.check_output(cmd, shell=True)
                                 return not len(out) == 0
