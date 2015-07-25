@@ -29,6 +29,11 @@ import zipfile
 import bz2
 import gzip
 
+import errno
+
+import warnings
+
+
 # LZMA is not native to Python in 2.x
 modLZMA = True
 try:
@@ -362,7 +367,7 @@ class Archiver:
         
         def compress_the_file( self, zip_file_name, files_to_compress ):
                 '''Condenses all the files into one single file for easy transfer'''
-        
+
                 try:
                         if self.lock:
                                 self.ZipLock.acquire( True )
@@ -379,8 +384,24 @@ class Archiver:
                         except IOError:
                             fileOpened = False
                 if fileOpened: #Supported from Python 2.5 ??
-                        filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )                        
-                        filename.close()
+
+                        #INFO: We could get duplicate files being writted to the zip archive.
+                        # See explanation below in the exception
+                        warnings.filterwarnings('error')
+
+                        try:
+                            filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )
+                        except OSError, e:
+                            if e.errno == errno.ENOENT:
+                                #INFO: We could be here, because in another thread (amd64), it completed, i.e. wrote to the archive and removed
+                                # And by the time this thread got a chance, the file was deleted by the previous thread
+                                #
+                                # A more ideal fix will be to check for files_to_compress's presence in zipfile at this stage
+                                print "Ignoring err: Possibly multiarch package %s\n" % (files_to_compress)
+                        except UserWarning, e:
+                                print "Ignoring err type %s\n" % (e.args)
+                        finally:
+                                filename.close()
         
                         if self.lock:
                                 self.ZipLock.release()
