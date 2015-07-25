@@ -379,17 +379,8 @@ class Archiver:
                         except IOError:
                             fileOpened = False
                 if fileOpened: #Supported from Python 2.5 ??
-                        try:
-                                filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )                        
-                                filename.close()
-                        except UserWarning:
-                                ''' We could have multiple packages referring to the same bug report. Thus here, We get and error like:
-                                Downloading gcc-4.9 4.9.1-14 - 5 MiB                               
-                                /home/rrs/devel/apt-offline/apt-offline/apt_offline_core/AptOfflineLib.py:386: UserWarning: Duplicate name: 'libstdc++6.140201.__apt__bug__report'
-                                  filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )
-                                 21 / 35 items: [########                  /home/rrs/devel/apt-offline/apt-offline/apt_offline_core/AptOfflineLib.py:386: UserWarning: Duplicate name: 'libstdc++6.701941.__apt__bug__report'
-                                  filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )
-                                libstdc++6 4.9.1-14 done. '''
+                        filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )                        
+                        filename.close()
         
                         if self.lock:
                                 self.ZipLock.release()
