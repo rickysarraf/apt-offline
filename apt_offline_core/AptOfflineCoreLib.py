@@ -672,6 +672,10 @@ def fetcher( args ):
                                                                         log.verbose("%s copied to local cache directory %s.%s\n" % (pkgFile, Str_CacheDir, LINE_OVERWRITE_MID) )
                                                                 except shutil.Error:
                                                                         log.verbose("Couldn't copy %s to %s.%s\n" % (pkgFile, Str_CacheDir, LINE_OVERWRITE_FULL) )
+                                                                except IOError:
+                                                                        # If the underneath file system in mounted read-only, we can't write to it irrespective of dir permissions
+                                                                        # IOError: [Errno 30] Read-only file system:
+                                                                        log.verbose( "Str_CacheDir %s is not writeable. Is it read-only ??\n" % ( Str_CacheDir ) )
                                                         else:
                                                                 log.verbose("cache_dir %s is not writeable. Skipping copy to it.\n" % (Str_CacheDir) )
                                                         
@@ -744,6 +748,10 @@ def fetcher( args ):
                                                                         log.verbose( "%s copied to local cache directory %s.%s\n" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_MID ) )
                                                                 except shutil.Error:
                                                                         log.verbose( "%s already available in %s. Skipping copy!!!%s\n" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_MID ) )
+                                                                except IOError:
+                                                                        # If the underneath file system in mounted read-only, we can't write to it irrespective of dir permissions
+                                                                        # IOError: [Errno 30] Read-only file system:
+                                                                        log.verbose( "Str_CacheDir %s is not writeable. Is it read-only ??\n" % ( Str_CacheDir ) )
                                                         else:
                                                                 log.verbose( "Str_CacheDir %s is not writeable. Skipping copy to it.\n" % ( Str_CacheDir ) )
                                     
