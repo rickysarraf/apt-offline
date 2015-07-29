@@ -617,9 +617,12 @@ def fetcher( args ):
                         
                         #INFO: find_first_match() returns False or a file name with absolute path
                         full_file_path = func(Str_CacheDir, pkgFile)
+                        
                         #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
                         if full_file_path != False:
                                 
+                                #INFO: When we copy the payload from the local cache, we need to update the progressbar
+                                # Hence we are doing it explicitly for local cache found files
                                 FetcherInstance.addItem(download_size)
                                 
                                 # We'll first check for its md5 checksum
@@ -710,10 +713,6 @@ def fetcher( args ):
                                                 else:
                                                         log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                             
-                                        #FIXME: Don't know why this was really required. If this has no changes, delete it.
-                                        #file = full_file_path.split("/")
-                                        #file = file[len(file) - 1]
-                                        #file = download_path + "/" + file
                                         if Str_BundleFile:
                                                 if FetcherInstance.compress_the_file( Str_BundleFile, pkgFile ) != True:
                                                         log.err( "Couldn't archive %s to file %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
