@@ -619,6 +619,9 @@ def fetcher( args ):
                         full_file_path = func(Str_CacheDir, pkgFile)
                         #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
                         if full_file_path != False:
+                                
+                                FetcherInstance.addItem(download_size)
+                                
                                 # We'll first check for its md5 checksum
                                 if Bool_DisableMD5Check is False:
                                         if FetcherInstance.CheckHashDigest(full_file_path, checksum) is True:
@@ -636,6 +639,7 @@ def fetcher( args ):
                                                 if Str_BundleFile:
                                                         if FetcherInstance.compress_the_file(Str_BundleFile, full_file_path) is True:
                                                                 log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
+                                                                FetcherInstance.updateValue(download_size)
                                                         else:
                                                                 log.err("Couldn't add %s to archive %s.%s\n" % (pkgFile, Str_BundleFile, LINE_OVERWRITE_MID) )
                                                                 sys.exit(1)
@@ -645,6 +649,7 @@ def fetcher( args ):
                                                         try:
                                                                 shutil.copy(full_file_path, Str_DownloadDir)
                                                                 log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
+                                                                FetcherInstance.updateValue(download_size)
                                                         except shutil.Error:
                                                                 log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (pkgFile, Str_DownloadDir, LINE_OVERWRITE_MID) )
                                                         
@@ -730,7 +735,8 @@ def fetcher( args ):
                                                                 if ( x.startswith( PackageName ) and x.endswith( apt_bug_file_format ) ):
                                                                         shutil.move( x, Str_DownloadDir )
                                                                         log.verbose( "Moved %s file to %s folder.%s\n" % ( x, Str_DownloadDir, LINE_OVERWRITE_MID ) )
-                                
+                                        FetcherInstance.updateValue(download_size)
+                                FetcherInstance.completed()
                         else:
                                 #INFO: This block gets executed if the file is not found in local Str_CacheDir or Str_CacheDir is None
                                 # We go ahead and try to download it from the internet
