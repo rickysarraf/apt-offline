@@ -937,7 +937,12 @@ def installer( args ):
                                 self.gpgv=gpgv
                                 
                         if keyring is None:
-                                self.opts="--keyring /etc/apt/trusted.gpg --ignore-time-conflict"
+                                #INFO: For backwards compatibility
+                                if os.path.exists("/etc/apt/trusted.gpg"):
+                                    self.opts="--keyring /etc/apt/trusted.gpg --ignore-time-conflict"
+                                else:
+                                    self.opts="--ignore-time-conflict"
+
                                 for eachPath in self.defaultPaths:
                                         if os.path.exists(eachPath):
                                                 for eachGPG in os.listdir(eachPath):
