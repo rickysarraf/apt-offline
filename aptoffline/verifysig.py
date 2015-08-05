@@ -1,16 +1,18 @@
 import gnupg
 import os
+import logging
 
 class VerifySignature :
     default_path = ['/etc/apt/trusted.gpg.d', '/usr/share/keyring']
 
     def __init__(self, keyring=None):
+        self.log = logging.getLogger('apt-offline')
         keyring_files = []
         if not keyring:
             for path in self.default_path:
                 if os.path.exists(path):
                     for key in os.listdir(path):
-                        # Add verbose logging
+                        self.log.DEBUG("Adding {} to the apt-offline keyring.".format(key))
                         keyring_files.append(os.path.join(path, key))
         else:
             keyring_files = keyring
@@ -25,10 +27,11 @@ class VerifySignature :
     
     def detached_sign_verify (self,  signature_file, signed_file):
         if not os.access(signature_file, os.F_OK):
-            #log.err("{} is bad. Can't proceed".format(sign_file))
+            self.log.ERROR("{} is bad. Can't \
+            proceed".format(signature_file)) 
             return False
         if not os.access(signed_file, os.F_OK):
-            #log.err("{} is bad. Can't proceed.".format(signed_file))
+            self.log.ERROR("{} is bad. Can't proceed.".format(signed_file))
             return False
 
         with open(signature_file,"rb") as sfp:
