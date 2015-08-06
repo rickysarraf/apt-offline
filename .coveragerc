@@ -1,0 +1,6 @@
+[run]
+branch = True
+source = aptoffline
+
+[report]
+ignore_errors = False
