@@ -1,6 +1,7 @@
 [run]
+omit = aptoffline/tests/*
 branch = True
 source = aptoffline
 
 [report]
-ignore_errors = False
+ignore_errors = True
