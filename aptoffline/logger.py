@@ -1,5 +1,4 @@
 import logging
-import sys
 from logutils.colorize import ColorizingStreamHandler
 
 
