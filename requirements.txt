@@ -1,0 +1,2 @@
+logutils
+python-gnupg
