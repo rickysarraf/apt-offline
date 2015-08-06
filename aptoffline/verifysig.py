@@ -13,8 +13,9 @@ class VerifySignature:
             for path in self.default_path:
                 if os.path.exists(path):
                     for key in os.listdir(path):
-                        self.log.debug("Adding {} to the apt-offline \
-                        keyring.".format(key))
+                        self.log.debug(
+                            "Adding {} to the apt-offline keyring."
+                            .format(key))
                         keyring_files.append(os.path.join(path, key))
         else:
             self.log.debug("User provided keyring: {}".format(keyring))
