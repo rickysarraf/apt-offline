@@ -69,7 +69,7 @@ class ProgressBar(object):
             self.display()
 
         def display(self):
-            print("\r%3s / %3s items: {}\r".format(self.complete,
+            print("\r{:3} / {:3} items: {}\r".format(self.complete,
                                                    self.items,
                                                    self))
 
@@ -77,7 +77,7 @@ class ProgressBar(object):
             # compute display fraction
             percentFilled = (self.value - self.min) / self.span
             widthFilled = int(self.width * percentFilled + 0.5)
-            return "[{}{}] %5.1f%% of %s".format("#"*widthFilled,
+            return "[{}{}] {:5.1f}%% of {}".format("#"*widthFilled,
                                                  " "*(self.width -
                                                       widthFilled),
                                                  (percentFilled*100.0),
@@ -89,6 +89,6 @@ class ProgressBar(object):
                 size = size / 1024
                 if size > 1024:
                     size = size / 1024
-                    return "%d GiB".format(size)
-                return "%d MiB".format(size)
-            return "%d KiB".format(size)
+                    return "{} GiB".format(size)
+                return "{} MiB".format(size)
+            return "{} KiB".format(size)
