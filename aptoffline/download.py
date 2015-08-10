@@ -70,19 +70,19 @@ class ProgressBar(object):
 
         def display(self):
             print("\r{:3} / {:3} items: {}\r".format(self.complete,
-                                                   self.items,
-                                                   self))
+                                                     self.items,
+                                                     self))
 
         def __str__(self):
             # compute display fraction
             percentFilled = (self.value - self.min) / self.span
             widthFilled = int(self.width * percentFilled + 0.5)
             return "[{}{}] {:5.1f}%% of {}".format("#"*widthFilled,
-                                                 " "*(self.width -
-                                                      widthFilled),
-                                                 (percentFilled*100.0),
-                                                 self.__numStr__(
-                                                     self.max/1024))
+                                                   " "*(self.width -
+                                                        widthFilled),
+                                                   (percentFilled*100.0),
+                                                   self.__numStr__(
+                                                       self.max/1024))
 
         def __numStr__(self, size):
             if size > 1024:
