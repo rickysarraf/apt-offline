@@ -2,3 +2,4 @@ testrepository
 python-subunit
 flake8
 coverage
+coveralls
