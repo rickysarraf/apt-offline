@@ -14,5 +14,5 @@ clean:
 
 travis:
 	python setup.py testr --coverage \
-		--testr-args="--parallel --concurrency=2"
+		--testr-args="--concurrency=2"
 	flake8 aptoffline
