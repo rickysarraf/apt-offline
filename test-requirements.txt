@@ -1,3 +1,5 @@
+nose2
+nose2-cov
 testrepository
 python-subunit
 flake8
