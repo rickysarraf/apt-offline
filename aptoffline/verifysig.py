@@ -13,9 +13,8 @@ class VerifySignature:
             for path in self.default_path:
                 if os.path.exists(path):
                     for key in os.listdir(path):
-                        self.log.debug(
-                            "Adding {} to the apt-offline keyring."
-                            .format(key))
+                        self.log.debug(("Adding {} to the apt-offline"
+                                        " keyring.").format(key))
                         keyring_files.append(os.path.join(path, key))
         else:
             self.log.debug("User provided keyring: {}".format(keyring))
@@ -31,8 +30,8 @@ class VerifySignature:
 
     def detached_sign_verify(self,  signature_file, signed_file):
         if not os.access(signature_file, os.F_OK):
-            self.log.error("{} is bad. Can't \
-            proceed".format(signature_file))
+            self.log.error(("{} is bad. Can't "
+                            "proceed").format(signature_file))
             return False
         if not os.access(signed_file, os.F_OK):
             self.log.error("{} is bad. Can't proceed.".format(signed_file))
