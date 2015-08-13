@@ -28,20 +28,10 @@ class AptGet(AptOffLine):
             _cmd.append('-t')
             _cmd.append(self.release)
 
-        if type == 'upgrade':
-            self.log.debug(
-                'Generating database of files that are needed for \
-a dist-upgrade')
-            _cmd.append('dist-upgrade')
-        elif type == 'dselect-upgrade':
-            self.log.debug(
-                'Generating database of files that are needed for \
-dselect-upgrade')
-            _cmd.append('dselect-upgrade')
-        else:
-            self.log.debug(
-                'Generating database of files that are needed for an upgrade')
-            _cmd.append('upgrade')
+        self.log.info(
+            'Generating database of files that are needed for an {}'
+            .format(type))
+        _cmd.append(type)
 
         with open(self.writeto, 'w') as fd:
             self.log.debug(' '.join(_cmd))
