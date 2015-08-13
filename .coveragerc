@@ -1,5 +1,9 @@
 [run]
-omit = aptoffline/tests/*
+omit =
+  aptoffline/tests/*
+  apt_offline_core/*
+  apt_offline_gui/*
+  setup.py
 branch = True
 source = aptoffline
 
