@@ -46,7 +46,6 @@ class AptGetTest(unittest.TestCase):
         with open(self.outfile, 'r') as fd:
             self.assertEqual(fd.read(), opr)
 
-
     def test_dist_upgrade(self):
         apt = AptGet(self.outfile)
         apt.upgrade(type='dist-upgrade')
@@ -74,7 +73,7 @@ class AptGetTest(unittest.TestCase):
                                       '--print-uris',
                                       'dselect-upgrade'],
                                      universal_newlines=True)
-        with open(self.outfile,'r') as fd:
+        with open(self.outfile, 'r') as fd:
             self.assertEqual(fd.read(), op)
 
     def test_deselect_upgrade_release(self):
@@ -87,7 +86,6 @@ class AptGetTest(unittest.TestCase):
                                       universal_newlines=True)
         with open(self.outfile, 'r') as fd:
             self.assertEqual(fd.read(), opr)
-        
 
     def tearDown(self):
         import os
