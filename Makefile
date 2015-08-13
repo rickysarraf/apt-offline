@@ -13,5 +13,5 @@ clean:
 	rm -f apt-offline.html
 
 travis:
-	nose2 -C --coverage-config .coveragerc
+	nosetests -s --with-coverage --cover-package=aptoffline
 	flake8 aptoffline
