@@ -1,3 +1,5 @@
+nose
+nose-cov
 nose2
 nose2-cov
 testrepository
