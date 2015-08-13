@@ -13,6 +13,5 @@ clean:
 	rm -f apt-offline.html
 
 travis:
-	python setup.py testr --coverage \
-		--testr-args="--concurrency=2"
+	nose2 -C --coverage-config .coveragerc
 	flake8 aptoffline
