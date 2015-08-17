@@ -44,9 +44,13 @@ class AptGet(AptOffLine):
     def install_bin_packages(self, packages):
         pkgs = set(packages)
         _cmd = self._aptcmd
+
+        _cmd.append('-qq')
+        _cmd.append('install')
+
         if self.reinstall:
             _cmd.append('--reinstall')
-            pkgs.update(self._get_installed_pkg_deps(pkgs))
+            pkgs.update(list(self._get_installed_pkg_deps(pkgs)))
 
         if self.release:
             _cmd.append('-t')
@@ -74,7 +78,7 @@ class AptGet(AptOffLine):
                         stdout=subprocess.PIPE)
             tr = Popen(['tr', '\n', ' '], stdin=apt.stdout,
                        stdout=subprocess.PIPE,
-                       universal_newlines=True) 
+                       universal_newlines=True)
             apt.stdout.close()
             op, err = tr.communicate()
             if err:
@@ -84,4 +88,5 @@ class AptGet(AptOffLine):
 
             match = self._autoremove_regex.search(op)
             if match:
-                yield set(match.group('packages').strip().split())
+                for p in match.group('packages').strip().split():
+                    yield p
