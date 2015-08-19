@@ -4,10 +4,9 @@ from abc import abstractmethod
 
 class AptOffLine(object):
 
-    def __init__(self, output, type=None, reinstall=False, release=None):
+    def __init__(self, output, type=None, release=None):
         self.type = type
         self.log = logging.getLogger('apt-offline')
-        self.reinstall = reinstall
         self.release = release
         self.writeto = output
 
