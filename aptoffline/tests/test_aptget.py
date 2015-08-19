@@ -87,6 +87,29 @@ class AptGetTest(unittest.TestCase):
         with open(self.outfile, 'r') as fd:
             self.assertEqual(fd.read(), opr)
 
+    def test_install_bin_packages(self):
+        apt = AptGet(self.outfile)
+        apt.install_bin_packages(['testrepository',
+                                  'python3-subunit'])
+        op = subprocess.check_output(['apt-get', '-qq', '--print-uris',
+                                      'install', 'testrepository',
+                                      'python3-subunit'],
+                                     universal_newlines=True)
+        with open(self.outfile, 'r') as fd:
+            self.assertEqual(fd.read(), op)
+
+    def test_install_bin_packages_release(self):
+        apt = AptGet(self.outfile, release=self.release)
+        apt.install_bin_packages(['testrepository',
+                                  'python3-subunit'])
+        op = subprocess.check_output(['apt-get', '-qq', '--print-uris',
+                                      'install', '-t', self.release,
+                                      'testrepository',
+                                      'python3-subunit'],
+                                     universal_newlines=True)
+        with open(self.outfile, 'r') as fd:
+            self.assertEqual(fd.read(), op)
+
     def tearDown(self):
         import os
         os.remove(self.outfile)
