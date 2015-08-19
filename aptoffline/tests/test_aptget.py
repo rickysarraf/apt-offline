@@ -16,97 +16,92 @@ class AptGetTest(unittest.TestCase):
                                                 '-s'],
                                                universal_newlines=True).strip()
 
-    def test_update(self):
+    def perform_operation(self, operation=None, type=None,
+                          release=None, packages=None):
+        if operation not in ['update', 'upgrade',
+                             'install_bin_packages',
+                             'install_src_packages']:
+            return
         apt = AptGet(self.outfile)
-        apt.update()
-        op = subprocess.check_output(['apt-get', '-q', '--print-uris',
-                                      'update'],
-                                     universal_newlines=True)
+        quiet = '-q' if operation == 'update' else '-qq'
+        cmd = ['apt-get', quiet, '--print-uris']
+
+        if release:
+            apt.release = release
+            cmd.append('-t')
+            cmd.append(release)
+
+        # Get the function
+        func = getattr(apt, operation)
+        if operation == 'upgrade':
+            cmd.append(type)
+            func(type=type)
+        elif operation == 'update':
+            cmd.append(operation)
+            func()
+        else:
+            # install packages
+            # TODO: need to handle source packages
+            cmd.append('install')
+            cmd = cmd + packages
+            func(packages)
+
+        return subprocess.check_output(cmd, universal_newlines=True)
+
+    def test_update(self):
+        op = self.perform_operation(operation='update')
         with open(self.outfile, 'r') as fd:
             self.assertEqual(fd.read(), op)
 
     def test_normal_upgrade(self):
-        apt = AptGet(self.outfile)
-        apt.upgrade()
-        op = subprocess.check_output(['apt-get', '-qq',
-                                      '--print-uris', 'upgrade'],
-                                     universal_newlines=True)
+        op = self.perform_operation(operation='upgrade', type='upgrade')
         with open(self.outfile, 'r') as fd:
             self.assertEqual(fd.read(), op)
-        apt.release = self.release
 
     def test_normal_upgrade_release(self):
-        apt = AptGet(self.outfile, release=self.release)
-        apt.upgrade(type='upgrade')
-        opr = subprocess.check_output(['apt-get', '-qq',
-                                       '--print-uris',
-                                       '-t', self.release,
-                                       'upgrade'],
-                                      universal_newlines=True)
+        op = self.perform_operation(operation='upgrade',
+                                    type='upgrade', release=self.release)
         with open(self.outfile, 'r') as fd:
-            self.assertEqual(fd.read(), opr)
+            self.assertEqual(fd.read(), op)
 
     def test_dist_upgrade(self):
-        apt = AptGet(self.outfile)
-        apt.upgrade(type='dist-upgrade')
-        op = subprocess.check_output(['apt-get', '-qq', '--print-uris',
-                                      'dist-upgrade'],
-                                     universal_newlines=True)
+        op = self.perform_operation(operation='upgrade',
+                                    type='dist-upgrade')
         with open(self.outfile, 'r') as fd:
             self.assertEqual(fd.read(), op)
 
     def test_dist_upgrade_release(self):
-        apt = AptGet(self.outfile, release=self.release)
-        apt.upgrade(type='dist-upgrade')
-        opr = subprocess.check_output(['apt-get', '-qq',
-                                       '--print-uris',
-                                       '-t', self.release,
-                                       'dist-upgrade'],
-                                      universal_newlines=True)
+        op = self.perform_operation(operation='upgrade',
+                                    type='dist-upgrade',
+                                    release=self.release)
         with open(self.outfile, 'r') as fd:
-            self.assertEqual(fd.read(), opr)
+            self.assertEqual(fd.read(), op)
 
     def test_deselect_upgrade(self):
-        apt = AptGet(self.outfile)
-        apt.upgrade(type='dselect-upgrade')
-        op = subprocess.check_output(['apt-get', '-qq',
-                                      '--print-uris',
-                                      'dselect-upgrade'],
-                                     universal_newlines=True)
+        op = self.perform_operation(operation='upgrade',
+                                    type='dselect-upgrade')
         with open(self.outfile, 'r') as fd:
             self.assertEqual(fd.read(), op)
 
     def test_deselect_upgrade_release(self):
-        apt = AptGet(self.outfile, release=self.release)
-        apt.upgrade(type='dselect-upgrade')
-        opr = subprocess.check_output(['apt-get', '-qq',
-                                       '--print-uris',
-                                       '-t', self.release,
-                                       'dselect-upgrade'],
-                                      universal_newlines=True)
+        op = self.perform_operation(operation='upgrade',
+                                    type='dselect-upgrade',
+                                    release=self.release)
         with open(self.outfile, 'r') as fd:
-            self.assertEqual(fd.read(), opr)
+            self.assertEqual(fd.read(), op)
 
     def test_install_bin_packages(self):
-        apt = AptGet(self.outfile)
-        apt.install_bin_packages(['testrepository',
-                                  'python-subunit'])
-        op = subprocess.check_output(['apt-get', '-qq', '--print-uris',
-                                      'install', 'testrepository',
-                                      'python-subunit'],
-                                     universal_newlines=True)
+        op = self.perform_operation(operation='install_bin_packages',
+                                    packages=['testrepository',
+                                              'python-subunit'])
         with open(self.outfile, 'r') as fd:
             self.assertEqual(fd.read(), op)
 
     def test_install_bin_packages_release(self):
-        apt = AptGet(self.outfile, release=self.release)
-        apt.install_bin_packages(['testrepository',
-                                  'python-subunit'])
-        op = subprocess.check_output(['apt-get', '-qq', '--print-uris',
-                                      'install', '-t', self.release,
-                                      'testrepository',
-                                      'python-subunit'],
-                                     universal_newlines=True)
+        op = self.perform_operation(operation='install_bin_packages',
+                                    packages=['testrepository',
+                                              'python-subunit'],
+                                    release=self.release)
         with open(self.outfile, 'r') as fd:
             self.assertEqual(fd.read(), op)
 
