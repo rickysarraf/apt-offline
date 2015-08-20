@@ -14,4 +14,4 @@ clean:
 
 travis:
 	nosetests -s --with-coverage --cover-package=aptoffline
-	flake8 aptoffline
+	flake8 --max-complexity 10 aptoffline
