@@ -11,8 +11,8 @@ Vcs-Browser: http://anonscm.debian.org/gitweb/?p=apt-offline/apt-offline.git
 
 Package: apt-offline
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-argparse, python, apt, less
-Recommends: python-magic, python-soappy, debian-archive-keyring
+Depends: ${misc:Depends}, ${python:Depends}, python-argparse, python, apt, less, python-magic
+Recommends: python-soappy, debian-archive-keyring
 Description: offline APT package manager
  apt-offline is an Offline APT Package Manager.
  .
