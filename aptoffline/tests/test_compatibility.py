@@ -7,7 +7,7 @@ from aptoffline.tests.utils import resource_path, distribution_release
 from aptoffline.logger import initialize_logger
 from aptoffline.backends.aptget import AptGet
 
-py2version = re.match('(?P<2\.d\.d)(?:.*)', sys.version)
+py2version = re.match('(?P<version>2\.d\.d)(?:.*)', sys.version)
 
 
 class TestCompatibility(unittest.TestCase):
