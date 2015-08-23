@@ -3,7 +3,7 @@ import tempfile
 import subprocess
 from aptoffline.backends.aptget import AptGet
 from aptoffline.logger import initialize_logger
-from aptoffline.tests.utils import resource_path
+from aptoffline.tests.utils import resource_path, distribution_release
 
 
 class AptGetTest(unittest.TestCase):
@@ -12,9 +12,7 @@ class AptGetTest(unittest.TestCase):
         self.workdir = tempfile.mkdtemp(dir=resource_path())
         _, self.outfile = tempfile.mkstemp(dir=self.workdir)
         initialize_logger(False)
-        self.release = subprocess.check_output(['lsb_release', '-r',
-                                                '-s'],
-                                               universal_newlines=True).strip()
+        self.release = distribution_release
 
     def perform_operation(self, operation=None, type=None,
                           release=None, packages=None):
