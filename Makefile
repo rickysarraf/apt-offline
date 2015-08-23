@@ -13,5 +13,5 @@ clean:
 	rm -f apt-offline.html
 
 travis:
-	nosetests -s --with-coverage --cover-package=aptoffline
+	nosetests -s --with-coverage --cover-package=aptoffline --verbose
 	flake8 --max-complexity 10 aptoffline
