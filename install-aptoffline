@@ -1,0 +1,4 @@
+git clone --depth 1 https://github.com/rickysarraf/apt-offline upstream
+cd upstream
+git checkout -b 1.6 1.6
+python setup.py install
