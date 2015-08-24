@@ -9,10 +9,12 @@ from aptoffline.logger import initialize_logger
 from aptoffline.backends.aptget import AptGet
 
 py2version = re.match('(?P<version>2\.\d\.\d)(?:.*)', sys.version)
-apt_offline_path = os.path.join('/home/travis/virtualenv/',
-                                'python' +
-                                py2version.group('version'), 'bin',
-                                'apt-offline')
+
+if py2version:
+    apt_offline_path = os.path.join('/home/travis/virtualenv/',
+                                    'python' +
+                                    py2version.group('version'), 'bin',
+                                    'apt-offline')
 
 
 class TestCompatibility(unittest.TestCase):
