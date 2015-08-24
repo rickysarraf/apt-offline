@@ -11,10 +11,15 @@ from aptoffline.backends.aptget import AptGet
 py2version = re.match('(?P<version>2\.\d\.\d)(?:.*)', sys.version)
 
 if py2version:
-    apt_offline_path = os.path.join('/home/travis/virtualenv/',
-                                    'python' +
-                                    py2version.group('version'), 'bin',
-                                    'apt-offline')
+    # Currently we support only TOX and Travis based tests
+    if os.environ.get('TRAVIS', None):
+        apt_offline_path = os.path.join('/home/travis/virtualenv/',
+                                        'python' +
+                                        py2version.group('version'), 'bin',
+                                        'apt-offline')
+    else:
+        # We hope we apt-offline is installed on system
+        apt_offline_path = '/usr/bin/apt-offline'
 
 
 class TestCompatibility(unittest.TestCase):
