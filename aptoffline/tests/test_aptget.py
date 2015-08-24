@@ -14,8 +14,8 @@ class AptGetTest(unittest.TestCase):
         initialize_logger(False)
         self.release = distribution_release
 
-    def perform_operation(self, operation=None, type=None,
-                          release=None, packages=None):
+    def _perform_operation(self, operation=None, type=None,
+                           release=None, packages=None):
         if operation not in ['update', 'upgrade',
                              'install_bin_packages',
                              'install_src_packages']:
@@ -46,62 +46,40 @@ class AptGetTest(unittest.TestCase):
 
         return subprocess.check_output(cmd, universal_newlines=True)
 
-    def test_update(self):
-        op = self.perform_operation(operation='update')
-        with open(self.outfile, 'r') as fd:
+    def _run_tests(self, operation=None, type=None, release=None,
+                   packages=None):
+        op = self._perform_operation(operation=operation, type=type,
+                                     release=release,
+                                     packages=packages)
+        with open(self.outfile) as fd:
             self.assertEqual(fd.read(), op)
+
+    def test_update(self):
+        self._run_tests('update')
 
     def test_normal_upgrade(self):
-        op = self.perform_operation(operation='upgrade', type='upgrade')
-        with open(self.outfile, 'r') as fd:
-            self.assertEqual(fd.read(), op)
-
-    def test_normal_upgrade_release(self):
-        op = self.perform_operation(operation='upgrade',
-                                    type='upgrade', release=self.release)
-        with open(self.outfile, 'r') as fd:
-            self.assertEqual(fd.read(), op)
+        self._run_tests(operation='upgrade', type='upgrade')
+        self._run_tests(operation='upgrade', type='upgrade',
+                        release=self.release)
 
     def test_dist_upgrade(self):
-        op = self.perform_operation(operation='upgrade',
-                                    type='dist-upgrade')
-        with open(self.outfile, 'r') as fd:
-            self.assertEqual(fd.read(), op)
-
-    def test_dist_upgrade_release(self):
-        op = self.perform_operation(operation='upgrade',
-                                    type='dist-upgrade',
-                                    release=self.release)
-        with open(self.outfile, 'r') as fd:
-            self.assertEqual(fd.read(), op)
+        self._run_tests(operation='upgrade', type='dist-upgrade')
+        self._run_tests(operation='upgrade', type='dist-upgrade',
+                        release=self.release)
 
     def test_deselect_upgrade(self):
-        op = self.perform_operation(operation='upgrade',
-                                    type='dselect-upgrade')
-        with open(self.outfile, 'r') as fd:
-            self.assertEqual(fd.read(), op)
-
-    def test_deselect_upgrade_release(self):
-        op = self.perform_operation(operation='upgrade',
-                                    type='dselect-upgrade',
-                                    release=self.release)
-        with open(self.outfile, 'r') as fd:
-            self.assertEqual(fd.read(), op)
+        self._run_tests(operation='upgrade', type='dselect-upgrade')
+        self._run_tests(operation='upgrade', type='dselect-upgrade',
+                        release=self.release)
 
     def test_install_bin_packages(self):
-        op = self.perform_operation(operation='install_bin_packages',
-                                    packages=['testrepository',
-                                              'python-subunit'])
-        with open(self.outfile, 'r') as fd:
-            self.assertEqual(fd.read(), op)
-
-    def test_install_bin_packages_release(self):
-        op = self.perform_operation(operation='install_bin_packages',
-                                    packages=['testrepository',
-                                              'python-subunit'],
-                                    release=self.release)
-        with open(self.outfile, 'r') as fd:
-            self.assertEqual(fd.read(), op)
+        self._run_tests(operation='install_bin_packages',
+                        packages=['testrepository',
+                                  'python-subunit'])
+        self._run_tests(operation='install_bin_packages',
+                        packages=['testrepository',
+                                  'python-subunit'],
+                        release=self.release)
 
     def tearDown(self):
         import os
