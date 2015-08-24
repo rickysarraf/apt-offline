@@ -39,8 +39,11 @@ class AptGetTest(unittest.TestCase):
             func()
         else:
             # install packages
-            # TODO: need to handle source packages
-            cmd.append('install')
+            if operation == 'install_bin_packages':
+                cmd.append('install')
+            elif operation == 'install_src_packages':
+                cmd.append('source')
+
             cmd = cmd + packages
             func(packages)
 
@@ -79,6 +82,13 @@ class AptGetTest(unittest.TestCase):
         self._run_tests(operation='install_bin_packages',
                         packages=['testrepository',
                                   'python-subunit'],
+                        release=self.release)
+
+    def test_install_src_packages(self):
+        self._run_tests(operation='install_src_packages',
+                        packages=['bash'])
+        self._run_tests(operation='install_src_packages',
+                        packages=['bash'],
                         release=self.release)
 
     def tearDown(self):
