@@ -81,3 +81,19 @@ class TestCompatibility(unittest.TestCase):
         with open(self.module_out) as fm:
             with open(self.aptoffline_out) as fo:
                 self.assertEqual(fm.read(), fo.read())
+
+    @unittest.skipUnless(py2version, ("Current apt-offline deosn't"
+                                      "work on python3"))
+    def test_dselect_upgrade(self):
+        self.perform_operation(op='upgrade', type='dselect-upgrade')
+        self.run_aptoffline(op='set', options=['--upgrade',
+                                               '--upgrade-type',
+                                               'dselect-upgrade'])
+        with open(self.module_out) as fm:
+            with open(self.aptoffline_out) as fo:
+                self.assertEqual(fm.read(), fo.read())
+
+    def tearDown(self):
+        os.remove(self.module_out)
+        os.remove(self.aptoffline_out)
+        os.rmdir(self.workdir)
