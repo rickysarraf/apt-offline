@@ -50,5 +50,24 @@ class AptGet(AptOffLine):
             self.log.debug(' '.join(_cmd + list(pkgs)))
             check_call(_cmd + list(pkgs), stdout=fd)
 
-    def install_src_packages(self, packages, build_depends):
-        pass
+    def install_src_packages(self, packages=None, build_depends=False):
+        pkgs = set(packages)
+        _cmd = self._aptcmd
+
+        _cmd.append('-qq')
+        _cmd.append('source')
+
+        if self.release:
+            _cmd.append('-t')
+            _cmd.append(self.release)
+
+        with open(self.writeto, 'w') as fd:
+            self.log.debug(' '.join(_cmd + list(pkgs)))
+            check_call(_cmd + list(pkgs), stdout=fd)
+
+            if build_depends:
+                sindex = _cmd.index('source')
+                _cmd[sindex] = 'build-dep'
+
+                self.log.debug(' '.join(_cmd + list(pkgs)))
+                check_call(_cmd + list(pkgs), stdout=fd)
