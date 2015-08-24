@@ -1,5 +1,6 @@
 import re
 import sys
+import os
 import tempfile
 import unittest
 import subprocess
@@ -7,14 +8,18 @@ from aptoffline.tests.utils import resource_path, distribution_release
 from aptoffline.logger import initialize_logger
 from aptoffline.backends.aptget import AptGet
 
-py2version = re.match('(?P<version>2\.d\.d)(?:.*)', sys.version)
+py2version = re.match('(?P<version>2\.\d\.\d)(?:.*)', sys.version)
+apt_offline_path = os.path.join('/home/travis/virtualenv/',
+                                'python' +
+                                py2version.group('version'), 'bin',
+                                'apt-offline')
 
 
 class TestCompatibility(unittest.TestCase):
 
     def setUp(self):
         self.workdir = tempfile.mkdtemp(dir=resource_path())
-        _, self.module_out = tempfile.mkstemp(dir=self.workdir())
+        _, self.module_out = tempfile.mkstemp(dir=self.workdir)
         _, self.aptoffline_out = tempfile.mkstemp(dir=self.workdir)
         initialize_logger(True)
         self.release = distribution_release
@@ -36,13 +41,13 @@ class TestCompatibility(unittest.TestCase):
             operation(packages=packages)
 
     def run_aptoffline(self, op=None, options=None):
-        cmd = ['apt-offline']
+        cmd = ['sudo', apt_offline_path]
 
         cmd.append(op)
-        if cmd in ['set', 'get']:
+        if op in ['set', 'get']:
             cmd.append(self.aptoffline_out)
 
-        cmd = map(cmd.append, options)
+        map(cmd.append, options)
         subprocess.check_call(cmd)
 
     @unittest.skipUnless(py2version, ("Current apt-offline doesn't"
