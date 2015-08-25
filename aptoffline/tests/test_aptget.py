@@ -1,6 +1,7 @@
 import unittest
 import tempfile
 import subprocess
+import os
 from aptoffline.backends.aptget import AptGet
 from aptoffline.logger import initialize_logger
 from aptoffline.tests.utils import resource_path, distribution_release
@@ -15,7 +16,8 @@ class AptGetTest(unittest.TestCase):
         self.release = distribution_release
 
     def _perform_operation(self, operation=None, type=None,
-                           release=None, packages=None):
+                           release=None, packages=None,
+                           build_depends=False):
         if operation not in ['update', 'upgrade',
                              'install_bin_packages',
                              'install_src_packages']:
@@ -43,6 +45,21 @@ class AptGetTest(unittest.TestCase):
                 cmd.append('install')
             elif operation == 'install_src_packages':
                 cmd.append('source')
+                cmd += packages
+                op = subprocess.check_output(cmd,
+                                             universal_newlines=True)
+                if build_depends:
+                    if os.environ.get('TRAVIS', None):
+                        # Till apt 1.1~exp9 build-dep with
+                        # --print-uris needed super user privileges
+                        cmd.insert(0, 'sudo')
+
+                    sindex = cmd.index('source')
+                    cmd[sindex] = 'build-dep'
+                    op += subprocess.check_output(cmd,
+                                                  universal_newlines=True)
+                func(packages, build_depends)
+                return op
 
             cmd = cmd + packages
             func(packages)
@@ -50,10 +67,11 @@ class AptGetTest(unittest.TestCase):
         return subprocess.check_output(cmd, universal_newlines=True)
 
     def _run_tests(self, operation=None, type=None, release=None,
-                   packages=None):
+                   packages=None, build_depends=False):
         op = self._perform_operation(operation=operation, type=type,
                                      release=release,
-                                     packages=packages)
+                                     packages=packages,
+                                     build_depends=build_depends)
         with open(self.outfile) as fd:
             self.assertEqual(fd.read(), op)
 
@@ -89,6 +107,11 @@ class AptGetTest(unittest.TestCase):
                         packages=['bash'])
         self._run_tests(operation='install_src_packages',
                         packages=['bash'],
+                        release=self.release)
+        self._run_tests(operation='install_src_packages',
+                        build_depends=True, packages=['bash'])
+        self._run_tests(operation='install_src_packages',
+                        build_depends=True, packages=['bash'],
                         release=self.release)
 
     def tearDown(self):
