@@ -49,11 +49,6 @@ class AptGetTest(unittest.TestCase):
                 op = subprocess.check_output(cmd,
                                              universal_newlines=True)
                 if build_depends:
-                    if os.environ.get('TRAVIS', None):
-                        # Till apt 1.1~exp9 build-dep with
-                        # --print-uris needed super user privileges
-                        cmd.insert(0, 'sudo')
-
                     sindex = cmd.index('source')
                     cmd[sindex] = 'build-dep'
                     op += subprocess.check_output(cmd,
@@ -108,6 +103,11 @@ class AptGetTest(unittest.TestCase):
         self._run_tests(operation='install_src_packages',
                         packages=['bash'],
                         release=self.release)
+
+    @unittest.skipIf(os.environ.get('TRAVIS', None),
+                     ('Travis uses older apt which has bug with'
+                      'build-dep'))
+    def test_build_dep(self):
         self._run_tests(operation='install_src_packages',
                         build_depends=True, packages=['bash'])
         self._run_tests(operation='install_src_packages',
