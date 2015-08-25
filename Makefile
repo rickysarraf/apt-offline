@@ -13,5 +13,6 @@ clean:
 	rm -f apt-offline.html
 
 travis:
-	nosetests -s --with-coverage --cover-package=aptoffline --verbose
+	python setup.py test --coverage \
+		--coverage-package-name=aptoffline
 	flake8 --max-complexity 10 aptoffline
