@@ -59,28 +59,30 @@ class TestCompatibility(unittest.TestCase):
 
     def _run_tests(self, op=None, type=None, release=None,
                    packages=None):
+        options = None
         if op == 'update':
             self._perform_operation(op='update')
-            self._run_aptoffline(op='set', options=['--update'])
+            options = ['--update']
         elif op == 'upgrade':
             self._perform_operation(op='upgrade', type=type,
                                     release=release)
             options = ['--upgrade']
             if type and type != 'upgrade':
                 options += ['--upgrade-type', type]
-
-            if release:
-                options += ['--release', release]
-
-            self._run_aptoffline(op='set', options=options)
         elif op == 'install':
             self._perform_operation(op='install_bin_packages',
                                     packages=packages, release=release)
             options = ['--install-packages'] + packages
-            if release:
-                options += ['--release', release]
+        elif op == 'source':
+            self._perform_operation(op='install_src_packages',
+                                    packages=packages,
+                                    release=release)
+            options = ['--install-src-packages'] + packages
 
-            self._run_aptoffline(op='set', options=options)
+        if release:
+            options += ['--release', release]
+
+        self._run_aptoffline(op='set', options=options)
 
         with open(self.module_out) as fm:
             with open(self.aptoffline_out) as fo:
@@ -119,6 +121,13 @@ class TestCompatibility(unittest.TestCase):
                                                 'python-subunit'])
         self._run_tests(op='install', packages=['testrepository',
                                                 'python-subunit'],
+                        release=self.release)
+
+    @unittest.skipUnless(py2version, ("Current apt-offline deosn't"
+                                      "work on python3"))
+    def test_install_src_packages(self):
+        self._run_tests(op='source', packages=['bash'])
+        self._run_tests(op='source', packages=['bash'],
                         release=self.release)
 
     def tearDown(self):
