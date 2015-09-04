@@ -61,6 +61,11 @@ class AptOfflineTests(testtools.TestCase):
 def _run_command(cmd, newlines):
     p = Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
               stderr=subprocess.PIPE, universal_newlines=newlines)
-    streams = tuple(s.decode('latin1').strip() for s in
+    if newlines:
+        streams = p.communicate()
+    else:
+        streams = tuple(s.decode('latin1').strip() for s in
                         p.communicate())
+    for stream_contents in streams:
+        print(stream_contents)
     return (streams) + (p.returncode,)
