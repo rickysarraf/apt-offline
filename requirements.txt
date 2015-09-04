@@ -1,3 +1,4 @@
 pbr
 logutils
 python-gnupg
+-e git+https://anonscm.debian.org/git/apt/python-apt.git#egg=python-apt
