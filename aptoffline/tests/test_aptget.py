@@ -1,106 +1,79 @@
 import unittest
 import tempfile
-import subprocess
 import os
-from aptoffline.backends.aptget import AptGet
+
+from .base import AptOfflineTests
+from testtools.matchers import FileContains
 from aptoffline.logger import initialize_logger
-from aptoffline.tests.utils import resource_path, distribution_release
 
 
-class AptGetTest(unittest.TestCase):
+class AptGetTest(AptOfflineTests):
 
     def setUp(self):
-        self.workdir = tempfile.mkdtemp(dir=resource_path())
+        super(AptGetTest, self).setUp()
         _, self.outfile = tempfile.mkstemp(dir=self.workdir)
         initialize_logger(False)
-        self.release = distribution_release
 
-    def _perform_operation(self, operation=None, type=None,
-                           release=None, packages=None,
-                           build_depends=False):
-        if operation not in ['update', 'upgrade',
-                             'install_bin_packages',
-                             'install_src_packages']:
-            return
-        apt = AptGet(self.outfile)
-        quiet = '-q' if operation == 'update' else '-qq'
-        cmd = ['apt-get', quiet, '--print-uris']
-
-        if release:
-            apt.release = release
-            cmd.append('-t')
-            cmd.append(release)
-
-        # Get the function
-        func = getattr(apt, operation)
-        if operation == 'upgrade':
-            cmd.append(type)
-            func(type=type)
-        elif operation == 'update':
-            cmd.append(operation)
-            func()
-        else:
-            # install packages
-            if operation == 'install_bin_packages':
-                cmd.append('install')
-            elif operation == 'install_src_packages':
-                cmd.append('source')
-                cmd += packages
-                op = subprocess.check_output(cmd,
-                                             universal_newlines=True)
-                if build_depends:
-                    sindex = cmd.index('source')
-                    cmd[sindex] = 'build-dep'
-                    op += subprocess.check_output(cmd,
-                                                  universal_newlines=True)
-                func(packages, build_depends)
-                return op
-
-            cmd = cmd + packages
-            func(packages)
-
-        return subprocess.check_output(cmd, universal_newlines=True)
-
-    def _run_tests(self, operation=None, type=None, release=None,
+    def _run_tests(self, cmd, operation=None, type=None, release=None,
                    packages=None, build_depends=False):
-        op = self._perform_operation(operation=operation, type=type,
-                                     release=release,
-                                     packages=packages,
-                                     build_depends=build_depends)
-        with open(self.outfile) as fd:
-            self.assertEqual(fd.read(), op)
+        self.run_aptget_backend(operation, self.outfile, type,
+                                release, packages, build_depends)
+        stdout, stderr, retcode = self._run_cmd(cmd, allow_fail=False,
+                                                universal_newlines=True)
+        self.assertThat(self.outfile, FileContains(stdout))
 
     def test_update(self):
-        self._run_tests('update')
+        cmd = 'apt-get -q --print-uris update'.split()
+        self._run_tests(cmd, 'update')
 
     def test_normal_upgrade(self):
-        self._run_tests(operation='upgrade', type='upgrade')
-        self._run_tests(operation='upgrade', type='upgrade',
+        cmd1 = 'apt-get -qq --print-uris upgrade'.split()
+        self._run_tests(cmd1, operation='upgrade', type='upgrade')
+
+        cmd2 = 'apt-get -qq --print-uris -t {} upgrade'.format(self.release)
+        self._run_tests(cmd2.split(), operation='upgrade', type='upgrade',
                         release=self.release)
 
     def test_dist_upgrade(self):
-        self._run_tests(operation='upgrade', type='dist-upgrade')
-        self._run_tests(operation='upgrade', type='dist-upgrade',
-                        release=self.release)
+        cmd1 = 'apt-get -qq --print-uris dist-upgrade'.split()
+        self._run_tests(cmd1, operation='upgrade',
+                        type='dist-upgrade')
+
+        cmd2 = 'apt-get -qq --print-uris -t %s dist-upgrade' % self.release
+        self._run_tests(cmd2.split(), operation='upgrade',
+                        type='dist-upgrade', release=self.release)
 
     def test_deselect_upgrade(self):
-        self._run_tests(operation='upgrade', type='dselect-upgrade')
-        self._run_tests(operation='upgrade', type='dselect-upgrade',
-                        release=self.release)
+        cmd1 = 'apt-get -qq --print-uris dselect-upgrade'.split()
+        self._run_tests(cmd1, operation='upgrade',
+                        type='dselect-upgrade')
+        cmd2 = 'apt-get -qq --print-uris -t %s dselect-upgrade' % self.release
+        self._run_tests(cmd2.split(), operation='upgrade',
+                        type='dselect-upgrade', release=self.release)
 
     def test_install_bin_packages(self):
-        self._run_tests(operation='install_bin_packages',
-                        packages=['testrepository',
-                                  'python-subunit'])
-        self._run_tests(operation='install_bin_packages',
-                        packages=['testrepository',
-                                  'python-subunit'],
+        cmd1 = ('apt-get -qq --print-uris install '
+                'testrepository').split()
+        self._run_tests(cmd1, operation='install_bin_packages',
+                        packages=['testrepository'])
+
+        cmd2 = ('apt-get -qq --print-uris -t %s '
+                'install testrepository') % self.release
+        self._run_tests(cmd2.split(),
+                        operation='install_bin_packages',
+                        packages=['testrepository'],
                         release=self.release)
 
     def test_install_src_packages(self):
-        self._run_tests(operation='install_src_packages',
+        cmd1 = ('apt-get -qq --print-uris source '
+                'bash').split()
+        self._run_tests(cmd1, operation='install_src_packages',
                         packages=['bash'])
-        self._run_tests(operation='install_src_packages',
+
+        cmd2 = ('apt-get -qq --print-uris -t %s'
+                ' source bash') % self.release
+        self._run_tests(cmd2.split(),
+                        operation='install_src_packages',
                         packages=['bash'],
                         release=self.release)
 
@@ -108,13 +81,16 @@ class AptGetTest(unittest.TestCase):
                      ('Travis uses older apt which has bug with'
                       'build-dep'))
     def test_build_dep(self):
-        self._run_tests(operation='install_src_packages',
+        cmd1 = 'apt-get -qq --print-uris build-dep bash'.split()
+        self._run_tests(cmd1, operation='install_src_packages',
                         build_depends=True, packages=['bash'])
-        self._run_tests(operation='install_src_packages',
+
+        cmd2 = ('apt-get -qq --print-uris -t %s'
+                ' build-dep bash') % self.release
+        self._run_tests(cmd2.split(), operation='install_src_packages',
                         build_depends=True, packages=['bash'],
                         release=self.release)
 
     def tearDown(self):
-        import os
         os.remove(self.outfile)
-        os.rmdir(self.workdir)
+        super(AptGetTest, self).tearDown()
