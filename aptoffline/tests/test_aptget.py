@@ -22,6 +22,26 @@ class AptGetTest(AptOfflineTests):
                                                 universal_newlines=True)
         self.assertThat(self.outfile, FileContains(stdout))
 
+    def _run_builddep_tests(self, packages, release=None):
+        if not release:
+            cmd1 = ('apt-get -qq --print-uris source '
+                    '%s') % ' '.join(packages)
+            cmd2 = ('apt-get -qq --print-uris build-dep '
+                    '%s' % ' '.join(packages))
+        else:
+            cmd1 = ('apt-get -qq --print-uris -t %s'
+                    ' source %s') % (self.release,
+                                     ' '.join(packages))
+            cmd2 = ('apt-get -qq --print-uris -t %s '
+                    'build-dep %s') % (self.release,
+                                       ' '.join(packages))
+        so, se, ret = self._run_cmd(cmd1.split(), False, True)
+        bo, be, ret = self._run_cmd(cmd2.split(), False, True)
+        self.run_aptget_backend('install_src_packages', self.outfile,
+                                release=release, packages=packages,
+                                build_depends=True)
+        self.assertThat(self.outfile, FileContains(so + bo))
+
     def test_update(self):
         cmd = 'apt-get -q --print-uris update'.split()
         self._run_tests(cmd, 'update')
@@ -82,16 +102,9 @@ class AptGetTest(AptOfflineTests):
             self.skipTest('apt < 1.1~exp9 requires super user'
                           'privilege for build-dep even with'
                           '--print-uris')
-            
-        cmd1 = 'apt-get -qq --print-uris build-dep bash'.split()
-        self._run_tests(cmd1, operation='install_src_packages',
-                        build_depends=True, packages=['bash'])
 
-        cmd2 = ('apt-get -qq --print-uris -t %s'
-                ' build-dep bash') % self.release
-        self._run_tests(cmd2.split(), operation='install_src_packages',
-                        build_depends=True, packages=['bash'],
-                        release=self.release)
+        self._run_builddep_tests(['bash'])
+        self._run_builddep_tests(['bash'], self.release)
 
     def tearDown(self):
         os.remove(self.outfile)
