@@ -1,10 +1,10 @@
-import unittest
 import tempfile
 import os
 
 from .base import AptOfflineTests
 from testtools.matchers import FileContains
 from aptoffline.logger import initialize_logger
+from aptoffline.util import apt_version_compare
 
 
 class AptGetTest(AptOfflineTests):
@@ -77,10 +77,12 @@ class AptGetTest(AptOfflineTests):
                         packages=['bash'],
                         release=self.release)
 
-    @unittest.skipIf(os.environ.get('TRAVIS', None),
-                     ('Travis uses older apt which has bug with'
-                      'build-dep'))
     def test_build_dep(self):
+        if apt_version_compare < 0:
+            self.skipTest('apt < 1.1~exp9 requires super user'
+                          'privilege for build-dep even with'
+                          '--print-uris')
+            
         cmd1 = 'apt-get -qq --print-uris build-dep bash'.split()
         self._run_tests(cmd1, operation='install_src_packages',
                         build_depends=True, packages=['bash'])
