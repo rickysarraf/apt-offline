@@ -2,11 +2,11 @@ import re
 import sys
 import os
 import tempfile
-import unittest
-import subprocess
-from aptoffline.tests.utils import resource_path, distribution_release
+
 from aptoffline.logger import initialize_logger
-from aptoffline.backends.aptget import AptGet
+from testtools.matchers import FileContains
+from .base import AptOfflineTests
+
 
 py2version = re.match('(?P<version>2\.\d\.\d)(?:.*)', sys.version)
 
@@ -22,112 +22,87 @@ if py2version:
         apt_offline_path = '/usr/bin/apt-offline'
 
 
-class TestCompatibility(unittest.TestCase):
+class TestCompatibility(AptOfflineTests):
 
     def setUp(self):
-        self.workdir = tempfile.mkdtemp(dir=resource_path())
+        super(TestCompatibility, self).setUp()
         _, self.module_out = tempfile.mkstemp(dir=self.workdir)
         _, self.aptoffline_out = tempfile.mkstemp(dir=self.workdir)
         initialize_logger(True)
-        self.release = distribution_release
-
-    def _perform_operation(self, op=None, type=None, release=None,
-                           packages=None):
-        apt = AptGet(self.module_out)
-
-        if release:
-            apt.release = release
-
-        operation = getattr(apt, op)
-
-        if op == 'upgrade':
-            operation(type=type)
-        elif op == 'update':
-            operation()
-        else:
-            operation(packages=packages)
-
-    def _run_aptoffline(self, op=None, options=None):
-        cmd = ['sudo', apt_offline_path]
-
-        cmd.append(op)
-        if op in ['set', 'get']:
-            cmd.append(self.aptoffline_out)
-
-        map(cmd.append, options)
-        subprocess.check_call(cmd)
 
     def _run_tests(self, op=None, type=None, release=None,
-                   packages=None):
-        options = None
-        if op == 'update':
-            self._perform_operation(op='update')
-            options = ['--update']
-        elif op == 'upgrade':
-            self._perform_operation(op='upgrade', type=type,
-                                    release=release)
-            options = ['--upgrade']
-            if type and type != 'upgrade':
-                options += ['--upgrade-type', type]
-        elif op == 'install':
-            self._perform_operation(op='install_bin_packages',
-                                    packages=packages, release=release)
-            options = ['--install-packages'] + packages
-        elif op == 'source':
-            self._perform_operation(op='install_src_packages',
-                                    packages=packages,
-                                    release=release)
-            options = ['--install-src-packages'] + packages
+                   packages=None, build_depends=False):
+        self.run_aptget_backend(op, self.module_out, type, release,
+                                packages, build_depends)
+
+        options = ['set', self.aptoffline_out]
 
         if release:
             options += ['--release', release]
 
-        self._run_aptoffline(op='set', options=options)
+        if op in ['update', 'upgrade']:
+            options.append('--' + op)
+            if op == 'upgrade' and type:
+                options += ['--upgrade-type', type]
+        elif op == 'install_bin_packages':
+            options += ['--install-packages'] + packages
+        elif op == 'install_src_packages':
+            options += ['--install-src-packages'] + packages
+            if build_depends:
+                options.append('--src-build-dep')
 
-        with open(self.module_out) as fm:
-            with open(self.aptoffline_out) as fo:
-                self.assertEqual(fm.read(), fo.read())
+        self._run_cmd(['sudo', apt_offline_path] + options)
+        with open(self.aptoffline_out) as fd:
+            self.assertThat(self.module_out, FileContains(fd.read()))
 
-    @unittest.skipUnless(py2version, ("Current apt-offline doesn't"
-                                      "work on python3"))
     def test_update(self):
+        if not py2version:
+            self.skipTest(("Current apt-offline doesn't"
+                           "work on python3"))
         self._run_tests(op='update')
 
-    @unittest.skipUnless(py2version, ("Current apt-offline deosn't"
-                                      "work on python3"))
     def test_upgrade(self):
+        if not py2version:
+            self.skipTest(("Current apt-offline doesn't"
+                           "work on python3"))
         self._run_tests(op='upgrade', type='upgrade')
         self._run_tests(op='upgrade', type='upgrade',
                         release=self.release)
 
-    @unittest.skipUnless(py2version, ("Current apt-offline deosn't"
-                                      "work on python3"))
     def test_dist_upgrade(self):
+        if not py2version:
+            self.skipTest(("Current apt-offline doesn't"
+                           "work on python3"))
         self._run_tests(op='upgrade', type='dist-upgrade')
         self._run_tests(op='upgrade', type='dist-upgrade',
                         release=self.release)
 
-    @unittest.skipUnless(py2version, ("Current apt-offline deosn't"
-                                      "work on python3"))
     def test_dselect_upgrade(self):
+        if not py2version:
+            self.skipTest(("Current apt-offline doesn't"
+                           "work on python3"))
         self._run_tests(op='upgrade', type='dselect-upgrade')
         self._run_tests(op='upgrade', type='dselect-upgrade',
                         release=self.release)
 
-    @unittest.skipUnless(py2version, ("Current apt-offline deosn't"
-                                      "work on python3"))
     def test_install_bin_packages(self):
-        self._run_tests(op='install', packages=['testrepository',
-                                                'python-subunit'])
-        self._run_tests(op='install', packages=['testrepository',
-                                                'python-subunit'],
+        if not py2version:
+            self.skipTest(("Current apt-offline doesn't"
+                           "work on python3"))
+        self._run_tests(op='install_bin_packages',
+                        packages=['testrepository',
+                                  'python-subunit'])
+        self._run_tests(op='install_bin_packages',
+                        packages=['testrepository',
+                                  'python-subunit'],
                         release=self.release)
 
-    @unittest.skipUnless(py2version, ("Current apt-offline deosn't"
-                                      "work on python3"))
     def test_install_src_packages(self):
-        self._run_tests(op='source', packages=['bash'])
-        self._run_tests(op='source', packages=['bash'],
+        if not py2version:
+            self.skipTest(("Current apt-offline doesn't"
+                           "work on python3"))
+        self._run_tests(op='install_src_packages', packages=['bash'])
+        self._run_tests(op='install_src_packages', packages=['bash'],
                         release=self.release)
 
     def tearDown(self):
