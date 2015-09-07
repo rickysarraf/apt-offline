@@ -1,9 +1,6 @@
 machine:
   python:
-    version:
-     - 2.7.9
-     - 3.3.3
-     - 3.4.2
+    version: 3.4.2
 dependencies:
  pre:
    - sudo apt-get update
