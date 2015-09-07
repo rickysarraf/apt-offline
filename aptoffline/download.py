@@ -1,10 +1,10 @@
 import sys
-import signal
+from signal import signal, SIGWINCH, SIG_DFL
 import array
 
 try:
     from fcntl import ioctl
-    import termios
+    from termios import TIOCGWINSZ
 except ImportError:
     pass
 
@@ -23,7 +23,7 @@ class ProgressBar(object):
         if width is None:
             try:
                 self.handle_resize(None, None)
-                signal.signal(signal.SIGWINCH, self.handle_resize)
+                signal(SIGWINCH, self.handle_resize)
                 self.signal_set = True
             except:
                 self.width = 79  # The standard
@@ -43,7 +43,7 @@ class ProgressBar(object):
         self.complete = 0
 
     def handle_resize(self, signum, frame):
-        h, w = array('h', ioctl(self.fd, termios.TIOCGWINSZ,
+        h, w = array('h', ioctl(self.fd, TIOCGWINSZ,
                                 '\0' * 8))[:2]
         self.width = w
 
@@ -58,7 +58,7 @@ class ProgressBar(object):
         self.complete = self.complete + 1
 
         if self.signal_set:
-            signal.signal(signal.SIGWINCH, signal.SIG_DFL)
+            signal(SIGWINCH, SIG_DFL)
             self.display()
 
     def addItem(self, maxValue):
