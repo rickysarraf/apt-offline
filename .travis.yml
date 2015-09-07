@@ -8,10 +8,12 @@ branches:
   only:
     - py3-port
 install:
+  - sudo apt-get update
+  - sudo apt-get install python-dev python3-dev libapt-pkg-dev
+  - pip install -e git+https://anonscm.debian.org/git/apt/python-apt.git@0.8.3ubuntu8#egg=python-apt
   - pip install -r requirements.txt
   - pip install -r test-requirements.txt
   - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then ./install-aptoffline; fi
-  - sudo apt-get update
 script:
   - make travis
 after_success: coveralls
