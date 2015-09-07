@@ -108,4 +108,4 @@ class TestCompatibility(AptOfflineTests):
     def tearDown(self):
         os.remove(self.module_out)
         os.remove(self.aptoffline_out)
-        os.rmdir(self.workdir)
+        super(TestCompatibility, self).tearDown()
