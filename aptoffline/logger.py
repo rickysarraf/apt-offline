@@ -1,16 +1,16 @@
-import logging
+from logging import getLogger, Formatter, DEBUG, INFO
 from logutils.colorize import ColorizingStreamHandler
 
 
 def initialize_logger(verbose):
-    log = logging.getLogger('apt-offline')
+    log = getLogger('apt-offline')
     h = ColorizingStreamHandler()
-    formatter = logging.Formatter("%(levelname)s: %(message)s")
+    formatter = Formatter("%(levelname)s: %(message)s")
     if verbose:
-        log.setLevel(logging.DEBUG)
-        h.setLevel(logging.DEBUG)
+        log.setLevel(DEBUG)
+        h.setLevel(DEBUG)
     else:
-        log.setLevel(logging.INFO)
-        h.setLevel(logging.INFO)
+        log.setLevel(INFO)
+        h.setLevel(INFO)
     h.setFormatter(formatter)
     log.addHandler(h)

@@ -1,13 +1,14 @@
-import gnupg
 import os
-import logging
+
+from logging import getLogger
+from gnupg import GPG
 
 
 class VerifySignature:
     default_path = ['/etc/apt/trusted.gpg.d', '/usr/share/keyring']
 
     def __init__(self, keyring=None):
-        self.log = logging.getLogger('apt-offline')
+        self.log = getLogger('apt-offline')
         keyring_files = []
         if not keyring:
             for path in self.default_path:
@@ -20,8 +21,8 @@ class VerifySignature:
             self.log.debug("User provided keyring: {}".format(keyring))
             keyring_files = keyring
 
-        self.gpg = gnupg.GPG(keyring=keyring_files,
-                             options='--ignore-time-conflict')
+        self.gpg = GPG(keyring=keyring_files,
+                       options='--ignore-time-conflict')
 
     def is_valid(self, verified_data):
         if verified_data.username and not verified_data.key_status:
