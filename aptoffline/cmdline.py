@@ -108,7 +108,7 @@ def _setup_parser(parser, method=None, func=None):
         pass
 
 
-def main():
+def main(test_args=None):
     # Options which can be accessed even via sub-commands
     goptions = argparse.ArgumentParser(add_help=False)
     goptions.add_argument('-V', '--verbose',
@@ -136,15 +136,17 @@ def main():
     install_parser = subcommands.add_parser('install', parents=[goptions])
     _setup_parser(install_parser, method='install', func=_installer)
 
-    args = parser.parse_args()
-    print(args)
+    if test_args:
+        args = parser.parse_args(test_args)
+    else:
+        args = parser.parse_args()
+
     initialize_logger(args.verbose)
     global log
     log = logging.getLogger('apt-offline')
     try:
         args.func(args)
     except KeyboardInterrupt:
-        import sys
         sys.exit(1)
 
 
