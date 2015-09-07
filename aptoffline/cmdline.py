@@ -88,7 +88,7 @@ def _setup_parser(parser, method=None, func=None):
                                   'be installed'),
                             action='store', type=str,
                             metavar='SRCPKG')
-        parser.add_argument('--src-build-dep', action='store_true',
+        source.add_argument('--src-build-dep', action='store_true',
                             help=('Install Build dependency for'
                                   'requested source packages'))
 
