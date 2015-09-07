@@ -1,8 +1,6 @@
 machine:
   python:
-    version: 2.7.9
-    version: 3.3.3
-    version: 3.4.2
+    version: 2.7.9, 3.3.3, 3.4.2
 dependencies:
  pre:
    - sudo apt-get update
@@ -11,7 +9,7 @@ dependencies:
  override:
    - pip install -r requirements.txt
    - pip install -r test-requirements.txt
-   - pip install -e git+https://anonscm.debian.org/git/python-apt.git@0.9.3#egg=python-apt
+   - pip install -e git+https://anonscm.debian.org/git/apt/python-apt.git@0.9.3#egg=python-apt
 test:
   override:
    - make travis
