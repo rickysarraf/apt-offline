@@ -32,7 +32,7 @@ class AptOfflineTests(testtools.TestCase):
     def run_aptget_backend(self, func, outfile, type=None,
                            release=None, packages=None,
                            build_depends=False):
-        apt = AptGet(self.outfile)
+        apt = AptGet(outfile)
 
         if release:
             apt.release = release
