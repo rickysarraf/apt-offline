@@ -1,4 +1,4 @@
-import logging
+from logging import getLogger
 from abc import abstractmethod
 
 
@@ -6,7 +6,7 @@ class AptOffLine(object):
 
     def __init__(self, output, type=None, release=None):
         self.type = type
-        self.log = logging.getLogger('apt-offline')
+        self.log = getLogger('apt-offline')
         self.release = release
         self.writeto = output
 
