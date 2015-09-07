@@ -1,7 +1,10 @@
+import os
+import sys
 import argparse
 import logging
-from .util import releases
+from .util import releases, apt_version_compare
 from .logger import initialize_logger
+from .backends.aptget import AptGet
 
 
 version = '1.8-dev'
@@ -13,7 +16,37 @@ log = None
 
 
 def _setter(args):
-    pass
+    global log
+    apt = AptGet(args.sig)
+
+    # Lets get the release
+    if args.release:
+        apt.release = args.release
+
+    # Generate Update sigs if user asked for it.
+    if args.update:
+        apt.update()
+
+    # Generate upgrade sigs if user asked for it.
+    if args.upgrade:
+        apt.upgrade(args.upgrade_type)
+
+    if args.install_packages:
+        if args.src_build_dep:
+            log.warn('--src-build-dep is to be used '
+                     'with --install-src-packages, ignoring it')
+        apt.install_bin_packages(args.install_packages)
+
+    if args.install_src_packages:
+        if args.src_build_dep and apt_version_compare < 0:
+            if os.geteuid() != 0:
+                log.criticial('Due to bug in apt, we need root '
+                              'privileges to execute this operation.')
+                log.critical('Ignoring the operation, if this is not'
+                             'intended please run this operation with root privileges')
+                args.src_build_dep = False
+
+        apt.install_src_packages(args.install_src_packages, args.src_build_dep)
 
 
 def _getter(parser):
@@ -34,7 +67,8 @@ def _setup_parser(parser, method=None, func=None):
                                   ' for specified operation'),
                             action='store', type=str,
                             metavar='apt-offline.sig',
-                            default='apt-offline.sig')
+                            default='apt-offline.sig',
+                            nargs='?')
 
         parser.add_argument('--install-packages', nargs='+',
                             help='Packages to be installed',
