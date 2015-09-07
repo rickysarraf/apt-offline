@@ -1,4 +1,9 @@
-git clone --depth 1 https://github.com/rickysarraf/apt-offline upstream
-cd upstream
-git checkout -b 1.6 1.6
-python setup.py install
+pyversion=$(python -c 'import sys; print(sys.version)'|
+		   perl -0777 -nE '/(2\.\d\.\d).*?/ and print $1')
+
+if [ -n "$pyversion" ]; then
+   git clone --depth 1 https://github.com/rickysarraf/apt-offline upstream
+   cd upstream
+   git checkout -b 1.6 1.6
+   python setup.py install
+fi
