@@ -11,7 +11,8 @@ class TestSetCmd(AptOfflineTests):
     def setUp(self):
         super(TestSetCmd, self).setUp()
         initialize_logger(True)
-
+        self.addCleanup(os.chdir, os.getcwd())
+        os.chdir(self.workdir)
 
     def test_default_sigfile(self):
         main(['set','--update'])
