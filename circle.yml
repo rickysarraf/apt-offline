@@ -4,7 +4,7 @@ machine:
     version: 3.3.3
     version: 3.4.2
 dependencies:
-  pre:
+ pre:
    - sudo apt-get update
    - sudo apt-get install python-dev python3-dev libapt-pkg-dev
    - ./install-aptoffline
@@ -14,4 +14,4 @@ dependencies:
    - pip install -e git+https://anonscm.debian.org/git/python-apt.git@0.9.3#egg=python-apt
 test:
   override:
-  - make travis
+   - make travis
