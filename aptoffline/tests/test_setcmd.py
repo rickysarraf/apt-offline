@@ -17,7 +17,7 @@ class TestSetCmd(AptOfflineTests):
         _, self.sigfile = mkstemp(dir=self.workdir)
 
     def test_default_sigfile(self):
-        main(['set','--update'])
+        main(['set', '--update'])
         self.assertThat('apt-offline.sig', FileExists())
 
     def test_arbitrary_sigfile(self):
@@ -33,7 +33,6 @@ class TestSetCmd(AptOfflineTests):
         else:
             # No upgrade, this test is not needed ;-).
             self.assertEqual(os.stat(self.sigfile).st_size, 0)
-
 
     def tearDown(self):
         super(TestSetCmd, self).tearDown()

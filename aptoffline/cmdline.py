@@ -43,7 +43,8 @@ def _setter(args):
                 log.criticial('Due to bug in apt, we need root '
                               'privileges to execute this operation.')
                 log.critical('Ignoring the operation, if this is not'
-                             'intended please run this operation with root privileges')
+                             'intended please run this operation with '
+                             'root privileges')
                 args.src_build_dep = False
 
         apt.install_src_packages(args.install_src_packages, args.src_build_dep)
