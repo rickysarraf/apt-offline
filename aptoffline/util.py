@@ -16,5 +16,5 @@ def _version_apt():
     instversion = apt_pkg.Cache()['apt'].current_ver.ver_str
     return apt_pkg.version_compare(instversion, '1.1~exp9')
 
-releases = _releases()
+releases = list(_releases())
 apt_version_compare = _version_apt()
