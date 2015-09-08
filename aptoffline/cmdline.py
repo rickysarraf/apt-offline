@@ -41,7 +41,7 @@ def _setter(args):
         if args.src_build_dep and apt_version_compare < 0:
             if os.geteuid() != 0:
                 log.critical('Due to bug in apt, we need root '
-                              'privileges to execute this operation.')
+                             'privileges to execute this operation.')
                 log.critical('Ignoring the operation, if this is not'
                              'intended please run this operation with '
                              'root privileges')
