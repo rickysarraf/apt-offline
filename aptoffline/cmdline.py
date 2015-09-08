@@ -129,7 +129,7 @@ def main(test_args=None):
     parser.add_argument('-v', '--version', action='version', version=version)
     subcommands = parser.add_subparsers()
 
-    if sys.platform == 'linux':
+    if sys.platform.startswith('linux'):
         set_parser = subcommands.add_parser('set', parents=[goptions])
         _setup_parser(set_parser, method='set', func=_setter)
 
