@@ -3,7 +3,8 @@ import os
 from .base import AptOfflineTests
 from aptoffline.cmdline import main
 from aptoffline.logger import initialize_logger
-from testtools.matchers import FileExists, GreaterThan
+from aptoffline.util import releases
+from testtools.matchers import FileExists, GreaterThan, Contains
 from tempfile import mkstemp
 
 
@@ -33,6 +34,20 @@ class TestSetCmd(AptOfflineTests):
         else:
             # No upgrade, this test is not needed ;-).
             self.assertEqual(os.stat(self.sigfile).st_size, 0)
+
+    def test_release_install_option(self):
+        main(['set', '--install-packages', 'ksh', '--release',
+              releases[0]])
+        self.assertThat('apt-offline.sig', FileExists())
+        self.assertThat(os.stat('apt-offline.sig').st_size,
+                        GreaterThan(0))
+
+    def test_install_bin_builddep_option(self):
+        main(['set', '--install-packages', 'ksh', '--src-build-dep'])
+        self.assertThat(
+            self.log_details.get(
+                "pythonlogging:'apt-offline'").as_text(),
+            Contains('ignoring'))
 
     def tearDown(self):
         super(TestSetCmd, self).tearDown()
