@@ -12,6 +12,9 @@ class AptOfflineTests(testtools.TestCase):
     def setUp(self):
         super(AptOfflineTests, self).setUp()
 
+        self.log_details = self.useFixture(
+            fixtures.FakeLogger('apt-offline')).getDetails()
+
         # Capture STDOUT
         stdout = self.useFixture(
             fixtures.StringStream('stdout')).stream
@@ -21,9 +24,6 @@ class AptOfflineTests(testtools.TestCase):
         stderr = self.useFixture(
             fixtures.StringStream('stderr')).stream
         self.useFixture(fixtures.MonkeyPatch('sys.stderr', stderr))
-
-        self.log_fixture = self.useFixture(
-            fixtures.FakeLogger('apt-offline'))
 
         self.workdir = self.useFixture(fixtures.TempDir()).path
         self.release = distribution_release
