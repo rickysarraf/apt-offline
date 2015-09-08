@@ -2,7 +2,6 @@ import os
 import sys
 import argparse
 import logging
-from .util import releases, apt_version_compare
 from .logger import initialize_logger
 from .backends.aptget import AptGet
 
@@ -16,6 +15,7 @@ log = None
 
 
 def _setter(args):
+    from .util import apt_version_compare
     global log
     apt = AptGet(args.sig)
 
@@ -59,6 +59,7 @@ def _installer(parser):
 
 
 def _setup_parser(parser, method=None, func=None):
+    from .util import releases
     parser.set_defaults(func=func)
 
     if method == 'set':
@@ -128,14 +129,15 @@ def main(test_args=None):
     parser.add_argument('-v', '--version', action='version', version=version)
     subcommands = parser.add_subparsers()
 
-    set_parser = subcommands.add_parser('set', parents=[goptions])
-    _setup_parser(set_parser, method='set', func=_setter)
+    if sys.platform == 'linux':
+        set_parser = subcommands.add_parser('set', parents=[goptions])
+        _setup_parser(set_parser, method='set', func=_setter)
+
+        install_parser = subcommands.add_parser('install', parents=[goptions])
+        _setup_parser(install_parser, method='install', func=_installer)
 
     get_parser = subcommands.add_parser('get', parents=[goptions])
     _setup_parser(get_parser, method='get', func=_getter)
-
-    install_parser = subcommands.add_parser('install', parents=[goptions])
-    _setup_parser(install_parser, method='install', func=_installer)
 
     if test_args:
         args = parser.parse_args(test_args)
