@@ -56,9 +56,9 @@ class TestSetCmd(AptOfflineTests):
         self.assertThat('apt-offline.sig',
                         FileContains(matcher=Contains('.dsc')))
         self.assertThat('apt-offline.sig',
-                        FileContains(matcher=Contains('.tar.gz')))
+                        FileContains(matcher=Contains('.gz')))
         self.assertThat('apt-offline.sig',
-                        FileContains(matcher=Contains('debian.tar.')))
+                        FileContains(matcher=Contains('orig.tar.')))
 
     def test_install_src_builddep_unprivileged(self):
         if apt_version_compare >= 0:
