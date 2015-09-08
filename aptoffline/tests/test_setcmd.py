@@ -3,8 +3,10 @@ import os
 from .base import AptOfflineTests
 from aptoffline.cmdline import main
 from aptoffline.logger import initialize_logger
-from aptoffline.util import releases
-from testtools.matchers import FileExists, GreaterThan, Contains
+from aptoffline.util import releases, apt_version_compare
+from testtools.matchers import (FileExists, GreaterThan, Contains,
+                                FileContains)
+
 from tempfile import mkstemp
 
 
@@ -48,6 +50,27 @@ class TestSetCmd(AptOfflineTests):
             self.log_details.get(
                 "pythonlogging:'apt-offline'").as_text(),
             Contains('ignoring'))
+
+    def test_install_src_packages(self):
+        main(['set', '--install-src-packages', 'bash'])
+        self.assertThat('apt-offline.sig',
+                        FileContains(matcher=Contains('.dsc')))
+        self.assertThat('apt-offline.sig',
+                        FileContains(matcher=Contains('.tar.gz')))
+        self.assertThat('apt-offline.sig',
+                        FileContains(matcher=Contains('debian.tar.')))
+
+    def test_install_src_builddep_unprivileged(self):
+        if apt_version_compare >= 0:
+            self.skipTest('APT bug is solved, so no need of running'
+                          'this case')
+        main(['set', '--install-src-packages', 'bash',
+              '--src-build-dep'])
+        log_text = self.log_details.get(
+            "pythonlogging:'apt-offline'").as_text()
+        print(log_text)
+        self.assertThat(log_text, Contains('we need root'))
+        self.assertThat(log_text, Contains('Ignoring the operation,'))
 
     def tearDown(self):
         super(TestSetCmd, self).tearDown()
