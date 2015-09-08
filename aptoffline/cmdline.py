@@ -140,7 +140,8 @@ def main(test_args=None):
     if test_args:
         args = parser.parse_args(test_args)
     else:
-        args = parser.parse_args()
+        # This line will not be hit during testing.
+        args = parser.parse_args()  # pragma: no cover
 
     initialize_logger(args.verbose)
     global log
