@@ -9,3 +9,9 @@ source = aptoffline
 
 [report]
 ignore_errors = True
+exclude_lines =
+    pragma: no cover
+    raise AssertionError
+    raise NotImplemented
+    raise NotImplementedError
+    except KeyboardInterrupt
