@@ -53,7 +53,7 @@ class TestCompatibility(AptOfflineTests):
             self.assertThat(self.module_out, FileContains(fd.read()))
 
         self.truncate_file(self.module_out)
-        self._run_cmd(['sudo', 'truncate', '--size', 0,
+        self._run_cmd(['sudo', 'truncate', '-s', '0',
                        self.aptoffline_out])
 
     def test_update(self):
