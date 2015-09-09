@@ -106,6 +106,19 @@ class TestCompatibility(AptOfflineTests):
         self._run_tests(op='install_src_packages', packages=['bash'],
                         release=self.release)
 
+    def test_setcmd_compatibility(self):
+        if not py2version:
+            self.skipTest(("Current apt-offline doesn't"
+                           "work on python3"))
+
+        from aptoffline.cmdline import main
+        self._run_cmd(['sudo', apt_offline_path, 'set', self.module_out,
+                       '--update', '--upgrade'])
+        main(['set', self.aptoffline_out, '--update', '--upgrade'])
+        with open(self.module_out) as fd:
+            self.assertThat(self.aptoffline_out,
+                            FileContains(fd.read()))
+
     def tearDown(self):
         os.remove(self.module_out)
         os.remove(self.aptoffline_out)
