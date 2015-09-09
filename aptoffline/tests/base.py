@@ -3,7 +3,7 @@ import fixtures
 import subprocess
 
 from subprocess import Popen
-from .utils import resource_path, distribution_release
+from .utils import resource_path, distribution_release, py2version
 from aptoffline.backends.aptget import AptGet
 
 
@@ -28,6 +28,14 @@ class AptOfflineTests(testtools.TestCase):
         self.workdir = self.useFixture(fixtures.TempDir()).path
         self.release = distribution_release
         self.resource_path = resource_path
+
+    def truncate_file(self, filename):
+        if py2version:
+            open(filename, 'w').close()
+            return
+
+        import os
+        os.truncate(filename, 0)
 
     def run_aptget_backend(self, func, outfile, type=None,
                            release=None, packages=None,
