@@ -15,7 +15,7 @@ class AptGet(AptOffLine):
     def update(self):
         self.log.info(('Generating database of files that are '
                        'needed for an update.'))
-        with open(self.writeto, 'w') as fd:
+        with open(self.writeto, 'a') as fd:
             check_call(self._aptcmd + ['-q', 'update'], stdout=fd)
             # TODO: Do we need __FixAptSigs from old apt-offline?.
 
@@ -31,7 +31,7 @@ class AptGet(AptOffLine):
                        'needed for an {}').format(type))
         _cmd.append(type)
 
-        with open(self.writeto, 'w') as fd:
+        with open(self.writeto, 'a') as fd:
             self.log.debug(' '.join(_cmd))
             check_call(_cmd, stdout=fd)
 
@@ -46,7 +46,7 @@ class AptGet(AptOffLine):
             _cmd.append('-t')
             _cmd.append(self.release)
 
-        with open(self.writeto, 'w') as fd:
+        with open(self.writeto, 'a') as fd:
             self.log.debug(' '.join(_cmd + list(pkgs)))
             check_call(_cmd + list(pkgs), stdout=fd)
 
@@ -61,7 +61,7 @@ class AptGet(AptOffLine):
             _cmd.append('-t')
             _cmd.append(self.release)
 
-        with open(self.writeto, 'w') as fd:
+        with open(self.writeto, 'a') as fd:
             self.log.debug(' '.join(_cmd + list(pkgs)))
             check_call(_cmd + list(pkgs), stdout=fd)
 
