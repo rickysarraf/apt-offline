@@ -634,7 +634,7 @@ def fetcher( args ):
                                                 if Bool_BugReports:
                                                         log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                         if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
-                                                                log.verbose("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                                                log.success("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                                 bug_fetched = True
                                                         else:
                                                                 log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
@@ -691,7 +691,7 @@ def fetcher( args ):
                                                         if Bool_BugReports:
                                                                 log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                                                 if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
-                                                                        log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                                        log.success( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                                 else:
                                                                         log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                         if Str_BundleFile:
@@ -708,7 +708,7 @@ def fetcher( args ):
                                         if Bool_BugReports:
                                                 log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                                 if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
-                                                        log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                        log.success( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                         bug_fetched = True
                                                 else:
                                                         log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
@@ -763,7 +763,7 @@ def fetcher( args ):
                                                         if Bool_BugReports:
                                                                 log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                                                 if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
-                                                                        log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                                        log.success( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                                 else:
                                                                         log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                     
@@ -783,7 +783,7 @@ def fetcher( args ):
                                                 if Bool_BugReports:
                                                         log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                                         if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
-                                                                log.verbose( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                                log.success( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                         else:
                                                                 log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                 
