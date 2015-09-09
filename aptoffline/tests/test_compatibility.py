@@ -1,14 +1,11 @@
-import re
-import sys
 import os
 import tempfile
 
 from aptoffline.logger import initialize_logger
 from testtools.matchers import FileContains
 from .base import AptOfflineTests
+from .utils import py2version
 
-
-py2version = re.match('(?P<version>2\.\d\.\d)(?:.*)', sys.version)
 
 if py2version:
     # Currently we support only TOX and Travis based tests
