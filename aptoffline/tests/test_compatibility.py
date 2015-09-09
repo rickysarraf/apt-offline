@@ -52,6 +52,9 @@ class TestCompatibility(AptOfflineTests):
         with open(self.aptoffline_out) as fd:
             self.assertThat(self.module_out, FileContains(fd.read()))
 
+        self.truncate_file(self.module_out)
+        self.truncate_file(self.aptoffline_out)
+
     def test_update(self):
         if not py2version:
             self.skipTest(("Current apt-offline doesn't"
