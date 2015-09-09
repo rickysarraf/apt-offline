@@ -21,6 +21,7 @@ class AptGetTest(AptOfflineTests):
         stdout, stderr, retcode = self._run_cmd(cmd, allow_fail=False,
                                                 universal_newlines=True)
         self.assertThat(self.outfile, FileContains(stdout))
+        os.truncate(self.outfile, 0)
 
     def _run_builddep_tests(self, packages, release=None):
         if not release:
@@ -41,6 +42,7 @@ class AptGetTest(AptOfflineTests):
                                 release=release, packages=packages,
                                 build_depends=True)
         self.assertThat(self.outfile, FileContains(so + bo))
+        os.truncate(self.outfile, 0)
 
     def test_update(self):
         cmd = 'apt-get -q --print-uris update'.split()
