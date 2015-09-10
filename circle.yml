@@ -8,3 +8,6 @@ dependencies:
    - ./install-aptoffline
  override:
    - sed -i 's|debian/sid|0.9.3|' tox.ini
+test:
+ override:
+   - tox
