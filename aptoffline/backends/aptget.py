@@ -139,25 +139,25 @@ class AptGetSigParse(object):
                 self._list.append(AptGetSig(line.strip()))
 
     def __getitem__(self, index):
-        return self._list[index]
+        return self._list[index]  # pragma: no cover
 
     def __setitem__(self, index, value):
-        self._list[index] = value
+        self._list[index] = value  # pragma: no cover
 
     def __delitem__(self, index):
-        self._list.__delitem__(index)
+        self._list.__delitem__(index)  # pragma: no cover
 
     def __iter__(self):
-        return self._list.__iter__()
+        return self._list.__iter__()  # pragma: no cover
 
     def __reversed__(self):
-        return self._list.__reversed__()
+        return self._list.__reversed__()  # pragma: no cover
 
     def __contains__(self, item):
-        return self._list.__contains__(item)
+        return self._list.__contains__(item)  # pragma: no cover
 
     def __repr__(self):
-        return repr(self._list)
+        return repr(self._list)  # pragma: no cover
 
 
 class AptGetSig(object):
