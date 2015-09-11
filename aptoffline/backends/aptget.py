@@ -131,6 +131,7 @@ class AptGetSigParse(object):
     '''
 
     __slots__ = ('_list')
+
     def __init__(self, sigfile):
         self._list = []
         with open(sigfile) as fd:
@@ -167,6 +168,7 @@ class AptGetSig(object):
     """
 
     __slots__ = ('url', 'file', 'size', 'md5sum')
+
     def __init__(self, line):
         items = line.split(' ')
 
@@ -181,5 +183,5 @@ class AptGetSig(object):
     def __repr__(self):
         if hasattr(self, 'md5sum'):
             return "'{}' {} {} MD5Sum:{}".format(self.url, self.file,
-                                             self.size, self.md5sum)
+                                                 self.size, self.md5sum)
         return "'{}' {} {}".format(self.url, self.file, self.size)

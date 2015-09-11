@@ -21,7 +21,7 @@ class TestAptGetSigParse(AptOfflineTests):
             self.addDetail('sigitem', text_content(repr(item)))
             self.assertEqual(item.size, '0')
             self.assertFalse(hasattr(item, 'md5sum'))
-        
+
     def test_nonupdate_sigparse(self):
         parser = AptGetSigParse(os.path.join(self.sigparse_dir,
                                              'apt-offline.sig'))
@@ -29,6 +29,6 @@ class TestAptGetSigParse(AptOfflineTests):
             self.addDetail('sigitem', text_content(repr(item)))
             self.assertThat(int(item.size), GreaterThan(0))
             self.assertTrue(hasattr(item, 'md5sum'))
-        
+
     def tearDown(self):
         super(TestAptGetSigParse, self).tearDown()
