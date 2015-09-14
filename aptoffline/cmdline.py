@@ -71,18 +71,19 @@ def _setup_parser(parser, method=None, func=None):
                             metavar='apt-offline.sig',
                             default='apt-offline.sig',
                             nargs='?')
-
-        parser.add_argument('--install-packages', nargs='+',
-                            help='Packages to be installed',
-                            action='store', type=str, metavar='PKG')
-        parser.add_argument('--update', action='store_true',
-                            help=('Generate signature to '
-                                  'update APT database'))
         parser.add_argument('--release', action='store',
                             metavar='release_name', choices=releases,
                             type=str,
                             help=('Distribution release from which'
                                   ' packages are to be installed.'))
+        parser.add_argument('--update', action='store_true',
+                            help=('Generate signature to '
+                                  'update APT database'))
+
+        install_group = parser.add_argument_group('Install operations')
+        install_group.add_argument('--install-packages', nargs='+',
+                            help='Packages to be installed',
+                            action='store', type=str, metavar='PKG')
 
         source = parser.add_argument_group('Source operations')
         source.add_argument('--install-src-packages', nargs='+',
