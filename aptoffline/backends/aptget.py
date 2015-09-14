@@ -159,6 +159,9 @@ class AptGetSigParse(object):
     def __repr__(self):
         return repr(self._list)  # pragma: no cover
 
+    def __len__(self):
+        return self._list.__len__()
+
 
 class AptGetSig(object):
     """Object representing single line of signature file
