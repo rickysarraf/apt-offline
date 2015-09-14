@@ -181,7 +181,7 @@ class AptGetSig(object):
 
         # Only if its not update database there will be md5sum
         if len(items) > 3:
-            self.md5sum = items[3].split('MD5Sum:')
+            self.md5sum = items[3].split('MD5Sum:')[1]
 
     def __repr__(self):
         if hasattr(self, 'md5sum'):
