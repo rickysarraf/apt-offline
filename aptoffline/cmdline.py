@@ -82,8 +82,8 @@ def _setup_parser(parser, method=None, func=None):
 
         install_group = parser.add_argument_group('Install operations')
         install_group.add_argument('--install-packages', nargs='+',
-                            help='Packages to be installed',
-                            action='store', type=str, metavar='PKG')
+                                   help='Packages to be installed',
+                                   action='store', type=str, metavar='PKG')
 
         source = parser.add_argument_group('Source operations')
         source.add_argument('--install-src-packages', nargs='+',
