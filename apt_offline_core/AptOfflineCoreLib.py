@@ -423,8 +423,6 @@ def fetcher( args ):
         Str_BundleFile = args.bundle_file
         Str_ProxyHost = args.proxy_host
         Str_ProxyPort = args.proxy_port
-        #Bool_GetUpdate = args.get_update
-        #Bool_GetUpgrade = args.get_upgrade
         Bool_BugReports = args.deb_bugs
         global guiTerminateSignal
         
@@ -704,6 +702,9 @@ def fetcher( args ):
                                                                 else:
                                                                         log.verbose( "%s added to archive %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                                         os.unlink( os.path.join( Str_DownloadDir, pkgFile ) )
+                                                        
+                                                        # Add to progressbar
+                                                        FetcherInstance.updateValue(download_size)
                                 #INFO: You're and idiot.
                                 # You should NOT disable md5checksum for any files
                                 else:
@@ -799,6 +800,9 @@ def fetcher( args ):
                                                                 os.unlink( os.path.join( Str_DownloadDir, pkgFile ) )
                                     
                                                 log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
+                                        
+                                        # Add to progressbar
+                                        FetcherInstance.updateValue(download_size)
                                 else:
                                         errlist.append( PackageName )
                                         
@@ -814,6 +818,7 @@ def fetcher( args ):
                                                 else:
                                                         log.verbose("%s added to archive %s.%s\n" % (pkgFile, Str_BundleFile, LINE_OVERWRITE_FULL) )
                                                         os.unlink(os.path.join(Str_DownloadDir, pkgFile) )
+                                        FetcherInstance.updateValue(download_size)
                                         return True
                                 else:
                                         return False
