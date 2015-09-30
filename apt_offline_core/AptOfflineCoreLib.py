@@ -309,6 +309,9 @@ class GenericDownloadFunction():
                                 errfunc(504, errstring.reason, url)
                         else:
                                 errfunc(errstring.errno, errstring.reason, url)
+                except httplib.BadStatusLine:
+                        #INFO: See Python Bug: https://bugs.python.org/issue8823
+                        log.err("BadStatusLine exception: Python Bug 8823")
                 except IOError, e:
                         if hasattr(e, 'reason'):
                                 log.err("%s\n" % (e.reason))
