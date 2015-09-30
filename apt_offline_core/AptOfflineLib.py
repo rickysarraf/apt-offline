@@ -72,12 +72,16 @@ except ImportError:
 class Checksum:
         
         def HashMessageDigestAlgorithms( self, checksum, HashType, file ):
-                data = open( file, 'rb' )
-                if HashType == "sha256":
-                        Hash = self.sha256( data )
-		elif HashType == "md5" or HashType == "md5sum":
-                        Hash = self.md5( data )
-                else: Hash = None
+                
+                try:
+                        data = open( file, 'rb' )
+                        if HashType == "sha256":
+                                Hash = self.sha256( data )
+                        elif HashType == "md5" or HashType == "md5sum":
+                                Hash = self.md5( data )
+                        else: Hash = None
+                except IOError:
+                        return False
                 data.close()
                 
                 if Hash == checksum:
