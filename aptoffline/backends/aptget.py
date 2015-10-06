@@ -170,7 +170,7 @@ class AptGetSig(object):
     apt-get command with --print-uris option.
     """
 
-    __slots__ = ('url', 'file', 'size', 'md5sum')
+    __slots__ = ('url', 'file', 'size', 'checksum_type', 'checksum')
 
     def __init__(self, line):
         items = line.split(' ')
@@ -181,10 +181,12 @@ class AptGetSig(object):
 
         # Only if its not update database there will be md5sum
         if len(items) > 3:
-            self.md5sum = items[3].split('MD5Sum:')[1]
+            self.checksum_type, self.checksum = items[3].split(':')
 
     def __repr__(self):
-        if hasattr(self, 'md5sum'):
-            return "'{}' {} {} MD5Sum:{}".format(self.url, self.file,
-                                                 self.size, self.md5sum)
+        if hasattr(self, 'checksum'):
+            return "'{}' {} {} {}:{}".format(self.url, self.file,
+                                             self.size,
+                                             self.checksum_type,
+                                             self.checksum)
         return "'{}' {} {}".format(self.url, self.file, self.size)
