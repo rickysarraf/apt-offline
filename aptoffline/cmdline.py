@@ -105,7 +105,52 @@ def _setup_parser(parser, method=None, func=None):
                              default='upgrade')
     elif method == 'get':
         # Write options for get subcommands here
-        pass
+        parser.add_argument('sig',
+                            help='Get apt-offline data',
+                            action='store', type=str,
+                            metavar='apt-offline.sig',default='apt-offline.sig',
+                            nargs='?')
+
+        parser.add_argument('-s', '--cache-dir',
+                            help='Cache folder to search for the package',
+                            action='store', type=str,
+                            metavar='CACHE_DIR')
+        parser.add_argument('--bug-reports',
+                            help='Fetch bug reports from Debian BTS',
+                            action='store_true')
+
+        exclusive = parser.add_mutually_exclusive_group(required=True)
+        exclusive.add_argument('-d', '--download-dir',
+                            help='Folder to save files to',
+                            type=str, metavar='DOWNLOAD_DIR')
+        exclusive.add_argument('--bundle',
+                            help='Archive file to contain downloaded files',
+                            acton='store', type=str,
+                            metavar='apt-offline-bundle.zip')
+
+        socket = parser.add_argument_group('Socket options')
+        socket.add_argument('--socket-timeout',
+                            help='Set socket timeout',
+                            action='store', metavar='SOCKET TIMEOUT')
+
+        proxy = parser.add_argument_group('Proxy options')
+        proxy.add_argument('--proxy-host',
+                           help='Proxy Host to use',
+                           type=str, metavar='PROXY HOST')
+        proxy.add_argument('--proxy-port',
+                           help='Proxy port number to use', type=int,
+                           metavar='PROXY PORT')
+
+        parallel = parser.add_argument_group('Parallelism')
+        parallel.add_argument('-t', '--threads',
+                           help='Number of threads to spawn',
+                           action='store', metavar='NUMTHREADS',
+                           defaultlt=2, type=int)
+
+        integrity = parser.add_argument_group('Integrity option')
+        integrity.add_argument('--no-checksum',
+                               help='Do not validate checksum of '
+                               'downloaded file', action='store_true')
     else:
         # write options for install subcommands here
         pass
