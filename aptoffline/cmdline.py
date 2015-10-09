@@ -51,7 +51,39 @@ def _setter(args):
 
 
 def _getter(parser):
-    pass
+    global log
+    if not os.path.exists(parser.sig):
+        log.fatal('{} is not present, please check the'
+                  'path.'.format(parser.sig))
+        sys.exit(1)
+
+    log.info('Fetching APT Data\n')
+    cache_dir = None
+    if not os.path.isdir(parser.cache_dir):
+        log.warn('Cache dir {} is incorrect. Did you give the full'
+                 'path?'.format(parser.cache_dir))
+    else:
+        cache_dir = os.path.abspath(parser.cache_dir)
+
+    download_dir = None
+    if parser.download_dir:
+        if not os.access(parser.download_dir, os.W_OK):
+            # path is provided but doesn't exist create it
+            try:
+                os.umask(0002)
+                os.mkdir(parser.download_dir)
+            except:
+                log.error("Could not create directory: %s" %
+                          parser.download_dir)
+                sys.exit(1)
+        download_dir = os.path.abspath(parser.download_dir)
+    else:
+        # TODO: create temporary directory? We made download_dir or
+        # bundle_file as mandatory so this should not be required.
+        pass
+
+    if parser.bundle_file:
+        pass
 
 
 def _installer(parser):
