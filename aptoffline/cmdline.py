@@ -70,7 +70,7 @@ def _getter(parser):
         if not os.access(parser.download_dir, os.W_OK):
             # path is provided but doesn't exist create it
             try:
-                os.umask(0002)
+                os.umask(0o0002)
                 os.mkdir(parser.download_dir)
             except:
                 log.error("Could not create directory: %s" %
@@ -140,7 +140,8 @@ def _setup_parser(parser, method=None, func=None):
         parser.add_argument('sig',
                             help='Get apt-offline data',
                             action='store', type=str,
-                            metavar='apt-offline.sig',default='apt-offline.sig',
+                            metavar='apt-offline.sig',
+                            default='apt-offline.sig',
                             nargs='?')
 
         parser.add_argument('-s', '--cache-dir',
@@ -153,12 +154,12 @@ def _setup_parser(parser, method=None, func=None):
 
         exclusive = parser.add_mutually_exclusive_group(required=True)
         exclusive.add_argument('-d', '--download-dir',
-                            help='Folder to save files to',
-                            type=str, metavar='DOWNLOAD_DIR')
+                               help='Folder to save files to',
+                               type=str, metavar='DOWNLOAD_DIR')
         exclusive.add_argument('--bundle',
-                            help='Archive file to contain downloaded files',
-                            acton='store', type=str,
-                            metavar='apt-offline-bundle.zip')
+                               help='Archive file to contain downloaded files',
+                               acton='store', type=str,
+                               metavar='apt-offline-bundle.zip')
 
         socket = parser.add_argument_group('Socket options')
         socket.add_argument('--socket-timeout',
@@ -175,9 +176,9 @@ def _setup_parser(parser, method=None, func=None):
 
         parallel = parser.add_argument_group('Parallelism')
         parallel.add_argument('-t', '--threads',
-                           help='Number of threads to spawn',
-                           action='store', metavar='NUMTHREADS',
-                           defaultlt=2, type=int)
+                              help='Number of threads to spawn',
+                              action='store', metavar='NUMTHREADS',
+                              defaultlt=2, type=int)
 
         integrity = parser.add_argument_group('Integrity option')
         integrity.add_argument('--no-checksum',
