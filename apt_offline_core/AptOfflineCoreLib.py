@@ -26,6 +26,7 @@ import shutil
 import platform
 import string
 import urllib2
+import httplib
 import Queue
 import threading
 import subprocess
