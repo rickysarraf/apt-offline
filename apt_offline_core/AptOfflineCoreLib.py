@@ -1798,7 +1798,7 @@ def setter(args):
         
         
         #Instantiate Apt based on what we have. For now, fall to apt only
-        AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="python-apt")
+        AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt")
         
         if Bool_SetUpdate:
                 if platform.system() in supported_platforms:
