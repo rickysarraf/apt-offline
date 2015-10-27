@@ -51,7 +51,7 @@ except ImportError:
 try:
         import argparse
 except ImportError:
-        import AptOffline_argparse as argparse
+        from apt_offline_core import AptOffline_argparse as argparse
 
 # On Debian, python-debianbts package provides this library
 DebianBTS = True
@@ -59,12 +59,12 @@ try:
         import debianbts
 except ImportError:
         try:
-                import AptOfflineDebianBtsLib as debianbts
+                from apt_offline_core import AptOfflineDebianBtsLib as debianbts
         except ImportError:
                 DebianBTS = False
 
 try:
-        import AptOfflineMagicLib
+        from apt_offline_core import AptOfflineMagicLib
 except TypeError:
         ''' On Windows, the file magic library does not work '''
 
@@ -85,7 +85,7 @@ except ImportError:
 # Completely disable python-apt
 PythonApt = False
     
-import AptOfflineLib
+from apt_offline_core import AptOfflineLib
 
 #INFO: Set the default timeout to 30 seconds for the packages that are being downloaded.
 socket.setdefaulttimeout(30)
