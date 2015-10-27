@@ -827,7 +827,7 @@ def fetcher( args ):
                                 
                         #INFO: Handle the multiple Packages formats.
                         # See DTBS #583502
-                        SupportedFormats = ["bz2", "gz", "lzma"]
+                        SupportedFormats = ["bz2", "gz", "xz", "lzma"]
 
                         #INFO: We are a package update
                         PackageName = url
