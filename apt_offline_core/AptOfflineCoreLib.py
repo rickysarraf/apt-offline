@@ -64,9 +64,15 @@ except ImportError:
                 DebianBTS = False
 
 try:
+        MagicLib = True
         from apt_offline_core import AptOfflineMagicLib
 except TypeError:
         ''' On Windows, the file magic library does not work '''
+        MagicLib = False
+except AttributeError:
+        # On Linux, make sure libmagic is installed
+        MagicLib = False
+
 
 #INFO: added to handle GUI interaction
 guiBool = False
@@ -1179,6 +1185,10 @@ def installer( args ):
             
         def magic_check_and_uncompress( archive_file=None, filename=None):
                 
+                if MagicLib is False:
+                        log.err("Please ensure libmagic is installed\n")
+                        return False
+
                 magicMIME = AptOfflineMagicLib.open(AptOfflineMagicLib.MAGIC_MIME_TYPE)
                 magicMIME.load()
                 
