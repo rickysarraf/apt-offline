@@ -1533,7 +1533,6 @@ def setter(args):
         Str_SetUpgradeType = args.upgrade_type
         Bool_SrcBuildDep = args.src_build_dep
         Bool_TestWindows = args.simulate
-        Bool_SetAptReinstall = args.set_apt_reinstall
         
         if Bool_SetUpdate is False and Bool_SetUpgrade is False and List_SetInstallPackages is None \
         and List_SetInstallSrcPackages is None:
@@ -1735,67 +1734,18 @@ def setter(args):
                         self.package_list = ''
                         self.ReleaseType = ReleaseType
 
-                        reinstall_opt = ''
-                        if self.AptReinstall:
-                                reinstall_opt = '--reinstall'
-                                PackageList = self.__AptGetInstalledPackagesDeps(PackageList)
-
                         for pkg in PackageList:
-                                self.package_list += pkg + ', '
+                                self.package_list += pkg + ' '
+
                         log.msg( "\nGenerating database of package %s and its dependencies.\n" % (self.package_list) )
 
-                        os.environ['__apt_set_install'] = self.WriteTo
-                        os.environ['__apt_set_install_packages'] = ''                   # Build an empty variable
-
-                        #INFO: This is improper way of getting the args, the name of the packages.
-                        # But since optparse doesn't have the implementation in place at the moment, we're using it.
-                        # Once fixed, this will be changed.
-                        # For details look at the parser.add_option line above.
-                        for x in PackageList:
-                                os.environ['__apt_set_install_packages'] += x + ' '
-
                         if self.ReleaseType is not None:
-                                os.environ['__apt_set_install_release'] = self.ReleaseType
-                                cmd = '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release install $__apt_set_install_packages >> $__apt_set_install'
+                                cmd = "/usr/bin/apt-get -qq --print-uris install -t " + self.ReleaseType + " " + self.package_list
                         else:
-                                #FIXME: Find a more Pythonic implementation
-                                cmd = '/usr/bin/apt-get -qq --print-uris %s install $__apt_set_install_packages >> $__apt_set_install' % reinstall_opt
+                                cmd = "/usr/bin/apt-get -qq --print-uris install " + self.package_list
 
-                        if self.__ExecSystemCmd(cmd) is False:
+                        if self.__ExecSystemCmd(cmd, self.WriteTo) is False:
                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
-
-                def __AptGetInstalledPackagesDeps(self, package_list):
-                        result = set()
-
-                        cmd = '/usr/bin/apt-get clean && /usr/bin/apt-get autoremove -y'
-                        if self.__ExecSystemCmd(cmd) is False:
-                                log.err( "FATAL: Something is wrong with the apt system.\n" )
-
-                        for pkg in package_list:
-                                result.add(pkg)
-                                if self.__AptIsPackageInstalled(pkg):
-                                        result.update(self.__AptGetPackageActualDeps(pkg))
-
-                        return list(result)
-
-                def __AptGetPackageActualDeps(self, name):
-                        cmd = ('LANG=en_US.UTF-8 /usr/bin/apt-get remove %s --assume-no | '
-                               'tr "\n" " " | '
-                               'grep "no longer required" | '
-                               'sed -E "s/(.*no longer required:)(.+)(Use \'apt-get autoremove\'.*)/\\2/"')
-                        try:
-                                out = subprocess.check_output(cmd % name, shell=True)
-                                return out.split()
-                        except subprocess.CalledProcessError:
-                                return []
-
-                def __AptIsPackageInstalled(self, name):
-                        cmd = 'LANG=en_US.UTF-8 /usr/bin/dpkg -s %s | grep "install ok installed"' % name
-                        try:
-                                out = subprocess.check_output(cmd, shell=True)
-                                return not len(out) == 0
-                        except subprocess.CalledProcessError:
-                                return False
 
                 def __AptInstallSrcPackages(self, SrcPackageList=None, ReleaseType=None, BuildDependency=False):
                         
@@ -1940,9 +1890,6 @@ def main():
         parser_set.add_argument("--install-src-packages", dest="set_install_src_packages", help="Source Packages that need to be installed",
                           action="store", type=str, nargs='*', metavar="SOURCE PKG")
         
-        parser_set.add_argument("--apt-reinstall", dest="set_apt_reinstall", help="Generate signatures of packages that already installed in system",
-                          action="store_true")
-
         parser_set.add_argument("--src-build-dep", dest="src_build_dep", help="Install Build Dependency packages for requested source packages",
                                 action="store_true")
         
@@ -2021,9 +1968,6 @@ def main():
         
         args = parser.parse_args()
 
-        if getattr(args, 'set_apt_reinstall', None) and getattr(args, 'set_install_release', None):
-                exit('apt-offline set: error: --release should not be used with --apt-reinstall')
-        
         try:
                 # Global opts
                 Bool_Verbose = args.verbose
