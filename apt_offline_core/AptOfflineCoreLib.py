@@ -1753,34 +1753,22 @@ def setter(args):
                         self.ReleaseType = ReleaseType
                         
                         for pkg in SrcPackageList:
-                                self.package_list += pkg + ', '
+                                self.package_list += pkg + ' '
                         log.msg( "\nGenerating database of source packages %s.\n" % (self.package_list) )
                         
-                        os.environ['__apt_set_install'] = self.WriteTo
-                        os.environ['__apt_set_install_src_packages'] = ''               # Build an empty variable
-                        
-                        for x in SrcPackageList:
-                                os.environ['__apt_set_install_src_packages'] += x + ' '
-                                
                         if self.ReleaseType is not None:
-                                os.environ['__apt_set_install_release'] = self.ReleaseType
-                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release source $__apt_set_install_src_packages >> $__apt_set_install' ) is False:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                cmd = "/usr/bin/apt-get -qq --print-uris source -t " + self.ReleaseType + " " + self.package_list
+                                cmdBuildDep = "/usr/bin/apt-get -qq --print-uris build-dep -t " + self.ReleaseType + " " + self.package_list
                         else:
-                                #FIXME: Find a more Pythonic implementation
-                                if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris source $__apt_set_install_src_packages >> $__apt_set_install' )  is False:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                cmd = "/usr/bin/apt-get -qq --print-uris source " + self.package_list
+                                cmdBuildDep = "/usr/bin/apt-get -qq --print-uris build-dep " + self.package_list
                         
+                        if self.__ExecSystemCmd(cmd, self.WriteTo) is False:
+                                log.err( "FATAL: Something is wrong with the apt system.\n" )
                         if BuildDependency:
                                 log.msg("Generating Build-Dependency for source packages %s.\n" % (self.package_list) )
-                                if self.ReleaseType is not None:
-                                        os.environ['__apt_set_install_release'] = self.ReleaseType
-                                        if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris -t $__apt_set_install_release build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) is False:
-                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
-                                else:
-                                        if self.__ExecSystemCmd( '/usr/bin/apt-get -qq --print-uris build-dep $__apt_set_install_src_packages >> $__apt_set_install' ) is False:
-                                                log.err( "FATAL: Something is wrong with the apt system.\n" )
-                                
+                                if self.__ExecSystemCmd(cmdBuildDep, self.WriteTo) is False:
+                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
                 
                                 
         #FIXME: We'll use python-apt library to make it cleaner.
@@ -1796,7 +1784,7 @@ def setter(args):
         if PythonApt is True:
                 AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="python-apt")
         else:
-                AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt", AptReinstall=Bool_SetAptReinstall)
+                AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt")
         
         if Bool_SetUpdate:
                 if platform.system() in supported_platforms:
