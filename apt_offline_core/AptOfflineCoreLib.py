@@ -975,9 +975,9 @@ def installer( args ):
                                 log.err("%s is bad. Can't proceed.\n" % (signed_file) )
                                 return False
                         
-                        x = os.system("%s %s %s %s" % (self.gpgv, self.opts, signature_file, signed_file) )
-                        #TODO: Find a way to redirect std[out|err]
-                        # look at subprocess module
+                        p = subprocess.Popen([self.gpgv, self.opts, signature_file, signed_file], stdout=subprocess.PIPE)
+                        p.communicate()
+                        x = p.returncode
                         
                         if x == 0:
                                 return True
