@@ -1,3 +1,33 @@
+apt-offline (1.7) unstable; urgency=medium
+
+  [ Ritesh Raj Sarraf ]
+  * [7aacb1e] Don't abuse exception handlers.
+    Thanks to R-Sommer
+  * [d97a677] MIME type for a deb package.
+    Thanks to R-Sommer
+  * [77b6b46] Also include debian-archive-keyring.
+    Thanks to Hans-Christoph Steiner (Closes: #748082)
+  * [e2e40b2] Update MIME type for .gpg
+  * [d02c881] Cycle through possible apt keyrings.
+    Thanks to Paul Wise (Closes: #747163)
+  * [bce9015] Port is data type integer.
+    Thanks to Roland Sommer
+  * [2a60f1c] autodetect release name
+  * [165e3a4] Disable python-apt support
+  * [c95e719] Handle scenarios where underneath file system is read-only
+    (Closes: #776035)
+  * [59264c3] Update progressbar for cachedir findings
+  * [bd98544] Check if trusted.gpg is available
+  * [dbf522d] promote magic to Depends
+  * [5f881b9] Add .desktop file
+  * [8134918] Use subprocess for gpg related tasks
+  * [22ef65b] Improve __ExecSystemCmd to use subprocess
+    Thanks to Bernd Dietzel
+  * [366e7ce] Add xz to supported formats
+  * [3b72482] Install .desktop file
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Sat, 31 Oct 2015 22:01:17 +0530
+
 apt-offline (1.6.1) unstable; urgency=medium
 
   * Upload to unstable
