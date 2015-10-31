@@ -1,3 +1,3 @@
 apt-offline	/usr/bin/
 apt_offline_core/*	/usr/share/pyshared/apt_offline_core/
-bash_completion/apt-offline	/etc/bash_completion.d/
+bash_completion/apt-offline	/usr/share/bash-completion/completions/
