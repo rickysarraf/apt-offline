@@ -29,6 +29,11 @@ import zipfile
 import bz2
 import gzip
 
+import errno
+
+import warnings
+
+
 # LZMA is not native to Python in 2.x
 modLZMA = True
 try:
@@ -67,12 +72,16 @@ except ImportError:
 class Checksum:
         
         def HashMessageDigestAlgorithms( self, checksum, HashType, file ):
-                data = open( file, 'rb' )
-                if HashType == "sha256":
-                        Hash = self.sha256( data )
-		elif HashType == "md5" or HashType == "md5sum":
-                        Hash = self.md5( data )
-                else: Hash = None
+                
+                try:
+                        data = open( file, 'rb' )
+                        if HashType == "sha256":
+                                Hash = self.sha256( data )
+                        elif HashType == "md5" or HashType == "md5sum":
+                                Hash = self.md5( data )
+                        else: Hash = None
+                except IOError:
+                        return False
                 data.close()
                 
                 if Hash == checksum:
@@ -317,7 +326,7 @@ class ProgressBar( object ):
                 self.display()
         
         def display( self ):
-                print "\r%3s /%3s items: %s\r" % ( self.complete, self.items, str( self ) ),
+                print "\r%3s / %3s items: %s\r" % ( self.complete, self.items, str( self ) ),
         
         def __str__( self ):
                 #compute display fraction
@@ -362,7 +371,7 @@ class Archiver:
         
         def compress_the_file( self, zip_file_name, files_to_compress ):
                 '''Condenses all the files into one single file for easy transfer'''
-        
+
                 try:
                         if self.lock:
                                 self.ZipLock.acquire( True )
@@ -379,17 +388,24 @@ class Archiver:
                         except IOError:
                             fileOpened = False
                 if fileOpened: #Supported from Python 2.5 ??
+
+                        #INFO: We could get duplicate files being writted to the zip archive.
+                        # See explanation below in the exception
+                        warnings.filterwarnings('error')
+
                         try:
-                                filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )                        
+                            filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )
+                        except OSError, e:
+                            if e.errno == errno.ENOENT:
+                                #INFO: We could be here, because in another thread (amd64), it completed, i.e. wrote to the archive and removed
+                                # And by the time this thread got a chance, the file was deleted by the previous thread
+                                #
+                                # A more ideal fix will be to check for files_to_compress's presence in zipfile at this stage
+                                print "Ignoring err: Possibly multiarch package %s\n" % (files_to_compress)
+                        except UserWarning, e:
+                                print "Ignoring err type %s\n" % (e.args)
+                        finally:
                                 filename.close()
-                        except UserWarning:
-                                ''' We could have multiple packages referring to the same bug report. Thus here, We get and error like:
-                                Downloading gcc-4.9 4.9.1-14 - 5 MiB                               
-                                /home/rrs/devel/apt-offline/apt-offline/apt_offline_core/AptOfflineLib.py:386: UserWarning: Duplicate name: 'libstdc++6.140201.__apt__bug__report'
-                                  filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )
-                                 21 / 35 items: [########                  /home/rrs/devel/apt-offline/apt-offline/apt_offline_core/AptOfflineLib.py:386: UserWarning: Duplicate name: 'libstdc++6.701941.__apt__bug__report'
-                                  filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )
-                                libstdc++6 4.9.1-14 done. '''
         
                         if self.lock:
                                 self.ZipLock.release()

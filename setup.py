@@ -11,7 +11,7 @@ import distutils.core
 
 distutils.core.setup(
     name='apt-offline',
-    version='1.5',
+    version='1.7',
     author='Ritesh Raj Sarraf',
     author_email='rrs@researchut.com',
     url='http://apt-offline.alioth.debian.org',

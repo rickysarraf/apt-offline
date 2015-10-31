@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DISLIKED_PACKAGES="lxde icewm "
+DISLIKED_PACKAGES="lxde icewm eclipse"
 RELEASE=`lsb_release -c -s`
 URI="/tmp/set-$PPID.uris"
 CACHE_DIR="/var/cache/apt/archives"
