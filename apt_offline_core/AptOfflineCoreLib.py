@@ -1586,12 +1586,18 @@ def setter(args):
                         if self.Simulate:
                                 return True
                         else:
+                                preState = fh.tell()
                                 args = shlex.split(cmd)
                                 log.verbose("Command is: %s and args is: %s\n" % (cmd, args))
                                 p = subprocess.call(args, universal_newlines=True, stdout=fh)
                                 fh.flush()
 
                                 if p != 0:
+                                        #INFO: stderr will give us junk which our stripper() will not understand
+                                        # So, under that condition, truncate the data so that at least, our
+                                        # sig file is still usable
+                                        fh.truncate(preState)
+                                        fh.flush()
                                         return False
                                 return True
                 
