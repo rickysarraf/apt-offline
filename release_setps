@@ -1,5 +1,5 @@
 1. Complete you all code changes and test properly
-2. Bump version in AptOfflineCore.py
+2. Bump version in AptOfflineCore.py and setup.py
 3. Execute make "html" target to create html docs from the manpage
 4. Perhaps now, go and do a `git tag -s rel_name`
 
