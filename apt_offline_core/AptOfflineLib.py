@@ -23,7 +23,6 @@ import os
 import sys
 
 import threading
-import Queue
 
 import zipfile
 import bz2
