@@ -1,6 +1,6 @@
 
 ############################################################################
-#    Copyright (C) 2005, 2009 Ritesh Raj Sarraf                            #
+#    Copyright (C) 2005, 2015 Ritesh Raj Sarraf                            #
 #    rrs@researchut.com                                                    #
 #                                                                          #
 #    This program is free software; you can redistribute it and#or modify  #
