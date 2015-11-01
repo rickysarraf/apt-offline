@@ -219,6 +219,336 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                         os.unlink(fileName)
                 return True
         
+class ExecCmd:
+        def __init__(self, Simulate=False):
+                self.Simulate = Simulate
+
+        def Simulate(self):
+                if self.Simulate is True:
+                        pass
+        
+        def ExecSystemCmd(self, cmd, sigFile=None):
+                if self.Simulate:
+                        return True
+                
+                if sigFile is None: #subprocess.call does take None as an arg
+                        fh = None
+                else:
+                        try:
+                                fh = open(sigFile, 'a')
+                        except:
+                                return False
+                
+                if fh is not None:
+                        preState = fh.tell()
+                args = shlex.split(cmd)
+                log.verbose("Command is: %s and args is: %s\n" % (cmd, args))
+                
+                p = subprocess.call(args, universal_newlines=True, stdout=fh)
+                if fh is not None:
+                        fh.flush()
+
+                if p != 0:
+                        #INFO: stderr will give us junk which our stripper() will not understand
+                        # So, under that condition, truncate the data so that at least, our
+                        # sig file is still usable
+                        if fh is not None:
+                                fh.truncate(preState)
+                                fh.flush()
+                        return False
+                return True
+                
+class AptManip(ExecCmd):
+        def __init__(self, OutputFile, Simulate=False, AptType="apt", AptReinstall=False):
+                
+                ExecCmd.__init__(self, Simulate)
+                self.WriteTo = OutputFile
+                self.AptReinstall = AptReinstall
+                
+                if AptType == "apt":
+                        self.apt = "apt-get"
+                elif AptType == "aptitude":
+                        self.apt = "aptitude"
+                elif AptType == "python-apt":
+                        self.apt = "python-apt"
+                else:
+                        self.apt = "apt-get"
+                        
+        
+        def Update(self):
+                log.verbose("APT Update Method is of type: %s\n" % self.apt)
+                if self.apt == "apt-get":
+                        self.__AptGetUpdate()
+                elif self.apt == "aptitude":
+                        pass
+                elif self.apt == "python-apt":
+                        self.__PythonAptUpdate()
+                else:
+                        log.err("Method not supported")
+                        sys.exit(1)
+                        
+                        
+        def Upgrade(self, UpgradeType="upgrade", ReleaseType=None):
+                log.verbose("APT Upgrade Method is of type: %s\n" % self.apt)
+                if self.apt == "apt-get":
+                        self.__AptGetUpgrade(UpgradeType, ReleaseType)
+                elif self.apt == "aptitude":
+                        pass
+                elif self.apt == "python-apt":
+                        # Upgrade is broken in python-apt
+                        # Hence for now, redirect to apt-get
+                        self.__AptGetUpgrade(UpgradeType, ReleaseType)
+                else:
+                        log.err("Method not supported")
+                        sys.exit(1)
+        
+        def InstallPackages(self, PackageList, ReleaseType):
+                log.verbose("APT Install Method is of type: %s\n" % self.apt)
+                if self.apt == "apt-get":
+                        self.__AptInstallPackage(PackageList, ReleaseType)
+                elif self.apt == "python-apt":
+                        self.__AptInstallPackage(PackageList, ReleaseType)
+                else:
+                        log.err("Method not supported")
+                        sys.exit(1)
+                        
+        def InstallSrcPackages(self, SrcPackageList, ReleaseType, BuildDependency):
+                log.verbose("APT Install Source Method is of type: %s\n" % self.apt)
+                if self.apt == "apt-get":
+                        self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
+                elif self.apt == "python-apt":
+                        self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
+                else:
+                        log.err("Method not supported")
+                        sys.exit(1)
+                
+                
+        def __FixAptSigs(self):
+                for localFile in os.listdir(apt_update_target_path):
+                        if localFile.endswith(".gpg.reverify"):
+                                sig_file = localFile.rstrip(".reverify")
+                                log.verbose("Recovering gpg signature %s.\n" % (localFile) )
+                                localFile = os.path.join(apt_update_target_path, localFile)
+                                os.rename(localFile, os.path.join(apt_update_final_path + sig_file) )
+                                
+                                
+        def __AptGetUpdate(self):
+                log.msg("\nGenerating database of files that are needed for an update.\n")
+                if self.ExecSystemCmd("/usr/bin/apt-get -q --print-uris update", self.WriteTo) is False:
+                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                log.verbose("Calling __FixAptSigs to fix the apt sig problem")
+                self.__FixAptSigs()
+                        
+        def __AptitudeUpdate(self):
+                pass
+        
+        def __PythonAptUpdate(self):
+                log.verbose("Open file %s for write" % self.WriteTo)
+                try:
+                        writeFH = open(self.WriteTo, 'a')
+                except:
+                        log.err("Failed to open file %s for write. Exiting\n" % (self.WriteTo))
+                        sys.exit(1)
+                
+                log.msg("\nGenerating database of files that are needed for an update.\n")
+                log.verbose("\nUsing python apt interface\n")
+                
+                apt_pkg.init_config()
+                apt_pkg.init_system()
+                
+                acquire = apt_pkg.Acquire()
+                slist = apt_pkg.SourceList()
+                
+                # Read the main list
+                slist.read_main_list()
+                
+                # Add all indexes to the fetcher
+                slist.get_indexes(acquire, True)
+                
+                # Now write the URI of every item
+                for item in acquire.items:
+                        
+                        #INFO: For update files, there's no checksum present.
+                        # Also, their size is not determined.
+                        # Hence filesize is always returned '0'
+                        # And checksum is something I'm writing as ':'
+                        
+                        # We strip item.destfile because that's how apt-get had historically presented it to us
+                        destFile = item.destfile.split("/")[-1]
+
+                        writeFH.write("'" + item.desc_uri + "'" + " " + destFile + " " + str(item.filesize) + " " + ":" + "\n")
+                        log.verbose("Writing string %s %s %d %s to file %s\n" % (item.desc_uri, destFile, item.filesize, ":", self.WriteTo) )
+                        writeFH.flush()
+                writeFH.close()
+        
+        def __PythonAptUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
+                
+                log.verbose("Open file %s for write" % self.WriteTo)
+                try:
+                        writeFH = open(self.WriteTo, 'a')
+                except:
+                        log.err("Failed to open file %s for write. Exiting")
+                        sys.exit(1)
+                
+                log.msg("\nGenerating database of files that are needed for an upgrade.\n")
+                log.verbose("\nUsing python apt interface\n")
+                
+                #TODO: Right now, I don't know what to do with UpgradeType and Release Type in python-apt
+                cache = apt.Cache()
+                upgradablePkgs = filter(lambda p: p.is_upgradable, cache)
+                
+                for pkg in upgradablePkgs:
+                        pkg._lookupRecord(True)
+                        path = apt_pkg.TagSection(pkg._records.record)["Filename"]
+                        cand = pkg._depcache.get_candidate_ver(pkg._pkg)
+                        
+                        for (packagefile, i) in cand.file_list:
+                                indexfile = cache._list.find_index(packagefile)
+                                if indexfile:
+                                        uri = indexfile.archive_uri(path)
+                                        print uri
+
+        def __AptGetUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
+                self.ReleaseType = ReleaseType
+                
+                if ReleaseType is not None:
+                        cmd = "/usr/bin/apt-get -qq --print-uris -t " + self.ReleaseType + " " + UpgradeType
+                else:
+                        cmd = "/usr/bin/apt-get -qq --print-uris " + UpgradeType
+
+                log.msg("\nGenerating database of file that are needed for operation %s\n" % (UpgradeType) )
+                if self.ExecSystemCmd(cmd, self.WriteTo) is False:
+                        log.err("FATAL: Something is wrong with the APT system\n")
+                        
+        def __AptInstallPackage(self, PackageList=None, ReleaseType=None):
+
+                self.package_list = ''
+                self.ReleaseType = ReleaseType
+
+                for pkg in PackageList:
+                        self.package_list += pkg + ' '
+
+                log.msg( "\nGenerating database of package %s and its dependencies.\n" % (self.package_list) )
+
+                if self.ReleaseType is not None:
+                        cmd = "/usr/bin/apt-get -qq --print-uris install -t " + self.ReleaseType + " " + self.package_list
+                else:
+                        cmd = "/usr/bin/apt-get -qq --print-uris install " + self.package_list
+
+                if self.ExecSystemCmd(cmd, self.WriteTo) is False:
+                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+
+        def __AptInstallSrcPackages(self, SrcPackageList=None, ReleaseType=None, BuildDependency=False):
+                
+                self.package_list = ''
+                self.ReleaseType = ReleaseType
+                
+                for pkg in SrcPackageList:
+                        self.package_list += pkg + ' '
+                log.msg( "\nGenerating database of source packages %s.\n" % (self.package_list) )
+                
+                if self.ReleaseType is not None:
+                        cmd = "/usr/bin/apt-get -qq --print-uris source -t " + self.ReleaseType + " " + self.package_list
+                        cmdBuildDep = "/usr/bin/apt-get -qq --print-uris build-dep -t " + self.ReleaseType + " " + self.package_list
+                else:
+                        cmd = "/usr/bin/apt-get -qq --print-uris source " + self.package_list
+                        cmdBuildDep = "/usr/bin/apt-get -qq --print-uris build-dep " + self.package_list
+                
+                if self.ExecSystemCmd(cmd, self.WriteTo) is False:
+                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                if BuildDependency:
+                        log.msg("Generating Build-Dependency for source packages %s.\n" % (self.package_list) )
+                        if self.ExecSystemCmd(cmdBuildDep, self.WriteTo) is False:
+                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+        
+
+
+class APTVerifySigs(ExecCmd):
+        
+        def __init__(self, gpgv=None, keyring=None, Simulate=False):
+                
+                ExecCmd.__init__(self, Simulate)
+                self.defaultPaths = ['/etc/apt/trusted.gpg.d/', '/usr/share/keyrings/']
+
+                if gpgv is None:
+                        self.gpgv="/usr/bin/gpgv"
+                else:
+                        self.gpgv=gpgv
+                        
+                if keyring is None:
+                        #INFO: For backwards compatibility
+                        if os.path.exists("/etc/apt/trusted.gpg"):
+                                self.opts="--keyring /etc/apt/trusted.gpg --ignore-time-conflict"
+                        else:
+                                self.opts="--ignore-time-conflict"
+
+                        for eachPath in self.defaultPaths:
+                                if os.path.exists(eachPath):
+                                        for eachGPG in os.listdir(eachPath):
+                                                eachGPG = os.path.join(eachPath, eachGPG)
+                                                if os.path.exists(eachGPG):
+                                                        log.verbose("Adding %s to the apt-offline keyring\n" % (eachGPG) )
+                                                        self.opts += " --keyring %s " % (eachGPG)
+                                                else:
+                                                        log.err("Path for keyring is invalid: %s\n" % (eachGPG) )
+                                else:
+                                        log.err("Path for keyring is invalid: %s\n" % (eachPath) )
+                else:
+                        self.opts = "--keyring %s --ignore-time-conflict" % (keyring)
+                        
+        def VerifySig(self, signature_file, signed_file):
+                
+                if not os.access(signature_file, os.F_OK):
+                        log.err("%s is bad. Can't proceed.\n" % (signature_file) )
+                        return False
+                if not os.access(signed_file, os.F_OK):
+                        log.err("%s is bad. Can't proceed.\n" % (signed_file) )
+                        return False
+                
+                gpgvCmd = "%s %s %s %s" % (self.gpgv, self.opts, signature_file, signed_file)
+                return self.ExecSystemCmd(gpgvCmd, None)
+        
+
+class LockAPT:
+        '''Manipulate locks on the APT Database'''
+        
+        def __init__(self, lists, packages):
+                
+                try:
+                        self.listLock = os.open(lists, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
+                        self.pkgLock = os.open(packages, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
+                except:
+                        log.err("Couldn't open lockfile\n")
+                        return False
+                        
+        def lockLists(self):
+                try:
+                        fcntl.lockf(self.listLock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                        return True
+                except:
+                        return False
+                
+        def lockPackages(self):
+                try:
+                        fcntl.lockf(self.pkgLock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                        return True
+                except:
+                        return False
+                
+        def unlockLists(self):
+                try:
+                        fcntl.lockf(self.listLock, fcntl.LOCK_UN)
+                        return True
+                except:
+                        return False
+        
+        def unlockPackages(self):
+                try:
+                        fcntl.lockf(self.pkgLock, fcntl.LOCK_UN)
+                        return True
+                except:
+                        return False
+
         
 def files(root): 
         for path, folders, files in os.walk(root): 
@@ -941,97 +1271,10 @@ def fetcher( args ):
         else:
                 log.msg("\nDownloaded data to %s\n" % (Str_DownloadDir) )
         
+
+
 def installer( args ):
         
-        class APTVerifySigs:
-                
-                def __init__(self, gpgv=None, keyring=None):
-                        self.defaultPaths = ['/etc/apt/trusted.gpg.d/', '/usr/share/keyrings/']
-
-                        if gpgv is None:
-                                self.gpgv="/usr/bin/gpgv"
-                        else:
-                                self.gpgv=gpgv
-                                
-                        if keyring is None:
-                                #INFO: For backwards compatibility
-                                if os.path.exists("/etc/apt/trusted.gpg"):
-                                        self.opts="--keyring /etc/apt/trusted.gpg --ignore-time-conflict"
-                                else:
-                                        self.opts="--ignore-time-conflict"
-
-                                for eachPath in self.defaultPaths:
-                                        if os.path.exists(eachPath):
-                                                for eachGPG in os.listdir(eachPath):
-                                                        eachGPG = os.path.join(eachPath, eachGPG)
-                                                        if os.path.exists(eachGPG):
-                                                                log.verbose("Adding %s to the apt-offline keyring\n" % (eachGPG) )
-                                                                self.opts += " --keyring %s " % (eachGPG)
-                                                        else:
-                                                                log.err("Path for keyring is invalid: %s\n" % (eachGPG) )
-                                        else:
-                                                log.err("Path for keyring is invalid: %s\n" % (eachPath) )
-                        else:
-                                self.opts = "--keyring %s --ignore-time-conflict" % (keyring)
-                                
-                def VerifySig(self, signature_file, signed_file):
-                        
-                        if not os.access(signature_file, os.F_OK):
-                                log.err("%s is bad. Can't proceed.\n" % (signature_file) )
-                                return False
-                        if not os.access(signed_file, os.F_OK):
-                                log.err("%s is bad. Can't proceed.\n" % (signed_file) )
-                                return False
-                        
-                        p = subprocess.Popen([self.gpgv, self.opts, signature_file, signed_file], stdout=subprocess.PIPE)
-                        p.communicate()
-                        x = p.returncode
-                        
-                        if x == 0:
-                                return True
-                        else:
-                                return False
-                
-        
-        class LockAPT:
-                '''Manipulate locks on the APT Database'''
-                
-                def __init__(self, lists, packages):
-                        
-                        try:
-                                self.listLock = os.open(lists, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
-                                self.pkgLock = os.open(packages, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
-                        except:
-                                log.err("Couldn't open lockfile\n")
-                                return False
-                                
-                def lockLists(self):
-                        try:
-                                fcntl.lockf(self.listLock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                                return True
-                        except:
-                                return False
-                        
-                def lockPackages(self):
-                        try:
-                                fcntl.lockf(self.pkgLock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                                return True
-                        except:
-                                return False
-                        
-                def unlockLists(self):
-                        try:
-                                fcntl.lockf(self.listLock, fcntl.LOCK_UN)
-                                return True
-                        except:
-                                return False
-                
-                def unlockPackages(self):
-                        try:
-                                fcntl.lockf(self.pkgLock, fcntl.LOCK_UN)
-                                return True
-                        except:
-                                return False
                         
         # install opts
         Str_InstallArg = args.install
@@ -1129,8 +1372,6 @@ def installer( args ):
                         log.err("Is another process using it\n")
                         sys.exit(1)
 
-        if not Bool_Untrusted:
-                AptSecure = APTVerifySigs()
                 
         try:
                 if Bool_TestWindows:
@@ -1505,6 +1746,8 @@ def installer( args ):
                         log.verbose("%s %s\n" % (x, apt_update_final_path) )
                         log.msg("%s synced.\n" % (x) )
         else:
+                AptSecure = APTVerifySigs(Simulate=Bool_TestWindows)
+
                 lFileList= os.listdir(apt_update_target_path)
                 lFileList.sort()
                 lVerifiedWhitelist = []
@@ -1530,6 +1773,7 @@ def installer( args ):
                                                 partialFile = os.path.join(apt_update_target_path, final_item)
                                                 shutil.copy2(partialFile, apt_update_final_path)
                                                 log.msg("%s synced.\n" % (final_item) )
+
                         
 
 def setter(args):
@@ -1556,236 +1800,6 @@ def setter(args):
         if Default_Operation:
                 Bool_SetUpdate = True
                 Bool_SetUpgrade = True
-                
-        class AptManip:
-                def __init__(self, OutputFile, Simulate=False, AptType="apt", AptReinstall=False):
-                        
-                        self.WriteTo = OutputFile
-                        self.Simulate = Simulate
-                        self.AptReinstall = AptReinstall
-                        
-                        if AptType == "apt":
-                                self.apt = "apt-get"
-                        elif AptType == "aptitude":
-                                self.apt = "aptitude"
-                        elif AptType == "python-apt":
-                                self.apt = "python-apt"
-                        else:
-                                self.apt = "apt-get"
-                                
-                def __Simulate(self):
-                        if self.Simulate is True:
-                                pass
-                
-                def __ExecSystemCmd(self, cmd, sigFile):
-                        try:
-                            fh = open(sigFile, 'a')
-                        except:
-                            return False
-                        
-                        if self.Simulate:
-                                return True
-                        else:
-                                preState = fh.tell()
-                                args = shlex.split(cmd)
-                                log.verbose("Command is: %s and args is: %s\n" % (cmd, args))
-                                p = subprocess.call(args, universal_newlines=True, stdout=fh)
-                                fh.flush()
-
-                                if p != 0:
-                                        #INFO: stderr will give us junk which our stripper() will not understand
-                                        # So, under that condition, truncate the data so that at least, our
-                                        # sig file is still usable
-                                        fh.truncate(preState)
-                                        fh.flush()
-                                        return False
-                                return True
-                
-                def Update(self):
-                        log.verbose("APT Update Method is of type: %s\n" % self.apt)
-                        if self.apt == "apt-get":
-                                self.__AptGetUpdate()
-                        elif self.apt == "aptitude":
-                                pass
-                        elif self.apt == "python-apt":
-                                self.__PythonAptUpdate()
-                        else:
-                                log.err("Method not supported")
-                                sys.exit(1)
-                                
-                                
-                def Upgrade(self, UpgradeType="upgrade", ReleaseType=None):
-                        log.verbose("APT Upgrade Method is of type: %s\n" % self.apt)
-                        if self.apt == "apt-get":
-                                self.__AptGetUpgrade(UpgradeType, ReleaseType)
-                        elif self.apt == "aptitude":
-                                pass
-                        elif self.apt == "python-apt":
-                                # Upgrade is broken in python-apt
-                                # Hence for now, redirect to apt-get
-                                self.__AptGetUpgrade(UpgradeType, ReleaseType)
-                        else:
-                                log.err("Method not supported")
-                                sys.exit(1)
-                
-                def InstallPackages(self, PackageList, ReleaseType):
-                        log.verbose("APT Install Method is of type: %s\n" % self.apt)
-                        if self.apt == "apt-get":
-                                self.__AptInstallPackage(PackageList, ReleaseType)
-                        elif self.apt == "python-apt":
-                                self.__AptInstallPackage(PackageList, ReleaseType)
-                        else:
-                                log.err("Method not supported")
-                                sys.exit(1)
-                                
-                def InstallSrcPackages(self, SrcPackageList, ReleaseType, BuildDependency):
-                        log.verbose("APT Install Source Method is of type: %s\n" % self.apt)
-                        if self.apt == "apt-get":
-                                self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
-                        elif self.apt == "python-apt":
-                                self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
-                        else:
-                                log.err("Method not supported")
-                                sys.exit(1)
-                        
-                        
-                def __FixAptSigs(self):
-                        for localFile in os.listdir(apt_update_target_path):
-                                if localFile.endswith(".gpg.reverify"):
-                                        sig_file = localFile.rstrip(".reverify")
-                                        log.verbose("Recovering gpg signature %s.\n" % (localFile) )
-                                        localFile = os.path.join(apt_update_target_path, localFile)
-                                        os.rename(localFile, os.path.join(apt_update_final_path + sig_file) )
-                                        
-                                        
-                def __AptGetUpdate(self):
-                        log.msg("\nGenerating database of files that are needed for an update.\n")
-                        if self.__ExecSystemCmd("/usr/bin/apt-get -q --print-uris update", self.WriteTo) is False:
-                                log.err( "FATAL: Something is wrong with the apt system.\n" )
-                        log.verbose("Calling __FixAptSigs to fix the apt sig problem")
-                        self.__FixAptSigs()
-                                
-                def __AptitudeUpdate(self):
-                        pass
-                
-                def __PythonAptUpdate(self):
-                        log.verbose("Open file %s for write" % self.WriteTo)
-                        try:
-                                writeFH = open(self.WriteTo, 'a')
-                        except:
-                                log.err("Failed to open file %s for write. Exiting\n" % (self.WriteTo))
-                                sys.exit(1)
-                        
-                        log.msg("\nGenerating database of files that are needed for an update.\n")
-                        log.verbose("\nUsing python apt interface\n")
-                        
-                        apt_pkg.init_config()
-                        apt_pkg.init_system()
-                        
-                        acquire = apt_pkg.Acquire()
-                        slist = apt_pkg.SourceList()
-                        
-                        # Read the main list
-                        slist.read_main_list()
-                        
-                        # Add all indexes to the fetcher
-                        slist.get_indexes(acquire, True)
-                        
-                        # Now write the URI of every item
-                        for item in acquire.items:
-                                
-                                #INFO: For update files, there's no checksum present.
-                                # Also, their size is not determined.
-                                # Hence filesize is always returned '0'
-                                # And checksum is something I'm writing as ':'
-                                
-                                # We strip item.destfile because that's how apt-get had historically presented it to us
-                                destFile = item.destfile.split("/")[-1]
-
-                                writeFH.write("'" + item.desc_uri + "'" + " " + destFile + " " + str(item.filesize) + " " + ":" + "\n")
-                                log.verbose("Writing string %s %s %d %s to file %s\n" % (item.desc_uri, destFile, item.filesize, ":", self.WriteTo) )
-                                writeFH.flush()
-                        writeFH.close()
-                
-                def __PythonAptUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
-                        
-                        log.verbose("Open file %s for write" % self.WriteTo)
-                        try:
-                                writeFH = open(self.WriteTo, 'a')
-                        except:
-                                log.err("Failed to open file %s for write. Exiting")
-                                sys.exit(1)
-                        
-                        log.msg("\nGenerating database of files that are needed for an upgrade.\n")
-                        log.verbose("\nUsing python apt interface\n")
-                        
-                        #TODO: Right now, I don't know what to do with UpgradeType and Release Type in python-apt
-                        cache = apt.Cache()
-                        upgradablePkgs = filter(lambda p: p.is_upgradable, cache)
-                        
-                        for pkg in upgradablePkgs:
-                                pkg._lookupRecord(True)
-                                path = apt_pkg.TagSection(pkg._records.record)["Filename"]
-                                cand = pkg._depcache.get_candidate_ver(pkg._pkg)
-                                
-                                for (packagefile, i) in cand.file_list:
-                                        indexfile = cache._list.find_index(packagefile)
-                                        if indexfile:
-                                                uri = indexfile.archive_uri(path)
-                                                print uri
-
-                def __AptGetUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
-                        self.ReleaseType = ReleaseType
-                        
-                        if ReleaseType is not None:
-                                cmd = "/usr/bin/apt-get -qq --print-uris -t " + self.ReleaseType + " " + UpgradeType
-                        else:
-                                cmd = "/usr/bin/apt-get -qq --print-uris " + UpgradeType
-
-                        log.msg("\nGenerating database of file that are needed for operation %s\n" % (UpgradeType) )
-                        if self.__ExecSystemCmd(cmd, self.WriteTo) is False:
-                                log.err("FATAL: Something is wrong with the APT system\n")
-                                
-                def __AptInstallPackage(self, PackageList=None, ReleaseType=None):
-
-                        self.package_list = ''
-                        self.ReleaseType = ReleaseType
-
-                        for pkg in PackageList:
-                                self.package_list += pkg + ' '
-
-                        log.msg( "\nGenerating database of package %s and its dependencies.\n" % (self.package_list) )
-
-                        if self.ReleaseType is not None:
-                                cmd = "/usr/bin/apt-get -qq --print-uris install -t " + self.ReleaseType + " " + self.package_list
-                        else:
-                                cmd = "/usr/bin/apt-get -qq --print-uris install " + self.package_list
-
-                        if self.__ExecSystemCmd(cmd, self.WriteTo) is False:
-                                log.err( "FATAL: Something is wrong with the apt system.\n" )
-
-                def __AptInstallSrcPackages(self, SrcPackageList=None, ReleaseType=None, BuildDependency=False):
-                        
-                        self.package_list = ''
-                        self.ReleaseType = ReleaseType
-                        
-                        for pkg in SrcPackageList:
-                                self.package_list += pkg + ' '
-                        log.msg( "\nGenerating database of source packages %s.\n" % (self.package_list) )
-                        
-                        if self.ReleaseType is not None:
-                                cmd = "/usr/bin/apt-get -qq --print-uris source -t " + self.ReleaseType + " " + self.package_list
-                                cmdBuildDep = "/usr/bin/apt-get -qq --print-uris build-dep -t " + self.ReleaseType + " " + self.package_list
-                        else:
-                                cmd = "/usr/bin/apt-get -qq --print-uris source " + self.package_list
-                                cmdBuildDep = "/usr/bin/apt-get -qq --print-uris build-dep " + self.package_list
-                        
-                        if self.__ExecSystemCmd(cmd, self.WriteTo) is False:
-                                log.err( "FATAL: Something is wrong with the apt system.\n" )
-                        if BuildDependency:
-                                log.msg("Generating Build-Dependency for source packages %s.\n" % (self.package_list) )
-                                if self.__ExecSystemCmd(cmdBuildDep, self.WriteTo) is False:
-                                        log.err( "FATAL: Something is wrong with the apt system.\n" )
                 
                                 
         #FIXME: We'll use python-apt library to make it cleaner.
