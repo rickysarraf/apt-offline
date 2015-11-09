@@ -241,10 +241,10 @@ class ExecCmd:
                 
                 if fh is not None:
                         preState = fh.tell()
-                args = shlex.split(cmd)
-                log.verbose("Command is: %s and args is: %s\n" % (cmd, args))
+
+                log.msg("Command is: %s\n" % (cmd))
                 
-                p = subprocess.call(args, universal_newlines=True, stdout=fh)
+                p = subprocess.call(cmd, universal_newlines=True, stdout=fh)
                 if fh is not None:
                         fh.flush()
 
@@ -334,7 +334,7 @@ class AptManip(ExecCmd):
                                 
         def __AptGetUpdate(self):
                 log.msg("\nGenerating database of files that are needed for an update.\n")
-                if self.ExecSystemCmd("/usr/bin/apt-get -q --print-uris update", self.WriteTo) is False:
+                if self.ExecSystemCmd(["/usr/bin/apt-get", "-q", "--print-uris", "update"], self.WriteTo) is False:
                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                 log.verbose("Calling __FixAptSigs to fix the apt sig problem")
                 self.__FixAptSigs()
@@ -412,9 +412,12 @@ class AptManip(ExecCmd):
                 self.ReleaseType = ReleaseType
                 
                 if ReleaseType is not None:
-                        cmd = "/usr/bin/apt-get -qq --print-uris -t " + self.ReleaseType + " " + UpgradeType
+                        cmd = ["/usr/bin/apt-get", "-qq", "--print-uris", "-t"]
+                        cmd.append(self.ReleaseType)
+                        cmd.append(UpgradeType)
                 else:
-                        cmd = "/usr/bin/apt-get -qq --print-uris " + UpgradeType
+                        cmd = ["/usr/bin/apt-get", "-qq", "--print-uris"]
+                        cmd.append(UpgradeType)
 
                 log.msg("\nGenerating database of file that are needed for operation %s\n" % (UpgradeType) )
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
@@ -422,42 +425,45 @@ class AptManip(ExecCmd):
                         
         def __AptInstallPackage(self, PackageList=None, ReleaseType=None):
 
-                self.package_list = ''
                 self.ReleaseType = ReleaseType
 
-                for pkg in PackageList:
-                        self.package_list += pkg + ' '
-
-                log.msg( "\nGenerating database of package %s and its dependencies.\n" % (self.package_list) )
+                log.msg( "\nGenerating database of package %s and its dependencies.\n" % (PackageList) )
 
                 if self.ReleaseType is not None:
-                        cmd = "/usr/bin/apt-get -qq --print-uris install -t " + self.ReleaseType + " " + self.package_list
+                        cmd = ["/usr/bin/apt-get", "-qq", "--print-uris", "install", "-t"]
+                        cmd.append(self.ReleaseType)
                 else:
-                        cmd = "/usr/bin/apt-get -qq --print-uris install " + self.package_list
+                        cmd = ["/usr/bin/apt-get", "-qq", "--print-uris", "install"]
+
+                for pkg in PackageList:
+                        cmd.append(pkg)
 
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
                         log.err( "FATAL: Something is wrong with the apt system.\n" )
 
         def __AptInstallSrcPackages(self, SrcPackageList=None, ReleaseType=None, BuildDependency=False):
                 
-                self.package_list = ''
                 self.ReleaseType = ReleaseType
                 
-                for pkg in SrcPackageList:
-                        self.package_list += pkg + ' '
-                log.msg( "\nGenerating database of source packages %s.\n" % (self.package_list) )
+                log.msg( "\nGenerating database of source packages %s.\n" % (SrcPackageList) )
                 
                 if self.ReleaseType is not None:
-                        cmd = "/usr/bin/apt-get -qq --print-uris source -t " + self.ReleaseType + " " + self.package_list
-                        cmdBuildDep = "/usr/bin/apt-get -qq --print-uris build-dep -t " + self.ReleaseType + " " + self.package_list
+                        cmd = ["/usr/bin/apt-get", "-qq", "--print-uris", "source", "-t"]
+                        cmd.append(self.ReleaseType)
+                        cmdBuildDep = ["/usr/bin/apt-get", "-qq", "--print-uris", "build-dep", "-t"]
+                        cmdBuildDep.append(self.ReleaseType)
                 else:
-                        cmd = "/usr/bin/apt-get -qq --print-uris source " + self.package_list
-                        cmdBuildDep = "/usr/bin/apt-get -qq --print-uris build-dep " + self.package_list
+                        cmd = ["/usr/bin/apt-get", "-qq", "--print-uris", "source"]
+                        cmdBuildDep = ["/usr/bin/apt-get", "-qq", "--print-uris", "build-dep"]
+
+                for pkg in SrcPackageList:
+                        cmd.append(pkg)
+                        cmdBuildDep.append(pkg)
                 
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                 if BuildDependency:
-                        log.msg("Generating Build-Dependency for source packages %s.\n" % (self.package_list) )
+                        log.msg("Generating Build-Dependency for source packages %s.\n" % (SrcPackageList) )
                         if self.ExecSystemCmd(cmdBuildDep, self.WriteTo) is False:
                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
         
@@ -474,13 +480,15 @@ class APTVerifySigs(ExecCmd):
                         self.gpgv="/usr/bin/gpgv"
                 else:
                         self.gpgv=gpgv
-                        
+                
+                self.opts = []        
                 if keyring is None:
+                        
+                        self.opts.append("--ignore-time-conflict")
+                        
                         #INFO: For backwards compatibility
                         if os.path.exists("/etc/apt/trusted.gpg"):
-                                self.opts="--keyring /etc/apt/trusted.gpg --ignore-time-conflict"
-                        else:
-                                self.opts="--ignore-time-conflict"
+                                self.opts.extend("--keyring /etc/apt/trusted.gpg".split())
 
                         for eachPath in self.defaultPaths:
                                 if os.path.exists(eachPath):
@@ -488,13 +496,15 @@ class APTVerifySigs(ExecCmd):
                                                 eachGPG = os.path.join(eachPath, eachGPG)
                                                 if os.path.exists(eachGPG):
                                                         log.verbose("Adding %s to the apt-offline keyring\n" % (eachGPG) )
-                                                        self.opts += " --keyring %s " % (eachGPG)
+                                                        eachKeyring = "--keyring %s" % (eachGPG)
+                                                        self.opts.extend(eachKeyring.split())
                                                 else:
                                                         log.err("Path for keyring is invalid: %s\n" % (eachGPG) )
                                 else:
                                         log.err("Path for keyring is invalid: %s\n" % (eachPath) )
                 else:
-                        self.opts = "--keyring %s --ignore-time-conflict" % (keyring)
+                        finalKeyring = "--keyring %s --ignore-time-conflict" % (keyring)
+                        self.opts.extend(finalKeyring.split())
                         
         def VerifySig(self, signature_file, signed_file):
                 
@@ -505,7 +515,13 @@ class APTVerifySigs(ExecCmd):
                         log.err("%s is bad. Can't proceed.\n" % (signed_file) )
                         return False
                 
-                gpgvCmd = "%s %s %s %s" % (self.gpgv, self.opts, signature_file, signed_file)
+                #INFO: Commands can escape and inject. So carefully craft the command
+                # Thanks: Bernd Dietzel
+                gpgvCmd = []
+                gpgvCmd.append(self.gpgv)
+                gpgvCmd.extend(self.opts)
+                gpgvCmd.append(signature_file)
+                gpgvCmd.append(signed_file)
                 return self.ExecSystemCmd(gpgvCmd, None)
         
 
