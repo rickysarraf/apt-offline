@@ -242,7 +242,7 @@ class ExecCmd:
                 if fh is not None:
                         preState = fh.tell()
 
-                log.msg("Command is: %s\n" % (cmd))
+                log.verbose("Command is: %s\n" % (cmd))
                 
                 p = subprocess.call(cmd, universal_newlines=True, stdout=fh)
                 if fh is not None:
