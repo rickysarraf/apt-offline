@@ -1610,7 +1610,11 @@ def installer( args ):
                 totalSize[0] = 0
                 #ENDCHANGE
                 
+                #INFO: Handle source packages with care.
+                # Build a dict and populate its files based on details in .dsc
                 SrcPkgDict = {}
+                
+                #TODO: Refactor this loop
                 for filename in zipBugFile.namelist():
                         if filename.endswith(".dsc"):
                                 SrcPkgName = filename.split('_')[0]
@@ -1619,16 +1623,26 @@ def installer( args ):
                                 temp.file.flush()
                                 temp.file.seek( 0 ) #Let's go back to the start of the file
                                 SrcPkgDict[SrcPkgName] = []
+                                marker = None
                                 for SrcPkgIdentifier in temp.file.readlines():
-                                        if SrcPkgIdentifier.startswith(' ') and not SrcPkgIdentifier.isspace():
-                                                SrcPkgIdentifier = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
-                                                if SrcPkgIdentifier in SrcPkgDict[SrcPkgName]:
+                                        if SrcPkgIdentifier.startswith('Files:'):
+                                                marker = True
+                                                continue
+                                        
+                                        if SrcPkgIdentifier.startswith('\n'):
+                                                marker = False
+                                                continue
+                                        
+                                        if marker is True:
+                                                SrcPkgData = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
+                                                if SrcPkgData in SrcPkgDict[SrcPkgName]:
                                                         break
                                                 else:
-                                                        SrcPkgDict[SrcPkgName].append(SrcPkgIdentifier)
+                                                        SrcPkgDict[SrcPkgName].append(SrcPkgData)
+                                        
                                 SrcPkgDict[SrcPkgName].append(filename)
                                 temp.file.close()
-                
+                                
                 #if bug_parse_required is True:
                 bugs_number = {}
                 if Bool_SkipBugReports:
@@ -1693,19 +1707,30 @@ def installer( args ):
         elif os.path.isdir(install_file_path):
                 
                 SrcPkgDict = {}
+                
+                #TODO: Needs refactoring with the previous common code
                 for filename in os.listdir( install_file_path ):
                         if filename.endswith(".dsc"):
                                 SrcPkgName = filename.split('_')[0]
                                 SrcPkgDict[SrcPkgName] = []
                                 Tempfile = os.path.join(install_file_path, filename)
                                 temp = open(Tempfile, 'r')
+                                marker = None
                                 for SrcPkgIdentifier in temp.readlines():
-                                        if SrcPkgIdentifier.startswith(' ') and not SrcPkgIdentifier.isspace():
-                                                SrcPkgIdentifier = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
-                                                if SrcPkgIdentifier in SrcPkgDict[SrcPkgName]:
+                                        if SrcPkgIdentifier.startswith('Files:'):
+                                                marker = True
+                                                continue
+                                        
+                                        if SrcPkgIdentifier.startswith('\n'):
+                                                marker = False
+                                                continue
+                                        
+                                        if marker is True:
+                                                SrcPkgData = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
+                                                if SrcPkgData in SrcPkgDict[SrcPkgName]:
                                                         break
                                                 else:
-                                                        SrcPkgDict[SrcPkgName].append(SrcPkgIdentifier)
+                                                        SrcPkgDict[SrcPkgName].append(SrcPkgData)
                                 SrcPkgDict[SrcPkgName].append(filename)
                                 temp.close()
                 
