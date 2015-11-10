@@ -1460,6 +1460,7 @@ def installer( args ):
                         elif magicMIME.file(archive_file) == "application/x-xz":
                                 retval = archive.decompress_the_file(archive_file, temp_filename, "xz")
                         else:
+                                log.verbose("No filetype match for %s\n" % (filename) )
                                 retval = False
 
                         if retval is True:
