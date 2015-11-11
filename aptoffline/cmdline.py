@@ -158,7 +158,7 @@ def _setup_parser(parser, method=None, func=None):
                                type=str, metavar='DOWNLOAD_DIR')
         exclusive.add_argument('--bundle',
                                help='Archive file to contain downloaded files',
-                               acton='store', type=str,
+                               action='store', type=str,
                                metavar='apt-offline-bundle.zip')
 
         socket = parser.add_argument_group('Socket options')
@@ -178,7 +178,7 @@ def _setup_parser(parser, method=None, func=None):
         parallel.add_argument('-t', '--threads',
                               help='Number of threads to spawn',
                               action='store', metavar='NUMTHREADS',
-                              defaultlt=2, type=int)
+                              default=2, type=int)
 
         integrity = parser.add_argument_group('Integrity option')
         integrity.add_argument('--no-checksum',
