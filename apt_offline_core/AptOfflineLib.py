@@ -1,6 +1,6 @@
 
 ############################################################################
-#    Copyright (C) 2005, 2009 Ritesh Raj Sarraf                            #
+#    Copyright (C) 2005, 2015 Ritesh Raj Sarraf                            #
 #    rrs@researchut.com                                                    #
 #                                                                          #
 #    This program is free software; you can redistribute it and#or modify  #
@@ -23,7 +23,6 @@ import os
 import sys
 
 import threading
-import Queue
 
 import zipfile
 import bz2
@@ -586,7 +585,7 @@ class MyThread( threading.Thread ):
                        for i in range( self.threads )
                        ]
                 for thread in self.thread_pool:
-                       thread.guiTerminateSignal=False
+                        thread.guiTerminateSignal=False
         
         def startThreads( self ):
                 for thread in self.thread_pool:
@@ -604,7 +603,7 @@ class MyThread( threading.Thread ):
         def stopQueue( self, timeout=0 ):
                 '''Don't end the program prematurely.
                 (Note that because Queue.get() is blocking by
-                defualt this isn't strictly necessary. But if
+                default this isn't strictly necessary. But if
                 you were, say, handling responses in another
                 thread, you'd want something like this in your
                 main thread.)'''
