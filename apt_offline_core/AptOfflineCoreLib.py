@@ -840,7 +840,7 @@ def fetcher( args ):
                         Str_DownloadDir = os.path.abspath(tempdir)
                 else:
                         log.err( "%s is not writable\n" % (tempdir) ) 
-                        errfunc ( 1, '')
+                        errfunc ( 1, '', tempdir)
         else:
                 if os.access( Str_DownloadDir, os.W_OK ) is True:
                         Str_DownloadDir = os.path.abspath( Str_DownloadDir )
@@ -853,7 +853,7 @@ def fetcher( args ):
                                 Str_DownloadDir = os.path.abspath( Str_DownloadDir )
                         except:
                                 log.err( "I couldn't create directory %s\n" % (Str_DownloadDir) )
-                                errfunc( 1, '' )
+                                errfunc( 1, '' , Str_DownloadDir)
                                 
         if Str_BundleFile is not None:
                 Str_BundleFile = os.path.abspath(Str_BundleFile)
@@ -891,7 +891,7 @@ def fetcher( args ):
                         raw_data_list = open( Str_GetArg, 'r' ).readlines()
                 except IOError, ( errno, strerror ):
                         log.err( "%s %s\n" % ( errno, strerror ) )
-                        errfunc( errno, '' )
+                        errfunc( errno, '', Str_GetArg)
                         
                 FetchData['Item'] = []
                 for item in raw_data_list:
