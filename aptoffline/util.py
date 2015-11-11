@@ -1,7 +1,14 @@
-from apt import Cache
-from apt_pkg import version_compare
-from aptsources.sourceslist import SourcesList
 from zipfile import ZipFile
+
+_python_apt = True
+try:
+    from apt import Cache
+    from apt_pkg import version_compare
+    from aptsources.sourceslist import SourcesList
+except ImportError:
+    _python_apt = False
+    from aptoffline.aptwrapper import (find_releases, find_version,
+                                       compare_version)
 
 import threading
 import os
@@ -19,8 +26,10 @@ def _version_apt():
     instversion = Cache()['apt'].candidate.version
     return version_compare(instversion, '1.1~exp9')
 
-releases = list(_releases())
-apt_version_compare = _version_apt()
+releases = list(_releases()) if _python_apt else list(find_releases())
+apt_version_compare = (_version_apt() if _python_apt else
+                       compare_version(find_version('apt'),
+                                       '1.1~exp9'))
 
 
 class ZipArchiver(object):
