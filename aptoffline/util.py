@@ -1,7 +1,10 @@
 from apt import Cache
 from apt_pkg import version_compare
 from aptsources.sourceslist import SourcesList
+from zipfile import ZipFile
 
+import threading
+import os
 
 __all__ = ['releases', 'apt_version_compare']
 
@@ -18,3 +21,33 @@ def _version_apt():
 
 releases = list(_releases())
 apt_version_compare = _version_apt()
+
+
+class ZipArchiver(object):
+    """Zip Archiver class for apt-offline
+
+    Arguments:
+        - filename -- Zip file name.
+
+    This object is used to create zip bundle of downloaded files by
+    apt-offline. This class is used when `--bundle` option is provided
+    from commandline.
+    """
+
+    def __init__(self, filename):
+        self._lock = threading.Lock()
+        self._z = ZipFile(filename, mode='w')
+
+    def add(self, file):
+        if self._lock.acquire():
+            self._z.write(file, os.path.basename(file))
+            self._lock.release()
+
+    def namelist(self):
+        return self._z.namelist()
+
+    def close(self):
+        self._z.close()
+
+    def __del__(self):
+        self._z.close()
