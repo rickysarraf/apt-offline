@@ -195,7 +195,7 @@ def main(test_args=None):
     goptions.add_argument('-V', '--verbose',
                           help='enable verbose messages',
                           action='store_true')
-    goptions.add_argument('-s', '--simulate',
+    goptions.add_argument('--simulate',
                           help='Just simulate the operation',
                           action='store_true')
 
