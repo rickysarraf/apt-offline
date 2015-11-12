@@ -55,10 +55,11 @@ def find_version(package):
 
 
 def compare_version(a, b):
-    """Compare version a with version b using operation op
+    """Compare version a with version b
 
     Compares the version a with version b using dpkg --compare-version
-    return 0 if operation holds otherwise 1
+    return -1 if a is less than b, 1 if a is greater than b and 0 if a
+    is equal to b.
     """
     try:
         check_call(['dpkg', '--compare-versions', a, 'lt', b])
