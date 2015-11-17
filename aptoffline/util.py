@@ -12,6 +12,7 @@ except ImportError:
 
 import threading
 import os
+import hashlib
 
 __all__ = ['releases', 'apt_version_compare']
 
@@ -30,6 +31,73 @@ releases = list(_releases()) if _python_apt else list(find_releases())
 apt_version_compare = (_version_apt() if _python_apt else
                        compare_version(find_version('apt'),
                                        '1.1~exp9'))
+
+
+def list_files(pathname):
+    """Lists files in given path
+
+    This function returns a tuple of absolute path and file name
+    (basename of file) in it.
+    """
+    for path, folder, files in os.walk(pathname):
+        for file in files:
+            yield path, file
+
+
+def is_cached(cache_dir, aptitem, validate=True):
+    """Check if given apt item is cached
+
+    Arguments:
+        - cache_dir -- Directory which contains downloaded files
+        - aptitem -- This object of type `AptGetSig`
+        - validate -- Whether checksum is to be validated or not.
+
+    Function verifies if the given deb file is already present in
+    `cache_dir` and if `validate` is true it checks if the data
+    checksum matches `aptitem.checksum`.
+    """
+    for p, f in list_files(cache_dir):
+        if f == aptitem.file:
+            if not validate:
+                return os.path.join(p, f)
+            if is_checksum_valid(aptitem.file, aptitem.checksum_type,
+                                 aptitem.checksum):
+                return os.path.join(p, f)
+
+            return None
+
+
+class UnsupportedCheckSumType(Exception):
+    """Unsupported Checksum Type exception
+
+    Arguments:
+        - type -- Checksum type which lead to this exception.
+    """
+    def __init__(self, type):
+        super(UnsupportedCheckSumType, self).__init__(
+            ("Checksum {} is "
+             "not supported").format(type))
+
+
+def is_checksum_valid(filename, checksum_type, checksum):
+    """Check if given file is still valid
+
+    This function varifies the calculated checksum of content of file
+    against given `checksum`. It returns `true` if both match
+    otherwise returns 'false'
+
+    If `checksum_type` is not one of `hashlib.algorithms_guaranteed`
+    it will raise `UnsupportedCheckSumType` exception.
+    """
+    if not hasattr(haslib, checksum_type.lower()):
+        raise UnsupportedCheckSumType(checksum_type)
+    csum = getattr(hashlib, checksum_type)
+
+    with open(filename, 'rb') as fd:
+        if csum(fd.read()).hexdigest() == checksum:
+            return True
+
+    return False
 
 
 class ZipArchiver(object):
