@@ -24,7 +24,8 @@ def find_releases():
     Returns a set of releases.
     """
     slists = (['/etc/apt/sources.list'] +
-              os.listdir('/etc/apt/sources.list.d/'))
+              os.path.join('/etc/apt/sources.list.d',
+                           os.listdir('/etc/apt/sources.list.d/')))
 
     lines = []
     for file in slists:
