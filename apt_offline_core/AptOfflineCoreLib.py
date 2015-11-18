@@ -1483,6 +1483,7 @@ def installer( args ):
                         debFile = os.path.join(apt_package_target_path, filename)
                         if os.access( apt_package_target_path, os.W_OK ):
                                 shutil.copy2( archive_file, debFile )
+                                os.chmod(debFile, 0644)
                                 log.msg("%s file synced.\n" % (filename) )
                                 retval = True
                         else:
