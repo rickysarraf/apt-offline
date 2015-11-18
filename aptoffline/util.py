@@ -1,13 +1,5 @@
 from zipfile import ZipFile
-
-_python_apt = True
-try:
-    from apt import Cache
-    from apt_pkg import version_compare
-except ImportError:
-    _python_apt = False
-    from aptoffline.aptwrapper import (find_releases, find_version,
-                                       compare_version)
+from aptoffline.aptwrapper import (find_version, compare_version)
 
 import threading
 import os
@@ -18,13 +10,7 @@ __all__ = ['apt_version_compare', 'list_files', 'is_cached',
            'ZipArchiver']
 
 
-def _version_apt():
-    instversion = Cache()['apt'].installed.version
-    return version_compare(instversion, '1.1~exp9')
-
-apt_version_compare = (_version_apt() if _python_apt else
-                       compare_version(find_version('apt'),
-                                       '1.1~exp9'))
+apt_version_compare = compare_version(find_version('apt'), '1.1~exp9')
 
 
 def list_files(pathname):
