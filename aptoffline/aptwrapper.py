@@ -66,11 +66,9 @@ def compare_version(a, b):
     try:
         check_call(['dpkg', '--compare-versions', a, 'lt', b])
         return -1
-    except CalledProcessError as c:
+    except CalledProcessError:
         try:
             check_call(['dpkg', '--compare-versions', a, 'gt', b])
             return 1
-        except CalledProcessError as c:
+        except CalledProcessError:
             return 0
-
-    return retcode
