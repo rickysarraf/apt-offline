@@ -3,6 +3,8 @@ machine:
     version: 3.4.2
 dependencies:
  pre:
+   - echo "deb-src http://us-east-1.ec2.archive.ubuntu.com/ubuntu precise main restricted universe multiverse" >> /etc/apt/sources.list
+   - echo "deb-src http://us-east-1.ec2.archive.ubuntu.com/ubuntu precise-updates main restricted universe multiverse" >> /etc/apt/sources.list
    - sudo apt-get update
    - sudo apt-get install python-dev python3-dev libapt-pkg-dev
    - pip install tox
