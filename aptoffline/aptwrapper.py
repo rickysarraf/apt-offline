@@ -1,11 +1,9 @@
 from subprocess import check_output, check_call, CalledProcessError
-from functools import partial
 
 import re
-import os
-
 
 _version_reg = re.compile('Installed:\s(?P<version>.*)\s')
+
 
 def find_version(package):
     """Find version of package installed
