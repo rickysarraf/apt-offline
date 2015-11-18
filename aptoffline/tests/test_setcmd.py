@@ -3,7 +3,7 @@ import os
 from .base import AptOfflineTests
 from aptoffline.cmdline import main
 from aptoffline.logger import initialize_logger
-from aptoffline.util import releases, apt_version_compare
+from aptoffline.util import apt_version_compare
 from testtools.matchers import (FileExists, GreaterThan, Contains,
                                 FileContains)
 
@@ -39,7 +39,7 @@ class TestSetCmd(AptOfflineTests):
 
     def test_release_install_option(self):
         main(['set', '--install-packages', 'ksh', '--release',
-              releases[0]])
+              self.release])
         self.assertThat('apt-offline.sig', FileExists())
         self.assertThat(os.stat('apt-offline.sig').st_size,
                         GreaterThan(0))

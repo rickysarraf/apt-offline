@@ -1,27 +1,18 @@
 from testtools import TestCase
 from apt import Cache
 from apt_pkg import version_compare
-from aptsources.sourceslist import SourcesList
-from aptoffline.aptwrapper import (find_releases, find_version,
-                                   compare_version)
+from aptoffline.aptwrapper import (find_version, compare_version)
 
 
 class TestAptWrapper(TestCase):
 
     def setUp(self):
         super(TestAptWrapper, self).setUp()
-        self.sources = SourcesList()
         self.cache = Cache()
-
-    def test_find_releases(self):
-        r1 = find_releases()
-        sentries = filter(lambda s: s.dist.strip(), self.sources.list)
-        r2 = {entry.dist for entry in sentries}
-        self.assertEqual(r1, r2)
 
     def test_find_version(self):
         v1 = find_version('apt')
-        v2 = self.cache['apt'].candidate.version
+        v2 = self.cache['apt'].installed.version
         self.assertEqual(v1, v2)
 
     def test_compare_version(self):

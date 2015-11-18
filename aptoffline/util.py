@@ -4,7 +4,6 @@ _python_apt = True
 try:
     from apt import Cache
     from apt_pkg import version_compare
-    from aptsources.sourceslist import SourcesList
 except ImportError:
     _python_apt = False
     from aptoffline.aptwrapper import (find_releases, find_version,
@@ -14,20 +13,15 @@ import threading
 import os
 import hashlib
 
-__all__ = ['releases', 'apt_version_compare']
-
-
-def _releases():
-    sources = SourcesList()
-    sentries = filter(lambda s: s.dist.strip(), sources.list)
-    return {entry.dist for entry in sentries}
+__all__ = ['apt_version_compare', 'list_files', 'is_cached',
+           'UnsupportedCheckSumType', 'is_checksum_valid',
+           'ZipArchiver']
 
 
 def _version_apt():
-    instversion = Cache()['apt'].candidate.version
+    instversion = Cache()['apt'].installed.version
     return version_compare(instversion, '1.1~exp9')
 
-releases = list(_releases()) if _python_apt else list(find_releases())
 apt_version_compare = (_version_apt() if _python_apt else
                        compare_version(find_version('apt'),
                                        '1.1~exp9'))

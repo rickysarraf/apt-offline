@@ -91,7 +91,6 @@ def _installer(parser):
 
 
 def _setup_parser(parser, method=None, func=None):
-    from .util import releases
     parser.set_defaults(func=func)
 
     if method == 'set':
@@ -104,8 +103,7 @@ def _setup_parser(parser, method=None, func=None):
                             default='apt-offline.sig',
                             nargs='?')
         parser.add_argument('--release', action='store',
-                            metavar='release_name', choices=releases,
-                            type=str,
+                            metavar='release_name', type=str,
                             help=('Distribution release from which'
                                   ' packages are to be installed.'))
         parser.add_argument('--update', action='store_true',
