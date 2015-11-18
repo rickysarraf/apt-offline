@@ -565,32 +565,6 @@ class LockAPT:
                 except:
                         return False
 
-        
-def files(root): 
-        for path, folders, files in os.walk(root): 
-                for localFile in files:
-                        yield path, localFile
-    
-    
-def find_first_match(cache_dir=None, filename=None):
-        '''Return the full path of the filename if a match is found
-        Else Return False'''
-        
-        # Do the sanity check first
-        #if cache_dir is None or filename is None or os.path.isdir(cache_dir) is False:
-        if cache_dir is None:
-                return False
-        elif filename is None:
-                return False
-        elif os.path.isdir(cache_dir) is False:
-                return False
-        else:
-                for path, localFile in files(cache_dir):
-                        if localFile == filename:
-                                return os.path.join(path, localFile)
-                return False
-        
-
 class GenericDownloadFunction():
         def download_from_web(self, url, localFile, download_dir):
                 '''url = url to fetch
@@ -922,7 +896,6 @@ def fetcher( args ):
         total_items = len(FetchData['Item'])
         
         FetcherInstance = FetcherClass( width=30, lock=True, total_items=total_items )
-        
         
         #INFO: Thread Support
         if Int_NumOfThreads > 2:

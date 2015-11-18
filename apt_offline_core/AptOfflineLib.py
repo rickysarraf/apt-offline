@@ -481,12 +481,13 @@ class FileMgmt( object ):
 
         def files( self, root ): 
                 for path, folders, files in os.walk( root ): 
-                        for file in files: 
-                                yield path, file 
+                        for f in files: 
+                                yield path, f 
 
         def find_first_match( self, cache_dir=None, filename=None ):
                 '''Return the full path of the filename if a match is found
                 Else Return False'''
+                
                 if cache_dir is None:
                         return False
                 elif filename is None:
@@ -494,10 +495,10 @@ class FileMgmt( object ):
                 elif os.path.isdir( cache_dir ) is False:
                         return False
                 else:
-                        for path, file in self.files( cache_dir ): 
-                                if file == filename:
-                                        return os.path.join( path, file )
-                                return False
+                        for path, f in self.files( cache_dir ): 
+                                if f == filename:
+                                        return os.path.join( path, f )
+                        return False
         
         def rename_file( self, orig, new ):
                 '''Rename file from orig to new'''
