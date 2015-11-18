@@ -819,13 +819,14 @@ def fetcher( args ):
                 if os.path.isdir( Str_CacheDir ) is False:
                         log.verbose( "WARNING: cache dir %s is incorrect. Did you give the full path ?\n" % (Str_CacheDir) )
         
-        class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum ):
+        class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum, AptOfflineLib.FileMgmt ):
                 def __init__( self, width, lock, total_items ):
                         DownloadFromWeb.__init__( self, width=width, total_items=total_items )
                         #ProgressBar.__init__(self, width)
                         #self.width = width
                         AptOfflineLib.Archiver.__init__( self, lock=lock )
                         #self.lock = lock
+                        AptOfflineLib.FileMgmt.__init__(self)
         
         if Str_DownloadDir is None:
                 tempdir = tempfile.gettempdir()
@@ -930,7 +931,7 @@ def fetcher( args ):
                 log.msg("WARNING: Else higher number of threads executed could cause\n")
                 log.msg("WARNING: network congestion and timeouts.\n\n")
         
-        def DataFetcher(request, response, func=find_first_match):
+        def DataFetcher(request, response, func=FetcherInstance.find_first_match):
                 '''Get items from the request Queue, process them
                 with func(), put the results along with the
                 Thread's name into the response Queue.
