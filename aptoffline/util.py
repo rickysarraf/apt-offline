@@ -89,7 +89,7 @@ def is_checksum_valid(filename, checksum_type, checksum):
     If `checksum_type` is not one of `hashlib.algorithms_guaranteed`
     it will raise `UnsupportedCheckSumType` exception.
     """
-    if not hasattr(haslib, checksum_type.lower()):
+    if not hasattr(hashlib, checksum_type.lower()):
         raise UnsupportedCheckSumType(checksum_type)
     csum = getattr(hashlib, checksum_type)
 
