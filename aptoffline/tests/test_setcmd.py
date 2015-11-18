@@ -68,7 +68,7 @@ class TestSetCmd(AptOfflineTests):
               '--src-build-dep'])
         log_text = self.log_details.get(
             "pythonlogging:'apt-offline'").as_text()
-        print(log_text)
+
         self.assertThat(log_text, Contains('we need root'))
         self.assertThat(log_text, Contains('Ignoring the operation,'))
 
