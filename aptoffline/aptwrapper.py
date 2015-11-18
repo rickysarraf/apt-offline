@@ -1,4 +1,5 @@
 from subprocess import check_output, check_call, CalledProcessError
+from functools import partial
 
 import re
 import os
@@ -23,9 +24,9 @@ def find_releases():
 
     Returns a set of releases.
     """
+    sources_d = partial(os.path.join, '/etc/apt/sources.list.d')
     slists = (['/etc/apt/sources.list'] +
-              os.path.join('/etc/apt/sources.list.d',
-                           os.listdir('/etc/apt/sources.list.d/')))
+              list(map(sources_d, os.listdir('/etc/apt/sources.list.d/'))))
 
     lines = []
     for file in slists:
