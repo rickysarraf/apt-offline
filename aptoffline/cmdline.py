@@ -2,8 +2,13 @@ import os
 import sys
 import argparse
 import logging
+
 from .logger import initialize_logger
-from .backends.aptget import AptGet
+from .backends.aptget import AptGet, AptGetSigParse
+from .util import ZipArchiver, is_cached
+
+from tempfile import mkdtemp
+from shutil import copy, rmtree, move
 
 
 version = '1.8-dev'
@@ -65,7 +70,12 @@ def _getter(parser):
     else:
         cache_dir = os.path.abspath(parser.cache_dir)
 
-    download_dir = None
+    if parser.no_checksum:
+        validate = False
+    else:
+        validate = True
+
+    archive_files = False
     if parser.download_dir:
         if not os.access(parser.download_dir, os.W_OK):
             # path is provided but doesn't exist create it
@@ -78,12 +88,39 @@ def _getter(parser):
                 sys.exit(1)
         download_dir = os.path.abspath(parser.download_dir)
     else:
-        # TODO: create temporary directory? We made download_dir or
-        # bundle_file as mandatory so this should not be required.
-        pass
+        # Since download-dir is not present its exclusive option
+        # bundle should be enabled.
+        if os.path.exists(os.path.abspath(parser.bundle_file)):
+            log.error("Please remove the bundle file:"
+                      " {}".format(parser.bundle_file))
+            sys.exit(1)
 
-    if parser.bundle_file:
-        pass
+        bundle_file = os.path.abspath(parser.bundle_file)
+        archive_files = True
+
+    items = AptGetSigParse(parser.sig)
+    tmpdir = mkdtemp()
+
+    for aptitem in items:
+        if aptitem.file.endswith('.deb'):
+            if cache_dir:
+                fpath = is_cached(cache_dir, aptitem, validate)
+                if fpath:
+                    copy(fpath, tmpdir)
+                    continue
+            # TODO: enter download logic here.
+            pass
+
+    if archive_files:
+        archive = ZipArchiver(bundle_file)
+        for p, f in list_files(tmpdir):
+            archive.add(os.path.join(p, f))
+    else:
+        for p, f in list_files(tempdir):
+            move(os.path.join(p, f), download_dir)
+
+    # clean up the tempdir
+    rmtree(tempdir)
 
 
 def _installer(parser):
