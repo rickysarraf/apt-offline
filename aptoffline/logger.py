@@ -1,5 +1,5 @@
 from logging import getLogger, Formatter, DEBUG, INFO
-from logutils.colorize import ColorizingStreamHandler
+from .packages.logutils.colorize import ColorizingStreamHandler
 
 
 def initialize_logger(verbose):

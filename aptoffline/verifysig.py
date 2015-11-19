@@ -1,7 +1,7 @@
 import os
 
 from logging import getLogger
-from gnupg import GPG
+from .packages.gnupg import GPG
 
 
 class VerifySignature:
