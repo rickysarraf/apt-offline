@@ -9,7 +9,13 @@ apt-get command.
 from aptoffline import AptOffLine
 from subprocess import check_call
 
+import re
+
+
 __all__ = ['AptGet']
+
+_auth_info_reg = re.compile('(?:(http|https)://)'
+                            '(?P<user>.*):(?P<passwd>.*)@')
 
 
 class AptGet(AptOffLine):
@@ -170,7 +176,8 @@ class AptGetSig(object):
     apt-get command with --print-uris option.
     """
 
-    __slots__ = ('url', 'file', 'size', 'checksum_type', 'checksum')
+    __slots__ = ('url', 'file', 'size', 'checksum_type', 'checksum',
+                 'user', 'passwd')
 
     def __init__(self, line):
         items = line.split(' ')
@@ -178,6 +185,11 @@ class AptGetSig(object):
         self.url = items[0].lstrip("'").rstrip("'")
         self.file = items[1]
         self.size = items[2]
+
+        m = _auth_info_reg.search(self.url)
+        if m:
+            self.user = m.group('user')
+            self.passwd = m.group('passwd')
 
         # Only if its not update database there will be md5sum
         if len(items) > 3:

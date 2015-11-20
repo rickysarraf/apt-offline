@@ -59,5 +59,15 @@ class TestAptGetSigParse(AptOfflineTests):
         self.assertEqual(parser[0].checksum,
                          '9b85dcfb537b09b7ccac4a68e164429c')
 
+    def test_parsed_authinfo(self):
+        parser = AptGetSigParse(
+            self.sigparse_dir('update1line-passwd.sig'))
+
+        self.assertIsNotNone(parser[0].user)
+        self.assertIsNotNone(parser[0].passwd)
+
+        self.assertEqual(parser[0].user, 'user')
+        self.assertEqual(parser[0].passwd, 'passwd')
+
     def tearDown(self):
         super(TestAptGetSigParse, self).tearDown()
