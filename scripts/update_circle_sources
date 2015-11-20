@@ -1,0 +1,3 @@
+#!/bin/sh
+echo "deb-src http://us-east-1.ec2.archive.ubuntu.com/ubuntu precise main restricted universe multiverse" >> /etc/apt/sources.list
+echo "deb-src http://us-east-1.ec2.archive.ubuntu.com/ubuntu precise-updates main restricted universe multiverse" >> /etc/apt/sources.list

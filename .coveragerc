@@ -1,0 +1,18 @@
+[run]
+omit =
+  aptoffline/tests/*
+  apt_offline_core/*
+  apt_offline_gui/*
+  aptoffline/packages/*
+  setup.py
+branch = True
+source = aptoffline
+
+[report]
+ignore_errors = True
+exclude_lines =
+    pragma: no cover
+    raise AssertionError
+    raise NotImplemented
+    raise NotImplementedError
+    except KeyboardInterrupt

@@ -1,0 +1,15 @@
+machine:
+  python:
+    version: 3.4.2
+dependencies:
+ pre:
+   - sudo scripts/update_circle_sources
+   - sudo apt-get update
+   - sudo apt-get install python-dev python3-dev libapt-pkg-dev
+   - pip install tox
+   - scripts/install-aptoffline
+ override:
+   - sed -i 's|debian/sid|0.9.3|' tox.ini
+test:
+ override:
+   - tox
