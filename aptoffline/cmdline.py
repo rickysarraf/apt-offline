@@ -199,15 +199,13 @@ def _setup_parser(parser, method=None, func=None):
         socket = parser.add_argument_group('Socket options')
         socket.add_argument('--socket-timeout',
                             help='Set socket timeout',
-                            action='store', metavar='SOCKET TIMEOUT')
+                            action='store', metavar='SOCKET TIMEOUT',
+                            type=int)
 
         proxy = parser.add_argument_group('Proxy options')
-        proxy.add_argument('--proxy-host',
+        proxy.add_argument('--proxy',
                            help='Proxy Host to use',
-                           type=str, metavar='PROXY HOST')
-        proxy.add_argument('--proxy-port',
-                           help='Proxy port number to use', type=int,
-                           metavar='PROXY PORT')
+                           type=str, metavar='http://[user:passwd@]host:port/')
 
         parallel = parser.add_argument_group('Parallelism')
         parallel.add_argument('-t', '--threads',
