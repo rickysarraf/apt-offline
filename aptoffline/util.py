@@ -103,6 +103,10 @@ class ZipArchiver(object):
     def namelist(self):
         return self._z.namelist()
 
+    def add_directory(self, dirname):
+        for f, p in list_files(dirname):
+            self._z.write(os.path.join(f, p), p)
+
     def close(self):
         self._z.close()
 
