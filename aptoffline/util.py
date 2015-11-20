@@ -1,5 +1,7 @@
 from zipfile import ZipFile
+from logging import getLogger
 from aptoffline.aptwrapper import (find_version, compare_version)
+from aptoffline.logger import LINE_OVERWRITE_FULL
 
 import threading
 import os
@@ -11,7 +13,7 @@ __all__ = ['apt_version_compare', 'list_files', 'is_cached',
 
 
 apt_version_compare = compare_version(find_version('apt'), '1.1~exp9')
-
+_log = getLogger('apt-offline')
 
 def list_files(pathname):
     """Lists files in given path
@@ -36,14 +38,22 @@ def is_cached(cache_dir, aptitem, validate=True):
     `cache_dir` and if `validate` is true it checks if the data
     checksum matches `aptitem.checksum`.
     """
+    global _log
+    pkgname = aptitem.file.split('_')[0]
     for p, f in list_files(cache_dir):
         if f == aptitem.file:
             if not validate:
+                _log.warn('Skipping checksum validation for %s.%s' %
+                          (pkgname, LINE_OVERWRITE_FULL))
                 return os.path.join(p, f)
             if is_checksum_valid(aptitem.file, aptitem.checksum_type,
                                  aptitem.checksum):
+                _log.verbose('Checksum correct for package %s.%s' %
+                             (pkgname, LINE_OVERWRITE_FULL))
                 return os.path.join(p, f)
 
+            log.verbose('%s checksum mismatch. Skipping file from'
+                        ' cache.%s' % (pkgname, LINE_OVERWRITE_FULL))
             return None
 
 
