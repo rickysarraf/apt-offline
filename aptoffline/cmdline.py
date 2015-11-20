@@ -5,10 +5,8 @@ import logging
 
 from .logger import initialize_logger
 from .backends.aptget import AptGet, AptGetSigParse
-from .util import ZipArchiver, is_cached
-
-from tempfile import mkdtemp
-from shutil import copy, rmtree, move
+from .util import ZipArchiver, list_files
+from shutil import move
 
 
 version = '1.8-dev'
@@ -70,11 +68,6 @@ def _getter(parser):
     else:
         cache_dir = os.path.abspath(parser.cache_dir)
 
-    if parser.no_checksum:
-        validate = False
-    else:
-        validate = True
-
     archive_files = False
     if parser.download_dir:
         if not os.access(parser.download_dir, os.W_OK):
@@ -99,28 +92,16 @@ def _getter(parser):
         archive_files = True
 
     items = AptGetSigParse(parser.sig)
-    tmpdir = mkdtemp()
-
-    for aptitem in items:
-        if aptitem.file.endswith('.deb'):
-            if cache_dir:
-                fpath = is_cached(cache_dir, aptitem, validate)
-                if fpath:
-                    copy(fpath, tmpdir)
-                    continue
-            # TODO: enter download logic here.
-            pass
+    download_mgr = DownloadManager(cache_dir, parser.proxy,
+                                   timeout=parser.socket_timeout)
+    download_mgr.start(items, parser.threads)
 
     if archive_files:
         archive = ZipArchiver(bundle_file)
-        for p, f in list_files(tmpdir):
-            archive.add(os.path.join(p, f))
+        archive.add_directory(download_mgr.tempdir)
     else:
-        for p, f in list_files(tempdir):
-            move(os.path.join(p, f), download_dir)
-
-    # clean up the tempdir
-    rmtree(tempdir)
+        for f, p in list_files(download_mgr.tempdir):
+            move(os.path.join(f, p), download_dir)
 
 
 def _installer(parser):
