@@ -16,4 +16,12 @@ except ImportError:
 try:
     from . import requests
 except ImportError:
+    import requests
     sys.modules['%s.requests' % __name__] = requests
+
+if sys.version_info.major == 2:
+    try:
+        from . import concurrent
+    except ImportError:
+        import concurrent
+        sys.modules['%s.requests' % __name__] = concurrent
