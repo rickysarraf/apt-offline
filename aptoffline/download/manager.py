@@ -6,6 +6,7 @@ from aptoffline.packages import requests
 from aptoffline.packages.requests.auth import (HTTPBasicAuth,
                                                HTTPDigestAuth)
 from shutil import rmtree, copy
+from logging import getLogger
 
 import os
 import sys
@@ -40,6 +41,7 @@ class DownloadManager(object):
 
         self.tempdir = mkdtemp()
         self.req = partial(requests.get, **kwargs)
+        self.log = getLogger('apt-offline')
 
     def _in_cache(self, item, validate=True):
         if not item.file.endswith('.deb') or not self._cache:
