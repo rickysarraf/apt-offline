@@ -18,5 +18,3 @@ This utility is an attempt in making that problem eradicate. I hope this utility
 This software is dedicated to the memory of my father Santosh Kumar Sarraf. We miss you a lot.
 
 
-
-### CI Testcase Status [![Build Status](https://travis-ci.org/rickysarraf/apt-offline.svg?branch=master)] (https://travis-ci.org/rickysarraf/apt-offline)
