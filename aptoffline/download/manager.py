@@ -45,7 +45,7 @@ class DownloadManager(object):
 
     def _in_cache(self, item, validate=True):
         if not item.file.endswith('.deb') or not self._cache:
-            return
+            return False
 
         fpath = is_cached(self._cache, item, validate)
         if fpath:
