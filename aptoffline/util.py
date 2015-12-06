@@ -56,19 +56,6 @@ def is_cached(cache_dir, aptitem, validate=True):
                         ' cache.%s' % (pkgname, LINE_OVERWRITE_FULL))
             return None
 
-
-class UnsupportedCheckSumType(Exception):
-    """Unsupported Checksum Type exception
-
-    Arguments:
-        - type -- Checksum type which lead to this exception.
-    """
-    def __init__(self, type):
-        super(UnsupportedCheckSumType, self).__init__(
-            ("Checksum {} is "
-             "not supported").format(type))
-
-
 def is_checksum_valid(filename, checksum_type, checksum):
     """Check if given file is still valid
 
@@ -88,6 +75,36 @@ def is_checksum_valid(filename, checksum_type, checksum):
             return True
 
     return False
+
+
+def human_size(size):
+    """Return human readable size
+
+    Converts `size` bytes into appropriate human readable form and
+    returns string representing it.
+    """
+    fsize  = size / 1024
+    if fsize > 1024:
+        # MB
+        fsize /= 1024
+        if fsize > 1024:
+            #GB
+            fsize /= 1024
+            return "%.2f GiB" % fsize
+        return "%.2f MiB" % fsize
+    return "%.2f KiB" % fsize
+
+
+class UnsupportedCheckSumType(Exception):
+    """Unsupported Checksum Type exception
+
+    Arguments:
+        - type -- Checksum type which lead to this exception.
+    """
+    def __init__(self, type):
+        super(UnsupportedCheckSumType, self).__init__(
+            ("Checksum {} is "
+             "not supported").format(type))
 
 
 class ZipArchiver(object):
