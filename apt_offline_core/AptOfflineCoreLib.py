@@ -720,11 +720,11 @@ def errfunc(errno, errormsg, filename):
         # and better document them the next time you find it out.
         # 13 is for "Permission Denied" when you don't have privileges to access the destination 
         if errno in error_codes:
-                log.verbose("%s - %s - %s.%s\n" % (filename, errno, errormsg, LINE_OVERWRITE_MID))
+                log.verbose("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_MID))
                 log.verbose("Will still try with other package uris\n")
                 pass
         elif errno == 10054:
-                log.verbose("%s - %s - %s.%s\n" % (filename, errno, errormsg, LINE_OVERWRITE_SMALL) )
+                log.verbose("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_SMALL) )
                 pass
         elif errno == 407 or errno == 2:
                 # These, I believe are from OSError/IOError exception.
@@ -957,30 +957,30 @@ def fetcher( args ):
                                 # We'll first check for its md5 checksum
                                 if Bool_DisableMD5Check is False:
                                         if FetcherInstance.CheckHashDigest(full_file_path, checksum) is True:
-                                                log.verbose("Checksum correct for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                                log.verbose("Checksum correct for package %s %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                 
                                                 bug_fetched = False
                                                 if Bool_BugReports:
-                                                        log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                                        log.verbose("Fetching bug reports for package %s %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                         if FetchBugReportsDebian.FetchBugsDebian(PackageName) in [1,2]:
-                                                                log.success("Fetched bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                                                log.success("Fetched bug reports for package %s %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                                 bug_fetched = True
                                                         else:
-                                                                log.verbose("Couldn't fetch bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
+                                                                log.verbose("Couldn't fetch bug reports for package %s %s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                                                 
                                                 if Str_BundleFile:
                                                         if FetcherInstance.compress_the_file(Str_BundleFile, full_file_path) is True:
-                                                                log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
+                                                                log.success("%s copied from local cache directory %s %s" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
                                                                 FetcherInstance.updateValue(download_size)
                                                         else:
-                                                                log.err("Couldn't add %s to archive %s.%s\n" % (pkgFile, Str_BundleFile, LINE_OVERWRITE_MID) )
+                                                                log.err("Couldn't add %s to archive %s %s\n" % (pkgFile, Str_BundleFile, LINE_OVERWRITE_MID) )
                                                                 sys.exit(1)
                                                 #INFO: If no zip option enabled, simply copy the downloaded package file
                                                 # along with the downloaded bug reports.
                                                 else:
                                                         try:
                                                                 shutil.copy(full_file_path, Str_DownloadDir)
-                                                                log.success("%s copied from local cache directory %s.%s\n" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
+                                                                log.success("%s copied from local cache directory %s %s" % (PackageName, Str_CacheDir, LINE_OVERWRITE_MID) )
                                                                 FetcherInstance.updateValue(download_size)
                                                         except shutil.Error:
                                                                 log.verbose("%s already available in %s. Skipping copy!!!%s\n" % (pkgFile, Str_DownloadDir, LINE_OVERWRITE_MID) )
@@ -993,22 +993,22 @@ def fetcher( args ):
                                                                                 except:
                                                                                         #INFO: This should fix DBTS #584427
                                                                                         log.verbose("Exception thrown. Most likely it is because the cache_dir and download_dir locations are the same.\n")
-                                                                                log.verbose("Moved %s file to %s folder.%s\n" % (x, Str_DownloadDir, LINE_OVERWRITE_FULL) )
+                                                                                log.verbose("Moved %s file to %s folder %s\n" % (x, Str_DownloadDir, LINE_OVERWRITE_FULL) )
                                         #INFO: Damn!! The md5chesum didn't match :-(
                                         # The file is corrupted and we need to download a new copy from the internet
                                         else:
-                                                log.verbose("%s checksum mismatch. Skipping file.%s\n" % (pkgFile, LINE_OVERWRITE_FULL) )
+                                                log.verbose("%s checksum mismatch. Skipping file %s\n" % (pkgFile, LINE_OVERWRITE_FULL) )
                                                 log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
                                                 if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir) == True:
-                                                        log.success("\r%s done.%s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                                        log.success("\r%s done %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                                         
                                                         #Add to Str_CacheDir if possible
                                                         if Str_CacheDir and os.access(Str_CacheDir, os.W_OK) == True:
                                                                 try:
                                                                         shutil.copy(pkgFile, Str_CacheDir)
-                                                                        log.verbose("%s copied to local cache directory %s.%s\n" % (pkgFile, Str_CacheDir, LINE_OVERWRITE_MID) )
+                                                                        log.verbose("%s copied to local cache directory %s %s\n" % (pkgFile, Str_CacheDir, LINE_OVERWRITE_MID) )
                                                                 except shutil.Error:
-                                                                        log.verbose("Couldn't copy %s to %s.%s\n" % (pkgFile, Str_CacheDir, LINE_OVERWRITE_FULL) )
+                                                                        log.verbose("Couldn't copy %s to %s %s\n" % (pkgFile, Str_CacheDir, LINE_OVERWRITE_FULL) )
                                                                 except IOError:
                                                                         # If the underneath file system in mounted read-only, we can't write to it irrespective of dir permissions
                                                                         # IOError: [Errno 30] Read-only file system:
@@ -1018,17 +1018,17 @@ def fetcher( args ):
                                                         
                                                         #Fetch bug reports
                                                         if Bool_BugReports:
-                                                                log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
+                                                                log.verbose("Fetching bug reports for package %s %s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                                                 if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
-                                                                        log.success( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                                        log.success( "Fetched bug reports for package %s %s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                                 else:
-                                                                        log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                                        log.verbose( "Couldn't fetch bug reports for package %s %s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                         if Str_BundleFile:
                                                                 if FetcherInstance.compress_the_file( Str_BundleFile, pkgFile ) != True:
-                                                                        log.err( "Couldn't archive %s to file %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                        log.err( "Couldn't archive %s to file %s %s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                                         sys.exit( 1 )
                                                                 else:
-                                                                        log.verbose( "%s added to archive %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                        log.verbose( "%s added to archive %s %s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                                         os.unlink( os.path.join( Str_DownloadDir, pkgFile ) )
                                                         
                                                         # Add to progressbar
@@ -1038,40 +1038,40 @@ def fetcher( args ):
                                 else:
                                         bug_fetched = False
                                         if Bool_BugReports:
-                                                log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
+                                                log.verbose("Fetching bug reports for package %s %s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                                 if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
-                                                        log.success( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                        log.success( "Fetched bug reports for package %s %s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                         bug_fetched = True
                                                 else:
-                                                        log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                        log.verbose( "Couldn't fetch bug reports for package %s %s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                             
                                         if Str_BundleFile:
                                                 if FetcherInstance.compress_the_file( Str_BundleFile, pkgFile ) != True:
-                                                        log.err( "Couldn't archive %s to file %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                        log.err( "Couldn't archive %s to file %s %s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                         sys.exit( 1 )
                                                 else:
-                                                        log.verbose( "%s added to archive %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                        log.verbose( "%s added to archive %s %s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                         os.unlink( os.path.join( Str_DownloadDir, pkgFile ) )
                                         else:
                                                 # Since zip file option is not enabled let's copy the file to the target folder
                                                 try:
                                                         shutil.copy( full_file_path, Str_DownloadDir )
-                                                        log.success( "%s copied from local cache directory %s.%s\n" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_SMALL ) )
+                                                        log.success( "%s copied from local cache directory %s %s" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_SMALL ) )
                                                 except shutil.Error:
-                                                        log.verbose( "%s already available in dest_dir. Skipping copy!!!%s\n" % ( pkgFile, LINE_OVERWRITE_SMALL ) )
+                                                        log.verbose( "%s already available in dest_dir. Skipping copy!!!%s" % ( pkgFile, LINE_OVERWRITE_SMALL ) )
                             
                                                 # And also the bug reports
                                                 if bug_fetched is True:
                                                         for x in os.listdir( os.curdir ):
                                                                 if ( x.startswith( PackageName ) and x.endswith( apt_bug_file_format ) ):
                                                                         shutil.move( x, Str_DownloadDir )
-                                                                        log.verbose( "Moved %s file to %s folder.%s\n" % ( x, Str_DownloadDir, LINE_OVERWRITE_MID ) )
+                                                                        log.verbose( "Moved %s file to %s folder %s\n" % ( x, Str_DownloadDir, LINE_OVERWRITE_MID ) )
                                         FetcherInstance.updateValue(download_size)
                                 FetcherInstance.completed()
                         else:
                                 #INFO: This block gets executed if the file is not found in local Str_CacheDir or Str_CacheDir is None
                                 # We go ahead and try to download it from the internet
-                                log.verbose( "%s not available in local cache %s.%s\n" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_MID ) )
+                                log.verbose( "%s not available in local cache %s %s\n" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_MID ) )
                                 log.msg( "Downloading %s %s - %s %s\n" % ( PackageName, PackageVersion, log.calcSize( download_size / 1024 ), LINE_OVERWRITE_MID ) )
                                 if FetcherInstance.download_from_web( url, pkgFile, Str_DownloadDir ) == True:
                                         #INFO: This block gets executed if md5checksum is allowed
@@ -1082,7 +1082,7 @@ def fetcher( args ):
                                                         if Str_CacheDir and os.access( Str_CacheDir, os.W_OK ) == True:
                                                                 try:
                                                                         shutil.copy( pkgFile, Str_CacheDir )
-                                                                        log.verbose( "%s copied to local cache directory %s.%s\n" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_MID ) )
+                                                                        log.verbose( "%s copied to local cache directory %s %s\n" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_MID ) )
                                                                 except shutil.Error:
                                                                         log.verbose( "%s already available in %s. Skipping copy!!!%s\n" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_MID ) )
                                                                 except IOError:
@@ -1093,41 +1093,41 @@ def fetcher( args ):
                                                                 log.verbose( "Str_CacheDir %s is not writeable. Skipping copy to it.\n" % ( Str_CacheDir ) )
                                     
                                                         if Bool_BugReports:
-                                                                log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
+                                                                log.verbose("Fetching bug reports for package %s %s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                                                 if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
-                                                                        log.success( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                                        log.success( "Fetched bug reports for package %s %s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                                 else:
-                                                                        log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                                        log.verbose( "Couldn't fetch bug reports for package %s %s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                     
                                                         if Str_BundleFile:
                                                                 if FetcherInstance.compress_the_file( Str_BundleFile, pkgFile ) != True:
-                                                                        log.err( "Couldn't archive %s to file %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                        log.err( "Couldn't archive %s to file %s %s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                                         sys.exit( 1 )
                                                                 else:
-                                                                        log.verbose( "%s added to archive %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                        log.verbose( "%s added to archive %s %s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                                         os.unlink( os.path.join( Str_DownloadDir, pkgFile ) )
-                                                        log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
+                                                        log.success( "\r%s %s done %s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
                                                 else:
                                                         #INFO MD5 Checksum is incorrect.
                                                         log.err( "%s Checksum mismatch.\n" % ( PackageName ) )
                                                         errlist.append( PackageName )
                                         else:
                                                 if Bool_BugReports:
-                                                        log.verbose("Fetching bug reports for package %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) )
+                                                        log.verbose("Fetching bug reports for package %s %s\n" % (PackageName, LINE_OVERWRITE_MID) )
                                                         if FetchBugReportsDebian.FetchBugsDebian( PackageName ) in [1, 2]:
-                                                                log.success( "Fetched bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                                log.success( "Fetched bug reports for package %s %s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                         else:
-                                                                log.verbose( "Couldn't fetch bug reports for package %s.%s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
+                                                                log.verbose( "Couldn't fetch bug reports for package %s %s\n" % ( PackageName, LINE_OVERWRITE_MID ) )
                                                 
                                                 if Str_BundleFile:
                                                         if FetcherInstance.compress_the_file( Str_BundleFile, pkgFile ) != True:
-                                                                log.err( "Couldn't archive %s to file %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                log.err( "Couldn't archive %s to file %s %s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                                 sys.exit( 1 )
                                                         else:
-                                                                log.verbose( "%s added to archive %s.%s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
+                                                                log.verbose( "%s added to archive %s %s\n" % ( pkgFile, Str_BundleFile, LINE_OVERWRITE_SMALL ) )
                                                                 os.unlink( os.path.join( Str_DownloadDir, pkgFile ) )
                                     
-                                                log.success( "\r%s %s done.%s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
+                                                log.success( "\r%s %s done %s\n" % ( PackageName, PackageVersion, LINE_OVERWRITE_FULL ) )
                                         
                                         # Add to progressbar
                                         FetcherInstance.updateValue(download_size)
@@ -1138,13 +1138,13 @@ def fetcher( args ):
                         
                         def DownloadPackages(url):
                                 if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir) == True:
-                                        log.success("\r%s done.%s\n" % (url, LINE_OVERWRITE_FULL) )
+                                        log.success("\r%s done %s\n" % (url, LINE_OVERWRITE_FULL) )
                                         if Str_BundleFile:
                                                 if FetcherInstance.compress_the_file(Str_BundleFile, pkgFile) != True:
-                                                        log.err("Couldn't archive %s to file %s.%s\n" % (pkgFile, Str_BundleFile, LINE_OVERWRITE_MID) )
+                                                        log.err("Couldn't archive %s to file %s %s\n" % (pkgFile, Str_BundleFile, LINE_OVERWRITE_MID) )
                                                         sys.exit(1)
                                                 else:
-                                                        log.verbose("%s added to archive %s.%s\n" % (pkgFile, Str_BundleFile, LINE_OVERWRITE_FULL) )
+                                                        log.verbose("%s added to archive %s %s\n" % (pkgFile, Str_BundleFile, LINE_OVERWRITE_FULL) )
                                                         os.unlink(os.path.join(Str_DownloadDir, pkgFile) )
                                         FetcherInstance.updateValue(download_size)
                                         return True
@@ -1162,7 +1162,7 @@ def fetcher( args ):
                         if PackageFormat in SupportedFormats:
                                 SupportedFormats.remove(PackageFormat) #Remove the already tried format
                         
-                        log.msg("Downloading %s.%s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
+                        log.msg("Downloading %s %s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
                         if DownloadPackages(url) is False and guiTerminateSignal is False:
                                 # dont proceed retry if Ctrl+C in cli
                                 log.verbose("%s failed. Retry with the remaining possible formats\n" % (url) )
@@ -1172,12 +1172,12 @@ def fetcher( args ):
                                 for Format in SupportedFormats:
                                         NewPackageFile = PackageFile.split(".")[0] + "." + Format
                                         NewUrl = url.strip(url.split("/")[-1]) + NewPackageFile
-                                        log.verbose("Retry download %s.%s\n" % (NewUrl, LINE_OVERWRITE_MID) )
+                                        log.verbose("Retry download %s %s\n" % (NewUrl, LINE_OVERWRITE_MID) )
                                         if DownloadPackages(NewUrl) is True:
                                                 reallyFailed = False
                                                 break
                                         else:
-                                                log.verbose("Failed with URL %s.%s\n" % (NewUrl, LINE_OVERWRITE_MID) )
+                                                log.verbose("Failed with URL %s %s\n" % (NewUrl, LINE_OVERWRITE_MID) )
                                 if reallyFailed is True:
                                         errlist.append(NewUrl)
 
