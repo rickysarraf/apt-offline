@@ -2,7 +2,7 @@ all:
 	@echo "To build GUI, run make gui"
 
 gui:
-	pyuic AptOfflineGUI.ui > AptOfflineGUI.py
+	@echo "look at genui.sh"
 
 html:
 	man2html apt-offline.8 > apt-offline.html
