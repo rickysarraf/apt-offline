@@ -266,6 +266,8 @@ class AptManip(ExecCmd):
                 self.AptReinstall = AptReinstall
                 
                 if AptType == "apt":
+                        self.apt = "apt"
+                elif AptType == "apt-get":
                         self.apt = "apt-get"
                 elif AptType == "aptitude":
                         self.apt = "aptitude"
@@ -279,6 +281,8 @@ class AptManip(ExecCmd):
                 log.verbose("APT Update Method is of type: %s\n" % self.apt)
                 if self.apt == "apt-get":
                         self.__AptGetUpdate()
+                elif self.apt == "apt":
+                        self.__AptUpdate()
                 elif self.apt == "aptitude":
                         pass
                 elif self.apt == "python-apt":
@@ -292,6 +296,8 @@ class AptManip(ExecCmd):
                 log.verbose("APT Upgrade Method is of type: %s\n" % self.apt)
                 if self.apt == "apt-get":
                         self.__AptGetUpgrade(UpgradeType, ReleaseType)
+                elif self.apt == "apt":
+                        self.__AptUpgrade(UpgradeType, ReleaseType)
                 elif self.apt == "aptitude":
                         pass
                 elif self.apt == "python-apt":
@@ -305,6 +311,8 @@ class AptManip(ExecCmd):
         def InstallPackages(self, PackageList, ReleaseType):
                 log.verbose("APT Install Method is of type: %s\n" % self.apt)
                 if self.apt == "apt-get":
+                        self.__AptGetInstallPackage(PackageList, ReleaseType)
+                elif self.apt == "apt":
                         self.__AptInstallPackage(PackageList, ReleaseType)
                 elif self.apt == "python-apt":
                         self.__AptInstallPackage(PackageList, ReleaseType)
@@ -315,6 +323,8 @@ class AptManip(ExecCmd):
         def InstallSrcPackages(self, SrcPackageList, ReleaseType, BuildDependency):
                 log.verbose("APT Install Source Method is of type: %s\n" % self.apt)
                 if self.apt == "apt-get":
+                        self.__AptGetInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
+                elif self.apt == "apt":
                         self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
                 elif self.apt == "python-apt":
                         self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
