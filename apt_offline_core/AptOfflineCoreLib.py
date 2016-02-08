@@ -802,21 +802,11 @@ def fetcher( args ):
                         #self.lock = lock
                         AptOfflineLib.FileMgmt.__init__(self)
         
-        if Str_DownloadDir is None:
-                tempdir = tempfile.gettempdir()
-                if os.access( tempdir, os.W_OK ) is True:
-                        pidname = os.getpid()
-                        randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
-                        # 5 byte random junk to make mkdir possible multiple times
-                        # use-case -> download many sigs of different machines using one instance
-                        tempdir = os.path.join(tempdir , "apt-offline-downloads-" + str(pidname) + randomjunk)
-                        os.mkdir(tempdir)
-                                
-                        Str_DownloadDir = os.path.abspath(tempdir)
-                else:
-                        log.err( "%s is not writable\n" % (tempdir) ) 
-                        errfunc ( 1, '', tempdir)
-        else:
+        if Str_DownloadDir is None and Str_BundleFile is None:
+            log.err("Please provide a target download file/folder location.\n")
+            sys.exit(1)
+
+        if Str_DownloadDir is not None:
                 if os.access( Str_DownloadDir, os.W_OK ) is True:
                         Str_DownloadDir = os.path.abspath( Str_DownloadDir )
                 else:
