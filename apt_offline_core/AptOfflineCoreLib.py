@@ -331,7 +331,13 @@ class AptManip(ExecCmd):
                                 localFile = os.path.join(apt_update_target_path, localFile)
                                 os.rename(localFile, os.path.join(apt_update_final_path + sig_file) )
                                 
-                                
+        def __AptUpdate(self):
+                log.msg("\nGenerating database of files that are needed for an update.\n")
+                if self.ExecSystemCmd(["/usr/bin/apt", "-qq", "--print-uris", "update"], self.WriteTo) is False:
+                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                log.verbose("Calling __FixAptSigs to fix the apt sig problem")
+                self.__FixAptSigs()
+                                        
         def __AptGetUpdate(self):
                 log.msg("\nGenerating database of files that are needed for an update.\n")
                 if self.ExecSystemCmd(["/usr/bin/apt-get", "-q", "--print-uris", "update"], self.WriteTo) is False:
@@ -408,6 +414,21 @@ class AptManip(ExecCmd):
                                         uri = indexfile.archive_uri(path)
                                         print uri
 
+        def __AptUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
+                self.ReleaseType = ReleaseType
+                
+                if ReleaseType is not None:
+                        cmd = ["/usr/bin/apt", "-qq", "--print-uris", "-t"]
+                        cmd.append(self.ReleaseType)
+                        cmd.append(UpgradeType)
+                else:
+                        cmd = ["/usr/bin/apt", "-qq", "--print-uris"]
+                        cmd.append(UpgradeType)
+
+                log.msg("\nGenerating database of file that are needed for operation %s\n" % (UpgradeType) )
+                if self.ExecSystemCmd(cmd, self.WriteTo) is False:
+                        log.err("FATAL: Something is wrong with the APT system\n")
+
         def __AptGetUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
                 self.ReleaseType = ReleaseType
                 
@@ -422,8 +443,54 @@ class AptManip(ExecCmd):
                 log.msg("\nGenerating database of file that are needed for operation %s\n" % (UpgradeType) )
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
                         log.err("FATAL: Something is wrong with the APT system\n")
+
                         
         def __AptInstallPackage(self, PackageList=None, ReleaseType=None):
+
+                self.ReleaseType = ReleaseType
+
+                log.msg( "\nGenerating database of package %s and its dependencies.\n" % (PackageList) )
+
+                if self.ReleaseType is not None:
+                        cmd = ["/usr/bin/apt", "-qq", "--print-uris", "install", "-t"]
+                        cmd.append(self.ReleaseType)
+                else:
+                        cmd = ["/usr/bin/apt", "-qq", "--print-uris", "install"]
+
+                for pkg in PackageList:
+                        cmd.append(pkg)
+
+                if self.ExecSystemCmd(cmd, self.WriteTo) is False:
+                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+
+        def __AptInstallSrcPackages(self, SrcPackageList=None, ReleaseType=None, BuildDependency=False):
+                
+                self.ReleaseType = ReleaseType
+                
+                log.msg( "\nGenerating database of source packages %s.\n" % (SrcPackageList) )
+                
+                if self.ReleaseType is not None:
+                        cmd = ["/usr/bin/apt", "-qq", "--print-uris", "source", "-t"]
+                        cmd.append(self.ReleaseType)
+                        cmdBuildDep = ["/usr/bin/apt", "-qq", "--print-uris", "build-dep", "-t"]
+                        cmdBuildDep.append(self.ReleaseType)
+                else:
+                        cmd = ["/usr/bin/apt", "-qq", "--print-uris", "source"]
+                        cmdBuildDep = ["/usr/bin/apt", "-qq", "--print-uris", "build-dep"]
+
+                for pkg in SrcPackageList:
+                        cmd.append(pkg)
+                        cmdBuildDep.append(pkg)
+                
+                if self.ExecSystemCmd(cmd, self.WriteTo) is False:
+                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                if BuildDependency:
+                        log.msg("Generating Build-Dependency for source packages %s.\n" % (SrcPackageList) )
+                        if self.ExecSystemCmd(cmdBuildDep, self.WriteTo) is False:
+                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+        
+                        
+        def __AptGetInstallPackage(self, PackageList=None, ReleaseType=None):
 
                 self.ReleaseType = ReleaseType
 
@@ -441,7 +508,7 @@ class AptManip(ExecCmd):
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
                         log.err( "FATAL: Something is wrong with the apt system.\n" )
 
-        def __AptInstallSrcPackages(self, SrcPackageList=None, ReleaseType=None, BuildDependency=False):
+        def __AptGetInstallSrcPackages(self, SrcPackageList=None, ReleaseType=None, BuildDependency=False):
                 
                 self.ReleaseType = ReleaseType
                 
