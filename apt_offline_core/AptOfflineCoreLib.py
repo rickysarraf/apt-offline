@@ -2072,7 +2072,7 @@ def main():
         parser_set = subparsers.add_parser('set', parents=[global_options])
         parser_set.set_defaults(func=setter)
         
-        parser_set.add_argument('set',
+        parser_set.add_argument('set', nargs='?',
                           help="Generate a signature file",
                           action="store", type=str, metavar="apt-offline.sig",
                           default="apt-offline.sig")
@@ -2112,7 +2112,7 @@ def main():
         #INFO: When get option is called, call the fetcher() function
         parser_get.set_defaults(func=fetcher)
         
-        parser_get.add_argument('get',
+        parser_get.add_argument('get', nargs='?',
                           help="Get apt-offline data",
                           action="store", type=str, metavar="apt-offline.sig",
                           default="apt-offline.sig")
@@ -2122,7 +2122,8 @@ def main():
         
         parser_get.add_argument("-d", "--download-dir", dest="download_dir",
                           help="Folder path to save files to", action="store",
-                          type=str, metavar="apt-downloads")
+                          type=str, metavar="apt-downloads",
+                          default="apt-offline-download")
         
         parser_get.add_argument("-s", "--cache-dir", dest="cache_dir",
                           help="Cache folder to search for",
@@ -2151,9 +2152,10 @@ def main():
         parser_install = subparsers.add_parser('install', parents=[global_options])
         parser_install.set_defaults(func=installer)
         
-        parser_install.add_argument('install',
+        parser_install.add_argument('install', nargs='?',
                           help="Install apt-offline data, a bundle file or a directory",
-                          action="store", type=str, metavar="apt-offline-download.zip | apt-offline-download/")
+                          action="store", type=str, metavar="apt-offline-download.zip | apt-offline-download/",
+                          default="apt-offline-download")
 
         parser_install.add_argument("--install-src-path", dest="install_src_path",
                                     help="Install src packages to specified path.", default=None)
