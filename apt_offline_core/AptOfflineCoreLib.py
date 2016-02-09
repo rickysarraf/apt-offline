@@ -872,8 +872,16 @@ def fetcher( args ):
         
         # get opts
         Str_GetArg = args.get
-        Int_SocketTimeout = args.socket_timeout
         Str_DownloadDir = args.download_dir
+        if not args.basepath is None:
+                if not os.path.isabs(args.get):
+                        Str_GetArg = os.path.join(args.basepath, os.path.basename(args.get))
+                if not os.path.isabs(args.download_dir):
+                        Str_DownloadDir = os.path.join(args.basepath, os.path.basename(args.download_dir))
+                        if not os.path.exists(Str_DownloadDir):
+                                os.mkdir(Str_DownloadDir, 777)
+
+        Int_SocketTimeout = args.socket_timeout
         Str_CacheDir = args.cache_dir
         Bool_DisableMD5Check = args.disable_md5check
         Int_NumOfThreads = args.num_of_threads
@@ -1365,6 +1373,8 @@ def installer( args ):
                                       
             # install opts
             self.Str_InstallArg = args.install
+            if args.basepath is not None and not os.path.isabs(args.install):
+                Str_InstallArg = os.path.join(args.basepath, os.path.basename(args.install))
             self.Bool_TestWindows = args.simulate
             self.Bool_SkipBugReports = args.skip_bug_reports
             self.Bool_Untrusted = args.allow_unauthenticated
@@ -1919,6 +1929,9 @@ def setter(args):
         #log.verbose(str(args))
         # commented to keep setter UI sane for time
         Str_SetArg = args.set
+        if args.basepath is not None and not os.path.isabs(args.set):
+                Str_SetArg = os.path.join(args.basepath, os.path.basename(args.set))
+
         List_SetInstallPackages = args.set_install_packages
         List_SetInstallSrcPackages = args.set_install_src_packages
         Str_SetInstallRelease = args.set_install_release
@@ -2054,6 +2067,7 @@ def main():
         global_options.add_argument("--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
         global_options.add_argument("--simulate", dest="simulate", help="Just simulate. Very helpful when debugging",
                             action="store_true" )
+        global_options.add_argument("--basepath", dest="basepath", help="Set removeable storage base path")
         
         if argparse.__version__ >= 1.1:
                 parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
