@@ -1,10 +1,14 @@
 from tempfile import mkdtemp
 from functools import partial
+from logging import getLogger
 
 from ..util import is_cached
 from aptoffline.packages import requests
 from aptoffline.packages.requests.auth import (HTTPBasicAuth,
                                                HTTPDigestAuth)
+from aptoffline.logger import (LINE_OVERWRITE_FULL,
+                               LINE_OVERWRITE_MID, LINE_OVERWRITE_SMALL)
+
 from shutil import rmtree, copy
 from logging import getLogger
 
@@ -25,11 +29,11 @@ class UnsupportedAuthType(Exception):
             self, ('Auth Type requested by server: {}'
                    ' is unsupported').format(auth))
 
-
 class DownloadManager(object):
 
     def __init__(self, cache_dir=None, proxy=None, timeout=None):
         self._cache = cache_dir
+        self._log = getLogger('apt-offline')
 
         kwargs = {'stream': True}
 
@@ -49,16 +53,25 @@ class DownloadManager(object):
 
         fpath = is_cached(self._cache, item, validate)
         if fpath:
+            self._log.debug()
             copy(fpath, self.tmpdir)
             return True
 
         return False
 
     def _download(self, item, validate=True):
+        try:
+            pkgname = item.file.split('_')[0]
+        except IndexError:
+            raise InvalidPackageName(item.file, "Couldn't find package name. Bailing out")
+
         if self._in_cache(item, validate):
+            self._log.debug("%s is cached. Copying from cache.%s" %
+                            (pkgname, LINE_OVERWRITE_SMALL))
             return
 
         resp = None
+
         if hasattr(item, 'user') and hasattr(item, 'passwd'):
             # process with basic if not try digest auth
             url = item.url.replace(item.user + ':' + item.passwd + '@', '')
@@ -81,7 +94,7 @@ class DownloadManager(object):
     def start(self, items, validate, threads=1):
         with ThreadPoolExecutor(max_workers=threads) as executor:
             future_downloads = {executor.submit(self._download, item,
-                                                validate): item for item in
+                                                validate): item.file for item in
                                 items}
 
             for f in as_completed(future_downloads):

@@ -139,3 +139,10 @@ class ZipArchiver(object):
 
     def __del__(self):
         self._z.close()
+
+
+class InvalidPackageName(Exception):
+
+    def __init__(self, item, msg):
+        m = msg + " item: {}".format(item.file)
+        super(InvalidPackageName, self).__init__(m)
