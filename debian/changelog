@@ -1,3 +1,11 @@
+apt-offline (1.5.2) jessie; urgency=medium
+
+  * [64dd250] Fix detection of filetype .gpg and extend keyring database.
+    Thanks to Daniel Freedman
+  * [1ea439e] Mark as stable release 1.5.2
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Sun, 14 Feb 2016 20:54:15 +0530
+
 apt-offline (1.5.1) jessie; urgency=medium
 
   * [67c2ba5] Add python-apt to Depends. Thanks Paul Wise
