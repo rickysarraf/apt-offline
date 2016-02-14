@@ -915,15 +915,37 @@ def installer( args ):
         class APTVerifySigs:
                 
                 def __init__(self, gpgv=None, keyring=None):
+                        self.defaultPaths = ['/etc/apt/trusted.gpg.d/', '/usr/share/keyrings/']
+                        
                         if gpgv is None:
                                 self.gpgv="/usr/bin/gpgv"
                         else:
                                 self.gpgv=gpgv
-                                
+
+                        self.opts = []
                         if keyring is None:
-                                self.opts="--keyring /etc/apt/trusted.gpg --ignore-time-conflict"
+
+                                self.opts.append("--ignore-time-conflict ")
+        
+                                #INFO: For backwards compatibility
+                                if os.path.exists("/etc/apt/trusted.gpg"):
+                                        self.opts.extend("--keyring /etc/apt/trusted.gpg".split())
+        
+                                for eachPath in self.defaultPaths:
+                                        if os.path.exists(eachPath):
+                                                for eachGPG in os.listdir(eachPath):
+                                                        eachGPG = os.path.join(eachPath, eachGPG)
+                                                        if os.path.exists(eachGPG):
+                                                                log.verbose("Adding %s to the apt-offline keyring\n" % (eachGPG) )
+                                                                eachKeyring = "--keyring %s" % (eachGPG)
+                                                                self.opts.extend(eachKeyring.split())
+                                                        else:
+                                                                log.err("Path for keyring is invalid: %s\n" % (eachGPG) )
+                                        else:
+                                                log.err("Path for keyring is invalid: %s\n" % (eachPath) )
                         else:
-                                self.opts = "--keyring %s --ignore-time-conflict" % (keyring)
+                                finalKeyring = "--keyring %s --ignore-time-conflict" % (keyring)
+                                self.opts.extend(finalKeyring.split())
                                 
                 def VerifySig(self, signature_file, signed_file):
                         
@@ -933,8 +955,10 @@ def installer( args ):
                         if not os.access(signed_file, os.F_OK):
                                 log.err("%s is bad. Can't proceed.\n" % (signed_file) )
                                 return False
-                        
-                        x = os.system("%s %s %s %s" % (self.gpgv, self.opts, signature_file, signed_file) )
+                        gpgOpts = ""
+                        for eachOpt in self.opts:
+                                gpgOpts += ' ' + eachOpt
+                        x = os.system("%s %s %s %s" % (self.gpgv, gpgOpts, signature_file, signed_file) )
                         #TODO: Find a way to redirect std[out|err]
                         # look at subprocess module
                         
@@ -1155,7 +1179,7 @@ def installer( args ):
                                 os.rename(temp_filename, filename)
                         else:
                                 os.unlink(temp_filename)
-                elif magicMIME.file( archive_file ) == "application/x-gnupg-keyring":
+                elif magicMIME.file( archive_file ) == "application/x-gnupg-keyring"  or magicMIME.file( archive_file ) == "application/pgp-signature":
                         filename = os.path.join(apt_update_target_path, filename)
                         shutil.copy2(archive_file, filename)
                         # PGP armored data should be bypassed
