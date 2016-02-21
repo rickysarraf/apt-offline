@@ -547,15 +547,42 @@ class AptManip(ExecCmd):
                         log.msg("Generating Build-Dependency for source packages %s.\n" % (SrcPackageList) )
                         if self.ExecSystemCmd(cmdBuildDep, self.WriteTo) is False:
                                 log.err( "FATAL: Something is wrong with the apt system.\n" )
-        
 
 
 class APTVerifySigs(ExecCmd):
         
         def __init__(self, gpgv=None, keyring=None, Simulate=False):
+                '''
+                Initalize keyring based on environment
+                Uses python-apt or apt-config
+                '''
                 
                 ExecCmd.__init__(self, Simulate)
-                self.defaultPaths = ['/etc/apt/trusted.gpg.d/', '/usr/share/keyrings/']
+                self.defaultPaths = []
+                
+                if PythonApt is True:
+                        apt_pkg.init()
+                        self.defaultPaths.append(apt_pkg.config.find_dir('Dir::Etc::trustedparts'))
+                        self.defaultPaths.append(apt_pkg.config.find_file('Dir::Etc::trusted'))
+                else:
+                        command = """
+                        # Unset variables in case they are set already
+                        unset trusted
+                        unset trustedparts
+                        # Get the variables from apt
+                        eval $(apt-config shell trusted Dir::Etc::trusted/f)
+                        eval $(apt-config shell trustedparts Dir::Etc::trustedparts/d)
+                        # Securely pass the variables back to python-apt
+                        printf "%s\\0%s" "$trusted" "$trustedparts"
+                        """
+                        process = subprocess.Popen(['sh'], stdin=subprocess.PIPE,
+                                                   stdout=subprocess.PIPE)
+                        output = process.communicate(input=command)[0]
+                        trusted, trustedparts = output.split('\x00')
+                        
+                        self.defaultPaths.append(trusted)
+                        self.defaultPaths.append(trustedparts)
+                log.verbose("APT Signature verification path is: %s\n" % self.defaultPaths)
 
                 if gpgv is None:
                         self.gpgv="/usr/bin/gpgv"
@@ -566,21 +593,16 @@ class APTVerifySigs(ExecCmd):
                 if keyring is None:
                         
                         self.opts.append("--ignore-time-conflict")
-                        
-                        #INFO: For backwards compatibility
-                        if os.path.exists("/etc/apt/trusted.gpg"):
-                                self.opts.extend("--keyring /etc/apt/trusted.gpg".split())
-
                         for eachPath in self.defaultPaths:
-                                if os.path.exists(eachPath):
+                                if os.path.isfile(eachPath):
+                                        eachKeyring = "--keyring %s" % (eachPath)
+                                        self.opts.extend(eachKeyring.split())
+                                elif os.path.isdir(eachPath):
                                         for eachGPG in os.listdir(eachPath):
                                                 eachGPG = os.path.join(eachPath, eachGPG)
-                                                if os.path.exists(eachGPG):
-                                                        log.verbose("Adding %s to the apt-offline keyring\n" % (eachGPG) )
-                                                        eachKeyring = "--keyring %s" % (eachGPG)
-                                                        self.opts.extend(eachKeyring.split())
-                                                else:
-                                                        log.err("Path for keyring is invalid: %s\n" % (eachGPG) )
+                                                log.verbose("Adding %s to the apt-offline keyring\n" % (eachGPG) )
+                                                eachKeyring = "--keyring %s" % (eachGPG)
+                                                self.opts.extend(eachKeyring.split())
                                 else:
                                         log.err("Path for keyring is invalid: %s\n" % (eachPath) )
                 else:
