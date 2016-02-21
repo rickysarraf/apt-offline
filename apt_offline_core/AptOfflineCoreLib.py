@@ -1551,7 +1551,7 @@ def installer( args ):
                                 try:
                                         os.unlink(temp_filename)
                                 except OSError:
-                                        log.err("Failed to unlink %s\n" % (temp_filename) )
+                                        log.verbose("Failed to unlink temproary file %s. Check respective decompressor support\n" % (temp_filename) )
 
                 elif magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or magicMIME.file( archive_file ) == "application/pgp-signature":
                         gpgFile = os.path.join(apt_update_target_path, filename)
