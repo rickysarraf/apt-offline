@@ -347,7 +347,7 @@ class AptManip(ExecCmd):
                                 
         def __AptUpdate(self):
                 log.msg("\nGenerating database of files that are needed for an update.\n")
-                if self.ExecSystemCmd(["/usr/bin/apt", "-qqq", "--print-uris", "update"], self.WriteTo) is False:
+                if self.ExecSystemCmd(["/usr/bin/apt", "-qq", "--print-uris", "update"], self.WriteTo) is False:
                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                 log.verbose("Calling __FixAptSigs to fix the apt sig problem")
                 self.__FixAptSigs()
