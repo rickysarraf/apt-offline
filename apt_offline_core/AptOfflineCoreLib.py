@@ -1547,6 +1547,7 @@ def installer( args ):
                         if retval is True:
                                 os.rename(temp_filename, filename)
                         else:
+                                log.err("Failed to sync file %s\n" % (filename))
                                 try:
                                         os.unlink(temp_filename)
                                 except OSError:
