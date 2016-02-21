@@ -347,7 +347,7 @@ class AptManip(ExecCmd):
                                 
         def __AptUpdate(self):
                 log.msg("\nGenerating database of files that are needed for an update.\n")
-                if self.ExecSystemCmd(["/usr/bin/apt", "-qq", "--print-uris", "update"], self.WriteTo) is False:
+                if self.ExecSystemCmd(["/usr/bin/apt", "-qqq", "--print-uris", "update"], self.WriteTo) is False:
                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                 log.verbose("Calling __FixAptSigs to fix the apt sig problem")
                 self.__FixAptSigs()
@@ -432,11 +432,11 @@ class AptManip(ExecCmd):
                 self.ReleaseType = ReleaseType
                 
                 if ReleaseType is not None:
-                        cmd = ["/usr/bin/apt", "-qq", "--print-uris", "-t"]
+                        cmd = ["/usr/bin/apt", "-qqq", "--print-uris", "-t"]
                         cmd.append(self.ReleaseType)
                         cmd.append(UpgradeType)
                 else:
-                        cmd = ["/usr/bin/apt", "-qq", "--print-uris"]
+                        cmd = ["/usr/bin/apt", "-qqq", "--print-uris"]
                         cmd.append(UpgradeType)
 
                 log.msg("\nGenerating database of file that are needed for operation %s\n" % (UpgradeType) )
@@ -466,10 +466,10 @@ class AptManip(ExecCmd):
                 log.msg( "\nGenerating database of package %s and its dependencies.\n" % (PackageList) )
 
                 if self.ReleaseType is not None:
-                        cmd = ["/usr/bin/apt", "-qq", "--print-uris", "install", "-t"]
+                        cmd = ["/usr/bin/apt", "-qqq", "--print-uris", "install", "-t"]
                         cmd.append(self.ReleaseType)
                 else:
-                        cmd = ["/usr/bin/apt", "-qq", "--print-uris", "install"]
+                        cmd = ["/usr/bin/apt", "-qqq", "--print-uris", "install"]
 
                 for pkg in PackageList:
                         cmd.append(pkg)
@@ -484,13 +484,13 @@ class AptManip(ExecCmd):
                 log.msg( "\nGenerating database of source packages %s.\n" % (SrcPackageList) )
                 
                 if self.ReleaseType is not None:
-                        cmd = ["/usr/bin/apt", "-qq", "--print-uris", "source", "-t"]
+                        cmd = ["/usr/bin/apt", "-qqq", "--print-uris", "source", "-t"]
                         cmd.append(self.ReleaseType)
-                        cmdBuildDep = ["/usr/bin/apt", "-qq", "--print-uris", "build-dep", "-t"]
+                        cmdBuildDep = ["/usr/bin/apt", "-qqq", "--print-uris", "build-dep", "-t"]
                         cmdBuildDep.append(self.ReleaseType)
                 else:
-                        cmd = ["/usr/bin/apt", "-qq", "--print-uris", "source"]
-                        cmdBuildDep = ["/usr/bin/apt", "-qq", "--print-uris", "build-dep"]
+                        cmd = ["/usr/bin/apt", "-qqq", "--print-uris", "source"]
+                        cmdBuildDep = ["/usr/bin/apt", "-qqq", "--print-uris", "build-dep"]
 
                 for pkg in SrcPackageList:
                         cmd.append(pkg)
