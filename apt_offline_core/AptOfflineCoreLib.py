@@ -1548,9 +1548,9 @@ def installer( args ):
                                 os.rename(temp_filename, filename)
                         else:
                                 try:
-                                    os.unlink(temp_filename)
+                                        os.unlink(temp_filename)
                                 except OSError:
-                                    log.err("Failed to unlink %s\n" % (temp_filename) )
+                                        log.err("Failed to unlink %s\n" % (temp_filename) )
 
                 elif magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or magicMIME.file( archive_file ) == "application/pgp-signature":
                         gpgFile = os.path.join(apt_update_target_path, filename)
