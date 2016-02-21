@@ -228,6 +228,10 @@ class ExecCmd:
                         pass
         
         def ExecSystemCmd(self, cmd, sigFile=None):
+                '''
+                Execute command 'cmd' with subprocess module
+                Write stdout to sigFile, if provided
+                '''
                 if self.Simulate:
                         return True
                 
