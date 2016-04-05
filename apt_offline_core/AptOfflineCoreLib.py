@@ -1936,11 +1936,8 @@ def setter(args):
                         log.err("Cannot remove file %s.\n" % (Str_SetArg) )
         
         
-        #Instantiate Apt based on what we have. For now, fall to apt only
-        if PythonApt is True:
-                AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="python-apt")
-        else:
-                AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt-get")
+        # Pick apt backend based on what option the user chose
+        AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType=args.apt_backend)
         
         if Bool_SetUpdate:
                 if platform.system() in supported_platforms:
@@ -2004,6 +2001,9 @@ def main():
         global_options.add_argument("--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
         global_options.add_argument("--simulate", dest="simulate", help="Just simulate. Very helpful when debugging",
                             action="store_true" )
+        global_options.add_argument("--apt-backend", dest="apt_backend", help="APT backend to use. One of: apt, apt-get, python-apt",
+                          action="store", type=str, metavar="apt-get", default="apt-get")
+        
         
         if argparse.__version__ >= 1.1:
                 parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
