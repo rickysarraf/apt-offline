@@ -263,7 +263,7 @@ class ExecCmd:
                 return True
                 
 class AptManip(ExecCmd):
-        def __init__(self, OutputFile, Simulate=False, AptType="apt", AptReinstall=False):
+        def __init__(self, OutputFile, Simulate=False, AptType="apt-get", AptReinstall=False):
                 
                 ExecCmd.__init__(self, Simulate)
                 self.WriteTo = OutputFile
@@ -1940,7 +1940,7 @@ def setter(args):
         if PythonApt is True:
                 AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="python-apt")
         else:
-                AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt")
+                AptInst = AptManip(Str_SetArg, Simulate=Bool_TestWindows, AptType="apt-get")
         
         if Bool_SetUpdate:
                 if platform.system() in supported_platforms:
