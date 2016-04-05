@@ -915,7 +915,7 @@ def installer( args ):
         class APTVerifySigs:
                 
                 def __init__(self, gpgv=None, keyring=None):
-                        self.defaultPaths = ['/etc/apt/trusted.gpg.d/', '/usr/share/keyrings/']
+                        self.defaultPaths = ['/etc/apt/trusted.gpg.d/']
                         
                         if gpgv is None:
                                 self.gpgv="/usr/bin/gpgv"
