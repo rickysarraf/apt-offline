@@ -1,3 +1,9 @@
+apt-offline (1.7~bpo8+1) jessie-backports; urgency=medium
+
+  * Backport release of apt-offline 1.7
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Thu, 07 Apr 2016 23:39:53 +0530
+
 apt-offline (1.7) unstable; urgency=medium
 
   * [7aacb1e] Don't abuse exception handlers.
