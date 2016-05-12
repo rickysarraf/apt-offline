@@ -21,7 +21,6 @@
 
 import os
 import sys
-import time
 import shutil
 import platform
 import string
@@ -30,7 +29,6 @@ import httplib
 import Queue
 import threading
 import subprocess
-import shlex
 import socket
 import tempfile
 import random   # to generate random directory names for installing multiple bundles in on go
