@@ -387,10 +387,10 @@ class Archiver:
 
                         fileOpened = False
                         try:
-                            filename = zipfile.ZipFile( zip_file_name, "w" )
-                            fileOpened = True
+                                filename = zipfile.ZipFile( zip_file_name, "w" )
+                                fileOpened = True
                         except IOError:
-                            fileOpened = False
+                                fileOpened = False
                 if fileOpened: #Supported from Python 2.5 ??
 
                         #INFO: We could get duplicate files being writted to the zip archive.
@@ -398,15 +398,15 @@ class Archiver:
                         warnings.filterwarnings('error')
 
                         try:
-                            filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )
+                                filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )
                         except OSError, e:
-                            if e.errno == errno.ENOENT:
-                                #INFO: We could be here, because in another thread (amd64), it completed, i.e. wrote to the archive and removed
-                                # And by the time this thread got a chance, the file was deleted by the previous thread
-                                #
-                                # A more ideal fix will be to check for files_to_compress's presence in zipfile at this stage
-                                print "Ignoring err: Possibly multiarch package %s\n" % (files_to_compress)
-                                self.file_possibly_deleted = True
+                                if e.errno == errno.ENOENT:
+                                        #INFO: We could be here, because in another thread (amd64), it completed, i.e. wrote to the archive and removed
+                                        # And by the time this thread got a chance, the file was deleted by the previous thread
+                                        #
+                                        # A more ideal fix will be to check for files_to_compress's presence in zipfile at this stage
+                                        print "Ignoring err: Possibly multiarch package %s\n" % (files_to_compress)
+                                        self.file_possibly_deleted = True
                         except UserWarning, e:
                                 print "Ignoring err type %s\n" % (e.args)
                         finally:
