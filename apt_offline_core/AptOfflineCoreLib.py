@@ -169,7 +169,15 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                 
                                 # Fetch bug report..
                                 # TODO: Handle exceptions later
-                                bugReport = debianbts.get_bug_log(eachBug)
+                                try:
+                                        bugReport = debianbts.get_bug_log(eachBug)
+                                except SSLError:
+                                        #INFO: Some of these exceptions are sporadic. For example, this one was hit because of network timeout
+                                        # And we don't want the entire operation to fail because of this
+                                        log.err("Failed to download bug report for %s\nWill continue to download others\n" % (eachBug))
+                                except:
+                                        print "Unexpected Error: ", (sys.exc_info())
+                                        raise
                                 
                                 # This tells us how many follow-ups for the bug report are present.
                                 bugReportLength = bugReport.__len__()
