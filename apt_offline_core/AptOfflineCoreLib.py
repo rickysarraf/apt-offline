@@ -35,6 +35,8 @@ import random   # to generate random directory names for installing multiple bun
 import zipfile
 import pydoc
 
+from ssl import SSLError
+
 FCNTL_LOCK = True
 try:
         import fcntl
