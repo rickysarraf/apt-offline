@@ -214,7 +214,8 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                 
         def AddToArchive(self, ArchiveFile, fileName):
                 if self.compress_the_file(ArchiveFile, fileName):
-                        os.unlink(fileName)
+                        if self.file_possibly_deleted is not True:
+                                os.unlink(fileName)
                 return True
         
 class ExecCmd:

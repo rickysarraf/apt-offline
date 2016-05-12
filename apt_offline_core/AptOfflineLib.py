@@ -350,7 +350,12 @@ class Archiver:
                 else:
                         self.ZipLock = threading.Lock()
                         self.lock = True
-        
+
+                #INFO: Needed for bug reports in multiple threads. Because you can have multiple bug reports
+                # for the same src package
+                # https://github.com/rickysarraf/apt-offline/issues/44
+                self.file_possibly_deleted = False
+                        
         def TarGzipBZ2_Uncompress( self, SourceFileHandle, TargetFileHandle ):
                 try:
                         TargetFileHandle.write( SourceFileHandle.read() )
@@ -401,6 +406,7 @@ class Archiver:
                                 #
                                 # A more ideal fix will be to check for files_to_compress's presence in zipfile at this stage
                                 print "Ignoring err: Possibly multiarch package %s\n" % (files_to_compress)
+                                self.file_possibly_deleted = True
                         except UserWarning, e:
                                 print "Ignoring err type %s\n" % (e.args)
                         finally:
