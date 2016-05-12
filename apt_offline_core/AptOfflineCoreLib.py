@@ -173,17 +173,13 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                 # TODO: Handle exceptions later
                                 try:
                                         bugReport = debianbts.get_bug_log(eachBug)
-                                except (SSLError, SSLEOFError):
+                                except:
                                         #INFO: Some of these exceptions are sporadic. For example, this one was hit because of network timeout
                                         # And we don't want the entire operation to fail because of this
-                                        log.err("Foreign exception raised in module debianbts")
+                                        log.err("Foreign exception raised in module debianbts\n")
                                         print  sys.exc_info()
-                                        log.err("Failed to download bug report for %s\nWill continue to download others\n" % (eachBug))
-                                        continue
-                                except:
-                                        log.err("Foreign exception raised in module debianbts")
-                                        print sys.exc_info()
                                         raise
+                                        log.err("Failed to download bug report for %s\nWill continue to download others\n" % (eachBug))
                                         continue
                                 
                                 # This tells us how many follow-ups for the bug report are present.
