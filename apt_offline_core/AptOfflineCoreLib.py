@@ -35,7 +35,7 @@ import random   # to generate random directory names for installing multiple bun
 import zipfile
 import pydoc
 
-from ssl import SSLError
+from ssl import SSLError, SSLEOFError
 
 FCNTL_LOCK = True
 try:
@@ -173,13 +173,16 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                 # TODO: Handle exceptions later
                                 try:
                                         bugReport = debianbts.get_bug_log(eachBug)
-                                except SSLError:
+                                except (SSLError, SSLEOFError):
                                         #INFO: Some of these exceptions are sporadic. For example, this one was hit because of network timeout
                                         # And we don't want the entire operation to fail because of this
+                                        log.err("Foreign exception raised: %s\n", (sys.exc_info()[0]))
                                         log.err("Failed to download bug report for %s\nWill continue to download others\n" % (eachBug))
+                                        continue
                                 except:
-                                        print "Unexpected Error: ", (sys.exc_info())
+                                        log.err("Unexpected Error: %s\n", (sys.exc_info()[0]))
                                         raise
+                                        continue
                                 
                                 # This tells us how many follow-ups for the bug report are present.
                                 bugReportLength = bugReport.__len__()
@@ -1172,9 +1175,9 @@ def fetcher( args ):
                                                 # Since zip file option is not enabled let's copy the file to the target folder
                                                 try:
                                                         shutil.copy( full_file_path, Str_DownloadDir )
-                                                        log.success( "%s copied from local cache directory %s %s" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_SMALL ) )
+                                                        log.success( "%s copied from local cache directory %s %s\n" % ( pkgFile, Str_CacheDir, LINE_OVERWRITE_SMALL ) )
                                                 except shutil.Error:
-                                                        log.verbose( "%s already available in dest_dir. Skipping copy!!!%s" % ( pkgFile, LINE_OVERWRITE_SMALL ) )
+                                                        log.verbose( "%s already available in dest_dir. Skipping copy!!!%s\n" % ( pkgFile, LINE_OVERWRITE_SMALL ) )
                             
                                                 # And also the bug reports
                                                 if bug_fetched is True:
