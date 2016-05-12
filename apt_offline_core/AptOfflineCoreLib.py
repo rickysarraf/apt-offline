@@ -176,11 +176,13 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                 except (SSLError, SSLEOFError):
                                         #INFO: Some of these exceptions are sporadic. For example, this one was hit because of network timeout
                                         # And we don't want the entire operation to fail because of this
-                                        log.err("Foreign exception raised: %s\n", (sys.exc_info()[0]))
+                                        log.err("Foreign exception raised in module debianbts")
+                                        print  sys.exc_info()
                                         log.err("Failed to download bug report for %s\nWill continue to download others\n" % (eachBug))
                                         continue
                                 except:
-                                        log.err("Unexpected Error: %s\n", (sys.exc_info()[0]))
+                                        log.err("Foreign exception raised in module debianbts")
+                                        print sys.exc_info()
                                         raise
                                         continue
                                 
