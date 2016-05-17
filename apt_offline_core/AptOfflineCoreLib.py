@@ -179,7 +179,6 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                         log.err("Foreign exception raised in module debianbts\n")
                                         log.err("Failed to download bug report for %s\nWill continue to download others\n" % (eachBug))
                                         print  sys.exc_info()
-                                        raise
                                         continue
                                 
                                 # This tells us how many follow-ups for the bug report are present.
