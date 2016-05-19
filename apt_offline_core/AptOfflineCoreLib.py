@@ -1627,8 +1627,17 @@ def installer( args ):
                                                                 break
                                                         
                                                 data = tempfile.NamedTemporaryFile()
-                                                data.file.write( zipBugFile.read( filename ) )
-                                                data.file.flush()
+                                                try:
+                                                        data.file.write( zipBugFile.read( filename ) )
+                                                        data.file.flush()
+                                                except zipfile.BadZipfile:
+                                                        log.err("%s. Continuing with the rest\n" % (sys.exc_info()[1]))
+                                                        continue
+                                                        #INFO: We can't ranosm the entire payload for a bad CRC for individual files.
+                                                        # The same zip archive, if unarchived with plain unix unizp, works file.
+                                                        # On the internet, there are many bug reports of python's zipfile having certain bugs.
+                                                        # Hence we continue hoping to milk the possible payloads from the archive
+                                                
                                                 archive_file = data.name
                                                 
                                                 if found is True: # found is True. That means this is a src package
