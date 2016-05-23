@@ -254,7 +254,8 @@ class ExecCmd:
                 else:
                         try:
                                 fh = open(sigFile, 'a')
-                        except:
+                        except Exception as e:
+                                log.verbose(traceback.format_exc())
                                 return False
                 
                 if fh is not None:
@@ -380,7 +381,8 @@ class AptManip(ExecCmd):
                 log.verbose("Open file %s for write" % self.WriteTo)
                 try:
                         writeFH = open(self.WriteTo, 'a')
-                except:
+                except Exception as e:
+                        log.verbose(traceback.format_exc())
                         log.err("Failed to open file %s for write. Exiting\n" % (self.WriteTo))
                         sys.exit(1)
                 
@@ -420,7 +422,8 @@ class AptManip(ExecCmd):
                 log.verbose("Open file %s for write" % self.WriteTo)
                 try:
                         writeFH = open(self.WriteTo, 'a')
-                except:
+                except Exception as e:
+                        log.verbose(traceback.format_exc())
                         log.err("Failed to open file %s for write. Exiting")
                         sys.exit(1)
                 
@@ -650,7 +653,8 @@ class LockAPT:
                 try:
                         self.listLock = os.open(lists, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
                         self.pkgLock = os.open(packages, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
-                except:
+                except Exception as e:
+                        log.verbose(traceback.format_exc())
                         log.err("Couldn't open lockfile\n")
                         return False
                         
@@ -658,28 +662,32 @@ class LockAPT:
                 try:
                         fcntl.lockf(self.listLock, fcntl.LOCK_EX | fcntl.LOCK_NB)
                         return True
-                except:
+                except Exception as e:
+                        log.verbose(traceback.format_exc())
                         return False
                 
         def lockPackages(self):
                 try:
                         fcntl.lockf(self.pkgLock, fcntl.LOCK_EX | fcntl.LOCK_NB)
                         return True
-                except:
+                except Exception as e:
+                        log.verbose(traceback.format_exc())
                         return False
                 
         def unlockLists(self):
                 try:
                         fcntl.lockf(self.listLock, fcntl.LOCK_UN)
                         return True
-                except:
+                except Exception as e:
+                        log.verbose(traceback.format_exc())
                         return False
         
         def unlockPackages(self):
                 try:
                         fcntl.lockf(self.pkgLock, fcntl.LOCK_UN)
                         return True
-                except:
+                except Exception as e:
+                        log.verbose(traceback.format_exc())
                         return False
 
 class GenericDownloadFunction():
@@ -933,7 +941,8 @@ def fetcher( args ):
                                 os.umask( 0002 )
                                 os.mkdir( Str_DownloadDir )
                                 Str_DownloadDir = os.path.abspath( Str_DownloadDir )
-                        except:
+                        except Exception as e:
+                                log.verbose(traceback.format_exc())
                                 log.err( "I couldn't create directory %s\n" % (Str_DownloadDir) )
                                 errfunc( 1, '' , Str_DownloadDir)
                                 
@@ -1111,7 +1120,8 @@ def fetcher( args ):
                                                                         if (x.startswith(PackageName) and x.endswith(apt_bug_file_format) ):
                                                                                 try:
                                                                                         shutil.move(x, Str_DownloadDir)
-                                                                                except:
+                                                                                except Exception as e:
+                                                                                        log.verbose(traceback.format_exc())
                                                                                         #INFO: This should fix DBTS #584427
                                                                                         log.verbose("Exception thrown. Most likely it is because the cache_dir and download_dir locations are the same.\n")
                                                                                 log.verbose("Moved %s file to %s folder %s\n" % (x, Str_DownloadDir, LINE_OVERWRITE_FULL) )
@@ -1322,7 +1332,8 @@ def fetcher( args ):
                                                 headers = temp.info()
                                                 size = int(headers['Content-Length'])
                                         totalSize[0] += size
-                                except:
+                                except Exception as e:
+                                        log.verbose(traceback.format_exc())
                                         log.err("some int parsing problem\n")
 
             
