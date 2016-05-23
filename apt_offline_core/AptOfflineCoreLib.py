@@ -34,8 +34,10 @@ import tempfile
 import random   # to generate random directory names for installing multiple bundles in on go
 import zipfile
 import pydoc
+import traceback
 
 from ssl import SSLError, SSLEOFError
+import zlib
 
 FCNTL_LOCK = True
 try:
@@ -161,7 +163,10 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                         #( num_of_bugs, header, self.bugs_list ) = debianbts.get_bugs( 'package', PackageName )
                         self.bugs_list = debianbts.get_bugs( 'package', PackageName )
                         num_of_bugs = len(self.bugs_list)
-                except socket.timeout:
+                except Exception as e:
+                        log.verbose(traceback.format_exc())
+                        log.err("Foreign exception raised in module debianbts\n")
+                        log.err("Failed to download bug report for package %s\n" % (PackageName))
                         return 0
                         
                 
@@ -173,12 +178,12 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                 # TODO: Handle exceptions later
                                 try:
                                         bugReport = debianbts.get_bug_log(eachBug)
-                                except:
+                                except Exception as e:
                                         #INFO: Some of these exceptions are sporadic. For example, this one was hit because of network timeout
                                         # And we don't want the entire operation to fail because of this
                                         log.err("Foreign exception raised in module debianbts\n")
                                         log.err("Failed to download bug report for %s\nWill continue to download others\n" % (eachBug))
-                                        print  sys.exc_info()
+                                        log.verbose(traceback.format_exc())
                                         continue
                                 
                                 # This tells us how many follow-ups for the bug report are present.
@@ -1630,8 +1635,9 @@ def installer( args ):
                                                 try:
                                                         data.file.write( zipBugFile.read( filename ) )
                                                         data.file.flush()
-                                                except zipfile.BadZipfile:
-                                                        log.err("%s. Continuing with the rest\n" % (sys.exc_info()[1]))
+                                                except (zipfile.BadZipfile, zlib.error):
+                                                        log.err("Failed to read archive file: %s\nContinuing with the rest\n" % (filename))
+                                                        log.verbose(traceback.format_exc())
                                                         continue
                                                         #INFO: We can't ranosm the entire payload for a bad CRC for individual files.
                                                         # The same zip archive, if unarchived with plain unix unizp, works file.
