@@ -862,6 +862,17 @@ def errfunc(errno, errormsg, filename):
                 log.err("I don't understand this error code %s\nPlease file a bug report" % (errno))
             
 
+def buildChangelog(package, installedVersion):
+        '''Return latest changes against installedVersion'''
+        
+        if PythonApt is not True:
+                log.err("Cannot provide changelog feature\n")
+                return False
+        else:
+                pkgHandle = apt.debfile.DebPackage(package)
+                for pkgFile in pkgHandle.filelist:
+                        if pkgFile.contains("changelog.Debian.gz"):
+                                pkgHandle.data_content(pkgFile)
 def fetcher( args ):
         
         # get opts
