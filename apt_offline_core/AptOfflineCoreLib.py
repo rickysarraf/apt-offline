@@ -985,6 +985,7 @@ def fetcher( args ):
                         Bool_BugReports = False
         
         FetchData = {} #Info: Initialize an empty dictionary.
+        PackageInstalledVersion = {} #INFO: This key/val dict contains record of installed packages
         
         #INFO: We don't distinguish in between what to fetch
         # We just rely on what a signature file lists us to get
@@ -998,25 +999,32 @@ def fetcher( args ):
                         
                 FetchData['Item'] = []
                 for item in raw_data_list:
-                        # Interim fix for Debian bug #664654
-                        (ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
-                        if ItemURL.endswith("InRelease"):
-                                log.verbose("APT uses new InRelease auth mechanism")
-                                ExtraItemURL = ItemURL.rstrip(ItemURL.split("/")[-1])
-                                GPGItemURL = "'" + ExtraItemURL + "Release.gpg"
-                                ReleaseItemURL = "'" + ExtraItemURL + "Release"
-                                ExtraItemFile = ItemFile.rstrip(ItemFile.split("_")[-1])
-                                GPGItemFile = ExtraItemFile + "Release.gpg"
-                                ReleaseItemFile = ExtraItemFile + "Release"
-                                
-                                FetchData['Item'].append(GPGItemURL + " " + GPGItemFile + " " + str(ItemSize) + " " + ItemChecksum)
-                                log.verbose("Printing GPG URL/Files")
-                                log.verbose("%s %s" % (GPGItemURL, GPGItemFile) )
-
-                                FetchData['Item'].append(ReleaseItemURL + " " + ReleaseItemFile + " " + str(ItemSize) + " " + ItemChecksum)
-                                log.verbose("Printing Release URL/Files")
-                                log.verbose("%s %s" % (ReleaseItemURL, ReleaseItemFile) )
-                        FetchData['Item'].append( item )
+                        
+                        if item.startswith("Changelog/"):
+                                (strConstant, pkgName, pkgVersion) = item.split("/")
+                                pkgVersion = pkgVersion.strip()
+                                PackageInstalledVersion[pkgName] = pkgVersion
+                                log.verbose("Added package %s with version %s to dict\n" % (pkgName, pkgVersion))
+                        else:
+                                # Interim fix for Debian bug #664654
+                                (ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
+                                if ItemURL.endswith("InRelease"):
+                                        log.verbose("APT uses new InRelease auth mechanism")
+                                        ExtraItemURL = ItemURL.rstrip(ItemURL.split("/")[-1])
+                                        GPGItemURL = "'" + ExtraItemURL + "Release.gpg"
+                                        ReleaseItemURL = "'" + ExtraItemURL + "Release"
+                                        ExtraItemFile = ItemFile.rstrip(ItemFile.split("_")[-1])
+                                        GPGItemFile = ExtraItemFile + "Release.gpg"
+                                        ReleaseItemFile = ExtraItemFile + "Release"
+                                        
+                                        FetchData['Item'].append(GPGItemURL + " " + GPGItemFile + " " + str(ItemSize) + " " + ItemChecksum)
+                                        log.verbose("Printing GPG URL/Files")
+                                        log.verbose("%s %s" % (GPGItemURL, GPGItemFile) )
+        
+                                        FetchData['Item'].append(ReleaseItemURL + " " + ReleaseItemFile + " " + str(ItemSize) + " " + ItemChecksum)
+                                        log.verbose("Printing Release URL/Files")
+                                        log.verbose("%s %s" % (ReleaseItemURL, ReleaseItemFile) )
+                                FetchData['Item'].append( item )
         del raw_data_list
         
         # INFO: Let's get the total number of items. This will get the
