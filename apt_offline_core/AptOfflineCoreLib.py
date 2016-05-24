@@ -2085,6 +2085,8 @@ def main():
                           help="Type of upgrade to do. Use one of upgrade, dist-upgrade, dselect-ugprade",
                           action="store", type=str, metavar="upgrade", default="upgrade")
         
+        parser_set.add_argument("--generate-changelog", dest="generate_changelog",
+                                help="Generate changelog of the version to be downloaded", action="store_false")
         
         # GET command options
         parser_get = subparsers.add_parser('get', parents=[global_options])
