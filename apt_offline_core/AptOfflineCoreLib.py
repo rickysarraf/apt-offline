@@ -83,15 +83,13 @@ guiMetaCompleted = False
 totalSize = [0,0]              # total_size, current_total
 
 #INFO: Check if python-apt is installed
-PythonApt = True
+PythonApt = False
 try:
         import apt
         import apt_pkg
+        PythonApt = True
 except ImportError:
         PythonApt = False
-
-# Completely disable python-apt
-PythonApt = False
     
 from apt_offline_core import AptOfflineLib
 
@@ -928,8 +926,8 @@ def fetcher( args ):
                         AptOfflineLib.FileMgmt.__init__(self)
         
         if Str_DownloadDir is None and Str_BundleFile is None:
-            log.err("Please provide a target download file/folder location.\n")
-            sys.exit(1)
+                log.err("Please provide a target download file/folder location.\n")
+                sys.exit(1)
 
         if Str_DownloadDir is not None:
                 if os.access( Str_DownloadDir, os.W_OK ) is True:
@@ -947,18 +945,18 @@ def fetcher( args ):
                                 errfunc( 1, '' , Str_DownloadDir)
                                 
         else:
-            tempdir = tempfile.gettempdir()
-            if os.access( tempdir, os.W_OK ) is True:
-                pidname = os.getpid()
-                randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
-                # 5 byte random junk to make mkdir possible multiple times
-                # use-case -> download many sigs of different machines using one instance
-                tempdir = os.path.join(tempdir , "apt-offline-downloads-" + str(pidname) + randomjunk)
-                os.mkdir(tempdir)
-                Str_DownloadDir = os.path.abspath(tempdir)
-            else:
-                log.err( "%s is not writable\n" % (tempdir) ) 
-                errfunc ( 1, '', tempdir)
+                tempdir = tempfile.gettempdir()
+                if os.access( tempdir, os.W_OK ) is True:
+                        pidname = os.getpid()
+                        randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
+                        # 5 byte random junk to make mkdir possible multiple times
+                        # use-case -> download many sigs of different machines using one instance
+                        tempdir = os.path.join(tempdir , "apt-offline-downloads-" + str(pidname) + randomjunk)
+                        os.mkdir(tempdir)
+                        Str_DownloadDir = os.path.abspath(tempdir)
+                else:
+                        log.err( "%s is not writable\n" % (tempdir) ) 
+                        errfunc ( 1, '', tempdir)
 
         if Str_BundleFile is not None:
                 Str_BundleFile = os.path.abspath(Str_BundleFile)
@@ -1948,6 +1946,7 @@ def setter(args):
         Str_SetUpgradeType = args.upgrade_type
         Bool_SrcBuildDep = args.src_build_dep
         Bool_TestWindows = args.simulate
+        Bool_Changelog = args.generate_changelog
         
         if Bool_SetUpdate is False and Bool_SetUpgrade is False and List_SetInstallPackages is None \
         and List_SetInstallSrcPackages is None:
@@ -2021,6 +2020,34 @@ def setter(args):
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
         
+        if Bool_Changelog and PythonApt:
+                log.verbose("Initializing apt cache\n")
+                aptCache = apt.Cache()
+                aptCache.open()
+                
+                try:
+                        sigFile = open(Str_SetArg, 'rw+')
+                except Exception:
+                        traceback.format_exc()
+                
+                for eachLine in sigFile.readlines():
+                        (pkgUrl, pkgFile, pkgSize, pkgChecksum) = stripper(eachLine)
+                        pkgName = pkgFile.split("_")[0]
+                        try:
+                                pkgMeta = aptCache[pkgName]
+                                pkgInstalledVersion = pkgMeta.installed.version
+                        except AttributeError:
+                                log.verbose("Package %s is not installed. Thus no changelog\n")
+                        except Exception:
+                                traceback.format_exc()
+                        
+                        #INFO: '/' will be the delimeter
+                        sigFile.writelines("Changelog/%s/%s\n" % (pkgName, pkgInstalledVersion))
+        else:
+                #INFO: No crude ways. Will only work with python-apt
+                log.err("Cannot provide changelog without proper backend support\n")      
+
+
 def main():
         '''Here we basically do the sanity checks, some validations
         and then accordingly call the corresponding functions.
