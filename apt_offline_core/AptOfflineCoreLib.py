@@ -87,6 +87,7 @@ PythonApt = False
 try:
         import apt
         import apt_pkg
+        from apt.debfile import DebPackage
         PythonApt = True
 except ImportError:
         PythonApt = False
@@ -864,15 +865,37 @@ def errfunc(errno, errormsg, filename):
 
 def buildChangelog(package, installedVersion):
         '''Return latest changes against installedVersion'''
+        constChangelog = "changelog.Debian.gz"
         
         if PythonApt is not True:
                 log.err("Cannot provide changelog feature\n")
                 return False
         else:
-                pkgHandle = apt.debfile.DebPackage(package)
+                pkgHandle = DebPackage(package)
                 for pkgFile in pkgHandle.filelist:
-                        if pkgFile.contains("changelog.Debian.gz"):
-                                pkgHandle.data_content(pkgFile)
+                        if constChangelog in pkgFile:
+                                chlogFile = tempfile.NamedTemporaryFile('rw+b', bufsize=-1, dir=None, delete=True)
+                                chlogFile.writelines(pkgHandle.data_content(pkgFile))
+                                chlogFile.flush()
+                                
+                                
+                                
+                                #TODO: Problem is the changelog.Debian.gz archive file. Find a way to autoconvert to str,
+                                # or else do it manually
+                                
+                                #Seek to beginning
+                                chlogFile.seek(0)
+                                
+                                for eachLine in chlogFile.readlines():
+                                        if installedVersion in eachLine:
+                                                break
+                                        else:
+                                                log.msg(eachLine)
+                                        
+                                print "Installed version for package %s in %s\n" % (package, installedVersion)
+                                break
+                                
+                                
 def fetcher( args ):
         
         # get opts
@@ -1038,6 +1061,7 @@ def fetcher( args ):
                                 FetchData['Item'].append( item )
         del raw_data_list
         
+                
         # INFO: Let's get the total number of items. This will get the
         # correct total count in the progress bar.
         total_items = len(FetchData['Item'])
@@ -1096,6 +1120,11 @@ def fetcher( args ):
                         
                         #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
                         if full_file_path != False:
+                                
+                                print "Package namei is: %s\n" % (PackageName)
+                                if PackageName in PackageInstalledVersion.keys():
+                                        buildChangelog(full_file_path, PackageInstalledVersion[PackageName])
+                                        pass
                                 
                                 #INFO: When we copy the payload from the local cache, we need to update the progressbar
                                 # Hence we are doing it explicitly for local cache found files
