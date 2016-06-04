@@ -215,6 +215,19 @@ class Log:
         
                 if self.lock:
                         self.DispLock.release()
+
+        def warn( self, msg ):
+                '''Print messages with a warningr. If locking is available use them.'''
+                if self.lock:
+                        self.DispLock.acquire( True )
+            
+                self.set_color( 'Magenta' )
+                sys.stderr.write( "WARN: " + msg )
+                sys.stderr.flush()
+                self.set_color( 'SwitchOffAttributes' )
+        
+                if self.lock:
+                        self.DispLock.release()
         
         def err( self, msg ):
                 '''Print messages with an error. If locking is available use them.'''
