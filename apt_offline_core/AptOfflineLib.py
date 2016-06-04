@@ -178,7 +178,7 @@ class Log:
                         self.platform = 'posix'
                         self.color = {'Red': '31m', 'Black': '30m',
                                       'Green': '32m', 'Yellow': '33m',
-                                      'Blue': '34m', 'Magneta': '35m',
+                                      'Blue': '34m', 'Magenta': '35m',
                                       'Cyan': '36m', 'White': '37m',
                                       'Bold_Text': '1m', 'Underline': '4m',
                                       'Blink': '5m', 'SwitchOffAttributes': '0m'}
