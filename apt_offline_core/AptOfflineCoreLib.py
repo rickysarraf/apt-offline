@@ -180,8 +180,8 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                 except Exception as e:
                                         #INFO: Some of these exceptions are sporadic. For example, this one was hit because of network timeout
                                         # And we don't want the entire operation to fail because of this
-                                        log.err("Foreign exception raised in module debianbts\n")
-                                        log.err("Failed to download bug report for %s\nWill continue to download others\n" % (eachBug))
+                                        log.warn("Foreign exception raised in module debianbts\n")
+                                        log.warn("Failed to download bug report for %s\nWill continue to download others\n" % (eachBug))
                                         log.verbose(traceback.format_exc())
                                         continue
                                 
@@ -1693,7 +1693,7 @@ def installer( args ):
                                                         data.file.write( zipBugFile.read( filename ) )
                                                         data.file.flush()
                                                 except (zipfile.BadZipfile, zlib.error):
-                                                        log.err("Failed to read archive file: %s\nContinuing with the rest\n" % (filename))
+                                                        log.warn("Failed to read archive file: %s\nContinuing with the rest\n" % (filename))
                                                         log.verbose(traceback.format_exc())
                                                         continue
                                                         #INFO: We can't ranosm the entire payload for a bad CRC for individual files.
@@ -2087,7 +2087,7 @@ def setter(args):
                         except AttributeError:
                                 log.verbose("Package %s is not installed. Thus no changelog\n")
                         except KeyError:
-                                log.err("Cannot fine package %s in package cache\n" % (pkgName))
+                                log.warn("Cannot fine package %s in package cache\n" % (pkgName))
                                 continue
                         except Exception:
                                 traceback.format_exc()
