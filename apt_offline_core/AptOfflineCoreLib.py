@@ -956,33 +956,21 @@ def fetcher( args ):
                 sys.exit(1)
 
         if Str_DownloadDir is not None:
-                if os.access( Str_DownloadDir, os.W_OK ) is True:
-                        Str_DownloadDir = os.path.abspath( Str_DownloadDir )
-                else:
-                        #INFO: If the path is provided, but doesn't exist
-                        # Create it.
-                        try:
-                                os.umask( 0002 )
-                                os.mkdir( Str_DownloadDir )
-                                Str_DownloadDir = os.path.abspath( Str_DownloadDir )
-                        except Exception as e:
-                                log.verbose(traceback.format_exc())
-                                log.err( "I couldn't create directory %s\n" % (Str_DownloadDir) )
-                                errfunc( 1, '' , Str_DownloadDir)
-                                
+            if os.access( Str_DownloadDir, os.W_OK ) is True:
+                Str_DownloadDir = os.path.abspath( Str_DownloadDir )
         else:
-                tempdir = tempfile.gettempdir()
-                if os.access( tempdir, os.W_OK ) is True:
-                        pidname = os.getpid()
-                        randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
-                        # 5 byte random junk to make mkdir possible multiple times
-                        # use-case -> download many sigs of different machines using one instance
-                        tempdir = os.path.join(tempdir , "apt-offline-downloads-" + str(pidname) + randomjunk)
-                        os.mkdir(tempdir)
-                        Str_DownloadDir = os.path.abspath(tempdir)
-                else:
-                        log.err( "%s is not writable\n" % (tempdir) ) 
-                        errfunc ( 1, '', tempdir)
+            tempdir = tempfile.gettempdir()
+            if os.access( tempdir, os.W_OK ) is True:
+                pidname = os.getpid()
+                randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
+                # 5 byte random junk to make mkdir possible multiple times
+                # use-case -> download many sigs of different machines using one instance
+                tempdir = os.path.join(tempdir , "apt-offline-downloads-" + str(pidname) + randomjunk)
+                os.mkdir(tempdir)
+                Str_DownloadDir = os.path.abspath(tempdir)
+            else:
+                log.err( "%s is not writable\n" % (tempdir) ) 
+                errfunc ( 1, '', tempdir)
 
         if Str_BundleFile is not None:
                 Str_BundleFile = os.path.abspath(Str_BundleFile)
