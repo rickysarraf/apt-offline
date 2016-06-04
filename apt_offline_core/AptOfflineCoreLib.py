@@ -1017,8 +1017,24 @@ def fetcher( args ):
                         self.BugReports = BoolBugReports
                         self.DownloadDir = BoolDownloadDir
                         #self.CacheDir = BoolCacheDir
-                        
-                def writeData(self):
+                
+                
+                def verifyPayloadIntegrity(self, payload, checksum):
+                    '''Verify the integrity of the payload against the checksum'''
+                    
+                    if self.CheckHashDigest(payload, checksum):
+                        pass
+                
+                def writeData(self, data):
+                    '''Write data to backend'''
+                    pass
+                
+                def writeToCache(self, data):
+                    '''Write data to cacheDir'''
+                    pass
+                
+                def processBugReports(self, pkgName):
+                    '''Process Bug Reports'''
                     pass
         
         
@@ -1121,6 +1137,38 @@ def fetcher( args ):
                         #INFO: find_first_match() returns False or a file name with absolute path
                         full_file_path = func(Str_CacheDir, pkgFile)
                         
+                        #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
+                        if full_file_path != False:
+                            print "Package namei is: %s\n" % (PackageName)
+                            if PackageName in PackageInstalledVersion.keys():
+                                    buildChangelog(full_file_path, PackageInstalledVersion[PackageName])
+                                    pass
+                            
+                            #INFO: When we copy the payload from the local cache, we need to update the progressbar
+                            # Hence we are doing it explicitly for local cache found files
+                            FetcherInstance.addItem(download_size)
+                            
+                            if FetcherInstance.CheckHashDigest(full_file_path, checksum):
+                                FetcherInstance.writeData(full_file_path)
+                                FetcherInstance.processBugReports(PackageName)
+                            else:
+                                log.verbose("%s checksum mismatch. Skipping file %s\n" % (pkgFile, LINE_OVERWRITE_FULL) )
+                                log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
+                                if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir) == True:
+                                    log.success("\r%s done %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                    FetcherInstance.writeData(pkgFile)
+                                    FetcherInstance.writeToCache(pkgFile)
+                                    FetcherInstance.processBugReports(PackageName)
+                        else:
+                            log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
+                            if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir) == True:
+                                log.success("\r%s done %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                FetcherInstance.writeData(pkgFile)
+                                FetcherInstance.writeToCache(pkgFile)
+                                FetcherInstance.processBugReports(PackageName)
+                        
+                        #TODO: Refactor this snippet
+                                
                         #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
                         if full_file_path != False:
                                 
