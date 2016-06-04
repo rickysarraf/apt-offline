@@ -652,7 +652,7 @@ class LockAPT:
                 try:
                         self.listLock = os.open(lists, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
                         self.pkgLock = os.open(packages, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
-                except Exception as e:
+                except Exception:
                         log.verbose(traceback.format_exc())
                         log.err("Couldn't open lockfile\n")
                         return False
@@ -661,7 +661,7 @@ class LockAPT:
                 try:
                         fcntl.lockf(self.listLock, fcntl.LOCK_EX | fcntl.LOCK_NB)
                         return True
-                except Exception as e:
+                except Exception:
                         log.verbose(traceback.format_exc())
                         return False
                 
@@ -669,7 +669,7 @@ class LockAPT:
                 try:
                         fcntl.lockf(self.pkgLock, fcntl.LOCK_EX | fcntl.LOCK_NB)
                         return True
-                except Exception as e:
+                except Exception:
                         log.verbose(traceback.format_exc())
                         return False
                 
@@ -677,7 +677,7 @@ class LockAPT:
                 try:
                         fcntl.lockf(self.listLock, fcntl.LOCK_UN)
                         return True
-                except Exception as e:
+                except Exception:
                         log.verbose(traceback.format_exc())
                         return False
         
@@ -685,7 +685,7 @@ class LockAPT:
                 try:
                         fcntl.lockf(self.pkgLock, fcntl.LOCK_UN)
                         return True
-                except Exception as e:
+                except Exception:
                         log.verbose(traceback.format_exc())
                         return False
 
