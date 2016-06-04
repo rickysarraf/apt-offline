@@ -98,10 +98,12 @@ class Checksum:
                 return hash.hexdigest() 
         
         def CheckHashDigest( self, file, checksum ):
-                type = checksum.split(":")[0]
-                type = type.lower()
-                checksum = checksum.split( ":" )[1]
-                return self.HashMessageDigestAlgorithms( checksum, type, file )
+            '''Return Bool against file and its checksum'''
+            
+            type = checksum.split(":")[0]
+            type = type.lower()
+            checksum = checksum.split( ":" )[1]
+            return self.HashMessageDigestAlgorithms( checksum, type, file )
         
 
 class Log:
