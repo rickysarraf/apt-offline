@@ -947,8 +947,9 @@ def fetcher( args ):
                         sys.exit( 1 )
                         
         if Str_CacheDir is not None:
-                if os.path.isdir( Str_CacheDir ) is False:
-                        log.verbose( "WARNING: cache dir %s is incorrect. Did you give the full path ?\n" % (Str_CacheDir) )
+            if os.path.isdir( Str_CacheDir ) is False:
+                log.err( "WARNING: cache dir %s is incorrect. Did you give the full path ?\n" % (Str_CacheDir) )
+                sys.exit(1)
         
         if Str_DownloadDir is None and Str_BundleFile is None:
                 log.err("Please provide a target download file/folder location.\n")
@@ -1076,7 +1077,6 @@ def fetcher( args ):
                                 FetchData['Item'].append( item )
         del raw_data_list
         
-                
         # INFO: Let's get the total number of items. This will get the
         # correct total count in the progress bar.
         total_items = len(FetchData['Item'])
