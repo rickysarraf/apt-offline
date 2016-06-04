@@ -70,40 +70,40 @@ except ImportError:
     
 class Checksum:
         
-        def HashMessageDigestAlgorithms( self, checksum, HashType, file ):
-                
-                try:
-                        data = open( file, 'rb' )
-                        if HashType == "sha256":
-                                Hash = self.sha256( data )
-                        elif HashType == "md5" or HashType == "md5sum":
-                                Hash = self.md5( data )
-                        else: Hash = None
-                except IOError:
-                        return False
-                data.close()
-                
-                if Hash == checksum:
-                        return True
-                return False
-        
-        def sha256( self, data ):
-                hash = hashlib.sha256()
-                hash.update( data.read() )
-                return hash.hexdigest()
-        
-        def md5( self, data ):
-                hash = hashlib.md5()
-                hash.update( data.read() )
-                return hash.hexdigest() 
-        
-        def CheckHashDigest( self, file, checksum ):
-            '''Return Bool against file and its checksum'''
+    def HashMessageDigestAlgorithms( self, checksum, HashType, checksumFile ):
             
-            type = checksum.split(":")[0]
-            type = type.lower()
-            checksum = checksum.split( ":" )[1]
-            return self.HashMessageDigestAlgorithms( checksum, type, file )
+        try:
+            data = open( checksumFile, 'rb' )
+            if HashType == "sha256":
+                Hash = self.sha256( data )
+            elif HashType == "md5" or HashType == "md5sum":
+                Hash = self.md5( data )
+            else: Hash = None
+        except IOError:
+            return False
+        data.close()
+        
+        if Hash == checksum:
+            return True
+        return False
+    
+    def sha256( self, data ):
+        sha256 = hashlib.sha256()
+        sha256.update( data.read() )
+        return sha256.hexdigest()
+    
+    def md5( self, data ):
+        md5hash = hashlib.md5()
+        md5hash.update( data.read() )
+        return md5hash.hexdigest() 
+    
+    def CheckHashDigest( self, checksumFile, checksum ):
+        '''Return Bool against file and its checksum'''
+        
+        checksumType = checksum.split(":")[0]
+        checksumType = checksumType.lower()
+        checksum = checksum.split( ":" )[1]
+        return self.HashMessageDigestAlgorithms( checksum, checksumType, checksumFile )
         
 
 class Log:
