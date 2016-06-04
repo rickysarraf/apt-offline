@@ -973,16 +973,16 @@ def fetcher( args ):
                 errfunc ( 1, '', tempdir)
 
         if Str_BundleFile is not None:
-                Str_BundleFile = os.path.abspath(Str_BundleFile)
-                if os.access(Str_BundleFile, os.F_OK ):
-                        log.err( "%s already present.\nRemove it first.\n" % ( Str_BundleFile ) )
-                        sys.exit( 1 )
-                else:
-                        try:
-                                open(Str_BundleFile, 'w')
-                        except IOError:
-                                log.err("Cannot write to file %s\n" % (Str_BundleFile) )
-                                sys.exit(1)
+            Str_BundleFile = os.path.abspath(Str_BundleFile)
+            if os.access(Str_BundleFile, os.F_OK ):
+                log.err( "%s already present.\nRemove it first.\n" % ( Str_BundleFile ) )
+                sys.exit( 1 )
+            else:
+                try:
+                    open(Str_BundleFile, 'w')
+                except IOError:
+                    log.err("Cannot write to file %s\n" % (Str_BundleFile) )
+                    sys.exit(1)
 
         if Bool_BugReports:
                 if DebianBTS is True:
@@ -1016,7 +1016,7 @@ def fetcher( args ):
                         self.BundleFile = BoolBundleFile
                         self.BugReports = BoolBugReports
                         self.DownloadDir = BoolDownloadDir
-                        self.CacheDir = BoolCacheDir
+                        #self.CacheDir = BoolCacheDir
                         
                 def writeData(self):
                     pass
