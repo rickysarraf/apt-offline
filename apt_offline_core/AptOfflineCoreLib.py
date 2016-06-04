@@ -874,7 +874,7 @@ def buildChangelog(package, installedVersion):
                 pkgHandle = DebPackage(package)
                 for pkgFile in pkgHandle.filelist:
                         if constChangelog in pkgFile:
-                                chlogFile = tempfile.NamedTemporaryFile('rw+b', bufsize=-1, dir=None, delete=True)
+                                chlogFile = tempfile.NamedTemporaryFile('rw+', bufsize=-1, dir=None, delete=True)
                                 chlogFile.writelines(pkgHandle.data_content(pkgFile))
                                 chlogFile.flush()
                                 
