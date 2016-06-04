@@ -950,15 +950,6 @@ def fetcher( args ):
                 if os.path.isdir( Str_CacheDir ) is False:
                         log.verbose( "WARNING: cache dir %s is incorrect. Did you give the full path ?\n" % (Str_CacheDir) )
         
-        class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum, AptOfflineLib.FileMgmt ):
-                def __init__( self, width, lock, total_items ):
-                        DownloadFromWeb.__init__( self, width=width, total_items=total_items )
-                        #ProgressBar.__init__(self, width)
-                        #self.width = width
-                        AptOfflineLib.Archiver.__init__( self, lock=lock )
-                        #self.lock = lock
-                        AptOfflineLib.FileMgmt.__init__(self)
-        
         if Str_DownloadDir is None and Str_BundleFile is None:
                 log.err("Please provide a target download file/folder location.\n")
                 sys.exit(1)
@@ -1017,6 +1008,30 @@ def fetcher( args ):
                 else:
                         log.err( "Couldn't find debianbts module. Cannot fetch Bug Reports.\n" )
                         Bool_BugReports = False
+
+
+        class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum, AptOfflineLib.FileMgmt ):
+                def __init__( self, BoolCheckSum=False, BoolBundleFile=False, BoolBugReports=False, BoolDownloadDir=False, 
+                              BoolCacheDir=False, width, lock, total_items ):
+                        
+                        DownloadFromWeb.__init__( self, width=width, total_items=total_items )
+                        #ProgressBar.__init__(self, width)
+                        #self.width = width
+                        AptOfflineLib.Archiver.__init__( self, lock=lock )
+                        #self.lock = lock
+                        AptOfflineLib.FileMgmt.__init__(self)
+                        
+                        
+                        #INFO: Bunch of important attributes
+                        self.CheckSum = BoolCheckSum
+                        self.BundleFile = BoolBundleFile
+                        self.BugReports = BoolBugReports
+                        self.DownloadDir = BoolDownloadDir
+                        self.CacheDir = BoolCacheDir
+                        
+                def writeData(self):
+                    pass
+        
         
         FetchData = {} #Info: Initialize an empty dictionary.
         PackageInstalledVersion = {} #INFO: This key/val dict contains record of installed packages
