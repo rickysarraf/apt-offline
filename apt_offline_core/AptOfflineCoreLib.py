@@ -713,12 +713,13 @@ class GenericDownloadFunction():
                                 socket_timeout = None
                                 try:
                                         data.write (temp.read(block_size))
-                                except socket.timeout, timeout:
+                                except socket.timeout:
                                         socket_timeout = True
                                         socket_counter += 1
-                                except socket.error, error:
+                                except socket.error:
                                         socket_timeout = True
                                         socket_counter += 1
+                                
                                 if socket_counter == SOCKET_TIMEOUT_RETRY:
                                         errfunc(101010, "Max timeout retry count reached. Discontinuing download.\n", url)
                                         
@@ -729,7 +730,7 @@ class GenericDownloadFunction():
                                 if socket_timeout is True:
                                         errfunc(10054, "Socket Timeout. Retry - %d\n" % (socket_counter) , url)
                                         continue
-                
+                                    
                                 increment = min(block_size, size - i)
                                 i += block_size
                                 counter += 1
