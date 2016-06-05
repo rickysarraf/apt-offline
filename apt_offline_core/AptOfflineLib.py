@@ -544,6 +544,16 @@ class FileMgmt( object ):
                 except IOError:
                         return False
                 
+        def copy_file(self, src, dest):
+            '''Copy file from src to dest'''
+            try:
+                srcFile = open(src, 'rb')
+                destFile = open(dest + "/" + os.path.basename(src), 'wb')
+                
+                destFile.write(srcFile.read())
+            except IOError:
+                return False
+            
         def move_folder( self, src, dest ):
                 '''Move folder from src to dest.'''
                 if os.path.isdir( dest ):
