@@ -1001,23 +1001,22 @@ def fetcher( args ):
 
 
         class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum, AptOfflineLib.FileMgmt ):
-                def __init__( self, BoolCheckSum=False, BoolBundleFile=False, BoolBugReports=False, BoolDownloadDir=False, 
-                              BoolCacheDir=False, width, lock, total_items ):
+                #def __init__( self, width, lock, total_items, BoolCheckSum=False, BoolBundleFile=False, BoolBugReports=False, BoolDownloadDir=False, BoolCacheDir=False):
+                def __init__( self, *args, **kwargs):
                         
-                        DownloadFromWeb.__init__( self, width=width, total_items=total_items )
+                        DownloadFromWeb.__init__( self, width=kwargs.pop('width'), total_items=kwargs.pop('total_items') )
                         #ProgressBar.__init__(self, width)
                         #self.width = width
-                        AptOfflineLib.Archiver.__init__( self, lock=lock )
+                        AptOfflineLib.Archiver.__init__( self, lock=kwargs.pop('lock') )
                         #self.lock = lock
                         AptOfflineLib.FileMgmt.__init__(self)
                         
-                        
                         #INFO: Bunch of important attributes
-                        self.CheckSum = BoolCheckSum
-                        self.BundleFile = BoolBundleFile
-                        self.BugReports = BoolBugReports
-                        self.DownloadDir = BoolDownloadDir
-                        #self.CacheDir = BoolCacheDir
+                        self.CheckSum = Bool_DisableMD5Check
+                        self.BundleFile = Str_BundleFile
+                        self.BugReports = Bool_BugReports
+                        self.DownloadDir = Str_DownloadDir
+                        self.CacheDir = Str_CacheDir
                 
                 
                 def verifyPayloadIntegrity(self, payload, checksum):
@@ -1029,6 +1028,14 @@ def fetcher( args ):
                 def writeData(self, data):
                     '''Write data to backend'''
                     pass
+                
+                def writeToDir(self, data):
+                    '''Write data to directory'''
+                    self.copy_file(data, self.DownloadDir)
+                
+                def writeToArchive(self, data):
+                    '''Write data to archive file'''
+                    self.compress_the_file(self.BundleFile, data)
                 
                 def writeToCache(self, data):
                     '''Write data to cacheDir'''
@@ -1085,8 +1092,8 @@ def fetcher( args ):
         # INFO: Let's get the total number of items. This will get the
         # correct total count in the progress bar.
         total_items = len(FetchData['Item'])
-        
-        FetcherInstance = FetcherClass( width=30, lock=True, total_items=total_items )
+        #BoolCheckSum=False, BoolBundleFile=False, BoolBugReports=False, BoolDownloadDir=False, BoolCacheDir=False):
+        FetcherInstance = FetcherClass(Bool_DisableMD5Check, Str_BundleFile, Bool_BugReports, Str_DownloadDir, Str_CacheDir, total_items=total_items, width=30, lock=True)
         
         #INFO: Thread Support
         if Int_NumOfThreads > 2:
@@ -1152,6 +1159,7 @@ def fetcher( args ):
                             if FetcherInstance.CheckHashDigest(full_file_path, checksum):
                                 FetcherInstance.writeData(full_file_path)
                                 FetcherInstance.processBugReports(PackageName)
+                                FetcherInstance.updateValue(download_size)
                             else:
                                 log.verbose("%s checksum mismatch. Skipping file %s\n" % (pkgFile, LINE_OVERWRITE_FULL) )
                                 log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
@@ -1160,6 +1168,7 @@ def fetcher( args ):
                                     FetcherInstance.writeData(pkgFile)
                                     FetcherInstance.writeToCache(pkgFile)
                                     FetcherInstance.processBugReports(PackageName)
+                                    FetcherInstance.updateValue(download_size)
                         else:
                             log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
                             if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir) == True:
@@ -1167,7 +1176,11 @@ def fetcher( args ):
                                 FetcherInstance.writeData(pkgFile)
                                 FetcherInstance.writeToCache(pkgFile)
                                 FetcherInstance.processBugReports(PackageName)
+                                FetcherInstance.updateValue(download_size)
                         
+                        
+                        print "Exiting gracefully"
+                        sys.exit()
                         #TODO: Refactor this snippet
                                 
                         #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
