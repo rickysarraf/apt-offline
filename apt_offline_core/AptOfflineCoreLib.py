@@ -984,6 +984,8 @@ def fetcher( args ):
                 except IOError:
                     log.err("Cannot write to file %s\n" % (Str_BundleFile) )
                     sys.exit(1)
+        else:
+            Str_BundleFile = False
 
         if Bool_BugReports:
                 if DebianBTS is True:
@@ -1027,7 +1029,8 @@ def fetcher( args ):
                 
                 def writeData(self, data):
                     '''Write data to backend'''
-                    pass
+                    if self.BundleFile is not False:
+                        self.writeToArchive(data)
                 
                 def writeToDir(self, data):
                     '''Write data to directory'''
