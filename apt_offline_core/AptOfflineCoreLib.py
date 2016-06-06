@@ -865,24 +865,18 @@ def buildChangelog(package, installedVersion):
                 for pkgFile in pkgHandle.filelist:
                         if constChangelog in pkgFile:
                                 chlogFile = tempfile.NamedTemporaryFile('rw+', bufsize=-1, dir=None, delete=True)
+
+                                #INFO: python-apt is able to read the data from the gzipped changelog dynamically
                                 chlogFile.writelines(pkgHandle.data_content(pkgFile))
                                 chlogFile.flush()
                                 
-                                
-                                
-                                #TODO: Problem is the changelog.Debian.gz archive file. Find a way to autoconvert to str,
-                                # or else do it manually
-                                
                                 #Seek to beginning
                                 chlogFile.seek(0)
-                                
                                 for eachLine in chlogFile.readlines():
                                         if installedVersion in eachLine:
                                                 break
                                         else:
                                                 log.msg(eachLine)
-                                        
-                                print "Installed version for package %s in %s\n" % (package, installedVersion)
                                 break
                                 
                                 
