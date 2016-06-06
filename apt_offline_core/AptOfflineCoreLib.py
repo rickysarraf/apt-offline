@@ -947,16 +947,16 @@ def fetcher( args ):
                         log.err( "File %s not present. Check path.\n" % (Str_GetArg) )
                         sys.exit( 1 )
                         
-        if Str_CacheDir is not None:
+        if not Str_CacheDir:
             if os.path.isdir( Str_CacheDir ) is False:
                 log.err( "WARNING: cache dir %s is incorrect. Did you give the full path ?\n" % (Str_CacheDir) )
                 sys.exit(1)
         
-        if Str_DownloadDir is None and Str_BundleFile is None:
+        if not Str_DownloadDir and not Str_BundleFile:
                 log.err("Please provide a target download file/folder location.\n")
                 sys.exit(1)
 
-        if Str_DownloadDir is not None:
+        if  Str_DownloadDir:
             if os.path.exists(Str_DownloadDir): 
                 if os.path.isdir(Str_DownloadDir):
                     if os.access( Str_DownloadDir, os.W_OK ) is True:
@@ -984,7 +984,7 @@ def fetcher( args ):
                 log.err( "%s is not writable\n" % (tempdir) ) 
                 errfunc ( 1, '', tempdir)
 
-        if Str_BundleFile is not None:
+        if Str_BundleFile:
             Str_BundleFile = os.path.abspath(Str_BundleFile)
             if os.access(Str_BundleFile, os.F_OK ):
                 log.err( "%s already present.\nRemove it first.\n" % ( Str_BundleFile ) )
