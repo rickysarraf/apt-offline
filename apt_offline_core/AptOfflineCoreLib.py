@@ -957,8 +957,19 @@ def fetcher( args ):
                 sys.exit(1)
 
         if Str_DownloadDir is not None:
-            if os.access( Str_DownloadDir, os.W_OK ) is True:
-                Str_DownloadDir = os.path.abspath( Str_DownloadDir )
+            if os.path.exists(Str_DownloadDir): 
+                if os.path.isdir(Str_DownloadDir):
+                    if os.access( Str_DownloadDir, os.W_OK ) is True:
+                        Str_DownloadDir = os.path.abspath( Str_DownloadDir )
+                    else:
+                        log.err("Cannot write to direcotry %s\n" % (Str_DownloadDir))
+                        sys.exit(1)
+                else:
+                    log.err("%s is not a directory\n" % (Str_DownloadDir))
+                    sys.exit(1)
+            else:
+                os.mkdir(Str_DownloadDir)
+                log.verbose("Creating directory %s\n" % (Str_DownloadDir))
         else:
             tempdir = tempfile.gettempdir()
             if os.access( tempdir, os.W_OK ) is True:
@@ -1031,6 +1042,8 @@ def fetcher( args ):
                     '''Write data to backend'''
                     if self.BundleFile is not False:
                         self.writeToArchive(data)
+                    else:
+                        self.writeToDir(data)
                 
                 def writeToDir(self, data):
                     '''Write data to directory'''
