@@ -1286,10 +1286,10 @@ def fetcher( args ):
         # Print the failed files
         if len(errlist) > 0:
                 log.msg("\n\n")
-                log.err("The following files failed to be downloaded.\n")
+                log.warn("The following files failed to be downloaded.\n")
                 log.success("Not all errors are fatal. For eg. Translation files are not present on all mirrors.\n")
                 for error in errlist:
-                        log.err("%s failed.\n" % (error))
+                        log.warn("%s failed.\n" % (error))
         if args.bundle_file:
                 log.msg("\nDownloaded data to %s\n" % (Str_BundleFile) )
         else:
