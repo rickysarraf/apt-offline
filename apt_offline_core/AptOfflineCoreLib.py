@@ -982,11 +982,11 @@ def fetcher( args ):
             Str_BundleFile = False
 
         if Bool_BugReports:
-                if DebianBTS is True:
-                    Bool_BugReports = True
-                else:
-                        log.err( "Couldn't find debianbts module. Cannot fetch Bug Reports.\n" )
-                        Bool_BugReports = False
+            if DebianBTS is True:
+                Bool_BugReports = True
+            else:
+                log.err( "Couldn't find debianbts module. Cannot fetch Bug Reports.\n" )
+                Bool_BugReports = False
 
 
         class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum, AptOfflineLib.FileMgmt, FetchBugReports):
