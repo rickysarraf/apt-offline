@@ -972,7 +972,7 @@ def fetcher( args ):
                 log.verbose("Creating directory %s\n" % (Str_DownloadDir))
         else:
             tempdir = tempfile.gettempdir()
-            if os.access( tempdir, os.W_OK ) is True:
+            if os.access( tempdir, os.W_OK ):
                 pidname = os.getpid()
                 randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
                 # 5 byte random junk to make mkdir possible multiple times
