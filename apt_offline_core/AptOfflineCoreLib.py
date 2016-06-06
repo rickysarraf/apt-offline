@@ -136,33 +136,25 @@ Bool_Verbose = False
 log = AptOfflineLib.Log( Bool_Verbose, lock=True )
 
        
-class FetchBugReports( AptOfflineLib.Archiver ):
-        def __init__( self, apt_bug_file_format, IgnoredBugTypes, ArchiveFile=None, lock=False ):
+class FetchBugReports:
+        def __init__( self, apt_bug_file_format, IgnoredBugTypes, ArchiveFile=None, lock=False, DownloadDir=None ):
                 self.bugsList = []
                 self.IgnoredBugTypes = IgnoredBugTypes
                 self.lock = lock
                 self.apt_bug = apt_bug_file_format
+                self.DownloadDir = DownloadDir
+                self.ArchiveFile = ArchiveFile
         
-                if self.lock:
-                        AptOfflineLib.Archiver.__init__( self, lock )
-                        self.ArchiveFile = ArchiveFile
-        
-        def FetchBugsDebian( self, PackageName, Filename=None ):
+        def FetchBugsDebian( self, PackageName):
                 '''0 => False
                 1 => No Bug Reports
                 2 => True'''
-                
-                if Filename != None:
-                        try:
-                                file_handle = open( Filename, 'a' )
-                        except IOError:
-                                sys.exit( 1 )
                 
                 try:
                         #( num_of_bugs, header, self.bugs_list ) = debianbts.get_bugs( 'package', PackageName )
                         self.bugs_list = debianbts.get_bugs( 'package', PackageName )
                         num_of_bugs = len(self.bugs_list)
-                except Exception as e:
+                except Exception:
                         log.verbose(traceback.format_exc())
                         log.err("Foreign exception raised in module debianbts\n")
                         log.err("Failed to download bug report for package %s\n" % (PackageName))
@@ -177,7 +169,7 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                 # TODO: Handle exceptions later
                                 try:
                                         bugReport = debianbts.get_bug_log(eachBug)
-                                except Exception as e:
+                                except Exception:
                                         #INFO: Some of these exceptions are sporadic. For example, this one was hit because of network timeout
                                         # And we don't want the entire operation to fail because of this
                                         log.warn("Foreign exception raised in module debianbts\n")
@@ -188,14 +180,8 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                 # This tells us how many follow-ups for the bug report are present.
                                 bugReportLength = bugReport.__len__()
                                 writeBugReport = 0
-                                
-                                if Filename == None:
-                                        #INFO: '{}' is the bug split identifier - Used at other places also
-                                        self.fileName = PackageName + "{}" + str(eachBug) + "{}" + self.apt_bug
-                                        file_handle = open( self.fileName, 'w' )
-                                else:
-                                        self.fileName = Filename
-                                        file_handle = open( self.fileName, 'a' )
+                                self.fileName = os.path.join(tempfile.gettempdir(), PackageName + "{}" + str(eachBug) + "{}" + self.apt_bug)
+                                file_handle = open( self.fileName, 'w' )
             
                                 #TODO: Can we manipulate these headers in a more efficient way???
                                 for line in bugReport[writeBugReport]['header'].encode('utf8').split("\n"):
@@ -214,8 +200,11 @@ class FetchBugReports( AptOfflineLib.Archiver ):
                                 file_handle.close()
 
                                 #We're adding to an archive file here.
-                                if self.lock:
-                                        self.AddToArchive( self.ArchiveFile, self.fileName )
+                                if self.ArchiveFile:
+                                    self.AddToArchive( self.ArchiveFile, self.fileName )
+                                elif self.DownloadDir:
+                                    shutil.move(self.fileName, self.DownloadDir)    
+                                
                                 atleast_one_bug_report_downloaded = True
                         if atleast_one_bug_report_downloaded:
                                 return 2
@@ -1000,29 +989,24 @@ def fetcher( args ):
 
         if Bool_BugReports:
                 if DebianBTS is True:
-                        if Str_BundleFile is not None:
-                                #INFO: We are creating an archive then.
-                                # For now, we support zip archives
-                                FetchBugReportsDebian = FetchBugReports( apt_bug_file_format, IgnoredBugTypes, Str_BundleFile, lock=True )
-                        else:
-                                #INFO: No bundle file to be created.
-                                # Data will be stored in the Str_DownloadDir folder
-                                FetchBugReportsDebian = FetchBugReports( apt_bug_file_format, IgnoredBugTypes )
+                    Bool_BugReports = True
                 else:
                         log.err( "Couldn't find debianbts module. Cannot fetch Bug Reports.\n" )
                         Bool_BugReports = False
 
 
-        class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum, AptOfflineLib.FileMgmt ):
+        class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum, AptOfflineLib.FileMgmt, FetchBugReports):
                 #def __init__( self, width, lock, total_items, BoolCheckSum=False, BoolBundleFile=False, BoolBugReports=False, BoolDownloadDir=False, BoolCacheDir=False):
                 def __init__( self, *args, **kwargs):
                         
                         DownloadFromWeb.__init__( self, width=kwargs.pop('width'), total_items=kwargs.pop('total_items') )
                         #ProgressBar.__init__(self, width)
                         #self.width = width
-                        AptOfflineLib.Archiver.__init__( self, lock=kwargs.pop('lock') )
+                        AptOfflineLib.Archiver.__init__( self, lock=kwargs.get('lock') )
                         #self.lock = lock
                         AptOfflineLib.FileMgmt.__init__(self)
+                        
+                        FetchBugReports.__init__(self, apt_bug_file_format, IgnoredBugTypes, Str_BundleFile, lock=kwargs.get('lock'))
                         
                         #INFO: Bunch of important attributes
                         self.CheckSum = Bool_DisableMD5Check
@@ -1059,7 +1043,10 @@ def fetcher( args ):
                 
                 def processBugReports(self, pkgName):
                     '''Process Bug Reports'''
-                    pass
+                    if self.BundleFile:
+                        self.FetchBugsDebian(pkgName)
+                    else:
+                        self.FetchBugsDebian(pkgName)
         
         
         FetchData = {} #Info: Initialize an empty dictionary.
