@@ -853,33 +853,6 @@ def errfunc(errno, errormsg, filename):
                 log.err("I don't understand this error code %s\nPlease file a bug report" % (errno))
             
 
-def buildChangelog(package, installedVersion):
-        '''Return latest changes against installedVersion'''
-        constChangelog = "changelog.Debian.gz"
-        
-        if PythonApt is not True:
-                log.err("Cannot provide changelog feature\n")
-                return False
-        else:
-                pkgHandle = DebPackage(package)
-                for pkgFile in pkgHandle.filelist:
-                        if constChangelog in pkgFile:
-                                chlogFile = tempfile.NamedTemporaryFile('rw+', bufsize=-1, dir=None, delete=True)
-
-                                #INFO: python-apt is able to read the data from the gzipped changelog dynamically
-                                chlogFile.writelines(pkgHandle.data_content(pkgFile))
-                                chlogFile.flush()
-                                
-                                #Seek to beginning
-                                chlogFile.seek(0)
-                                for eachLine in chlogFile.readlines():
-                                        if installedVersion in eachLine:
-                                                break
-                                        else:
-                                                log.msg(eachLine)
-                                break
-                                
-                                
 def fetcher( args ):
         
         # get opts
@@ -1041,7 +1014,39 @@ def fetcher( args ):
                         self.FetchBugsDebian(pkgName)
                     else:
                         self.FetchBugsDebian(pkgName)
-        
+
+                def buildChangelog(self, pkgPath, installedVersion):
+                    '''Return latest changes against installedVersion'''
+                    constChangelog = "changelog.Debian.gz"
+                        
+                    if PythonApt is not True:
+                        log.err("Cannot provide changelog feature\n")
+                        return False
+                    else:
+                        pkgHandle = DebPackage(pkgPath)
+                        for pkgFile in pkgHandle.filelist:
+                            if constChangelog in pkgFile:
+                                chlogFile = tempfile.NamedTemporaryFile('rw+', bufsize=-1, dir=None, delete=True)
+                                pkgLogFile = open(os.path.join(tempfile.gettempdir(), pkgHandle.pkgname + ".changelog"), 'w')
+
+                                #INFO: python-apt is able to read the data from the gzipped changelog dynamically
+                                chlogFile.writelines(pkgHandle.data_content(pkgFile))
+                                chlogFile.flush()
+                                
+                                #Seek to beginning
+                                chlogFile.seek(0)
+                                
+                                for eachLine in chlogFile.readlines():
+                                    if installedVersion in eachLine:
+                                        break
+                                    else:
+                                        pkgLogFile.writelines(eachLine)
+                                pkgLogFile.flush()
+                                if self.ArchiveFile:
+                                    self.AddToArchive(self.ArchiveFile, pkgLogFile.name)
+                                else:
+                                    self.move_file(pkgLogFile.name, self.DownloadDir)
+                                break
         
         FetchData = {} #Info: Initialize an empty dictionary.
         PackageInstalledVersion = {} #INFO: This key/val dict contains record of installed packages
@@ -1144,10 +1149,8 @@ def fetcher( args ):
                         
                         #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
                         if full_file_path is not False:
-                            print "Package namei is: %s\n" % (PackageName)
                             if PackageName in PackageInstalledVersion.keys():
-                                    buildChangelog(full_file_path, PackageInstalledVersion[PackageName])
-                                    pass
+                                    FetcherInstance.buildChangelog(full_file_path, PackageInstalledVersion[PackageName])
                             
                             #INFO: When we copy the payload from the local cache, we need to update the progressbar
                             # Hence we are doing it explicitly for local cache found files
@@ -1166,6 +1169,8 @@ def fetcher( args ):
                                     FetcherInstance.writeToCache(pkgFile)
                                     FetcherInstance.processBugReports(PackageName)
                                     FetcherInstance.updateValue(download_size)
+                                else:
+                                    errlist.append(PackageName)
                         else:
                             log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
                             if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
@@ -1174,6 +1179,9 @@ def fetcher( args ):
                                 FetcherInstance.writeToCache(pkgFile)
                                 FetcherInstance.processBugReports(PackageName)
                                 FetcherInstance.updateValue(download_size)
+                            else:
+                                errlist.append(PackageName)
+                        FetcherInstance.completed()
                 else:
                         def DownloadPackages(url):
                                 if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
@@ -1213,6 +1221,7 @@ def fetcher( args ):
                                                 log.verbose("Failed with URL %s %s\n" % (NewUrl, LINE_OVERWRITE_MID) )
                                 if reallyFailed is True:
                                         errlist.append(NewUrl)
+                        FetcherInstance.completed()
 
         # Create two Queues for the requests and responses
         requestQueue = Queue.Queue()
