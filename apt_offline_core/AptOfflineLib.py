@@ -29,6 +29,7 @@ import bz2
 import gzip
 
 import errno
+import shutil
 
 import warnings
 
@@ -540,7 +541,7 @@ class FileMgmt( object ):
                 if not os.path.isdir( dest ):
                         return False
                 try:
-                        os.rename( src, dest + "/" + os.path.basename( src ) )
+                        shutil.move(src, dest)
                 except IOError:
                         return False
                 
