@@ -1924,36 +1924,38 @@ def setter(args):
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
         
-        if Bool_Changelog and PythonApt:
-                log.verbose("Initializing apt cache\n")
-                aptCache = apt.Cache()
-                aptCache.open()
-                
-                try:
-                        sigFile = open(Str_SetArg, 'rw+')
-                except Exception:
-                        traceback.format_exc()
-                
-                for eachLine in sigFile.readlines():
-                        (pkgUrl, pkgFile, pkgSize, pkgChecksum) = stripper(eachLine)
-                        pkgName = pkgFile.split("_")[0]
-                        try:
-                                pkgMeta = aptCache[pkgName]
-                                pkgInstalledVersion = pkgMeta.installed.version
-                        except AttributeError:
-                                log.verbose("Package %s is not installed. Thus no changelog\n")
-                        except KeyError:
-                                log.warn("Cannot fine package %s in package cache\n" % (pkgName))
-                                continue
-                        except Exception:
-                                traceback.format_exc()
-                                raise
-                        
-                        #INFO: '/' will be the delimeter
-                        sigFile.writelines("Changelog/%s/%s\n" % (pkgName, pkgInstalledVersion))
-        else:
+        if Bool_Changelog:
+            if not PythonApt:
                 #INFO: No crude ways. Will only work with python-apt
-                log.err("Cannot provide changelog without proper backend support\n")      
+                log.err("Cannot provide changelog without proper backend support\n")
+                sys.exit(1)
+
+            log.verbose("Initializing apt cache\n")
+            aptCache = apt.Cache()
+            aptCache.open()
+            
+            try:
+                    sigFile = open(Str_SetArg, 'rw+')
+            except Exception:
+                    traceback.format_exc()
+            
+            for eachLine in sigFile.readlines():
+                    (pkgUrl, pkgFile, pkgSize, pkgChecksum) = stripper(eachLine)
+                    pkgName = pkgFile.split("_")[0]
+                    try:
+                            pkgMeta = aptCache[pkgName]
+                            pkgInstalledVersion = pkgMeta.installed.version
+                    except AttributeError:
+                            log.verbose("Package %s is not installed. Thus no changelog\n")
+                    except KeyError:
+                            log.warn("Cannot fine package %s in package cache\n" % (pkgName))
+                            continue
+                    except Exception:
+                            traceback.format_exc()
+                            raise
+                    
+                    #INFO: '/' will be the delimeter
+                    sigFile.writelines("Changelog/%s/%s\n" % (pkgName, pkgInstalledVersion))
 
 
 def main():
