@@ -548,9 +548,10 @@ class FileMgmt( object ):
             '''Copy file from src to dest'''
             try:
                 srcFile = open(src, 'rb')
-                destFile = open(dest + "/" + os.path.basename(src), 'wb')
+                destFile = os.path.join(dest, os.path.basename(src))
+                FP = open(destFile, 'wb')
                 
-                destFile.write(srcFile.read())
+                FP.write(srcFile.read())
             except IOError:
                 return False
             
