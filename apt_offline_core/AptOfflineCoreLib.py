@@ -1143,7 +1143,7 @@ def fetcher( args ):
                         full_file_path = func(Str_CacheDir, pkgFile)
                         
                         #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
-                        if full_file_path != False:
+                        if full_file_path is not False:
                             print "Package namei is: %s\n" % (PackageName)
                             if PackageName in PackageInstalledVersion.keys():
                                     buildChangelog(full_file_path, PackageInstalledVersion[PackageName])
@@ -1160,7 +1160,7 @@ def fetcher( args ):
                             else:
                                 log.verbose("%s checksum mismatch. Skipping file %s\n" % (pkgFile, LINE_OVERWRITE_FULL) )
                                 log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
-                                if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir) == True:
+                                if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
                                     log.success("\r%s done %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                     FetcherInstance.writeData(pkgFile)
                                     FetcherInstance.writeToCache(pkgFile)
@@ -1168,7 +1168,7 @@ def fetcher( args ):
                                     FetcherInstance.updateValue(download_size)
                         else:
                             log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
-                            if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir) == True:
+                            if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
                                 log.success("\r%s done %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                 FetcherInstance.writeData(pkgFile)
                                 FetcherInstance.writeToCache(pkgFile)
@@ -1176,7 +1176,7 @@ def fetcher( args ):
                                 FetcherInstance.updateValue(download_size)
                 else:
                         def DownloadPackages(url):
-                                if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir) == True:
+                                if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
                                         log.success("\r%s done %s\n" % (url, LINE_OVERWRITE_FULL) )
                                         FetcherInstance.writeData(pkgFile)
                                         FetcherInstance.updateValue(download_size)
