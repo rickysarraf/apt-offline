@@ -905,7 +905,7 @@ def fetcher( args ):
                         log.err( "File %s not present. Check path.\n" % (Str_GetArg) )
                         sys.exit( 1 )
                         
-        if not Str_CacheDir:
+        if Str_CacheDir:
             if os.path.isdir( Str_CacheDir ) is False:
                 log.err( "WARNING: cache dir %s is incorrect. Did you give the full path ?\n" % (Str_CacheDir) )
                 sys.exit(1)
