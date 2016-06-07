@@ -1163,6 +1163,7 @@ def fetcher( args ):
                             
                             
                             if FetcherInstance.CheckHashDigest(full_file_path, checksum):
+                                log.success("%s found in cache%s\r\n" % (PackageName, LINE_OVERWRITE_FULL))
                                 #INFO: When we copy the payload from the local cache, we need to update the progressbar
                                 # Hence we are doing it explicitly for local cache found files
                                 FetcherInstance.addItem(download_size)
