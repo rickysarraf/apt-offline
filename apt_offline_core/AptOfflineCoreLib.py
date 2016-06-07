@@ -1020,7 +1020,7 @@ def fetcher( args ):
                         self.FetchBugsDebian(pkgName)
                     else:
                         self.FetchBugsDebian(pkgName)
-                    log.success("\rFetched bug report for %s%s\n" % (pkgName, LINE_OVERWRITE_FULL))
+                    log.success("Fetched bug report for %s%s\n" % (pkgName, LINE_OVERWRITE_FULL))
 
                 def buildChangelog(self, pkgPath, installedVersion):
                     '''Return latest changes against installedVersion'''
@@ -1168,7 +1168,7 @@ def fetcher( args ):
                             
                             
                             if FetcherInstance.CheckHashDigest(full_file_path, checksum):
-                                log.success("%s found in cache%s\r\n" % (PackageName, LINE_OVERWRITE_FULL))
+                                log.success("%s found in cache%s\n" % (PackageName, LINE_OVERWRITE_FULL))
                                 #INFO: When we copy the payload from the local cache, we need to update the progressbar
                                 # Hence we are doing it explicitly for local cache found files
                                 FetcherInstance.addItem(download_size)
@@ -1177,9 +1177,9 @@ def fetcher( args ):
                                 FetcherInstance.updateValue(download_size)
                             else:
                                 log.verbose("%s checksum mismatch. Skipping file %s\n" % (pkgFile, LINE_OVERWRITE_FULL) )
-                                log.msg("\rDownloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_FULL) )
+                                log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_FULL) )
                                 if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
-                                    log.success("\r%s done %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                    log.success("%s done %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                     FetcherInstance.writeData(pkgFile)
                                     FetcherInstance.writeToCache(pkgFile)
                                     FetcherInstance.processBugReports(PackageName)
@@ -1187,9 +1187,9 @@ def fetcher( args ):
                                 else:
                                     errlist.append(PackageName)
                         else:
-                            log.msg("\rDownloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_FULL) )
+                            log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_FULL) )
                             if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
-                                log.success("\r%s done %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                log.success("%s done %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                 FetcherInstance.writeData(pkgFile)
                                 FetcherInstance.writeToCache(pkgFile)
                                 FetcherInstance.processBugReports(PackageName)
@@ -1200,7 +1200,7 @@ def fetcher( args ):
                 else:
                         def DownloadPackages(url):
                                 if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
-                                        log.success("\r%s done %s\n" % (url, LINE_OVERWRITE_FULL) )
+                                        log.success("%s done %s\n" % (url, LINE_OVERWRITE_FULL) )
                                         FetcherInstance.writeData(pkgFile)
                                         FetcherInstance.updateValue(download_size)
                                         return True
