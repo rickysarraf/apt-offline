@@ -418,20 +418,20 @@ class AptManip(ExecCmd):
                 log.msg("\nGenerating database of files that are needed for an upgrade.\n")
                 log.verbose("\nUsing python apt interface\n")
                 
-                #TODO: Right now, I don't know what to do with UpgradeType and Release Type in python-apt
                 cache = apt.Cache()
-                upgradablePkgs = filter(lambda p: p.is_upgradable, cache)
+                cache.open(None)
+                if UpgradeType == "dist-upgrade":
+                    cache.upgrade(dist_upgrade=True)
+                elif UpgradeType == "upgrade":
+                    cache.upgrade(dist_upgrade=False)
+                else:
+                    cache.upgrade()
                 
-                for pkg in upgradablePkgs:
-                        pkg._lookupRecord(True)
-                        path = apt_pkg.TagSection(pkg._records.record)["Filename"]
-                        cand = pkg._depcache.get_candidate_ver(pkg._pkg)
-                        
-                        for (packagefile, i) in cand.file_list:
-                                indexfile = cache._list.find_index(packagefile)
-                                if indexfile:
-                                        uri = indexfile.archive_uri(path)
-                                        self.writeFH(uri)
+                for pkg in cache.get_changes():
+                    log.verbose("Generable data is: %s %s %d %s\n" % (pkg.candidate.uri, pkg.candidate.filename.split('/')[-1], pkg.candidate.size, pkg.candidate.md5))
+                    self.writeFH.write("%s %s %d %s\n" % (pkg.candidate.uri, pkg.candidate.filename.split('/')[-1], pkg.candidate.size, pkg.candidate.md5))
+                self.writeFH.flush()
+                self.writeFH.close()
 
         def __AptUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
                 self.ReleaseType = ReleaseType
