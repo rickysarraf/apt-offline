@@ -368,7 +368,7 @@ class AptManip(ExecCmd):
         def __PythonAptUpdate(self):
                 log.verbose("Open file %s for write" % self.WriteTo)
                 try:
-                        writeFH = open(self.WriteTo, 'a')
+                        self.writeFH = open(self.WriteTo, 'a')
                 except Exception:
                         log.verbose(traceback.format_exc())
                         log.err("Failed to open file %s for write. Exiting\n" % (self.WriteTo))
@@ -400,10 +400,10 @@ class AptManip(ExecCmd):
                         # We strip item.destfile because that's how apt-get had historically presented it to us
                         destFile = item.destfile.split("/")[-1]
 
-                        writeFH.write("'" + item.desc_uri + "'" + " " + destFile + " " + str(item.filesize) + " " + ":" + "\n")
+                        self.writeFH.write("'" + item.desc_uri + "'" + " " + destFile + " " + str(item.filesize) + " " + ":" + "\n")
                         log.verbose("Writing string %s %s %d %s to file %s\n" % (item.desc_uri, destFile, item.filesize, ":", self.WriteTo) )
-                        writeFH.flush()
-                writeFH.close()
+                        self.writeFH.flush()
+                self.writeFH.close()
         
         def __PythonAptUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
                 
