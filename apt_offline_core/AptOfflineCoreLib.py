@@ -407,15 +407,17 @@ class AptManip(ExecCmd):
         
         def __PythonAptUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
                 
-                log.verbose("Open file %s for write" % self.WriteTo)
+                log.verbose("Open file %s for write\n" % self.WriteTo)
+                
                 try:
                         self.writeFH = open(self.WriteTo, 'a')
                 except Exception:
                         log.verbose(traceback.format_exc())
-                        log.err("Failed to open file %s for write. Exiting")
+                        log.err("Failed to open file %s for write. Exiting\n")
                         sys.exit(1)
                 
                 log.msg("\nGenerating database of files that are needed for an upgrade.\n")
+                log.warn("Option --upgrade-type not supported with this backend\n")
                 log.verbose("\nUsing python apt interface\n")
                 
                 cache = apt.Cache()
