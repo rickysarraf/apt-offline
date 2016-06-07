@@ -1229,6 +1229,14 @@ def fetcher( args ):
                                         NewPackageFile = PackageFile.split(".")[0] + "." + Format
                                         NewUrl = url.strip(url.split("/")[-1]) + NewPackageFile
                                         log.verbose("Retry download %s %s\n" % (NewUrl, LINE_OVERWRITE_FULL) )
+                                        
+                                        #INFO: Why are we doing this?
+                                        # Because ProgressBar's total_item is fixed
+                                        # And download_from_web's addItem() increases the active item upon every
+                                        # cycle through apt's backend archive formats
+                                        # This ends up resulting in active items being more than total_items
+                                        # By increasing the counter, the active/total item list is reflected correctly 
+                                        FetcherInstance.items += 1
                                         if DownloadPackages(NewUrl) is True:
                                                 reallyFailed = False
                                                 break
