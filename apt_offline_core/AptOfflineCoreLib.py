@@ -310,7 +310,7 @@ class AptManip(ExecCmd):
                 elif self.apt == "python-apt":
                         # Upgrade is broken in python-apt
                         # Hence for now, redirect to apt-get
-                        self.__AptGetUpgrade(UpgradeType, ReleaseType)
+                        self.__PythonAptUpgrade(UpgradeType, ReleaseType)
                 else:
                         log.err("Method not supported")
                         sys.exit(1)
