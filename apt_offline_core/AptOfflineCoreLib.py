@@ -1988,9 +1988,6 @@ def main():
         global_options.add_argument("--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
         global_options.add_argument("--simulate", dest="simulate", help="Just simulate. Very helpful when debugging",
                             action="store_true" )
-        global_options.add_argument("--apt-backend", dest="apt_backend", help="APT backend to use. One of: apt, apt-get, python-apt",
-                          action="store", type=str, metavar="apt-get", default="apt-get")
-        
         
         if argparse.__version__ >= 1.1:
                 parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
@@ -2039,6 +2036,9 @@ def main():
         
         parser_set.add_argument("--generate-changelog", dest="generate_changelog",
                                 help="Generate changelog of the version to be downloaded", action="store_true")
+        
+        parser_set.add_argument("--apt-backend", dest="apt_backend", help="APT backend to use. One of: apt, apt-get, python-apt",
+                          action="store", type=str, metavar="apt-get", default="apt-get")
         
         # GET command options
         parser_get = subparsers.add_parser('get', parents=[global_options])
