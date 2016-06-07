@@ -836,11 +836,11 @@ def errfunc(errno, errormsg, filename):
         # and better document them the next time you find it out.
         # 13 is for "Permission Denied" when you don't have privileges to access the destination 
         if errno in error_codes:
-                log.verbose("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_MID))
+                log.verbose("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL))
                 log.verbose("Will still try with other package uris\n")
                 pass
         elif errno == 10054:
-                log.verbose("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_SMALL) )
+                log.verbose("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL) )
                 pass
         elif errno == 407 or errno == 2:
                 # These, I believe are from OSError/IOError exception.
@@ -1012,10 +1012,15 @@ def fetcher( args ):
                 
                 def processBugReports(self, pkgName):
                     '''Process Bug Reports'''
+                    
+                    if not self.BugReports:
+                        return False
+                    
                     if self.BundleFile:
                         self.FetchBugsDebian(pkgName)
                     else:
                         self.FetchBugsDebian(pkgName)
+                    log.success("\rFetched bug report for %s%s\n" % (pkgName, LINE_OVERWRITE_FULL))
 
                 def buildChangelog(self, pkgPath, installedVersion):
                     '''Return latest changes against installedVersion'''
@@ -1172,7 +1177,7 @@ def fetcher( args ):
                                 FetcherInstance.updateValue(download_size)
                             else:
                                 log.verbose("%s checksum mismatch. Skipping file %s\n" % (pkgFile, LINE_OVERWRITE_FULL) )
-                                log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
+                                log.msg("\rDownloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_FULL) )
                                 if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
                                     log.success("\r%s done %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                     FetcherInstance.writeData(pkgFile)
@@ -1182,7 +1187,7 @@ def fetcher( args ):
                                 else:
                                     errlist.append(PackageName)
                         else:
-                            log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_MID) )
+                            log.msg("\rDownloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_FULL) )
                             if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
                                 log.success("\r%s done %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
                                 FetcherInstance.writeData(pkgFile)
@@ -1213,7 +1218,7 @@ def fetcher( args ):
                         if PackageFormat in SupportedFormats:
                                 SupportedFormats.remove(PackageFormat) #Remove the already tried format
                         
-                        log.msg("Downloading %s %s\n" % (PackageName, LINE_OVERWRITE_MID) ) 
+                        log.msg("Downloading %s %s\n" % (PackageName, LINE_OVERWRITE_FULL) ) 
                         if DownloadPackages(url) is False and guiTerminateSignal is False:
                                 # dont proceed retry if Ctrl+C in cli
                                 log.verbose("%s failed. Retry with the remaining possible formats\n" % (url) )
@@ -1223,12 +1228,12 @@ def fetcher( args ):
                                 for Format in SupportedFormats:
                                         NewPackageFile = PackageFile.split(".")[0] + "." + Format
                                         NewUrl = url.strip(url.split("/")[-1]) + NewPackageFile
-                                        log.verbose("Retry download %s %s\n" % (NewUrl, LINE_OVERWRITE_MID) )
+                                        log.verbose("Retry download %s %s\n" % (NewUrl, LINE_OVERWRITE_FULL) )
                                         if DownloadPackages(NewUrl) is True:
                                                 reallyFailed = False
                                                 break
                                         else:
-                                                log.verbose("Failed with URL %s %s\n" % (NewUrl, LINE_OVERWRITE_MID) )
+                                                log.verbose("Failed with URL %s %s\n" % (NewUrl, LINE_OVERWRITE_FULL) )
                                 if reallyFailed is True:
                                         errlist.append(NewUrl)
                         FetcherInstance.completed()
