@@ -368,11 +368,11 @@ class AptManip(ExecCmd):
         def __PythonAptUpdate(self):
                 log.verbose("Open file %s for write" % self.WriteTo)
                 try:
-                        self.writeFH = open(self.WriteTo, 'a')
+                    self.writeFH = open(self.WriteTo, 'a')
                 except Exception:
-                        log.verbose(traceback.format_exc())
-                        log.err("Failed to open file %s for write. Exiting\n" % (self.WriteTo))
-                        sys.exit(1)
+                    log.verbose(traceback.format_exc())
+                    log.err("Failed to open file %s for write. Exiting\n" % (self.WriteTo))
+                    sys.exit(1)
                 
                 log.msg("\nGenerating database of files that are needed for an update.\n")
                 log.verbose("\nUsing python apt interface\n")
@@ -392,16 +392,16 @@ class AptManip(ExecCmd):
                 # Now write the URI of every item
                 for item in acquire.items:
                         
-                        #INFO: For update files, there's no checksum present.
-                        # Also, their size is not determined.
-                        # Hence filesize is always returned '0'
-                        # And checksum is something I'm writing as ':'
+                    #INFO: For update files, there's no checksum present.
+                    # Also, their size is not determined.
+                    # Hence filesize is always returned '0'
+                    # And checksum is something I'm writing as ':'
                         
-                        # We strip item.destfile because that's how apt-get had historically presented it to us
-                        destFile = item.destfile.split("/")[-1]
+                    # We strip item.destfile because that's how apt-get had historically presented it to us
+                    destFile = item.destfile.split("/")[-1]
 
-                        self.writeFH.write("'" + item.desc_uri + "'" + " " + destFile + " " + str(item.filesize) + " " + ":" + "\n")
-                        log.verbose("Writing string %s %s %d %s to file %s\n" % (item.desc_uri, destFile, item.filesize, ":", self.WriteTo) )
+                    self.writeFH.write("'" + item.desc_uri + "'" + " " + destFile + " " + str(item.filesize) + " " + ":" + "\n")
+                    log.verbose("Writing string %s %s %d %s to file %s\n" % (item.desc_uri, destFile, item.filesize, ":", self.WriteTo) )
                 self.writeFH.flush()
                 self.writeFH.close()
         
@@ -410,11 +410,11 @@ class AptManip(ExecCmd):
                 log.verbose("Open file %s for write\n" % self.WriteTo)
                 
                 try:
-                        self.writeFH = open(self.WriteTo, 'a')
+                    self.writeFH = open(self.WriteTo, 'a')
                 except Exception:
-                        log.verbose(traceback.format_exc())
-                        log.err("Failed to open file %s for write. Exiting\n")
-                        sys.exit(1)
+                    log.verbose(traceback.format_exc())
+                    log.err("Failed to open file %s for write. Exiting\n")
+                    sys.exit(1)
                 
                 log.msg("\nGenerating database of files that are needed for an upgrade.\n")
                 log.warn("Option --upgrade-type not supported with this backend\n")
