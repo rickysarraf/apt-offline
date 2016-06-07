@@ -1160,11 +1160,12 @@ def fetcher( args ):
                             if PackageName in PackageInstalledVersion.keys():
                                     FetcherInstance.buildChangelog(full_file_path, PackageInstalledVersion[PackageName])
                             
-                            #INFO: When we copy the payload from the local cache, we need to update the progressbar
-                            # Hence we are doing it explicitly for local cache found files
-                            FetcherInstance.addItem(download_size)
+                            
                             
                             if FetcherInstance.CheckHashDigest(full_file_path, checksum):
+                                #INFO: When we copy the payload from the local cache, we need to update the progressbar
+                                # Hence we are doing it explicitly for local cache found files
+                                FetcherInstance.addItem(download_size)
                                 FetcherInstance.writeData(full_file_path)
                                 FetcherInstance.processBugReports(PackageName)
                                 FetcherInstance.updateValue(download_size)
