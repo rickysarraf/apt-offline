@@ -242,7 +242,7 @@ class ExecCmd:
                 else:
                         try:
                                 fh = open(sigFile, 'a')
-                        except Exception as e:
+                        except Exception:
                                 log.verbose(traceback.format_exc())
                                 return False
                 
@@ -369,7 +369,7 @@ class AptManip(ExecCmd):
                 log.verbose("Open file %s for write" % self.WriteTo)
                 try:
                         writeFH = open(self.WriteTo, 'a')
-                except Exception as e:
+                except Exception:
                         log.verbose(traceback.format_exc())
                         log.err("Failed to open file %s for write. Exiting\n" % (self.WriteTo))
                         sys.exit(1)
@@ -410,7 +410,7 @@ class AptManip(ExecCmd):
                 log.verbose("Open file %s for write" % self.WriteTo)
                 try:
                         writeFH = open(self.WriteTo, 'a')
-                except Exception as e:
+                except Exception:
                         log.verbose(traceback.format_exc())
                         log.err("Failed to open file %s for write. Exiting")
                         sys.exit(1)
@@ -1249,7 +1249,7 @@ def fetcher( args ):
                                                 headers = temp.info()
                                                 size = int(headers['Content-Length'])
                                         totalSize[0] += size
-                                except Exception as e:
+                                except Exception:
                                         log.verbose(traceback.format_exc())
                                         log.err("some int parsing problem\n")
 
