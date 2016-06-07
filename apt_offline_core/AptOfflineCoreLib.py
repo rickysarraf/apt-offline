@@ -409,7 +409,7 @@ class AptManip(ExecCmd):
                 
                 log.verbose("Open file %s for write" % self.WriteTo)
                 try:
-                        writeFH = open(self.WriteTo, 'a')
+                        self.writeFH = open(self.WriteTo, 'a')
                 except Exception:
                         log.verbose(traceback.format_exc())
                         log.err("Failed to open file %s for write. Exiting")
@@ -431,7 +431,7 @@ class AptManip(ExecCmd):
                                 indexfile = cache._list.find_index(packagefile)
                                 if indexfile:
                                         uri = indexfile.archive_uri(path)
-                                        print uri
+                                        self.writeFH(uri)
 
         def __AptUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
                 self.ReleaseType = ReleaseType
