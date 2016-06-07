@@ -402,7 +402,7 @@ class AptManip(ExecCmd):
 
                         self.writeFH.write("'" + item.desc_uri + "'" + " " + destFile + " " + str(item.filesize) + " " + ":" + "\n")
                         log.verbose("Writing string %s %s %d %s to file %s\n" % (item.desc_uri, destFile, item.filesize, ":", self.WriteTo) )
-                        self.writeFH.flush()
+                self.writeFH.flush()
                 self.writeFH.close()
         
         def __PythonAptUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
