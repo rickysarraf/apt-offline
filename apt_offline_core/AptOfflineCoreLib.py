@@ -1969,7 +1969,7 @@ def setter(args):
             try:
                     sigFile = open(Str_SetArg, 'rw+')
             except Exception:
-                    traceback.format_exc()
+                    log.err(traceback.format_exc())
             
             for eachLine in sigFile.readlines():
                     (pkgUrl, pkgFile, pkgSize, pkgChecksum) = stripper(eachLine)
@@ -1983,7 +1983,7 @@ def setter(args):
                             log.warn("Cannot fine package %s in package cache\n" % (pkgName))
                             continue
                     except Exception:
-                            traceback.format_exc()
+                            log.err(traceback.format_exc())
                             raise
                     
                     #INFO: '/' will be the delimeter
