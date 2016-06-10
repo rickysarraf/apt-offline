@@ -988,8 +988,13 @@ def fetcher( args ):
                 def verifyPayloadIntegrity(self, payload, checksum):
                     '''Verify the integrity of the payload against the checksum'''
                     
+                    if self.CheckSum is True:
+                        return True
+                    
                     if self.CheckHashDigest(payload, checksum):
-                        pass
+                        return True
+                    else:
+                        return False
                 
                 def writeData(self, data):
                     '''Write data to backend'''
@@ -1167,7 +1172,7 @@ def fetcher( args ):
                             
                             
                             
-                            if FetcherInstance.CheckHashDigest(full_file_path, checksum):
+                            if FetcherInstance.verifyPayloadIntegrity(full_file_path, checksum):
                                 log.success("%s found in cache%s\n" % (PackageName, LINE_OVERWRITE_FULL))
                                 #INFO: When we copy the payload from the local cache, we need to update the progressbar
                                 # Hence we are doing it explicitly for local cache found files
@@ -1981,7 +1986,7 @@ def setter(args):
                             log.verbose("Package %s is not installed. Thus no changelog\n")
                             continue
                     except KeyError:
-                            log.warn("Cannot fine package %s in package cache\n" % (pkgName))
+                            log.warn("Cannot find package %s in package cache\n" % (pkgName))
                             continue
                     except Exception:
                             log.err(traceback.format_exc())
