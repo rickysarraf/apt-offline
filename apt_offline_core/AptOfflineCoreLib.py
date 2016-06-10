@@ -1979,6 +1979,7 @@ def setter(args):
                             pkgInstalledVersion = pkgMeta.installed.version
                     except AttributeError:
                             log.verbose("Package %s is not installed. Thus no changelog\n")
+                            continue
                     except KeyError:
                             log.warn("Cannot fine package %s in package cache\n" % (pkgName))
                             continue
