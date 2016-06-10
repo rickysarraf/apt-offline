@@ -1038,7 +1038,7 @@ def fetcher( args ):
 
                                 #INFO: python-apt is able to read the data from the gzipped changelog dynamically
                                 try:
-                                    chlogFile.writelines(pkgHandle.data_content(pkgFile))
+                                    chlogFile.writelines(pkgHandle.data_content(pkgFile).encode('utf-8'))
                                 except TypeError:
                                     log.warn("Couldn't extract changelog for package %s\n" % (pkgHandle.pkgname))
                                     log.verbose(traceback.format_exc())
