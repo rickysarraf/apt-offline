@@ -1987,6 +1987,7 @@ def setter(args):
                             raise
                     
                     #INFO: '/' will be the delimeter
+                    log.verbose("Writing to Changelog, pkgName: %s, pkgInstalledVersion %s\n" % (pkgName, pkgInstalledVersion))
                     sigFile.writelines("Changelog/%s/%s\n" % (pkgName, pkgInstalledVersion))
 
 
