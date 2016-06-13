@@ -1022,10 +1022,8 @@ def fetcher( args ):
                     if not self.BugReports:
                         return False
                     
-                    if self.BundleFile:
-                        self.FetchBugsDebian(pkgName)
-                    else:
-                        self.FetchBugsDebian(pkgName)
+                    #INFO: Payload is written to destination inside the method
+                    self.FetchBugsDebian(pkgName)
                     log.success("Fetched bug report for %s%s\n" % (pkgName, LINE_OVERWRITE_FULL))
 
                 def buildChangelog(self, pkgPath, installedVersion):
