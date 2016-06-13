@@ -1013,7 +1013,8 @@ def fetcher( args ):
                 
                 def writeToCache(self, data):
                     '''Write data to cacheDir'''
-                    pass
+                    if self.CacheDir is not False:
+                        self.copy_file(data, self.CacheDir)
                 
                 def processBugReports(self, pkgName):
                     '''Process Bug Reports'''
