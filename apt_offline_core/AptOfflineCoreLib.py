@@ -1342,6 +1342,7 @@ def installer( args ):
         Bool_SkipBugReports = args.skip_bug_reports
         Bool_Untrusted = args.allow_unauthenticated
         Str_InstallSrcPath = args.install_src_path
+        Bool_SkipChangelog = args.skip_changelog
         
         
         # Old cruft. Needs clean-up
@@ -1461,10 +1462,11 @@ def installer( args ):
                 log.msg( "(N) No, Abort.\n" )
                 log.msg( "(R) Redisplay the list of bugs.\n" )
                 log.msg( "(Bug Number) Display the bug report from the Offline Bug Reports.\n" )
+                log.msg( "(C) Display changelog\n")
                 log.msg( "(?) Display this help message.\n" )
         
         def get_response():
-                response = raw_input( "What would you like to do next:\t (y, N, Bug Number, R, ?)" )
+                response = raw_input( "What would you like to do next:\t (y, N, Bug Number, R, C, ?)" )
                 response = response.rstrip( "\r" )
                 return response
     
@@ -1554,6 +1556,46 @@ def installer( args ):
                         #ENDCHANGE
                         log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
 
+        def displayChangelog(dataType = None):
+            '''Takes file or directory as input'''
+            
+            chlogFile = tempfile.NamedTemporaryFile()
+            
+            if os.path.isdir(dataType):
+                for eachItem in os.listdir(dataType):
+                    if eachItem.endswith(".changelog"):
+                        eachFile = open(eachItem, 'r')
+                        chlogFile.write(eachFile.read())
+            elif os.path.isfile(dataType):
+                zipLogFile = zipfile.ZipFile(dataType)
+                for filename in zipLogFile.namelist():
+                    if filename.endswith(".changelog"):
+                        chlogFile.write(zipLogFile.read(filename))
+            else:
+                return False
+            
+            chlogFile.seek(0)
+            pydoc.pager(chlogFile.read())
+            
+            display_options()
+            response = get_response()
+            
+            while True:
+                if response == "?":
+                    display_options()
+                    response = get_response()
+                elif response.startswith('C') or response.startswith('c'):
+                    chlogFile.seek(0)
+                    pydoc.pager(chlogFile.read())
+                    display_options()
+                    response = get_response()
+                elif response.startswith('y') or response.startswith('Y'):
+                    log.msg("Proceeding with installation\n")
+                    break
+                else:
+                    log.err("Aborting installation, on user request\n")
+                    sys.exit(1)
+        
         def displayBugs(dataType=None):
                 ''' Takes keywords "file" or "dir" as type input '''
             
@@ -1698,7 +1740,13 @@ def installer( args ):
                                         
                                 SrcPkgDict[SrcPkgName].append(filename)
                                 temp.file.close()
-                                
+        
+                # Let's display changelog
+                if Bool_SkipChangelog:
+                    log.verbose("Skipping display of changelog as requested\n")
+                else:
+                    displayChangelog(Str_InstallArg)
+                                        
                 #if bug_parse_required is True:
                 bugs_number = {}
                 if Bool_SkipBugReports:
@@ -2117,6 +2165,9 @@ def main():
         
         parser_install.add_argument("--skip-bug-reports", dest="skip_bug_reports",
                         help="Skip the bug report check", action="store_true")
+        
+        parser_install.add_argument("--skip-changelog", dest="skip_changelog",
+                                    help="Skip display of changelog", action="store_true")
         
         parser_install.add_argument("--allow-unauthenticated", dest="allow_unauthenticated",
                                     help="Ignore apt gpg signatures mismatch", action="store_true")
