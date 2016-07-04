@@ -1013,7 +1013,7 @@ def fetcher( args ):
                 
                 def writeToCache(self, data):
                     '''Write data to cacheDir'''
-                    if self.CacheDir is not False:
+                    if self.CacheDir:
                         self.copy_file(data, self.CacheDir)
                 
                 def processBugReports(self, pkgName):
@@ -2131,7 +2131,7 @@ def main():
         
         parser_get.add_argument("-s", "--cache-dir", dest="cache_dir",
                           help="Cache folder to search for",
-                          action="store", type=str, metavar=".")
+                          action="store", type=str, metavar="/var/cache/apt/archives/")
         
         parser_get.add_argument("--no-checksum", dest="disable_md5check",
                           help="Do not validate checksum of downloaded files",
