@@ -1203,13 +1203,13 @@ def fetcher( args ):
                         FetcherInstance.completed()
                 else:
                         def DownloadPackages(url):
-                                if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
-                                        log.success("%s done %s\n" % (url, LINE_OVERWRITE_FULL) )
-                                        FetcherInstance.writeData(pkgFile)
-                                        FetcherInstance.updateValue(download_size)
-                                        return True
-                                else:
-                                        return False
+                            if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
+                                log.success("%s done %s\n" % (url, LINE_OVERWRITE_FULL) )
+                                FetcherInstance.writeData(os.path.join(Str_DownloadDir, pkgFile))
+                                FetcherInstance.updateValue(download_size)
+                                return True
+                            else:
+                                return False
                                 
                         #INFO: Handle the multiple Packages formats.
                         # See DTBS #583502
