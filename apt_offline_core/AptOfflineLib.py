@@ -548,8 +548,11 @@ class FileMgmt( object ):
         def copy_file(self, src, dest):
             '''Copy file from src to dest'''
             try:
-                srcFile = open(src, 'rb')
+                #INFO: If src and dest are the same, write(read()) leads to NULL
                 destFile = os.path.join(dest, os.path.basename(src))
+                if os.path.samefile(src, destFile):
+                    return False
+                srcFile = open(src, 'rb')
                 FP = open(destFile, 'wb')
                 
                 FP.write(srcFile.read())
