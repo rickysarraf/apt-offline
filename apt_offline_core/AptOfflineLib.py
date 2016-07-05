@@ -548,7 +548,8 @@ class FileMgmt( object ):
         def copy_file(self, src, dest):
             '''Copy file from src to dest'''
             try:
-                #INFO: If src and dest are the same, write(read()) leads to NULL
+                #INFO: If src and dest are the same, it is effectively opening the same file
+                # in read and write modes, which leads to NULL data corruption
                 destFile = os.path.join(dest, os.path.basename(src))
                 if os.path.samefile(src, destFile):
                     return False
