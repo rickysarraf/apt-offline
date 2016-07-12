@@ -551,12 +551,9 @@ class FileMgmt( object ):
                 #INFO: If src and dest are the same, it is effectively opening the same file
                 # in read and write modes, which leads to NULL data corruption
                 destFile = os.path.join(dest, os.path.basename(src))
-                try:
-                    if os.path.samefile(src, destFile):
-                        return True
-                except AttributeError:
-                    if src == destFile:
-                        return True
+                #print src, destFile
+                if src == destFile:
+                    return True
                 srcFile = open(src, 'rb')
                 FP = open(destFile, 'wb')
                 
