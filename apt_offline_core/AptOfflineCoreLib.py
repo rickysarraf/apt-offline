@@ -1455,16 +1455,18 @@ def installer( args ):
                 else:
                         AptLock.unlockLists()
         
-        def display_options():
+        def display_options(dispType):
                 log.msg( "(Y) Yes. Proceed with installation\n" )
                 log.msg( "(N) No, Abort.\n" )
-                log.msg( "(R) Redisplay the list of bugs.\n" )
-                log.msg( "(Bug Number) Display the bug report from the Offline Bug Reports.\n" )
-                log.msg( "(C) Display changelog\n")
+                if dispType is "BugReports":
+                        log.msg( "(R) Redisplay the list of bugs.\n" )
+                        log.msg( "(Bug Number) Display the bug report from the Offline Bug Reports.\n" )
+                elif dispType is "Chlog":
+                        log.msg( "(C) Display changelog\n")
                 log.msg( "(?) Display this help message.\n" )
-        
+                        
         def get_response():
-                response = raw_input( "What would you like to do next:\t (y, N, Bug Number, R, C, ?)" )
+                response = raw_input( "What would you like to do next:\t (y, N, ?)" )
                 response = response.rstrip( "\r" )
                 return response
     
@@ -1575,17 +1577,17 @@ def installer( args ):
             chlogFile.seek(0)
             pydoc.pager(chlogFile.read())
             
-            display_options()
+            display_options("Chlog")
             response = get_response()
             
             while True:
                 if response == "?":
-                    display_options()
+                    display_options("Chlog")
                     response = get_response()
                 elif response.startswith('C') or response.startswith('c'):
                     chlogFile.seek(0)
                     pydoc.pager(chlogFile.read())
-                    display_options()
+                    display_options("Chlog")
                     response = get_response()
                 elif response.startswith('y') or response.startswith('Y'):
                     log.msg("Proceeding with installation\n")
@@ -1602,12 +1604,12 @@ def installer( args ):
                 
                 # Display the list of bugs
                 list_bugs(bugs_number)
-                display_options()
+                display_options("BugReports")
                 response = get_response()
                 
                 while True:
                         if response == "?":
-                                display_options()
+                                display_options("BugReports")
                                 response = get_response()
                         elif response.startswith( 'y' ) or response.startswith( 'Y' ):
                                 if dataType is "file":
