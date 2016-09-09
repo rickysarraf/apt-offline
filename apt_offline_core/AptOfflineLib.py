@@ -421,10 +421,10 @@ class Archiver:
                                         # And by the time this thread got a chance, the file was deleted by the previous thread
                                         #
                                         # A more ideal fix will be to check for files_to_compress's presence in zipfile at this stage
-                                        print "Ignoring err: Possibly multiarch package %s\n" % (files_to_compress)
+                                        sys.stderr.write("Ignoring err: Possibly multiarch package %s\n" % (files_to_compress))
                                         self.file_possibly_deleted = True
                         except UserWarning, e:
-                                print "Ignoring err type %s\n" % (e.args)
+                                sys.stderr.write("Ignoring err type %s\n" % (e.args))
                         finally:
                                 filename.close()
         
