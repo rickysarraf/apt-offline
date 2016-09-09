@@ -1560,22 +1560,28 @@ def installer( args ):
             '''Takes file or directory as input'''
             
             chlogFile = tempfile.NamedTemporaryFile()
+            chlogPresent = False
             
             if os.path.isdir(dataType):
                 for eachItem in os.listdir(dataType):
                     if eachItem.endswith(".changelog"):
                         eachFile = open(eachItem, 'r')
                         chlogFile.write(eachFile.read())
+                        chlogPresent = True
             elif os.path.isfile(dataType):
                 zipLogFile = zipfile.ZipFile(dataType)
                 for filename in zipLogFile.namelist():
                     if filename.endswith(".changelog"):
                         chlogFile.write(zipLogFile.read(filename))
+                        chlogPresent = True
             else:
                 return False
             
-            chlogFile.seek(0)
-            pydoc.pager(chlogFile.read())
+            if chlogPresent is False:
+                    log.msg("No changelog available\n")
+            else:    
+                    chlogFile.seek(0)
+                    pydoc.pager(chlogFile.read())
             
             display_options("Chlog")
             response = get_response()
