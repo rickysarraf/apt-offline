@@ -1410,9 +1410,11 @@ def installer( args ):
             def display_options(self):
                 log.msg( "(Y) Yes. Proceed with installation\n" )
                 log.msg( "(N) No, Abort.\n" )
-                log.msg( "(R) Redisplay the list of bugs.\n" )
-                log.msg( "(Bug Number) Display the bug report from the Offline Bug Reports.\n" )
-                log.msg( "(C) Display changelog\n")
+                if dispType is "BugReports":
+                        log.msg( "(R) Redisplay the list of bugs.\n" )
+                        log.msg( "(Bug Number) Display the bug report from the Offline Bug Reports.\n" )
+                elif dispType is "Chlog":
+                        log.msg( "(C) Display changelog\n")
                 log.msg( "(?) Display this help message.\n" )
             
             def get_response(self):
@@ -1435,13 +1437,15 @@ def installer( args ):
                         bug_num = each_bug.split( '{}' )[-2]
                         bug_subject = dictList[each_bug]
                         log.msg( "%s\t%s\t%s\n" % ( bug_num, pkg_name, bug_subject ) )
+            
+        def magic_check_and_uncompress( archive_file=None, filename=None):
                 
             def magic_check_and_uncompress(self, archive_file=None, filename=None):
                     
                 if MagicLib is False:
                         log.err("Please ensure libmagic is installed\n")
                         return False
-    
+
                 magicMIME = AptOfflineMagicLib.open(AptOfflineMagicLib.MAGIC_MIME_TYPE)
                 magicMIME.load()
                 
@@ -1458,7 +1462,7 @@ def installer( args ):
                         else:
                                 log.verbose("No filetype match for %s\n" % (filename) )
                                 retval = False
-    
+
                         if retval is True:
                                 os.rename(temp_filename, filename)
                         else:
@@ -1467,7 +1471,7 @@ def installer( args ):
                                         os.unlink(temp_filename)
                                 except OSError:
                                         log.verbose("Failed to unlink temproary file %s. Check respective decompressor support\n" % (temp_filename) )
-    
+
                 elif magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or magicMIME.file( archive_file ) == "application/pgp-signature":
                         gpgFile = os.path.join(apt_update_target_path, filename)
                         shutil.copy2(archive_file, gpgFile)
@@ -1553,9 +1557,9 @@ def installer( args ):
                         return False
                 
                 # Display the list of bugs
-                self.list_bugs(bugs_number)
-                self.display_options()
-                response = self.get_response()
+                list_bugs(bugs_number)
+                display_options("BugReports")
+                response = get_response()
                 
                 while True:
                         if response == "?":
