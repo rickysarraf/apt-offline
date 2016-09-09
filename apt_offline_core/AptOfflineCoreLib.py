@@ -1169,8 +1169,6 @@ def fetcher( args ):
                             if PackageName in PackageInstalledVersion.keys():
                                     FetcherInstance.buildChangelog(full_file_path, PackageInstalledVersion[PackageName])
                             
-                            
-                            
                             if FetcherInstance.verifyPayloadIntegrity(full_file_path, checksum):
                                 log.success("%s found in cache%s\n" % (PackageName, LINE_OVERWRITE_FULL))
                                 #INFO: When we copy the payload from the local cache, we need to update the progressbar
@@ -1987,7 +1985,9 @@ def setter(args):
                             log.verbose("Package %s is not installed. Thus no changelog\n")
                             continue
                     except KeyError:
-                            log.warn("Cannot find package %s in package cache\n" % (pkgName))
+                            #INFO: For --update, we'll get an obvious key error because those aren't
+                            # packages, but just source URLs.
+                            log.verbose("Cannot find package %s in package cache\n" % (pkgName))
                             continue
                     except Exception:
                             log.err(traceback.format_exc())
