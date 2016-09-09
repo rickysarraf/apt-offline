@@ -1509,48 +1509,54 @@ def installer( args ):
                                 log.msg("[%d/%d]" % (totalSize[0], totalSize[1]))
                         #ENDCHANGE
                         log.verbose( "%s file synced to %s.\n" % ( filename, apt_update_target_path ) )
-        
-            def displayChangelog(self, dataType = None):
-                '''Takes file or directory as input'''
-                
-                chlogFile = tempfile.NamedTemporaryFile()
-                
-                if os.path.isdir(dataType):
-                    for eachItem in os.listdir(dataType):
-                        if eachItem.endswith(".changelog"):
-                            eachFile = open(eachItem, 'r')
-                            chlogFile.write(eachFile.read())
-                elif os.path.isfile(dataType):
-                    zipLogFile = zipfile.ZipFile(dataType)
-                    for filename in zipLogFile.namelist():
-                        if filename.endswith(".changelog"):
-                            chlogFile.write(zipLogFile.read(filename))
-                else:
-                    return False
-                
-                chlogFile.seek(0)
-                pydoc.pager(chlogFile.read())
-                
-                display_options()
-                response = get_response()
-                
-                while True:
-                    if response == "?":
-                        self.display_options()
-                        response = self.get_response()
-                    elif response.startswith('C') or response.startswith('c'):
-                        chlogFile.seek(0)
-                        pydoc.pager(chlogFile.read())
-                        self.display_options()
-                        response = self.get_response()
-                    elif response.startswith('y') or response.startswith('Y'):
-                        log.msg("Proceeding with installation\n")
-                        break
-                    else:
-                        log.err("Aborting installation, on user request\n")
-                        sys.exit(1)
+
+        def displayChangelog(dataType = None):
+            '''Takes file or directory as input'''
             
-            def displayBugs(self, dataType=None):
+            chlogFile = tempfile.NamedTemporaryFile()
+            chlogPresent = False
+            
+            if os.path.isdir(dataType):
+                for eachItem in os.listdir(dataType):
+                    if eachItem.endswith(".changelog"):
+                        eachFile = open(eachItem, 'r')
+                        chlogFile.write(eachFile.read())
+                        chlogPresent = True
+            elif os.path.isfile(dataType):
+                zipLogFile = zipfile.ZipFile(dataType)
+                for filename in zipLogFile.namelist():
+                    if filename.endswith(".changelog"):
+                        chlogFile.write(zipLogFile.read(filename))
+                        chlogPresent = True
+            else:
+                return False
+            
+            if chlogPresent is False:
+                    log.msg("No changelog available\n")
+            else:    
+                    chlogFile.seek(0)
+                    pydoc.pager(chlogFile.read())
+            
+            display_options("Chlog")
+            response = get_response()
+            
+            while True:
+                if response == "?":
+                    display_options("Chlog")
+                    response = get_response()
+                elif response.startswith('C') or response.startswith('c'):
+                    chlogFile.seek(0)
+                    pydoc.pager(chlogFile.read())
+                    display_options("Chlog")
+                    response = get_response()
+                elif response.startswith('y') or response.startswith('Y'):
+                    log.msg("Proceeding with installation\n")
+                    break
+                else:
+                    log.err("Aborting installation, on user request\n")
+                    sys.exit(1)
+        
+        def displayBugs(dataType=None):
                 ''' Takes keywords "file" or "dir" as type input '''
             
                 if dataType is None:
@@ -1563,8 +1569,8 @@ def installer( args ):
                 
                 while True:
                         if response == "?":
-                                self.display_options()
-                                response = self.get_response()
+                                display_options("BugReports")
+                                response = get_response()
                         elif response.startswith( 'y' ) or response.startswith( 'Y' ):
                                 if dataType is "file":
                                         for filename in zipBugFile.namelist():
