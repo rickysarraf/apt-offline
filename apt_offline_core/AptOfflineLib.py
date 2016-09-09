@@ -209,7 +209,7 @@ class Log:
         def msg( self, msg ):
                 '''Print general messages. If locking is available use them.'''
                 if self.lock:
-                        self.DispLock.acquire( True )
+                        self.DispLock.acquire()
           
                 #self.set_color( 'White' )
                 sys.stdout.write( msg )
@@ -222,7 +222,7 @@ class Log:
         def warn( self, msg ):
                 '''Print messages with a warningr. If locking is available use them.'''
                 if self.lock:
-                        self.DispLock.acquire( True )
+                        self.DispLock.acquire()
             
                 self.set_color( 'Magenta' )
                 sys.stderr.write( "WARN: " + msg )
@@ -235,7 +235,7 @@ class Log:
         def err( self, msg ):
                 '''Print messages with an error. If locking is available use them.'''
                 if self.lock:
-                        self.DispLock.acquire( True )
+                        self.DispLock.acquire()
             
                 self.set_color( 'Red' )
                 sys.stderr.write( "ERROR: " + msg )
@@ -248,7 +248,7 @@ class Log:
         def success( self, msg ):
                 '''Print messages with a success. If locking is available use them.'''
                 if self.lock:
-                        self.DispLock.acquire( True )
+                        self.DispLock.acquire()
             
                 self.set_color( 'Green' )
                 sys.stdout.write( msg )
@@ -262,7 +262,7 @@ class Log:
         def verbose( self, msg ):
                 '''Print verbose messages. If locking is available use them.'''
                 if self.lock:
-                        self.DispLock.acquire( True )
+                        self.DispLock.acquire()
                 
                 if self.VERBOSE is True:
                         self.set_color( 'Cyan' )
