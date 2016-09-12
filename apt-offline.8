@@ -1,4 +1,4 @@
-.TH apt-offline 8 "January, 2015" "version 1.7" "USER COMMANDS"
+.TH apt-offline 8 "September, 2016" "version 1.7.1" "USER COMMANDS"
 .SH NAME
 apt-offline \- Offline APT Package manager
 .SH SYNOPSIS
@@ -43,6 +43,12 @@ Download Build Dependency packages for the source packages requested
 
 .IP "\fB\-\-release release_name\fP" 10
 Release target to install packages from
+
+.IP "\fB\-\-apt\-backend apt-get\fP" 10
+APT backend to use. One of: apt, apt-get, python-apt
+
+.IP "\fB\-\-generate\-changelog\fP" 10
+Generate changelog of the version to be downloaded
 
 .IP "\fB\-\-update\fP" 10
 Generate APT Database signature for an update. This is the equivalent of using
@@ -118,6 +124,9 @@ command.
 
 .IP "\fB\-\-skip\-bug\-reports\fP" 10
 Skip listing of downloaded bug reports, if any.
+
+.IP "\fB\-\-skip\-changelog\fP" 10
+Skip display of changelog, if any.
 
 .IP "\fB\-\-allow\-unauthenticated\fP" 10
 Don't verify GPG signatures for the data to be installed to APT. Usage of this option is highly discouraged.

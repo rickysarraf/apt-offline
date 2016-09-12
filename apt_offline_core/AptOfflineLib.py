@@ -29,6 +29,7 @@ import bz2
 import gzip
 
 import errno
+import shutil
 
 import warnings
 
@@ -70,38 +71,40 @@ except ImportError:
     
 class Checksum:
         
-        def HashMessageDigestAlgorithms( self, checksum, HashType, file ):
-                
-                try:
-                        data = open( file, 'rb' )
-                        if HashType == "sha256":
-                                Hash = self.sha256( data )
-                        elif HashType == "md5" or HashType == "md5sum":
-                                Hash = self.md5( data )
-                        else: Hash = None
-                except IOError:
-                        return False
-                data.close()
-                
-                if Hash == checksum:
-                        return True
-                return False
+    def HashMessageDigestAlgorithms( self, checksum, HashType, checksumFile ):
+            
+        try:
+            data = open( checksumFile, 'rb' )
+            if HashType == "sha256":
+                Hash = self.sha256( data )
+            elif HashType == "md5" or HashType == "md5sum":
+                Hash = self.md5( data )
+            else: Hash = None
+        except IOError:
+            return False
+        data.close()
         
-        def sha256( self, data ):
-                hash = hashlib.sha256()
-                hash.update( data.read() )
-                return hash.hexdigest()
+        if Hash == checksum:
+            return True
+        return False
+    
+    def sha256( self, data ):
+        sha256 = hashlib.sha256()
+        sha256.update( data.read() )
+        return sha256.hexdigest()
+    
+    def md5( self, data ):
+        md5hash = hashlib.md5()
+        md5hash.update( data.read() )
+        return md5hash.hexdigest() 
+    
+    def CheckHashDigest( self, checksumFile, checksum ):
+        '''Return Bool against file and its checksum'''
         
-        def md5( self, data ):
-                hash = hashlib.md5()
-                hash.update( data.read() )
-                return hash.hexdigest() 
-        
-        def CheckHashDigest( self, file, checksum ):
-                type = checksum.split(":")[0]
-                type = type.lower()
-                checksum = checksum.split( ":" )[1]
-                return self.HashMessageDigestAlgorithms( checksum, type, file )
+        checksumType = checksum.split(":")[0]
+        checksumType = checksumType.lower()
+        checksum = checksum.split( ":" )[1]
+        return self.HashMessageDigestAlgorithms( checksum, checksumType, checksumFile )
         
 
 class Log:
@@ -178,7 +181,7 @@ class Log:
                         self.platform = 'posix'
                         self.color = {'Red': '31m', 'Black': '30m',
                                       'Green': '32m', 'Yellow': '33m',
-                                      'Blue': '34m', 'Magneta': '35m',
+                                      'Blue': '34m', 'Magenta': '35m',
                                       'Cyan': '36m', 'White': '37m',
                                       'Bold_Text': '1m', 'Underline': '4m',
                                       'Blink': '5m', 'SwitchOffAttributes': '0m'}
@@ -206,7 +209,7 @@ class Log:
         def msg( self, msg ):
                 '''Print general messages. If locking is available use them.'''
                 if self.lock:
-                        self.DispLock.acquire( True )
+                        self.DispLock.acquire()
           
                 #self.set_color( 'White' )
                 sys.stdout.write( msg )
@@ -215,11 +218,24 @@ class Log:
         
                 if self.lock:
                         self.DispLock.release()
+
+        def warn( self, msg ):
+                '''Print messages with a warningr. If locking is available use them.'''
+                if self.lock:
+                        self.DispLock.acquire()
+            
+                self.set_color( 'Magenta' )
+                sys.stderr.write( "WARN: " + msg )
+                sys.stderr.flush()
+                self.set_color( 'SwitchOffAttributes' )
+        
+                if self.lock:
+                        self.DispLock.release()
         
         def err( self, msg ):
                 '''Print messages with an error. If locking is available use them.'''
                 if self.lock:
-                        self.DispLock.acquire( True )
+                        self.DispLock.acquire()
             
                 self.set_color( 'Red' )
                 sys.stderr.write( "ERROR: " + msg )
@@ -232,7 +248,7 @@ class Log:
         def success( self, msg ):
                 '''Print messages with a success. If locking is available use them.'''
                 if self.lock:
-                        self.DispLock.acquire( True )
+                        self.DispLock.acquire()
             
                 self.set_color( 'Green' )
                 sys.stdout.write( msg )
@@ -246,7 +262,7 @@ class Log:
         def verbose( self, msg ):
                 '''Print verbose messages. If locking is available use them.'''
                 if self.lock:
-                        self.DispLock.acquire( True )
+                        self.DispLock.acquire()
                 
                 if self.VERBOSE is True:
                         self.set_color( 'Cyan' )
@@ -350,7 +366,12 @@ class Archiver:
                 else:
                         self.ZipLock = threading.Lock()
                         self.lock = True
-        
+
+                #INFO: Needed for bug reports in multiple threads. Because you can have multiple bug reports
+                # for the same src package
+                # https://github.com/rickysarraf/apt-offline/issues/44
+                self.file_possibly_deleted = False
+                        
         def TarGzipBZ2_Uncompress( self, SourceFileHandle, TargetFileHandle ):
                 try:
                         TargetFileHandle.write( SourceFileHandle.read() )
@@ -382,10 +403,10 @@ class Archiver:
 
                         fileOpened = False
                         try:
-                            filename = zipfile.ZipFile( zip_file_name, "w" )
-                            fileOpened = True
+                                filename = zipfile.ZipFile( zip_file_name, "w" )
+                                fileOpened = True
                         except IOError:
-                            fileOpened = False
+                                fileOpened = False
                 if fileOpened: #Supported from Python 2.5 ??
 
                         #INFO: We could get duplicate files being writted to the zip archive.
@@ -393,16 +414,17 @@ class Archiver:
                         warnings.filterwarnings('error')
 
                         try:
-                            filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )
+                                filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )
                         except OSError, e:
-                            if e.errno == errno.ENOENT:
-                                #INFO: We could be here, because in another thread (amd64), it completed, i.e. wrote to the archive and removed
-                                # And by the time this thread got a chance, the file was deleted by the previous thread
-                                #
-                                # A more ideal fix will be to check for files_to_compress's presence in zipfile at this stage
-                                print "Ignoring err: Possibly multiarch package %s\n" % (files_to_compress)
+                                if e.errno == errno.ENOENT:
+                                        #INFO: We could be here, because in another thread (amd64), it completed, i.e. wrote to the archive and removed
+                                        # And by the time this thread got a chance, the file was deleted by the previous thread
+                                        #
+                                        # A more ideal fix will be to check for files_to_compress's presence in zipfile at this stage
+                                        sys.stderr.write("Ignoring err: Possibly multiarch package %s\n" % (files_to_compress))
+                                        self.file_possibly_deleted = True
                         except UserWarning, e:
-                                print "Ignoring err type %s\n" % (e.args)
+                                sys.stderr.write("Ignoring err type %s\n" % (e.args))
                         finally:
                                 filename.close()
         
@@ -481,12 +503,13 @@ class FileMgmt( object ):
 
         def files( self, root ): 
                 for path, folders, files in os.walk( root ): 
-                        for file in files: 
-                                yield path, file 
+                        for f in files: 
+                                yield path, f 
 
         def find_first_match( self, cache_dir=None, filename=None ):
                 '''Return the full path of the filename if a match is found
                 Else Return False'''
+                
                 if cache_dir is None:
                         return False
                 elif filename is None:
@@ -494,10 +517,10 @@ class FileMgmt( object ):
                 elif os.path.isdir( cache_dir ) is False:
                         return False
                 else:
-                        for path, file in self.files( cache_dir ): 
-                                if file == filename:
-                                        return os.path.join( path, file )
-                                return False
+                        for path, f in self.files( cache_dir ): 
+                                if f == filename:
+                                        return os.path.join( path, f )
+                        return False
         
         def rename_file( self, orig, new ):
                 '''Rename file from orig to new'''
@@ -518,10 +541,26 @@ class FileMgmt( object ):
                 if not os.path.isdir( dest ):
                         return False
                 try:
-                        os.rename( src, dest + "/" + os.path.basename( src ) )
+                        shutil.move(src, dest)
                 except IOError:
                         return False
                 
+        def copy_file(self, src, dest):
+            '''Copy file from src to dest'''
+            try:
+                #INFO: If src and dest are the same, it is effectively opening the same file
+                # in read and write modes, which leads to NULL data corruption
+                destFile = os.path.join(dest, os.path.basename(src))
+                #print src, destFile
+                if src == destFile:
+                    return True
+                srcFile = open(src, 'rb')
+                FP = open(destFile, 'wb')
+                
+                FP.write(srcFile.read())
+            except IOError:
+                return False
+            
         def move_folder( self, src, dest ):
                 '''Move folder from src to dest.'''
                 if os.path.isdir( dest ):

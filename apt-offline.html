@@ -4,7 +4,7 @@ Content-type: text/html; charset=UTF-8
 <HTML><HEAD><TITLE>Man page of apt-offline</TITLE>
 </HEAD><BODY>
 <H1>apt-offline</H1>
-Section: USER COMMANDS (8)<BR>Updated: January, 2015<BR><A HREF="#index">Index</A>
+Section: USER COMMANDS (8)<BR>Updated: September, 2016<BR><A HREF="#index">Index</A>
 <A HREF="/cgi-bin/man/man2html">Return to Main Contents</A><HR>
 
 <A NAME="lbAB">&nbsp;</A>
@@ -68,6 +68,12 @@ Download Build Dependency packages for the source packages requested
 <P>
 <DT><B>--release release_name</B><DD>
 Release target to install packages from
+<P>
+<DT><B>--apt-backend apt-get</B><DD>
+APT backend to use. One of: apt, apt-get, python-apt
+<P>
+<DT><B>--generate-changelog</B><DD>
+Generate changelog of the version to be downloaded
 <P>
 <DT><B>--update</B><DD>
 Generate APT Database signature for an update. This is the equivalent of using
@@ -166,6 +172,9 @@ command.
 <DL COMPACT>
 <DT><B>--skip-bug-reports</B><DD>
 Skip listing of downloaded bug reports, if any.
+<P>
+<DT><B>--skip-changelog</B><DD>
+Skip display of changelog, if any.
 <P>
 <DT><B>--allow-unauthenticated</B><DD>
 Don't verify GPG signatures for the data to be installed to APT. Usage of this option is highly discouraged.
@@ -325,6 +334,6 @@ This software is dedicated to the memory of my father Santosh Kumar Sarraf. We m
 This document was created by
 <A HREF="/cgi-bin/man/man2html">man2html</A>,
 using the manual pages.<BR>
-Time: 16:25:10 GMT, October 31, 2015
+Time: 10:02:18 GMT, September 12, 2016
 </BODY>
 </HTML>
