@@ -1,3 +1,25 @@
+apt-offline (1.7.1.1) unstable; urgency=medium
+
+  * Add QT_X11_NO_MISHM=1 to workaround this Qt bug on Debian
+    Hence, minor bump in version.
+  * New Upstream Release
+    (Closes: #815227, #784066, #784067, #787730, #787736)
+    - Integration with PolicyKit
+    - Better integration with apt gpg keyring
+    - Resilient to failures when a sub-task errors out
+    - New Feature: --changelog
+      + This release adds the ability to deal with package changelogs
+        ('set' command option: --generate-changelog) based on what is
+        installed, extract changelog (Currently support with python-apt
+        only) from downloaded packages and display them during
+        installation ('install' command opiton: --skip-changelog, if
+        you want to skip display of changelog)
+    - New Option: --apt-backend
+      + Users can now opt to choose an apt backend of their choice.
+        Currently support: apt, apt-get (default) and python-apt
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Mon, 12 Sep 2016 16:50:27 +0530
+
 apt-offline (1.7) unstable; urgency=medium
 
   * [7aacb1e] Don't abuse exception handlers.
