@@ -27,8 +27,11 @@ import os
 from PyQt4 import QtCore, QtGui
 from apt_offline_gui.AptOfflineQtMain import AptOfflineQtMain
 
-# This seems to be needed, atleast of Debian
-os.putenv('QT_X11_NO_MITSHM', "1")
+try:
+    # This seems to be needed, atleast of Debian
+    os.putenv('QT_X11_NO_MITSHM', "1")
+except:
+    sys.stderr.write("Couldn't set environment variable\n")
 
 
 if __name__ == "__main__":
