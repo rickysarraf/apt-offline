@@ -927,6 +927,8 @@ def fetcher( args ):
                     sys.exit(1)
             else:
                 os.mkdir(Str_DownloadDir)
+                #INFO: Because the user may give in a relative path
+                Str_DownloadDir = os.path.abspath(Str_DownloadDir)
                 log.verbose("Creating directory %s\n" % (Str_DownloadDir))
         else:
             tempdir = tempfile.gettempdir()
