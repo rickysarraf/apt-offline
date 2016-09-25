@@ -1,3 +1,12 @@
+apt-offline (1.7.1.2) unstable; urgency=medium
+
+  * [9ce8961] Use dpkg-maintscript-helper to handle obsolete conf files.
+    Thanks to Paul Wise (Closes: 805518)
+  * [30818a8] Update Standards Version to 3.9.8
+  * [0d6956d] Bump debhelper compatibility to 9
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Sun, 25 Sep 2016 17:30:06 +0530
+
 apt-offline (1.7.1.1) unstable; urgency=medium
 
   * Add QT_X11_NO_MISHM=1 to workaround this Qt bug on Debian
