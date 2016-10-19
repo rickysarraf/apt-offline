@@ -1,0 +1,6 @@
+# Incase users use it directly from source, please ensure following modules
+# are installed
+argparse
+magic
+soappy
+lzma
