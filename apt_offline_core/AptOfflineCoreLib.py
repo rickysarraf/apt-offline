@@ -1179,6 +1179,7 @@ def fetcher( args ):
                                 FetcherInstance.writeData(full_file_path)
                                 FetcherInstance.processBugReports(PackageName)
                                 FetcherInstance.updateValue(download_size)
+                                FetcherInstance.completed()
                             else:
                                 log.verbose("%s checksum mismatch. Skipping file %s\n" % (pkgFile, LINE_OVERWRITE_FULL) )
                                 log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_FULL) )
@@ -1200,7 +1201,6 @@ def fetcher( args ):
                                 FetcherInstance.updateValue(download_size)
                             else:
                                 errlist.append(PackageName)
-                        FetcherInstance.completed()
                 else:
                         def DownloadPackages(url):
                             if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
