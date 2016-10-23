@@ -433,7 +433,7 @@ class Archiver:
                             filename.close()
                             if self.lock:
                                 self.ZipLock.release()
-                            return True
+                        return True
                 else:
                         if self.lock:
                                 self.ZipLock.release()
