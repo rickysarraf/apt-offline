@@ -426,15 +426,14 @@ class Archiver:
                                         #
                                         # A more ideal fix will be to check for files_to_compress's presence in zipfile at this stage
                                         self.file_possibly_deleted = True
-                                        raise AptOfflineErrors("Ignoring err: Possibly multiarch package %s\n" % (files_to_compress))
+                                        raise AptOfflineErrors("Ignoring err ENOENT, multiarch package name clash %s\n" % (files_to_compress))
                         except UserWarning, e:
                             raise AptOfflineErrors("Ignoring err type %s\n" % (e.args))
                         finally:
-                                filename.close()
-        
-                        if self.lock:
+                            filename.close()
+                            if self.lock:
                                 self.ZipLock.release()
-                        return True
+                            return True
                 else:
                         if self.lock:
                                 self.ZipLock.release()
