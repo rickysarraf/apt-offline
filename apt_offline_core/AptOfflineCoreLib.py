@@ -1404,11 +1404,11 @@ def installer( args ):
                 
 
         def cleanAptPartial(self, path):
-            self.aptLock.lockLists()
+            self.lockLists()
             for eachPath in os.listdir(path):
                 eachPath = os.path.abspath(eachPath)
                 os.unlink(eachPath)
-            self.aptLock.unlockLists()
+            self.unlockLists()
             
         def display_options(self,dispType):
             log.msg( "(Y) Yes. Proceed with installation\n" )
@@ -1606,7 +1606,7 @@ def installer( args ):
                                 
                             if self.Bool_TestWindows:
                                 log.verbose("In simulate mode. No locking required\n")
-                            elif self.AptLock.lockPackages() is False:
+                            elif self.lockPackages() is False:
                                 log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (archive_file))
                                 sys.exit(1)
                                     
@@ -1615,7 +1615,7 @@ def installer( args ):
                             if self.Bool_TestWindows:
                                 log.verbose("In simulate mode. No locking required\n")
                             else:
-                                self.AptLock.unlockLists()
+                                self.unlockLists()
                             data.file.close()
                         sys.exit( 0 )
                     if dataType is "dir":
