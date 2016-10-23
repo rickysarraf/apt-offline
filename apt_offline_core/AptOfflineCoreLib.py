@@ -39,6 +39,8 @@ import traceback
 from ssl import SSLError, SSLEOFError
 import zlib
 
+from apt_offline_core.AptOfflineLib import AptOfflineErrors
+
 FCNTL_LOCK = True
 try:
         import fcntl
@@ -216,9 +218,12 @@ class FetchBugReports:
                         return 1
                 
         def AddToArchive(self, ArchiveFile, fileName):
-                if self.compress_the_file(ArchiveFile, fileName):
+                try:
+                    if self.compress_the_file(ArchiveFile, fileName):
                         if self.file_possibly_deleted is not True:
                                 os.unlink(fileName)
+                except AptOfflineErrors, message:
+                    log.warn("%s\n" % (message))
                 return True
         
 class ExecCmd:
