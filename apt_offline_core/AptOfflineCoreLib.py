@@ -1455,61 +1455,61 @@ def installer( args ):
                     temp_filename = os.path.join(self.apt_update_target_path, filename + app_name)
                     filename = os.path.join(self.apt_update_target_path, filename)
                     if magicMIME.file( archive_file ) == "application/x-bzip2":
-                            retval = self.archive.decompress_the_file( archive_file, temp_filename, "bzip2" )
+                        retval = self.decompress_the_file( archive_file, temp_filename, "bzip2" )
                     elif magicMIME.file( archive_file ) == "application/gzip":
-                            retval = self.archive.decompress_the_file( archive_file, temp_filename, "gzip" )
+                        retval = self.decompress_the_file( archive_file, temp_filename, "gzip" )
                     elif magicMIME.file(archive_file) == "application/x-xz":
-                            retval = self.archive.decompress_the_file(archive_file, temp_filename, "xz")
+                        retval = self.decompress_the_file(archive_file, temp_filename, "xz")
                     else:
-                            log.verbose("No filetype match for %s\n" % (filename) )
-                            retval = False
+                        log.verbose("No filetype match for %s\n" % (filename) )
+                        retval = False
 
                     if retval is True:
-                            os.rename(temp_filename, filename)
+                        os.rename(temp_filename, filename)
                     else:
-                            log.err("Failed to sync file %s\n" % (filename))
-                            try:
-                                    os.unlink(temp_filename)
-                            except OSError:
-                                    log.warn("Failed to unlink temproary file %s. Check respective decompressor library support\n" % (temp_filename) )
+                        log.err("Failed to sync file %s\n" % (filename))
+                        try:
+                            os.unlink(temp_filename)
+                        except OSError:
+                            log.warn("Failed to unlink temproary file %s. Check respective decompressor library support\n" % (temp_filename) )
 
             elif magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or magicMIME.file( archive_file ) == "application/pgp-signature":
-                    gpgFile = os.path.join(self.apt_update_target_path, filename)
-                    shutil.copy2(archive_file, gpgFile)
-                    # PGP armored data should be bypassed
-                    log.verbose("File is %s, hence 'True'.\n" % (filename) )
-                    retval = True
+                gpgFile = os.path.join(self.apt_update_target_path, filename)
+                shutil.copy2(archive_file, gpgFile)
+                # PGP armored data should be bypassed
+                log.verbose("File is %s, hence 'True'.\n" % (filename) )
+                retval = True
             elif magicMIME.file( archive_file ) == "application/vnd.debian.binary-package" or \
-                    magicMIME.file(archive_file) == "application/x-debian-package":
-                    debFile = os.path.join(self.apt_package_target_path, filename)
-                    if os.access( self.apt_package_target_path, os.W_OK ):
-                            shutil.copy2( archive_file, debFile )
-                            os.chmod(debFile, 0644)
-                            log.msg("%s file synced.\n" % (filename) )
-                            retval = True
-                    else:
-                            log.err( "Cannot write to target path %s\n" % ( self.apt_package_target_path ) )
-                            sys.exit( 1 )
+                magicMIME.file(archive_file) == "application/x-debian-package":
+                debFile = os.path.join(self.apt_package_target_path, filename)
+                if os.access( self.apt_package_target_path, os.W_OK ):
+                    shutil.copy2( archive_file, debFile )
+                    os.chmod(debFile, 0644)
+                    log.msg("%s file synced.\n" % (filename) )
+                    retval = True
+                else:
+                    log.err( "Cannot write to target path %s\n" % ( self.apt_package_target_path ) )
+                    sys.exit( 1 )
             elif filename.endswith( apt_bug_file_format ):
-                    pass
+                pass
             elif magicMIME.file( archive_file ) == "text/plain":
-                    txtFile = os.path.join(self.apt_update_target_path, filename)
-                    if os.access( self.apt_update_target_path, os.W_OK ):
-                            shutil.copy( archive_file, txtFile )
-                            retval = True
-                    else:
-                            log.err( "Cannot write to target path %s\n" % ( self.apt_update_target_path ) )
-                            sys.exit( 1 )
+                txtFile = os.path.join(self.apt_update_target_path, filename)
+                if os.access( self.apt_update_target_path, os.W_OK ):
+                    shutil.copy( archive_file, txtFile )
+                    retval = True
+                else:
+                    log.err( "Cannot write to target path %s\n" % ( self.apt_update_target_path ) )
+                    sys.exit( 1 )
             else:
-                    log.err( "I couldn't understand file type %s.\n" % ( filename ) )
+                log.err( "I couldn't understand file type %s.\n" % ( filename ) )
             
             if retval:
-                    #CHANGE: track progress
-                    totalSize[0]+=1 
-                    if guiBool:
-                            log.msg("[%d/%d]" % (totalSize[0], totalSize[1]))
-                    #ENDCHANGE
-                    log.verbose( "%s file synced to %s.\n" % ( filename, self.apt_update_target_path ) )
+                #CHANGE: track progress
+                totalSize[0]+=1 
+                if guiBool:
+                    log.msg("[%d/%d]" % (totalSize[0], totalSize[1]))
+                #ENDCHANGE
+                log.verbose( "%s file synced to %s.\n" % ( filename, self.apt_update_target_path ) )
 
         def displayChangelog(self, dataType=None):
             '''Takes file or directory as input'''
