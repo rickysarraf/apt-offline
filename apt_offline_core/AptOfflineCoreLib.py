@@ -1024,6 +1024,7 @@ def fetcher( args ):
                     if not self.BugReports:
                         return False
                     
+                    log.msg("Fetching bug report for %s%s\n" % (pkgName, LINE_OVERWRITE_FULL))
                     #INFO: Payload is written to destination inside the method
                     self.FetchBugsDebian(pkgName)
                     log.success("Fetched bug report for %s%s\n" % (pkgName, LINE_OVERWRITE_FULL))
