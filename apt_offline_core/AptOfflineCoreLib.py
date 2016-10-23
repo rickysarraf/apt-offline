@@ -1409,7 +1409,7 @@ def installer( args ):
                     os.unlink(eachPath)
                 self.aptLock.unlockLists()
                 
-            def display_options(self):
+            def display_options(self,dispType):
                 log.msg( "(Y) Yes. Proceed with installation\n" )
                 log.msg( "(N) No, Abort.\n" )
                 if dispType is "BugReports":
@@ -1420,10 +1420,10 @@ def installer( args ):
                 log.msg( "(?) Display this help message.\n" )
             
             def get_response(self):
-                response = raw_input( "What would you like to do next:\t (y, N, Bug Number, R, C, ?)" )
+                response = raw_input( "What would you like to do next:\t (y, N, ?)" )
                 response = response.rstrip( "\r" )
                 return response
-        
+
             def list_bugs(self, dictList):
                 '''
                 Takes a dictionary of key,value pair where:
@@ -1440,8 +1440,6 @@ def installer( args ):
                         bug_subject = dictList[each_bug]
                         log.msg( "%s\t%s\t%s\n" % ( bug_num, pkg_name, bug_subject ) )
             
-        def magic_check_and_uncompress( archive_file=None, filename=None):
-                
             def magic_check_and_uncompress(self, archive_file=None, filename=None):
                     
                 if MagicLib is False:
