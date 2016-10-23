@@ -1016,7 +1016,10 @@ def fetcher( args ):
                 
                 def writeToArchive(self, data):
                     '''Write data to archive file'''
-                    self.compress_the_file(self.BundleFile, data)
+                    try:
+                        self.compress_the_file(self.BundleFile, data)
+                    except AptOfflineErrors, message:
+                        log.warn("%s\n" % (message))
                 
                 def writeToCache(self, data):
                     '''Write data to cacheDir'''
