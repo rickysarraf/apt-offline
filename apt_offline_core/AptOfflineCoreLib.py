@@ -1335,129 +1335,81 @@ def fetcher( args ):
 
 def installer( args ):
         
-                        
-        # install opts
-        Str_InstallArg = args.install
-        Bool_TestWindows = args.simulate
-        Bool_SkipBugReports = args.skip_bug_reports
-        Bool_Untrusted = args.allow_unauthenticated
-        Str_InstallSrcPath = args.install_src_path
-        Bool_SkipChangelog = args.skip_changelog
-        
-        
-        # Old cruft. Needs clean-up
-        install_file_path = Str_InstallArg
-        
-        if Str_InstallSrcPath is None:
-                tempdir = tempfile.gettempdir()
-                if os.access( tempdir, os.W_OK ) is True:
-                        pidname = os.getpid()
-                        randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
-                        # 5 byte random junk to make mkdir possible multiple times
-                        # use-case -> installing multiple bundles with one dialog
-                        tempdir = os.path.join(tempdir , "apt-offline-src-downloads-" + str(pidname) + randomjunk )
-                        os.mkdir(tempdir)
-                                
-                        Str_InstallSrcPath = os.path.abspath(tempdir)
-                else:
-                        log.err( "%s is not writable\n" % (tempdir) ) 
-                        sys.exit(1)
-        if not os.path.isdir(Str_InstallSrcPath):
-                log.err("Not a folder.\n")
-                sys.exit(1)
-        if os.access(Str_InstallSrcPath, os.W_OK) is not True:
-                log.err("%s is not writable.\n" % (Str_InstallSrcPath))
-                sys.exit(1)
-                
-        if Str_InstallArg:
-                if Bool_TestWindows:
-                        global apt_package_target_path
-                        tempdir = tempfile.gettempdir()
-                        if os.access( tempdir, os.W_OK ) is True:
-                                pidname = os.getpid()
-                                tempdir = os.path.join(tempdir , "apt-package-target-path-" + str(pidname) )
-                                log.verbose("apt-package-target-path is %s\n" % (tempdir) )
-                                os.mkdir(tempdir)
-                                        
-                                apt_package_target_path = os.path.abspath(tempdir)
-                        else:
-                                log.err( "%s is not writable\n" % (tempdir) ) 
-                                sys.exit(1)
-                                
-                        global apt_update_target_path
-                        tempdir = tempfile.gettempdir()
-                        if os.access( tempdir, os.W_OK ) is True:
-                                pidname = os.getpid()
-                                tempdir = os.path.join(tempdir , "apt-update-target-path-" + str(pidname) )
-                                log.verbose("apt-update-target-path is %s\n" % (tempdir) )
-                                os.mkdir(tempdir)
-                                        
-                                apt_update_target_path = os.path.abspath(tempdir)
-                        else:
-                                log.err( "%s is not writable\n" % (tempdir) ) 
-                                sys.exit(1)
-                                
-                        global apt_update_final_path
-                        tempdir = tempfile.gettempdir()
-                        if os.access( tempdir, os.W_OK ) is True:
-                                pidname = os.getpid()
-                                tempdir = os.path.join(tempdir , "apt-update-final-path-" + str(pidname) )
-                                log.verbose("apt-update-final-path is %s\n" % (tempdir) )
-                                os.mkdir(tempdir)
-                                        
-                                apt_update_final_path = os.path.abspath(tempdir)
-                        else:
-                                log.err( "%s is not writable\n" % (tempdir) ) 
-                                sys.exit(1)
-                else:
-                        try:
-                                if os.geteuid() != 0:
-                                        log.err("You need superuser privileges to execute this option\n")
-                                        sys.exit(1)
-                        except AttributeError:
-                                log.err("Are you really running the install command on a Debian box?\n")
-                                sys.exit(1)
-                                
-        archive = AptOfflineLib.Archiver()
-        
-        # Prepare for APT Datbase's Locks
-        if Bool_TestWindows:
-                log.verbose("In simulate mode. No locking required\n")
-        elif FCNTL_LOCK is False:
-                log.err("Locking framework in not available on your platform")
-                sys.exit(1)
-        else:
-                AptLock = LockAPT(apt_lists_lock, apt_packages_lock)
-                if AptLock is False:
-                        log.err("Couldn't acquire lock on the APT Database\n")
-                        log.err("Is another process using it\n")
-                        sys.exit(1)
+    
+    class InstallerClass(AptOfflineLib.Archiver, AptOfflineLib.Checksum, AptOfflineLib.FileMgmt, LockAPT):
+        def __init__(self, args):
+                                      
+            # install opts
+            self.Str_InstallArg = args.install
+            self.Bool_TestWindows = args.simulate
+            self.Bool_SkipBugReports = args.skip_bug_reports
+            self.Bool_Untrusted = args.allow_unauthenticated
+            self.Str_InstallSrcPath = args.install_src_path
+            self.Bool_SkipChangelog = args.skip_changelog
+            self.tempdir = tempfile.gettempdir()
+            if not os.access(self.tempdir, os.W_OK):
+                log.err("Temporary path %s in not writable. Some functionality may fail\n")
+                return False
 
+            self.archive = AptOfflineLib.Archiver.__init__(self)
+            self.aptLock = LockAPT.__init__(self, apt_lists_lock, apt_packages_lock)
+            
+                        
+            if self.Str_InstallSrcPath is None:
+                pidname = os.getpid()
+                randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
+                # 5 byte random junk to make mkdir possible multiple times
+                # use-case -> installing multiple bundles with one dialog
+                srcDownloadsPath = os.path.join(self.tempdir , "apt-offline-src-downloads-" + str(pidname) + randomjunk )
+                os.mkdir(srcDownloadsPath)
+                self.Str_InstallSrcPath = os.path.abspath(srcDownloadsPath)
+                        
+            if not os.path.isdir(self.Str_InstallSrcPath):
+                log.err("Not a folder.\n")
+                return False
+            
+            if os.access(self.Str_InstallSrcPath, os.W_OK) is not True:
+                log.err("%s is not writable.\n" % (self.Str_InstallSrcPath))
+                return False
                 
-        try:
-                if Bool_TestWindows:
-                        log.verbose("In simulate mode. No locking required\n")
-                # Acquire APT lock
-                elif AptLock.lockLists() is False:
-                        log.err("Couldn't acquire lock on %s\nIs another apt process running?\n" % (apt_update_target_path))
-                        sys.exit(1)
+            if self.Bool_TestWindows:
+                pidname = os.getpid()
+                tempdir = os.path.join(self.tempdir , "apt-package-target-path-" + str(pidname) )
+                log.verbose("apt-package-target-path is %s\n" % (tempdir) )
+                os.mkdir(tempdir)
+                self.apt_package_target_path = os.path.abspath(tempdir)
+                    
+                tempdir = os.path.join(self.tempdir , "apt-update-target-path-" + str(pidname) )
+                log.verbose("apt-update-target-path is %s\n" % (tempdir) )
+                os.mkdir(tempdir)
+                self.apt_update_target_path = os.path.abspath(tempdir)
+                        
+                tempdir = os.path.join(self.tempdir , "apt-update-final-path-" + str(pidname) )
+                log.verbose("apt-update-final-path is %s\n" % (tempdir) )
+                os.mkdir(tempdir)
+                self.apt_update_final_path = os.path.abspath(tempdir)
+            else:
+                self.apt_package_target_path = apt_package_target_path
+                self.apt_update_target_path = apt_update_target_path
+                self.apt_update_final_path = apt_update_final_path
                 
-                #INFO: Let's clean the partial database
-                for x in os.listdir(apt_update_target_path):
-                        x = os.path.join(apt_update_target_path, x)
-                        if os.access(x, os.W_OK):
-                                os.unlink(x)
-                                log.verbose("Cleaning old update data file %s.\n" % (x) )
-        except OSError:
-                log.err("Cannot find APT's partial cache dir %s\n" % (apt_update_target_path) )
-                sys.exit(1)
-        finally:
-                if Bool_TestWindows:
-                        log.verbose("In simulate mode. No locking required\n")
-                else:
-                        AptLock.unlockLists()
-        
-        def display_options(dispType):
+                try:
+                    if os.geteuid() != 0:
+                        log.err("You need superuser privileges to execute this option\n")
+                        return False
+                except AttributeError:
+                    log.err("Unsupported platform: %s\n" % (platform.platform()))
+                    return False
+                
+
+            def cleanAptPartial(self, path):
+                self.aptLock.lockLists()
+                for eachPath in os.listdir(path):
+                    eachPath = os.path.abspath(eachPath)
+                    os.unlink(eachPath)
+                self.aptLock.unlockLists()
+                
+            def display_options(self,dispType):
                 log.msg( "(Y) Yes. Proceed with installation\n" )
                 log.msg( "(N) No, Abort.\n" )
                 if dispType is "BugReports":
@@ -1466,13 +1418,13 @@ def installer( args ):
                 elif dispType is "Chlog":
                         log.msg( "(C) Display changelog\n")
                 log.msg( "(?) Display this help message.\n" )
-                        
-        def get_response():
+            
+            def get_response(self):
                 response = raw_input( "What would you like to do next:\t (y, N, ?)" )
                 response = response.rstrip( "\r" )
                 return response
-    
-        def list_bugs(dictList):
+
+            def list_bugs(self, dictList):
                 '''
                 Takes a dictionary of key,value pair where:
                 key => filename
@@ -1488,8 +1440,8 @@ def installer( args ):
                         bug_subject = dictList[each_bug]
                         log.msg( "%s\t%s\t%s\n" % ( bug_num, pkg_name, bug_subject ) )
             
-        def magic_check_and_uncompress( archive_file=None, filename=None):
-                
+            def magic_check_and_uncompress(self, archive_file=None, filename=None):
+                    
                 if MagicLib is False:
                         log.err("Please ensure libmagic is installed\n")
                         return False
@@ -1703,230 +1655,232 @@ def installer( args ):
                         else:
                                 log.err( 'Incorrect choice. Exiting\n' )
                                 sys.exit( 1 )
+                  
+    InstallerInstance = InstallerClass(args)
+    install_file_path = ""
+    if os.path.isfile(install_file_path):
+            #INFO: For now, we support zip bundles only
+            try:
+                    zipBugFile = zipfile.ZipFile( install_file_path, "r" )
+            except zipfile.BadZipfile:
+                    log.err("File %s is not a valid zip file\n" % (install_file_path))
+                    sys.exit(1)
+            #CHANGE: for progress tracking
+            totalSize[1] = len(zipBugFile.namelist())
+            totalSize[0] = 0
+            #ENDCHANGE
+            
+            #INFO: Handle source packages with care.
+            # Build a dict and populate its files based on details in .dsc
+            SrcPkgDict = {}
+            
+            #TODO: Refactor this loop
+            for filename in zipBugFile.namelist():
+                    if filename.endswith(".dsc"):
+                            SrcPkgName = filename.split('_')[0]
+                            temp = tempfile.NamedTemporaryFile()
+                            temp.file.write( zipBugFile.read( filename ) )
+                            temp.file.flush()
+                            temp.file.seek( 0 ) #Let's go back to the start of the file
+                            SrcPkgDict[SrcPkgName] = []
+                            marker = None
+                            for SrcPkgIdentifier in temp.file.readlines():
+                                    if SrcPkgIdentifier.startswith('Files:'):
+                                            marker = True
+                                            continue
+                                    
+                                    if SrcPkgIdentifier.startswith('\n'):
+                                            marker = False
+                                            continue
+                                    
+                                    if marker is True:
+                                            SrcPkgData = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
+                                            if SrcPkgData in SrcPkgDict[SrcPkgName]:
+                                                    break
+                                            else:
+                                                    SrcPkgDict[SrcPkgName].append(SrcPkgData)
+                                    
+                            SrcPkgDict[SrcPkgName].append(filename)
+                            temp.file.close()
+    
+            # Let's display changelog
+            if Bool_SkipChangelog:
+                log.verbose("Skipping display of changelog as requested\n")
+            else:
+                displayChangelog(Str_InstallArg)
+                                    
+            #if bug_parse_required is True:
+            bugs_number = {}
+            if Bool_SkipBugReports:
+                    log.verbose("Skipping bug report check as requested")
+            else:
+                    for filename in zipBugFile.namelist():
+                            if filename.endswith( apt_bug_file_format ):
+                                    temp = tempfile.NamedTemporaryFile()
+                                    temp.file.write( zipBugFile.read( filename ) )
+                                    temp.file.flush()
+                                    temp.file.seek( 0 ) #Let's go back to the start of the file
+                                    for bug_subject_identifier in temp.file.readlines():
+                                            if bug_subject_identifier.decode('utf8').startswith( 'Subject:' ):
+                                                    subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
+                                                    subject = subject.rstrip( "\n" )
+                                                    break
+                                    bugs_number[filename] = subject
+                                    temp.file.close()
+                                    
+            log.verbose(str(bugs_number) + "\n")
+            if bugs_number:
+                    displayBugs(dataType="file")
+            else:
+                    log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
+                    #response = raw_input( "Continue with Installation. Y/N ?" )
+                    #response = response.rstrip( "\r" )
+                    #if response.endswith( 'y' ) or response.endswith( 'Y' ):
+                    #        log.verbose( "Continuing with syncing the files.\n" )
+                    for filename in zipBugFile.namelist():
+                            
+                            #INFO: Take care of Src Pkgs
+                            found = False
+                            for item in SrcPkgDict.keys():
+                                    if filename in SrcPkgDict[item]:
+                                            found = True
+                                            break
+                                    
+                            data = tempfile.NamedTemporaryFile()
+                            data.file.write( zipBugFile.read( filename ) )
+                            data.file.flush()
+                            archive_file = data.name
+                            
+                            if found is True: #We are src packages. And don't need a lock on the APT Database
+                                    shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
+                                    log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                    continue
 
-        if os.path.isfile(install_file_path):
-                #INFO: For now, we support zip bundles only
-                try:
-                        zipBugFile = zipfile.ZipFile( install_file_path, "r" )
-                except zipfile.BadZipfile:
-                        log.err("File %s is not a valid zip file\n" % (install_file_path))
-                        sys.exit(1)
-                #CHANGE: for progress tracking
-                totalSize[1] = len(zipBugFile.namelist())
-                totalSize[0] = 0
-                #ENDCHANGE
-                
-                #INFO: Handle source packages with care.
-                # Build a dict and populate its files based on details in .dsc
-                SrcPkgDict = {}
-                
-                #TODO: Refactor this loop
-                for filename in zipBugFile.namelist():
-                        if filename.endswith(".dsc"):
-                                SrcPkgName = filename.split('_')[0]
-                                temp = tempfile.NamedTemporaryFile()
-                                temp.file.write( zipBugFile.read( filename ) )
-                                temp.file.flush()
-                                temp.file.seek( 0 ) #Let's go back to the start of the file
-                                SrcPkgDict[SrcPkgName] = []
-                                marker = None
-                                for SrcPkgIdentifier in temp.file.readlines():
-                                        if SrcPkgIdentifier.startswith('Files:'):
-                                                marker = True
-                                                continue
-                                        
-                                        if SrcPkgIdentifier.startswith('\n'):
-                                                marker = False
-                                                continue
-                                        
-                                        if marker is True:
-                                                SrcPkgData = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
-                                                if SrcPkgData in SrcPkgDict[SrcPkgName]:
-                                                        break
-                                                else:
-                                                        SrcPkgDict[SrcPkgName].append(SrcPkgData)
-                                        
-                                SrcPkgDict[SrcPkgName].append(filename)
-                                temp.file.close()
-        
-                # Let's display changelog
-                if Bool_SkipChangelog:
-                    log.verbose("Skipping display of changelog as requested\n")
-                else:
-                    displayChangelog(Str_InstallArg)
-                                        
-                #if bug_parse_required is True:
-                bugs_number = {}
-                if Bool_SkipBugReports:
-                        log.verbose("Skipping bug report check as requested")
-                else:
-                        for filename in zipBugFile.namelist():
-                                if filename.endswith( apt_bug_file_format ):
-                                        temp = tempfile.NamedTemporaryFile()
-                                        temp.file.write( zipBugFile.read( filename ) )
-                                        temp.file.flush()
-                                        temp.file.seek( 0 ) #Let's go back to the start of the file
-                                        for bug_subject_identifier in temp.file.readlines():
-                                                if bug_subject_identifier.decode('utf8').startswith( 'Subject:' ):
-                                                        subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
-                                                        subject = subject.rstrip( "\n" )
-                                                        break
-                                        bugs_number[filename] = subject
-                                        temp.file.close()
-                                        
-                log.verbose(str(bugs_number) + "\n")
-                if bugs_number:
-                        displayBugs(dataType="file")
-                else:
-                        log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
-                        #response = raw_input( "Continue with Installation. Y/N ?" )
-                        #response = response.rstrip( "\r" )
-                        #if response.endswith( 'y' ) or response.endswith( 'Y' ):
-                        #        log.verbose( "Continuing with syncing the files.\n" )
-                        for filename in zipBugFile.namelist():
-                                
-                                #INFO: Take care of Src Pkgs
-                                found = False
-                                for item in SrcPkgDict.keys():
-                                        if filename in SrcPkgDict[item]:
-                                                found = True
-                                                break
-                                        
-                                data = tempfile.NamedTemporaryFile()
-                                data.file.write( zipBugFile.read( filename ) )
-                                data.file.flush()
-                                archive_file = data.name
-                                
-                                if found is True: #We are src packages. And don't need a lock on the APT Database
-                                        shutil.copy2(archive_file, os.path.join(Str_InstallSrcPath, filename) )
-                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
-                                        continue
+                            if Bool_TestWindows:
+                                    log.verbose("In simulate mode. No locking required.\n")
+                            elif AptLock.lockPackages() is False:
+                                    log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
+                                    sys.exit(1)
+                            
+                            magic_check_and_uncompress( archive_file, filename )
 
-                                if Bool_TestWindows:
-                                        log.verbose("In simulate mode. No locking required.\n")
-                                elif AptLock.lockPackages() is False:
-                                        log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
-                                        sys.exit(1)
-                                
-                                magic_check_and_uncompress( archive_file, filename )
+                            if Bool_TestWindows:
+                                    log.verbose("In simulate mode. No locking required\n")
+                            else:
+                                    AptLock.unlockPackages()
+                            data.file.close()
+                            
+    elif os.path.isdir(install_file_path):
+            
+            SrcPkgDict = {}
+            
+            #TODO: Needs refactoring with the previous common code
+            for filename in os.listdir( install_file_path ):
+                    if filename.endswith(".dsc"):
+                            SrcPkgName = filename.split('_')[0]
+                            SrcPkgDict[SrcPkgName] = []
+                            Tempfile = os.path.join(install_file_path, filename)
+                            temp = open(Tempfile, 'r')
+                            marker = None
+                            for SrcPkgIdentifier in temp.readlines():
+                                    if SrcPkgIdentifier.startswith('Files:'):
+                                            marker = True
+                                            continue
+                                    
+                                    if SrcPkgIdentifier.startswith('\n'):
+                                            marker = False
+                                            continue
+                                    
+                                    if marker is True:
+                                            SrcPkgData = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
+                                            if SrcPkgData in SrcPkgDict[SrcPkgName]:
+                                                    break
+                                            else:
+                                                    SrcPkgDict[SrcPkgName].append(SrcPkgData)
+                            SrcPkgDict[SrcPkgName].append(filename)
+                            temp.close()
+            
+            bugs_number = {}
+            
+            def DirInstallPackages(InstallDirPath):
+                    for eachfile in os.listdir( InstallDirPath ):
+                            
+                            filename = eachfile
+                            FullFileName = os.path.abspath(os.path.join(InstallDirPath, eachfile) )
+                    
+                            if os.path.isdir(FullFileName):
+                                    log.verbose("Skipping!! %s is a directory\n" % (FullFileName))
+                                    continue
+                            #INFO: Take care of Src Pkgs
+                            found = False
+                            for item in SrcPkgDict.keys():
+                                    if filename in SrcPkgDict[item]:
+                                            found = True
+                                            break
+                            if found is True:
+                                    shutil.copy2(FullFileName, Str_InstallSrcPath)
+                                    log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
+                                    continue
+                            
+                            magic_check_and_uncompress( FullFileName, filename )
+                    return True
+                            
+            if Bool_SkipBugReports:
+                    log.verbose("Skipping bug report check as requested")
+            else:
+                    for filename in os.listdir( install_file_path ):
+                            if filename.endswith( apt_bug_file_format ):
+                                    filename = os.path.join(install_file_path, filename)
+                                    temp = open(filename, 'r')
+                                    for bug_subject_identifier in temp.readlines():
+                                            if bug_subject_identifier.decode('utf8').startswith( 'Subject:' ):
+                                                    subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
+                                                    subject = subject.rstrip( "\n" )
+                                                    break
+                                    bugs_number[filename] = subject
+                                    temp.close()
+            log.verbose(str(bugs_number) + "\n")
+            if bugs_number:
+                    displayBugs(dataType="dir")
+            else:
+                    log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
+                    DirInstallPackages(install_file_path)
+                    
+    if Bool_Untrusted:
+            log.err("Disabling apt gpg check can risk your machine to compromise.\n")
+            for x in os.listdir(apt_update_target_path):
+                    x = os.path.join(apt_update_target_path, x)
+                    shutil.copy2(x, apt_update_final_path) # Do we do a move ??
+                    log.verbose("%s %s\n" % (x, apt_update_final_path) )
+                    log.msg("%s synced.\n" % (x) )
+    else:
+            AptSecure = APTVerifySigs(Simulate=Bool_TestWindows)
 
-                                if Bool_TestWindows:
-                                        log.verbose("In simulate mode. No locking required\n")
-                                else:
-                                        AptLock.unlockPackages()
-                                data.file.close()
-                                
-        elif os.path.isdir(install_file_path):
-                
-                SrcPkgDict = {}
-                
-                #TODO: Needs refactoring with the previous common code
-                for filename in os.listdir( install_file_path ):
-                        if filename.endswith(".dsc"):
-                                SrcPkgName = filename.split('_')[0]
-                                SrcPkgDict[SrcPkgName] = []
-                                Tempfile = os.path.join(install_file_path, filename)
-                                temp = open(Tempfile, 'r')
-                                marker = None
-                                for SrcPkgIdentifier in temp.readlines():
-                                        if SrcPkgIdentifier.startswith('Files:'):
-                                                marker = True
-                                                continue
-                                        
-                                        if SrcPkgIdentifier.startswith('\n'):
-                                                marker = False
-                                                continue
-                                        
-                                        if marker is True:
-                                                SrcPkgData = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
-                                                if SrcPkgData in SrcPkgDict[SrcPkgName]:
-                                                        break
-                                                else:
-                                                        SrcPkgDict[SrcPkgName].append(SrcPkgData)
-                                SrcPkgDict[SrcPkgName].append(filename)
-                                temp.close()
-                
-                bugs_number = {}
-                
-                def DirInstallPackages(InstallDirPath):
-                        for eachfile in os.listdir( InstallDirPath ):
-                                
-                                filename = eachfile
-                                FullFileName = os.path.abspath(os.path.join(InstallDirPath, eachfile) )
-                        
-                                if os.path.isdir(FullFileName):
-                                        log.verbose("Skipping!! %s is a directory\n" % (FullFileName))
-                                        continue
-                                #INFO: Take care of Src Pkgs
-                                found = False
-                                for item in SrcPkgDict.keys():
-                                        if filename in SrcPkgDict[item]:
-                                                found = True
-                                                break
-                                if found is True:
-                                        shutil.copy2(FullFileName, Str_InstallSrcPath)
-                                        log.msg("Installing src package file %s to %s.\n" % (filename, Str_InstallSrcPath) )
-                                        continue
-                                
-                                magic_check_and_uncompress( FullFileName, filename )
-                        return True
-                                
-                if Bool_SkipBugReports:
-                        log.verbose("Skipping bug report check as requested")
-                else:
-                        for filename in os.listdir( install_file_path ):
-                                if filename.endswith( apt_bug_file_format ):
-                                        filename = os.path.join(install_file_path, filename)
-                                        temp = open(filename, 'r')
-                                        for bug_subject_identifier in temp.readlines():
-                                                if bug_subject_identifier.decode('utf8').startswith( 'Subject:' ):
-                                                        subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
-                                                        subject = subject.rstrip( "\n" )
-                                                        break
-                                        bugs_number[filename] = subject
-                                        temp.close()
-                log.verbose(str(bugs_number) + "\n")
-                if bugs_number:
-                        displayBugs(dataType="dir")
-                else:
-                        log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
-                        DirInstallPackages(install_file_path)
-                        
-        if Bool_Untrusted:
-                log.err("Disabling apt gpg check can risk your machine to compromise.\n")
-                for x in os.listdir(apt_update_target_path):
-                        x = os.path.join(apt_update_target_path, x)
-                        shutil.copy2(x, apt_update_final_path) # Do we do a move ??
-                        log.verbose("%s %s\n" % (x, apt_update_final_path) )
-                        log.msg("%s synced.\n" % (x) )
-        else:
-                AptSecure = APTVerifySigs(Simulate=Bool_TestWindows)
-
-                lFileList= os.listdir(apt_update_target_path)
-                lFileList.sort()
-                lVerifiedWhitelist = []
-                for localFile in lFileList:
-                        localFile = os.path.join(apt_update_target_path, localFile)
-                        if localFile.endswith('.gpg'):
-                                log.verbose("%s\n" % (localFile) )
-                                localFile = os.path.abspath(localFile)
-                                if AptSecure.VerifySig(localFile, localFile.rstrip(".gpg") ):
-                                        localFile = localFile.rstrip("Release.gpg")
-                                        localFile = localFile[:-1] #Remove the trailing _ underscore
-                                        localFile = localFile.split("/")[-1]
-                                        lVerifiedWhitelist.append(localFile)
-                                        log.verbose("%s is gpg clean\n" % (localFile) )
-                                else:
-                                        # Bad sig.
-                                        log.err("%s bad signature. Not syncing because in strict mode.\n" % (localFile) )
-                if lVerifiedWhitelist != []:
-                        log.verbose (str(lVerifiedWhitelist) + "\n")
-                        for whitelist_item in lVerifiedWhitelist:
-                                for final_item in lFileList:
-                                        if whitelist_item in final_item:
-                                                partialFile = os.path.join(apt_update_target_path, final_item)
-                                                shutil.copy2(partialFile, apt_update_final_path)
-                                                log.msg("%s synced.\n" % (final_item) )
+            lFileList= os.listdir(apt_update_target_path)
+            lFileList.sort()
+            lVerifiedWhitelist = []
+            for localFile in lFileList:
+                    localFile = os.path.join(apt_update_target_path, localFile)
+                    if localFile.endswith('.gpg'):
+                            log.verbose("%s\n" % (localFile) )
+                            localFile = os.path.abspath(localFile)
+                            if AptSecure.VerifySig(localFile, localFile.rstrip(".gpg") ):
+                                    localFile = localFile.rstrip("Release.gpg")
+                                    localFile = localFile[:-1] #Remove the trailing _ underscore
+                                    localFile = localFile.split("/")[-1]
+                                    lVerifiedWhitelist.append(localFile)
+                                    log.verbose("%s is gpg clean\n" % (localFile) )
+                            else:
+                                    # Bad sig.
+                                    log.err("%s bad signature. Not syncing because in strict mode.\n" % (localFile) )
+            if lVerifiedWhitelist != []:
+                    log.verbose (str(lVerifiedWhitelist) + "\n")
+                    for whitelist_item in lVerifiedWhitelist:
+                            for final_item in lFileList:
+                                    if whitelist_item in final_item:
+                                            partialFile = os.path.join(apt_update_target_path, final_item)
+                                            shutil.copy2(partialFile, apt_update_final_path)
+                                            log.msg("%s synced.\n" % (final_item) )
 
                         
 
