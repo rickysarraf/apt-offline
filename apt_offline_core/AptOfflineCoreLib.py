@@ -862,6 +862,8 @@ def errfunc(errno, errormsg, filename):
                 log.err(errormsg)
                 log.err("Explicit program termination %s\n" % (errno))
                 sys.exit(errno)
+        elif errno == 403:
+            log.err("Repository access forbidden - %d - %s\n" % (errno, errormsg))
         else:
                 log.err("I don't understand this error code %s\nPlease file a bug report" % (errno))
             
