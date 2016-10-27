@@ -834,7 +834,7 @@ def errfunc(errno, errormsg, filename):
     be well accessible.
     This function does the job of behaving accordingly
     as per the error codes.'''
-    error_codes = [-3, 13, 504, 404, 401, 10060, 104, 101010]
+    retriable_error_codes = [-3, 13, 504, 404, 403, 401, 10060, 104, 101010]
     # 104, 'Connection reset by peer'
     # 504 is for gateway timeout
     # 404 is for URL error. Page not found.
@@ -846,13 +846,11 @@ def errfunc(errno, errormsg, filename):
     #TODO: Find out what these error codes are for
     # and better document them the next time you find it out.
     # 13 is for "Permission Denied" when you don't have privileges to access the destination 
-    if errno in error_codes:
-        log.verbose("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL))
-        log.verbose("Will still try with other package uris\n")
-        pass
+    if errno in retriable_error_codes:
+        log.warn("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL))
+        log.warn("Will still try with other package uris\n")
     elif errno == 10054:
         log.verbose("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL) )
-        pass
     elif errno == 407 or errno == 2:
         # These, I believe are from OSError/IOError exception.
         # I'll document it as soon as I confirm it.
@@ -862,8 +860,6 @@ def errfunc(errno, errormsg, filename):
         log.err(errormsg)
         log.err("Explicit program termination %s\n" % (errno))
         sys.exit(errno)
-    elif errno == 403:
-        log.err("Repository access forbidden - %d - %s\n" % (errno, errormsg))
     else:
         log.err("I don't understand this error code %s\nPlease file a bug report" % (errno))
             
