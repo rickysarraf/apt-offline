@@ -1533,6 +1533,7 @@ def installer( args ):
             
             if os.path.isdir(dataType):
                 for eachItem in os.listdir(dataType):
+                    eachItem = os.path.join(dataType, eachItem)
                     if eachItem.endswith(".changelog"):
                         eachFile = open(eachItem, 'r')
                         chlogFile.write(eachFile.read())
@@ -1812,9 +1813,7 @@ def installer( args ):
                             SrcPkgDict[SrcPkgName].append(SrcPkgData)
                 SrcPkgDict[SrcPkgName].append(filename)
                 temp.close()
-        
-        bugs_number = {}
-        
+
         def DirInstallPackages(InstallDirPath):
                 for eachfile in os.listdir( InstallDirPath ):
                         
@@ -1837,7 +1836,14 @@ def installer( args ):
                         
                         InstallerInstance.magic_check_and_uncompress( FullFileName, filename )
                 return True
-                        
+
+        # Let's display changelog
+        if InstallerInstance.Bool_SkipChangelog:
+            log.verbose("Skipping display of changelog as requested\n")
+        else:
+            InstallerInstance.displayChangelog(InstallerInstance.Str_InstallArg)
+                                
+        bugs_number = {}                        
         if InstallerInstance.Bool_SkipBugReports:
                 log.verbose("Skipping bug report check as requested")
         else:
