@@ -205,7 +205,13 @@ class FetchBugReports:
                                 if self.ArchiveFile:
                                     self.AddToArchive( self.ArchiveFile, self.fileName )
                                 elif self.DownloadDir:
-                                    shutil.move(self.fileName, self.DownloadDir)    
+                                    try:
+                                        shutil.move(self.fileName, self.DownloadDir)
+                                    except StandardError:
+                                        #INFO: Look at shutil's documentation
+                                        # It does't claim to be a full implementation in Python
+                                        # Even this exception is odd. But let's live with it for now.
+                                        log.verbose("In all probability, it is a duplicate file: %s\n" % self.fileName)     
                                 
                                 atleast_one_bug_report_downloaded = True
                         if atleast_one_bug_report_downloaded:
