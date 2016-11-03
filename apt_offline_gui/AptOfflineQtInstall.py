@@ -8,6 +8,7 @@ from apt_offline_gui import AptOfflineQtCommon as guicommon
 import apt_offline_core.AptOfflineCoreLib
 
 from apt_offline_gui.AptOfflineQtInstallBugList import AptOfflineQtInstallBugList
+from apt_offline_gui.AptOfflineQtInstallChangelog import AptOfflineQtInstallChangelog
 
 class Worker(QtCore.QThread):
     def __init__(self, parent = None):
@@ -83,6 +84,9 @@ class AptOfflineQtInstall(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.bugReportsButton, QtCore.SIGNAL("clicked()"),
                         self.showBugReports )
         
+        QtCore.QObject.connect(self.ui.changelogButton, QtCore.SIGNAL("clicked()"),
+                        self.showChangelog )
+        
         QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("editingFinished()"),
                         self.ControlStartInstallBox )
 
@@ -116,13 +120,16 @@ class AptOfflineQtInstall(QtGui.QDialog):
         self.worker.start()
 
     def showBugReports(self):
-
         self.filepath = str(self.ui.zipFilePath.text())
-
         self.bugReportsDialog = AptOfflineQtInstallBugList(self.filepath)
         self.bugReportsDialog.filepath= self.filepath
         self.bugReportsDialog.show()
-        
+    
+    def showChangelog(self):
+        self.filepath = str(self.ui.zipFilePath.text())
+        self.changelogDialog = AptOfflineQtInstallChangelog(self.filepath)
+        self.changelogDialog.filepath = self.filepath
+        self.changelogDialog.show()
 
     def popupDirectoryDialog(self):
 
@@ -137,19 +144,14 @@ class AptOfflineQtInstall(QtGui.QDialog):
         self.ui.zipFilePath.setFocus()
     
     def ControlStartInstallBox(self):
-        if self.ui.zipFilePath.text().isEmpty():
-            self.ui.startInstallButton.setEnabled(False)
-            # We do the same for bug reports button
-            self.ui.bugReportsButton.setEnabled(False)
-        elif os.path.isdir(self.ui.zipFilePath.text()):
+        if os.path.isdir(self.ui.zipFilePath.text()) or os.path.isfile(self.ui.zipFilePath.text() ):
             self.ui.startInstallButton.setEnabled(True)
             self.ui.bugReportsButton.setEnabled(True)
-        elif os.path.isfile(self.ui.zipFilePath.text() ):
-            self.ui.startInstallButton.setEnabled(True)
-            self.ui.bugReportsButton.setEnabled(True)
+            self.ui.changelogButton.setEnabled(True)
         else:
             self.ui.startInstallButton.setEnabled(False)
             self.ui.bugReportsButton.setEnabled(False)
+            self.ui.changelogButton.setEnabled(False)
             
     def updateLog(self,text):
         guicommon.updateInto (self.ui.rawLogHolder,text)
@@ -178,6 +180,7 @@ class AptOfflineQtInstall(QtGui.QDialog):
         self.ui.bugReportsButton.setEnabled(False)
         self.ui.browseFilePathButton.setEnabled(False)
         self.ui.zipFilePath.setEnabled(False)
+        self.ui.changelogButton.setEnabled(False)
 
     def enableActions(self):
         self.ui.cancelButton.setEnabled(True)
@@ -185,6 +188,7 @@ class AptOfflineQtInstall(QtGui.QDialog):
         self.ui.bugReportsButton.setEnabled(True)
         self.ui.browseFilePathButton.setEnabled(True)
         self.ui.zipFilePath.setEnabled(True)
+        self.ui.changelogButton.setEnabled(True)
 
 
 if __name__ == "__main__":

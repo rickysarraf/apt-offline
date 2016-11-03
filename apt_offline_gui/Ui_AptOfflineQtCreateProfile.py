@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtCreateProfile.ui'
 #
-# Created: Sat Sep 13 15:37:48 2014
-#      by: PyQt4 UI code generator 4.11.1
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -39,7 +38,6 @@ class Ui_CreateProfile(object):
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 427, 321))
         self.verticalLayoutWidget.setObjectName(_fromUtf8("verticalLayoutWidget"))
         self.verticalLayout = QtGui.QVBoxLayout(self.verticalLayoutWidget)
-        self.verticalLayout.setMargin(0)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.verticalLayout_2 = QtGui.QVBoxLayout()
         self.verticalLayout_2.setSizeConstraint(QtGui.QLayout.SetFixedSize)
@@ -47,8 +45,8 @@ class Ui_CreateProfile(object):
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.verticalLayout_3 = QtGui.QVBoxLayout()
-        self.verticalLayout_3.setSpacing(6)
         self.verticalLayout_3.setSizeConstraint(QtGui.QLayout.SetMinimumSize)
+        self.verticalLayout_3.setSpacing(6)
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
         self.lblInstallType = QtGui.QLabel(self.verticalLayoutWidget)
         self.lblInstallType.setMaximumSize(QtCore.QSize(16777215, 16777215))
@@ -90,8 +88,8 @@ class Ui_CreateProfile(object):
         spacerItem2 = QtGui.QSpacerItem(20, 4, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
         self.verticalLayout.addItem(spacerItem2)
         self.verticalLayout_5 = QtGui.QVBoxLayout()
-        self.verticalLayout_5.setSpacing(6)
         self.verticalLayout_5.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
+        self.verticalLayout_5.setSpacing(6)
         self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
@@ -137,7 +135,6 @@ class Ui_CreateProfile(object):
         self.horizontalLayoutWidget.setGeometry(QtCore.QRect(25, 325, 401, 40))
         self.horizontalLayoutWidget.setObjectName(_fromUtf8("horizontalLayoutWidget"))
         self.horizontalLayout_4 = QtGui.QHBoxLayout(self.horizontalLayoutWidget)
-        self.horizontalLayout_4.setMargin(0)
         self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
         spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem3)
