@@ -188,7 +188,7 @@
     <string>APT Backend</string>
    </property>
   </widget>
-  <widget class="QCheckBox" name="srcBuildDeps_2">
+  <widget class="QCheckBox" name="generateChangelog">
    <property name="enabled">
     <bool>false</bool>
    </property>
