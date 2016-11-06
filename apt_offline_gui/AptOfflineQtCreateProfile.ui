@@ -53,7 +53,7 @@
     <string>Src Build Deps</string>
    </property>
   </widget>
-  <widget class="QComboBox" name="comboBox">
+  <widget class="QComboBox" name="aptBackendComboBox">
    <property name="geometry">
     <rect>
      <x>164</x>
@@ -81,7 +81,7 @@
     </property>
    </item>
   </widget>
-  <widget class="QComboBox" name="comboBox_2">
+  <widget class="QComboBox" name="upgradeTaskComboBox">
    <property name="enabled">
     <bool>false</bool>
    </property>
