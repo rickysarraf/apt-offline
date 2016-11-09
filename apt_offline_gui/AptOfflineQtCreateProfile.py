@@ -83,9 +83,9 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
         self.installSrcChecked = self.ui.installSrcPackagesCheckBox.isChecked()
         
         self.chlogChecked = self.ui.generateChangelog.isChecked()
-        self.aptBackend = self.ui.aptBackendComboBox()
-        self.upgradeType = self.ui.upgradeTaskComboBox()
-        self.releaseBtnChecked = self.ui.targetReleaseCheckBox.IsChecked()
+        self.aptBackend = self.ui.aptBackendComboBox.currentText()
+        self.upgradeType = self.ui.upgradeTaskComboBox.currentText()
+        self.releaseBtnChecked = self.ui.targetReleaseCheckBox.isChecked()
         
         # Clear the consoleOutputHolder
         self.ui.consoleOutputHolder.setText("")
@@ -112,17 +112,18 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
                 self.srcPackageList = str(self.ui.srcPackageList.text()).split(",")
                 self.srcBuildDeps = self.ui.srcBuildDeps
             else:
+                self.srcPackageList = None
                 self.srcBuildDeps = False
                 
             if self.releaseBtnChecked:
                 self.release = str(self.ui.targetReleaseTextInput.text())
             else:
                 self.release = None
-
+            
             # setup i/o redirects before call
             sys.stdout = self
             sys.stderr = self
-             
+            
             args = SetterArgs(filename=self.filepath, update=self.updateChecked, upgrade=self.upgradeChecked, install_packages=self.packageList, \
                               install_src_packages=self.srcPackageList, src_build_dep=self.srcBuildDeps, changelog=self.chlogChecked, \
                               release=self.release, apt_backend=self.aptBackend, simulate=False)
@@ -163,6 +164,13 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
         self.ui.consoleOutputHolder.setText("")
         self.ui.profileFilePath.setText("")
         self.ui.packageList.setText("")
+        self.ui.aptBackendComboBox.setCurrentIndex(0)
+        self.ui.generateChangelog.setChecked(False)
+        self.ui.srcBuildDeps.setChecked(False)
+        self.ui.installSrcPackagesCheckBox.setChecked(False)
+        self.ui.srcPackageList.setText("")
+        self.ui.targetReleaseCheckBox.setChecked(False)
+        self.ui.targetReleaseTextInput.setText("")
 
 
 if __name__ == "__main__":

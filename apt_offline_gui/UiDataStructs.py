@@ -23,6 +23,8 @@ class SetterArgs():
         self.set_install_release = release
         self.apt_backend = apt_backend
         self.simulate=simulate
+        
+        self.generate_changelog = changelog
     
     def __str__(self):
         print "self.set=",self.set
