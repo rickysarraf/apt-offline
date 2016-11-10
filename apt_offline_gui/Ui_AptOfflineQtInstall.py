@@ -100,6 +100,13 @@ class Ui_AptOfflineQtInstall(object):
 
         self.retranslateUi(AptOfflineQtInstall)
         QtCore.QMetaObject.connectSlotsByName(AptOfflineQtInstall)
+        AptOfflineQtInstall.setTabOrder(self.zipFilePath, self.browseFileFoldercheckBox)
+        AptOfflineQtInstall.setTabOrder(self.browseFileFoldercheckBox, self.browseFilePathButton)
+        AptOfflineQtInstall.setTabOrder(self.browseFilePathButton, self.bugReportsButton)
+        AptOfflineQtInstall.setTabOrder(self.bugReportsButton, self.changelogButton)
+        AptOfflineQtInstall.setTabOrder(self.changelogButton, self.cancelButton)
+        AptOfflineQtInstall.setTabOrder(self.cancelButton, self.startInstallButton)
+        AptOfflineQtInstall.setTabOrder(self.startInstallButton, self.rawLogHolder)
 
     def retranslateUi(self, AptOfflineQtInstall):
         AptOfflineQtInstall.setWindowTitle(_translate("AptOfflineQtInstall", "Install Packages", None))

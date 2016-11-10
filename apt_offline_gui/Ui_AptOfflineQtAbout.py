@@ -122,6 +122,8 @@ class Ui_AboutAptOffline(object):
         self.tabWidget.setCurrentIndex(3)
         QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL(_fromUtf8("clicked()")), AboutAptOffline.close)
         QtCore.QMetaObject.connectSlotsByName(AboutAptOffline)
+        AboutAptOffline.setTabOrder(self.tabWidget, self.licenseText)
+        AboutAptOffline.setTabOrder(self.licenseText, self.pushButton)
 
     def retranslateUi(self, AboutAptOffline):
         AboutAptOffline.setWindowTitle(_translate("AboutAptOffline", "About Apt-Offline", None))

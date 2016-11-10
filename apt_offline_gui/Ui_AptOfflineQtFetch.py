@@ -113,6 +113,14 @@ class Ui_AptOfflineQtFetch(object):
 
         self.retranslateUi(AptOfflineQtFetch)
         QtCore.QMetaObject.connectSlotsByName(AptOfflineQtFetch)
+        AptOfflineQtFetch.setTabOrder(self.profileFilePath, self.browseFilePathButton)
+        AptOfflineQtFetch.setTabOrder(self.browseFilePathButton, self.zipFilePath)
+        AptOfflineQtFetch.setTabOrder(self.zipFilePath, self.saveDatacheckBox)
+        AptOfflineQtFetch.setTabOrder(self.saveDatacheckBox, self.browseZipFileButton)
+        AptOfflineQtFetch.setTabOrder(self.browseZipFileButton, self.advancedOptionsButton)
+        AptOfflineQtFetch.setTabOrder(self.advancedOptionsButton, self.startDownloadButton)
+        AptOfflineQtFetch.setTabOrder(self.startDownloadButton, self.cancelButton)
+        AptOfflineQtFetch.setTabOrder(self.cancelButton, self.rawLogHolder)
 
     def retranslateUi(self, AptOfflineQtFetch):
         AptOfflineQtFetch.setWindowTitle(_translate("AptOfflineQtFetch", "Fetch Packages or Updates", None))

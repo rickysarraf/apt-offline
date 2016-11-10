@@ -122,6 +122,15 @@ class Ui_downloadOptionsDialog(object):
 
         self.retranslateUi(downloadOptionsDialog)
         QtCore.QMetaObject.connectSlotsByName(downloadOptionsDialog)
+        downloadOptionsDialog.setTabOrder(self.spinTimeout, self.spinThreads)
+        downloadOptionsDialog.setTabOrder(self.spinThreads, self.cacheDirLineEdit)
+        downloadOptionsDialog.setTabOrder(self.cacheDirLineEdit, self.cacheDirBrowseButton)
+        downloadOptionsDialog.setTabOrder(self.cacheDirBrowseButton, self.disableChecksumCheckBox)
+        downloadOptionsDialog.setTabOrder(self.disableChecksumCheckBox, self.fetchBugReportsCheckBox)
+        downloadOptionsDialog.setTabOrder(self.fetchBugReportsCheckBox, self.useProxyCheckBox)
+        downloadOptionsDialog.setTabOrder(self.useProxyCheckBox, self.proxyHostLineEdit)
+        downloadOptionsDialog.setTabOrder(self.proxyHostLineEdit, self.proxyPortLineEdit)
+        downloadOptionsDialog.setTabOrder(self.proxyPortLineEdit, self.downloadOptionDialogOkButton)
 
     def retranslateUi(self, downloadOptionsDialog):
         downloadOptionsDialog.setWindowTitle(_translate("downloadOptionsDialog", "Advanced options for download", None))
