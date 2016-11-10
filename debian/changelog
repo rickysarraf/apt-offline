@@ -1,3 +1,11 @@
+apt-offline (1.7.2) unstable; urgency=medium
+
+  * New Upstream Release
+  * [e13def1] Fix manpage to make the example more explicit.
+    Thanks to Daniel Thibault (Closes: #764248)
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Thu, 10 Nov 2016 23:08:34 +0530
+
 apt-offline (1.7.1.2) unstable; urgency=medium
 
   * [9ce8961] Use dpkg-maintscript-helper to handle obsolete conf files.
