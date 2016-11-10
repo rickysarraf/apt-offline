@@ -336,6 +336,18 @@
    </property>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>spinTimeout</tabstop>
+  <tabstop>spinThreads</tabstop>
+  <tabstop>cacheDirLineEdit</tabstop>
+  <tabstop>cacheDirBrowseButton</tabstop>
+  <tabstop>disableChecksumCheckBox</tabstop>
+  <tabstop>fetchBugReportsCheckBox</tabstop>
+  <tabstop>useProxyCheckBox</tabstop>
+  <tabstop>proxyHostLineEdit</tabstop>
+  <tabstop>proxyPortLineEdit</tabstop>
+  <tabstop>downloadOptionDialogOkButton</tabstop>
+ </tabstops>
  <resources>
   <include location="resources.qrc"/>
  </resources>

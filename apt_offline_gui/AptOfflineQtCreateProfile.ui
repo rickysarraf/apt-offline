@@ -31,6 +31,9 @@
     <height>500</height>
    </size>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::NoFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>Generate Signature</string>
   </property>
@@ -45,6 +48,9 @@
      <width>131</width>
      <height>25</height>
     </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
    </property>
    <property name="toolTip">
     <string>Check to also include the Build Dependencies for the Source Packages</string>
@@ -61,6 +67,9 @@
      <width>110</width>
      <height>30</height>
     </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
    </property>
    <property name="toolTip">
     <string>Choose APT backend. Default backend is the most tested and known to work under all scenarios</string>
@@ -93,6 +102,9 @@
      <height>30</height>
     </rect>
    </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
+   </property>
    <property name="toolTip">
     <string>Choose upgrade type to perform</string>
    </property>
@@ -124,6 +136,9 @@
      <height>25</height>
     </rect>
    </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
+   </property>
    <property name="toolTip">
     <string>Check to set the target release. If not specified, system default is picked</string>
    </property>
@@ -148,6 +163,9 @@
      <width>0</width>
      <height>30</height>
     </size>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
    </property>
    <property name="toolTip">
     <string>Please specify valid target release name. If not specified, system default is picked</string>
@@ -199,6 +217,9 @@
      <width>111</width>
      <height>25</height>
     </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
    </property>
    <property name="toolTip">
     <string>Check to generate changelog for the packages</string>
@@ -296,6 +317,9 @@
      <height>100</height>
     </size>
    </property>
+   <property name="focusPolicy">
+    <enum>Qt::NoFocus</enum>
+   </property>
   </widget>
   <widget class="QLabel" name="lblSaveProfile">
    <property name="geometry">
@@ -337,6 +361,9 @@
      <height>30</height>
     </size>
    </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
+   </property>
    <property name="toolTip">
     <string>New filename to save the signature data</string>
    </property>
@@ -355,6 +382,9 @@
      <width>0</width>
      <height>30</height>
     </size>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
    </property>
    <property name="text">
     <string>Browse</string>
@@ -378,6 +408,9 @@
      <height>30</height>
     </size>
    </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
+   </property>
    <property name="toolTip">
     <string>List of Source packages to install, separated by space</string>
    </property>
@@ -393,6 +426,9 @@
      <width>147</width>
      <height>25</height>
     </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
    </property>
    <property name="toolTip">
     <string>Check to install Source Packages</string>
@@ -419,6 +455,9 @@
      <height>30</height>
     </size>
    </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
+   </property>
    <property name="toolTip">
     <string>List of Binary packages to install, separated by space</string>
    </property>
@@ -434,6 +473,9 @@
      <width>143</width>
      <height>25</height>
     </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
    </property>
    <property name="toolTip">
     <string>Check to install Binary packages</string>
@@ -451,6 +493,9 @@
      <height>25</height>
     </rect>
    </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
+   </property>
    <property name="toolTip">
     <string>Check to include APT Package Database Updates</string>
    </property>
@@ -466,6 +511,9 @@
      <width>159</width>
      <height>25</height>
     </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
    </property>
    <property name="toolTip">
     <string>Check to include Package Upgrades</string>
@@ -500,6 +548,24 @@
    </property>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>updateCheckBox</tabstop>
+  <tabstop>upgradePackagesCheckBox</tabstop>
+  <tabstop>profileFilePath</tabstop>
+  <tabstop>browseFilePathButton</tabstop>
+  <tabstop>targetReleaseCheckBox</tabstop>
+  <tabstop>targetReleaseTextInput</tabstop>
+  <tabstop>installPackagesCheckBox</tabstop>
+  <tabstop>packageList</tabstop>
+  <tabstop>installSrcPackagesCheckBox</tabstop>
+  <tabstop>srcPackageList</tabstop>
+  <tabstop>srcBuildDeps</tabstop>
+  <tabstop>generateChangelog</tabstop>
+  <tabstop>aptBackendComboBox</tabstop>
+  <tabstop>upgradeTaskComboBox</tabstop>
+  <tabstop>createProfileButton</tabstop>
+  <tabstop>cancelButton</tabstop>
+ </tabstops>
  <resources>
   <include location="resources.qrc"/>
  </resources>

@@ -240,6 +240,16 @@
    </property>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>zipFilePath</tabstop>
+  <tabstop>browseFileFoldercheckBox</tabstop>
+  <tabstop>browseFilePathButton</tabstop>
+  <tabstop>bugReportsButton</tabstop>
+  <tabstop>changelogButton</tabstop>
+  <tabstop>cancelButton</tabstop>
+  <tabstop>startInstallButton</tabstop>
+  <tabstop>rawLogHolder</tabstop>
+ </tabstops>
  <resources>
   <include location="resources.qrc"/>
  </resources>
