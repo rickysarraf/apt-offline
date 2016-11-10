@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtMain.ui'
 #
-# Created: Sat Sep 13 15:37:48 2014
-#      by: PyQt4 UI code generator 4.11.1
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -81,7 +80,6 @@ class Ui_AptOfflineMain(object):
         self.descriptionField.setGeometry(QtCore.QRect(0, 0, 371, 211))
         self.descriptionField.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
         self.descriptionField.setWordWrap(True)
-        self.descriptionField.setMargin(10)
         self.descriptionField.setObjectName(_fromUtf8("descriptionField"))
         self.exitButton = QtGui.QPushButton(self.centralwidget)
         self.exitButton.setGeometry(QtCore.QRect(280, 450, 121, 41))

@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtFetch.ui'
 #
-# Created: Sat Sep 13 15:37:48 2014
-#      by: PyQt4 UI code generator 4.11.1
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -114,6 +113,14 @@ class Ui_AptOfflineQtFetch(object):
 
         self.retranslateUi(AptOfflineQtFetch)
         QtCore.QMetaObject.connectSlotsByName(AptOfflineQtFetch)
+        AptOfflineQtFetch.setTabOrder(self.profileFilePath, self.browseFilePathButton)
+        AptOfflineQtFetch.setTabOrder(self.browseFilePathButton, self.zipFilePath)
+        AptOfflineQtFetch.setTabOrder(self.zipFilePath, self.saveDatacheckBox)
+        AptOfflineQtFetch.setTabOrder(self.saveDatacheckBox, self.browseZipFileButton)
+        AptOfflineQtFetch.setTabOrder(self.browseZipFileButton, self.advancedOptionsButton)
+        AptOfflineQtFetch.setTabOrder(self.advancedOptionsButton, self.startDownloadButton)
+        AptOfflineQtFetch.setTabOrder(self.startDownloadButton, self.cancelButton)
+        AptOfflineQtFetch.setTabOrder(self.cancelButton, self.rawLogHolder)
 
     def retranslateUi(self, AptOfflineQtFetch):
         AptOfflineQtFetch.setWindowTitle(_translate("AptOfflineQtFetch", "Fetch Packages or Updates", None))

@@ -65,7 +65,7 @@ class AptOfflineQtInstallBugList(QtGui.QDialog):
                 elif os.path.isdir(path):
                         for filename in os.listdir( path ):
                                 if filename.endswith( AptOfflineCoreLib.apt_bug_file_format ):
-                                        bugNumber = filename.split(".")[1]
+                                        bugNumber = filename.split("{}")[1]
                                         filename = os.path.join(path, filename)
                                         temp = open(filename, 'r')
                                         for bug_subject_identifier in temp.readlines():

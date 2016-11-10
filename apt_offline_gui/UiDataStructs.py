@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from PyQt4 import QtCore, QtGui
 
 class SetterArgs():
     
-    def __init__(self, filename, update, upgrade, install_packages, simulate=False):
+    def __init__(self, filename, update, upgrade, install_packages, install_src_packages, \
+                 src_build_dep, changelog, release, apt_backend, simulate=False):
         self.set = filename
         
         # self.set_update is of type boolean
@@ -17,10 +17,13 @@ class SetterArgs():
         self.set_install_packages = install_packages
         
         # To be implmented later
-        self.src_build_dep = False
-        self.set_install_src_packages = None
-        self.set_install_release = None
+        self.src_build_dep = src_build_dep
+        self.set_install_src_packages = install_src_packages
+        self.set_install_release = release
+        self.apt_backend = apt_backend
         self.simulate=simulate
+        
+        self.generate_changelog = changelog
     
     def __str__(self):
         print "self.set=",self.set

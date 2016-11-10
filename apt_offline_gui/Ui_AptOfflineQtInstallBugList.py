@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtInstallBugList.ui'
 #
-# Created: Sat Sep 13 15:37:48 2014
-#      by: PyQt4 UI code generator 4.11.1
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 

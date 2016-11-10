@@ -50,6 +50,7 @@ class AptOfflineQtMain(QtGui.QMainWindow):
 
     def ConfigureAbout(self):
         QtCore.QObject.connect(self.ui.menuAbout, QtCore.SIGNAL("triggered()"), self.ShowAbout)
+        QtCore.QObject.connect(self.ui.menuHelp_2, QtCore.SIGNAL("triggered()"), self.ShowHelp)
         # Create an object for About Dialog
         self.createAboutDialog = AptOfflineQtAbout()
         
@@ -103,6 +104,9 @@ class AptOfflineQtMain(QtGui.QMainWindow):
     def ShowAbout(self):
         # Code for showing Model Dialog for About Application
         self.createAboutDialog.show()
+        
+    def ShowHelp(self):
+        QtGui.QMessageBox.information(self, "Info", "Please refer to the apt-offline(8) man page")
 
     def CreateButtonHoverHelp(self):
         pass

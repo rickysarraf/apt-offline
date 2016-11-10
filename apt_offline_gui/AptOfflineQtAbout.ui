@@ -333,6 +333,11 @@ apt-offline is Copyright (C) - Ritesh Raj Sarraf</string>
    </property>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>licenseText</tabstop>
+  <tabstop>pushButton</tabstop>
+ </tabstops>
  <resources>
   <include location="resources.qrc"/>
  </resources>

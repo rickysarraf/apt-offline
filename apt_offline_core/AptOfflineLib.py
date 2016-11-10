@@ -359,6 +359,10 @@ class ProgressBar( object ):
                 return ( "%d KiB" % ( size ) )
 
 
+class AptOfflineErrors(Exception):
+    def __init__(self, message):
+        Exception.__init__(self, message)
+        
 class Archiver:
         def __init__( self, lock=None ):
                 if lock is None or lock != 1:
@@ -371,7 +375,7 @@ class Archiver:
                 # for the same src package
                 # https://github.com/rickysarraf/apt-offline/issues/44
                 self.file_possibly_deleted = False
-                        
+                
         def TarGzipBZ2_Uncompress( self, SourceFileHandle, TargetFileHandle ):
                 try:
                         TargetFileHandle.write( SourceFileHandle.read() )
@@ -421,14 +425,13 @@ class Archiver:
                                         # And by the time this thread got a chance, the file was deleted by the previous thread
                                         #
                                         # A more ideal fix will be to check for files_to_compress's presence in zipfile at this stage
-                                        sys.stderr.write("Ignoring err: Possibly multiarch package %s\n" % (files_to_compress))
                                         self.file_possibly_deleted = True
+                                        raise AptOfflineErrors("Ignoring err ENOENT, multiarch package name clash %s\n" % (files_to_compress))
                         except UserWarning, e:
-                                sys.stderr.write("Ignoring err type %s\n" % (e.args))
+                            raise AptOfflineErrors("Ignoring err type %s\n" % (e.args))
                         finally:
-                                filename.close()
-        
-                        if self.lock:
+                            filename.close()
+                            if self.lock:
                                 self.ZipLock.release()
                         return True
                 else:

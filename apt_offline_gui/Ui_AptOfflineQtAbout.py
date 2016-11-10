@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'AptOfflineQtAbout.ui'
 #
-# Created: Sat Sep 13 15:37:48 2014
-#      by: PyQt4 UI code generator 4.11.1
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -123,6 +122,8 @@ class Ui_AboutAptOffline(object):
         self.tabWidget.setCurrentIndex(3)
         QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL(_fromUtf8("clicked()")), AboutAptOffline.close)
         QtCore.QMetaObject.connectSlotsByName(AboutAptOffline)
+        AboutAptOffline.setTabOrder(self.tabWidget, self.licenseText)
+        AboutAptOffline.setTabOrder(self.licenseText, self.pushButton)
 
     def retranslateUi(self, AboutAptOffline):
         AboutAptOffline.setWindowTitle(_translate("AboutAptOffline", "About Apt-Offline", None))
