@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os,sys, thread
+import os, sys
 from PyQt4 import QtCore, QtGui
 
 from apt_offline_gui.Ui_AptOfflineQtInstall import Ui_AptOfflineQtInstall
