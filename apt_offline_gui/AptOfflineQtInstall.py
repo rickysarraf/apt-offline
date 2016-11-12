@@ -166,7 +166,7 @@ class AptOfflineQtInstall(QtGui.QDialog):
             percent = (float(progress)/float(total))*100
             self.ui.statusProgressBar.setValue (percent)
         except:
-             ''' nothing to do '''
+            ''' nothing to do '''
 
     def finishedWork(self):
         self.enableActions()
