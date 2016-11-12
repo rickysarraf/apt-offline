@@ -1,4 +1,4 @@
-import sys, os
+import os
 from PyQt4 import QtCore, QtGui
 
 from apt_offline_gui.Ui_AptOfflineQtMain import Ui_AptOfflineMain
