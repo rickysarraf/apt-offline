@@ -42,15 +42,15 @@ class AptOfflineQtInstallBugList(QtGui.QDialog):
         def populateBugList(self, path):
                 
                 if os.path.isfile(path):
-                        file = zipfile.ZipFile(path, "r")
+                        zipFile = zipfile.ZipFile(path, "r")
                         
-                        for filename in file.namelist():
+                        for filename in zipFile.namelist():
                                 if filename.endswith( AptOfflineCoreLib.apt_bug_file_format ):
                                         #INFO: The splitter is use is "{}". Also used at other places
                                         bugNumber = filename.split("{}")[1]
 
                                         temp = tempfile.NamedTemporaryFile()
-                                        temp.file.write( file.read( filename ) )
+                                        temp.file.write( zipFile.read( filename ) )
                                         temp.file.flush()
                                         temp.file.seek( 0 ) #Let's go back to the start of the file
                                         for bug_subject_identifier in temp.file.readlines():
