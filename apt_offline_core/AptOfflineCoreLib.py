@@ -39,7 +39,7 @@ import traceback
 from ssl import SSLError, SSLEOFError
 import zlib
 
-from apt_offline_core.AptOfflineLib import AptOfflineErrors
+from apt_offline_core.AptOfflineLib import AptOfflineErrors, AptOfflineLibShutilError
 
 FCNTL_LOCK = True
 try:
@@ -1075,9 +1075,16 @@ def fetcher( args ):
                                         pkgLogFile.writelines(eachLine)
                                 pkgLogFile.flush()
                                 if self.ArchiveFile:
-                                    self.AddToArchive(self.ArchiveFile, pkgLogFile.name)
+                                    if self.AddToArchive(self.ArchiveFile, pkgLogFile.name):
+                                        log.verbose("%s added to file %s\n" % (pkgLogFile.name, self.ArchiveFile))
+                                    else:
+                                        log.warn("%s failed to be added to file %s\n" % (pkgLogFile.name, self.ArchiveFile))
                                 else:
-                                    self.move_file(pkgLogFile.name, self.DownloadDir)
+                                    try:
+                                        if self.move_file(pkgLogFile.name, self.DownloadDir):
+                                            log.verbose("%s added to download dir %s\n" % (pkgLogFile.name, self.DownloadDir))
+                                    except AptOfflineLibShutilError, msg:
+                                        log.warn("%s\n" % (msg))
                                 break
         
         FetchData = {} #Info: Initialize an empty dictionary.

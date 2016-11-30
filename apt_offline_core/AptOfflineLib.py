@@ -362,6 +362,10 @@ class ProgressBar( object ):
 class AptOfflineErrors(Exception):
     def __init__(self, message):
         Exception.__init__(self, message)
+
+class AptOfflineLibShutilError(Exception):
+    def __init__(self, message):
+        Exception.__init__(self, message)
         
 class Archiver:
         def __init__( self, lock=None ):
@@ -540,13 +544,19 @@ class FileMgmt( object ):
                         return False
 
         def move_file( self, src, dest ):
-                '''Move file from src to dest.'''
-                if not os.path.isdir( dest ):
-                        return False
-                try:
-                        shutil.move(src, dest)
-                except IOError:
-                        return False
+            '''Move file from src to dest.'''
+            if not os.path.isdir( dest ):
+                return False
+            try:
+                shutil.move(src, dest)
+            except IOError:
+                return False
+            except:
+                #INFO: These errors happen when, say, you have duplicate files
+                # shutil didn't show a nice exception handle
+                # So we propagate the failure and warn out loud in the caller
+                raise AptOfflineLibShutilError("Possbile duplicate file %s already present in %s\n" % (src, dest))
+            return True
                 
         def copy_file(self, src, dest):
             '''Copy file from src to dest'''
