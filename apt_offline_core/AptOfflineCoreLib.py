@@ -146,6 +146,9 @@ class FetchBugReports:
                 self.apt_bug = apt_bug_file_format
                 self.DownloadDir = DownloadDir
                 self.ArchiveFile = ArchiveFile
+                
+                self.fileMgmt = AptOfflineLib.FileMgmt()
+                
         
         def FetchBugsDebian( self, PackageName):
                 '''0 => False
@@ -203,15 +206,16 @@ class FetchBugReports:
 
                                 #We're adding to an archive file here.
                                 if self.ArchiveFile:
-                                    self.AddToArchive( self.ArchiveFile, self.fileName )
+                                    if self.AddToArchive( self.ArchiveFile, self.fileName ):
+                                        log.verbose("%s added to file %s\n" % (self.fileName, self.ArchiveFile))
+                                    else:
+                                        log.warn("%s failed to be added to file %s\n" % (self.fileName, self.ArchiveFile))
                                 elif self.DownloadDir:
                                     try:
-                                        shutil.move(self.fileName, self.DownloadDir)
-                                    except StandardError:
-                                        #INFO: Look at shutil's documentation
-                                        # It does't claim to be a full implementation in Python
-                                        # Even this exception is odd. But let's live with it for now.
-                                        log.verbose("In all probability, it is a duplicate file: %s\n" % self.fileName)     
+                                        if self.fileMgmt.move_file(self.fileName, self.DownloadDir):
+                                            log.verbose("%s added to download dir %s\n" % (self.fileName, self.DownloadDir))
+                                    except AptOfflineLibShutilError, msg:
+                                        log.warn("%s\n" % (msg))
                                 
                                 atleast_one_bug_report_downloaded = True
                         if atleast_one_bug_report_downloaded:
