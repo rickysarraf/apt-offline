@@ -1,5 +1,8 @@
 ##  Under Linux
 
+# Pre-requisites
+Please refer to requirements.txt for dependencies that need to be pre-installed for apt-offline. Note: If using a package from your distribution, manual installation of dependencies should not be required
+
 # To build
 python setup.py build
 
