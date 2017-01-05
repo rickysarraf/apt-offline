@@ -1,4 +1,4 @@
-.TH apt-offline 8 "September, 2016" "version 1.7.1" "USER COMMANDS"
+.TH apt-offline 8 "January, 2017" "version 1.7.2" "USER COMMANDS"
 .SH NAME
 apt-offline \- Offline APT Package manager
 .SH SYNOPSIS
@@ -197,6 +197,7 @@ absolute FOLDER path or the archive FILE path can be specified.
 
 .TP
 The following sequence of commands will keep a machine up to date, with the package lists one step ahead of the upgrade:
+
 .B apt-offline set foo.sig \-\-upgrade \-\-update
 Requests the packages needed to upgrade the machine, based on the current package lists. Also, requests the new package lists for the next update.
 
@@ -218,12 +219,53 @@ option to ensure you have a meaningful package database
 
 .B Example: apt-offline set set.uris \-\-update
 
+.TP
+Sequence 1: The following set of commands, when run in sequence, will update a disconnected machine.
+
+.B apt-offline set update.sig \-\-update
+
+(Generate the required data needed to update the APT database. Should be run on the disconnected machine)
+
+.B apt-offline get update.sig \-\-bundle update.zip
+
+(Download the required data needed to update the APT database. Should be run on a machine with internet connectivity)
+
+.B apt-offline install update.zip
+
+(Installs the data needed to update the APT database. Should be run on the disconnected machine)
+
+.TP
+Sequence 2: With successful completion of Sequence 1, the APT database on the disconnected machine will be up\-to\-date. Now, the following set of commands, when run in sequence, will upgrade a disconnected machine.
+
+.B apt-offline set upgrade.sig \-\-upgrade
+
+(Genereate the required data needed to upgrade the upgradable packages. Should be run on the disconnected machine)
+
+.B apt-offline get upgrade.sig \-\-bundle upgrade.zip
+
+(Download the required data needed to upgrade the upgradable packages. Should be run on a machine with internet connectivity)
+
+.B apt-offline install upgrade.zip
+
+(Installs the data needed to upgrade the upgradable packages. Should be run on the disconnected machine)
+
+.TP 
+After successful completion of
+.B Sequence 1
+and
+.B Sequence 2
+in order, further running
+.B apt-get upgrade
+will result in 0 bytes of additional download.
+
 .SH AUTHOR
 .B apt-offline is written by Ritesh Raj Sarraf (rrs@researchut.com)
 
 If you wish to report a bug in apt-offline, please see 
 .B http://apt-offline.alioth.debian.org
-or send an email to me at
+or 
+.B http://github.com/rickysarraf/apt-offline
+or else, send an email to me at
 .B rrs@researchut.com
 
 .SH SEE ALSO
