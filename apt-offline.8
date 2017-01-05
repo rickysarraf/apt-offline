@@ -217,7 +217,7 @@ Positions the packages for the upgrade, along with new the package lists.
 .B apt-get upgrade
 Upgrades to the state of the earlier package lists.
 
-.B NOTE:
+.B NOTE1:
 On a freshly installed box, that was installed without the network, the package database is null. In that case, you first need to run 
 .B apt-offline 
 with just the 
@@ -225,6 +225,21 @@ with just the
 option to ensure you have a meaningful package database
 
 .B Example: apt-offline set set.uris \-\-update
+
+.B NOTE2:
+On a fresh setup installed through CD/DVD, the default APT setting lists only the install media URLs. In such case, you need to add the default APT network repositories to the list. For example, for a fresh (DVD) installed Debian Stable box, add the relevant repository to
+
+.I /etc/apt/sources.list.d/apt-offline.list or /etc/apt/sources.list
+
+.B deb http://httpredir.debian.org/debian stable main contrib (For Debian Stable)
+
+.B deb http://httpredir.debian.org/debian unstable main contrib (For Debian Unstable/Sid)
+
+.B deb http://httpredir.debian.org/debian stretch main contrib (For Debian Stretch)
+
+.B deb http://security.debian.org stable/updates main contrib (Security Updates for Debian Stable)
+
+.B deb http://security.debian.org testing/updates main contrib (Security Updates for Debian Testing)
 
 .TP
 Sequence 1: The following set of commands, when run in sequence, will update a disconnected machine.
