@@ -202,21 +202,6 @@ to the APT Package Database and update it.
 Depending on where the data was downloaded to or packed into, either the
 absolute FOLDER path or the archive FILE path can be specified.
 
-.TP
-The following sequence of commands will keep a machine up to date, with the package lists one step ahead of the upgrade:
-
-.B apt-offline set foo.sig \-\-upgrade \-\-update
-Requests the packages needed to upgrade the machine, based on the current package lists. Also, requests the new package lists for the next update.
-
-.B apt-offline get foo.sig -d FOLDER
-Downloads the packages for upgrading the machine, along with the package lists for the next time apt-offline set \-\-upgrade is run.
-
-.B apt-offline install FOLDER/FILE
-Positions the packages for the upgrade, along with new the package lists.
-
-.B apt-get upgrade
-Upgrades to the state of the earlier package lists.
-
 .B NOTE1:
 On a freshly installed box, that was installed without the network, the package database is null. In that case, you first need to run 
 .B apt-offline 
@@ -227,19 +212,29 @@ option to ensure you have a meaningful package database
 .B Example: apt-offline set set.uris \-\-update
 
 .B NOTE2:
-On a fresh setup installed through CD/DVD, the default APT setting lists only the install media URLs. In such case, you need to add the default APT network repositories to the list. For example, for a fresh (DVD) installed Debian Stable box, add the relevant repository to
+On a fresh setup installed through CD/DVD, the default APT setting lists only the install media URLs. In such case, you need to add the default APT network repositories to the list. For example, for a fresh (DVD) installed Debian box, add the relevant repository to
 
 .I /etc/apt/sources.list.d/apt-offline.list or /etc/apt/sources.list
 
-.B deb http://httpredir.debian.org/debian stable main contrib (For Debian Stable)
+deb http://httpredir.debian.org/debian stable main contrib
 
-.B deb http://httpredir.debian.org/debian unstable main contrib (For Debian Unstable/Sid)
+.B (For Debian Stable)
 
-.B deb http://httpredir.debian.org/debian stretch main contrib (For Debian Stretch)
+deb http://httpredir.debian.org/debian unstable main contrib
 
-.B deb http://security.debian.org stable/updates main contrib (Security Updates for Debian Stable)
+.B (For Debian Unstable/Sid)
 
-.B deb http://security.debian.org testing/updates main contrib (Security Updates for Debian Testing)
+deb http://httpredir.debian.org/debian stretch main contrib
+
+.B (For Debian Stretch)
+
+deb http://security.debian.org stable/updates main contrib
+
+.B (Security Updates for Debian Stable)
+
+deb http://security.debian.org testing/updates main contrib
+
+.B (Security Updates for Debian Testing)
 
 .TP
 Sequence 1: The following set of commands, when run in sequence, will update a disconnected machine.
