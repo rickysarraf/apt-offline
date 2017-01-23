@@ -1873,7 +1873,10 @@ def installer( args ):
         else:
                 log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
                 DirInstallPackages(installPath)
-                    
+    else:
+        log.err("Invalid path argument specified: %s\n" % (installPath))
+        sys.exit(1)
+                        
     if InstallerInstance.Bool_Untrusted:
             log.err("Disabling apt gpg check can risk your machine to compromise.\n")
             for x in os.listdir(apt_update_target_path):
