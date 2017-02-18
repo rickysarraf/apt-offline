@@ -1163,13 +1163,17 @@ def fetcher( args ):
                 # On many boxes, the cdrom apt repository will be enabled.
                 # For now, let's skip the cdrom repository items.
                 if item.startswith("\'cdrom"):
-                        log.error("cdrom apt repository not supported. Skipping %s\n" % (item))
-                        return True
+                    log.error("cdrom apt repository not supported. Skipping %s\n" % (item))
+                    return True
+                    
                 
                 #INFO: Everything
                 (url, pkgFile, download_size, checksum) = stripper(item)
                 thread_name = threading.currentThread().getName()
                 log.verbose("Thread is %s\n" % (thread_name) )
+                
+                if url.startswith("https"):
+                    log.warn("HTTPS auth is not supported. Will try download without auth: %s\n" % (item))
                 
                 if url.endswith(".deb"):
                         try:
