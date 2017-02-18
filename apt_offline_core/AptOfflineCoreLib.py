@@ -1163,8 +1163,7 @@ def fetcher( args ):
                 # On many boxes, the cdrom apt repository will be enabled.
                 # For now, let's skip the cdrom repository items.
                 if item.startswith("\'cdrom"):
-                        log.verbose("cdrom apt repository not supported. Skipping\n")
-                        log.verbose(item)
+                        log.error("cdrom apt repository not supported. Skipping %s\n" % (item))
                         return True
                 
                 #INFO: Everything
