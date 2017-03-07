@@ -1535,7 +1535,7 @@ def installer( args ):
                 if guiBool:
                     log.msg("[%d/%d]" % (totalSize[0], totalSize[1]))
                 #ENDCHANGE
-                log.verbose( "%s file synced to %s.\n" % ( filename, self.apt_update_target_path ) )
+                log.verbose( "%s file synced to APT.\n" % ( filename ) )
 
         def displayChangelog(self, dataType=None):
             '''Takes file or directory as input'''
