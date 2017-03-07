@@ -1529,6 +1529,8 @@ def installer( args ):
             else:
                 log.err( "I couldn't understand file type %s.\n" % ( filename ) )
             
+            #INFO: Close the handle and conserve precious memory
+            magicMIME.close()
             if retval:
                 #CHANGE: track progress
                 totalSize[0]+=1 
