@@ -6,8 +6,8 @@ Build-Depends: debhelper (>= 9), python (>= 2.6.6-3~), dh-python
 Standards-Version: 3.9.8
 X-Python-Version: >= 2.5
 Homepage: http://apt-offline.alioth.debian.org
-Vcs-Git: https://github.com/rickysarraf/apt-offline.git
-Vcs-Browser: https://github.com/rickysarraf/apt-offline
+Vcs-Git: https://anonscm.debian.org/git/apt-offline/apt-offline.git
+Vcs-Browser: https://anonscm.debian.org/cgit/apt-offline/apt-offline.git
 
 Package: apt-offline
 Architecture: all
