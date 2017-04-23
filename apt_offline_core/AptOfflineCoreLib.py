@@ -24,9 +24,9 @@ import sys
 import shutil
 import platform
 import string
-import urllib2
-import httplib
-import Queue
+import urllib.request, urllib.error, urllib.parse
+import http.client
+import queue
 import threading
 import subprocess
 import socket
@@ -214,7 +214,7 @@ class FetchBugReports:
                                     try:
                                         if self.fileMgmt.move_file(self.fileName, self.DownloadDir):
                                             log.verbose("%s added to download dir %s\n" % (self.fileName, self.DownloadDir))
-                                    except AptOfflineLibShutilError, msg:
+                                    except AptOfflineLibShutilError as msg:
                                         log.warn("%s\n" % (msg))
                                 
                                 atleast_one_bug_report_downloaded = True
@@ -232,7 +232,7 @@ class FetchBugReports:
                     if self.compress_the_file(ArchiveFile, fileName):
                         if self.file_possibly_deleted is not True:
                                 os.unlink(fileName)
-                except AptOfflineErrors, message:
+                except AptOfflineErrors as message:
                     log.warn("%s\n" % (message))
                 return True
         
@@ -656,8 +656,8 @@ class LockAPT:
         def __init__(self, lists, packages):
                 
                 try:
-                        self.listLock = os.open(lists, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
-                        self.pkgLock = os.open(packages, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
+                        self.listLock = os.open(lists, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0o640)
+                        self.pkgLock = os.open(packages, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0o640)
                 except Exception:
                         log.verbose(traceback.format_exc())
                         log.err("Couldn't open lockfile\n")
@@ -706,7 +706,7 @@ class GenericDownloadFunction():
                         counter = 0
                         
                         os.chdir(download_dir)
-                        temp = urllib2.urlopen(url)
+                        temp = urllib.request.urlopen(url)
                         headers = temp.info()
                         size = int(headers['Content-Length'])
                         data = open(localFile,'wb')
@@ -753,11 +753,12 @@ class GenericDownloadFunction():
                         temp.close()
                         return True
                 #FIXME: Find out optimal fix for this exception handling
-                except OSError, (errno, strerror):
+                except OSError as xxx_todo_changeme:
+                        (errno, strerror) = xxx_todo_changeme.args
                         errfunc(errno, strerror, download_dir)
-                except urllib2.HTTPError, errstring:
+                except urllib.error.HTTPError as errstring:
                         errfunc(errstring.code, errstring.msg, url)
-                except urllib2.URLError, errstring:
+                except urllib.error.URLError as errstring:
                         #INFO: Weird. But in urllib2.URLError, I noticed that for
                         # error type "timeouts", no errno was defined.
                         # errstring.errno was listed as None 
@@ -768,10 +769,10 @@ class GenericDownloadFunction():
                                 errfunc(504, errstring.reason, url)
                         else:
                                 errfunc(errstring.errno, errstring.reason, url)
-                except httplib.BadStatusLine:
+                except http.client.BadStatusLine:
                         #INFO: See Python Bug: https://bugs.python.org/issue8823
                         log.err("BadStatusLine exception: Python Bug 8823")
-                except IOError, e:
+                except IOError as e:
                         if hasattr(e, 'reason'):
                                 log.err("%s\n" % (e.reason))
                         if hasattr(e, 'code') and hasattr(e, 'reason'):
@@ -895,14 +896,14 @@ def fetcher( args ):
         if Str_ProxyHost:
                 if Str_ProxyPort:
                         log.verbose(Str_ProxyHost + ":" + str(Str_ProxyPort))
-                        proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
-                        opener = urllib2.build_opener(proxy_support)
-                        urllib2.install_opener(opener)
+                        proxy_support = urllib.request.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
+                        opener = urllib.request.build_opener(proxy_support)
+                        urllib.request.install_opener(opener)
                         log.verbose("Proxy successfully set up with Host %s and port %d\n" % (Str_ProxyHost, Str_ProxyPort))
                 else:
-                        proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost})
-                        opener = urllib2.build_opener(proxy_support)
-                        urllib2.install_opener(opener)
+                        proxy_support = urllib.request.ProxyHandler({'http': Str_ProxyHost})
+                        opener = urllib.request.build_opener(proxy_support)
+                        urllib.request.install_opener(opener)
                         log.verbose("Proxy successfully set up with Host %s and default port\n" % (Str_ProxyHost) )
         
         #INFO: Python 2.5 has hashlib which supports sha256
@@ -947,7 +948,7 @@ def fetcher( args ):
             tempdir = tempfile.gettempdir()
             if os.access( tempdir, os.W_OK ):
                 pidname = os.getpid()
-                randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
+                randomjunk = ''.join(chr(random.randint(97,122)) for x in range(5)) if guiBool else ''
                 # 5 byte random junk to make mkdir possible multiple times
                 # use-case -> download many sigs of different machines using one instance
                 tempdir = os.path.join(tempdir , "apt-offline-downloads-" + str(pidname) + randomjunk)
@@ -1026,7 +1027,7 @@ def fetcher( args ):
                     '''Write data to archive file'''
                     try:
                         self.compress_the_file(self.BundleFile, data)
-                    except AptOfflineErrors, message:
+                    except AptOfflineErrors as message:
                         log.warn("%s\n" % (message))
                 
                 def writeToCache(self, data):
@@ -1087,7 +1088,7 @@ def fetcher( args ):
                                     try:
                                         if self.move_file(pkgLogFile.name, self.DownloadDir):
                                             log.verbose("%s added to download dir %s\n" % (pkgLogFile.name, self.DownloadDir))
-                                    except AptOfflineLibShutilError, msg:
+                                    except AptOfflineLibShutilError as msg:
                                         log.warn("%s\n" % (msg))
                                 break
         
@@ -1100,7 +1101,8 @@ def fetcher( args ):
         if Str_GetArg is not None:
                 try:
                         raw_data_list = open( Str_GetArg, 'r' ).readlines()
-                except IOError, ( errno, strerror ):
+                except IOError as xxx_todo_changeme1:
+                        ( errno, strerror ) = xxx_todo_changeme1.args
                         log.err( "%s %s\n" % ( errno, strerror ) )
                         errfunc( errno, '', Str_GetArg)
                         
@@ -1195,7 +1197,7 @@ def fetcher( args ):
                         
                         #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
                         if full_file_path is not False:
-                            if PackageName in PackageInstalledVersion.keys():
+                            if PackageName in list(PackageInstalledVersion.keys()):
                                     FetcherInstance.buildChangelog(full_file_path, PackageInstalledVersion[PackageName])
                             
                             if FetcherInstance.verifyPayloadIntegrity(full_file_path, checksum):
@@ -1278,11 +1280,11 @@ def fetcher( args ):
                         FetcherInstance.completed()
 
         # Create two Queues for the requests and responses
-        requestQueue = Queue.Queue()
-        responseQueue = Queue.Queue()
+        requestQueue = queue.Queue()
+        responseQueue = queue.Queue()
 
         # create size metadata for progress
-        for key in FetchData.keys():
+        for key in list(FetchData.keys()):
                 for item in FetchData.get(key):
                         if guiBool:
                                 #REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
@@ -1293,7 +1295,7 @@ def fetcher( args ):
                                         size = int(download_size)
                                         if size == 0:
                                                 log.msg("MSG_START")
-                                                temp = urllib2.urlopen(url)
+                                                temp = urllib.request.urlopen(url)
                                                 headers = temp.info()
                                                 size = int(headers['Content-Length'])
                                         totalSize[0] += size
@@ -1308,7 +1310,7 @@ def fetcher( args ):
         ConnectThread.startThreads()
         # Queue up the requests.
         #for item in raw_data_list: requestQueue.put(item)
-        for key in FetchData.keys():
+        for key in list(FetchData.keys()):
                 for item in FetchData.get(key):
                         ConnectThread.populateQueue( (key, item) )
         if guiBool:
@@ -1384,7 +1386,7 @@ def installer( args ):
                         
             if self.Str_InstallSrcPath is None:
                 pidname = os.getpid()
-                randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
+                randomjunk = ''.join(chr(random.randint(97,122)) for x in range(5)) if guiBool else ''
                 # 5 byte random junk to make mkdir possible multiple times
                 # use-case -> installing multiple bundles with one dialog
                 srcDownloadsPath = os.path.join(self.tempdir , "apt-offline-src-downloads-" + str(pidname) + randomjunk )
@@ -1447,7 +1449,7 @@ def installer( args ):
             log.msg( "(?) Display this help message.\n" )
         
         def get_response(self):
-            response = raw_input( "What would you like to do next:\t (y, N, ?)" )
+            response = input( "What would you like to do next:\t (y, N, ?)" )
             response = response.rstrip( "\r" )
             return response
 
@@ -1458,7 +1460,7 @@ def installer( args ):
             value => subject string
             '''
             log.msg( "\n\nFollowing are the list of bugs present.\n" )
-            sortedKeyList = dictList.keys()
+            sortedKeyList = list(dictList.keys())
             sortedKeyList.sort()
             for each_bug in sortedKeyList:
                     #INFO: '{}' is the bug split identifier - Used at another place also
@@ -1510,7 +1512,7 @@ def installer( args ):
                 debFile = os.path.join(self.apt_package_target_path, filename)
                 if os.access( self.apt_package_target_path, os.W_OK ):
                     shutil.copy2( archive_file, debFile )
-                    os.chmod(debFile, 0644)
+                    os.chmod(debFile, 0o644)
                     log.msg("%s file synced.\n" % (filename) )
                     retval = True
                 else:
@@ -1607,7 +1609,7 @@ def installer( args ):
                             
                             #INFO: Take care of Src Pkgs
                             found = False
-                            for item in SrcPkgDict.keys():
+                            for item in list(SrcPkgDict.keys()):
                                 if filename in SrcPkgDict[item]:
                                     found = True
                                     break
@@ -1770,7 +1772,7 @@ def installer( args ):
             for filename in zipBugFile.namelist():
                 #INFO: Take care of Src Pkgs
                 found = False
-                for item in SrcPkgDict.keys():
+                for item in list(SrcPkgDict.keys()):
                     if filename in SrcPkgDict[item]:
                         found = True
                         break
@@ -1839,7 +1841,7 @@ def installer( args ):
                                 continue
                         #INFO: Take care of Src Pkgs
                         found = False
-                        for item in SrcPkgDict.keys():
+                        for item in list(SrcPkgDict.keys()):
                                 if filename in SrcPkgDict[item]:
                                         found = True
                                         break

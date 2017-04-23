@@ -341,7 +341,7 @@ class ProgressBar( object ):
                 self.display()
         
         def display( self ):
-                print "\r%3s / %3s items: %s\r" % ( self.complete, self.items, str( self ) ),
+                print("\r%3s / %3s items: %s\r" % ( self.complete, self.items, str( self ) ), end=' ')
         
         def __str__( self ):
                 #compute display fraction
@@ -423,7 +423,7 @@ class Archiver:
 
                         try:
                                 filename.write( files_to_compress, os.path.basename( files_to_compress ), zipfile.ZIP_DEFLATED )
-                        except OSError, e:
+                        except OSError as e:
                                 if e.errno == errno.ENOENT:
                                         #INFO: We could be here, because in another thread (amd64), it completed, i.e. wrote to the archive and removed
                                         # And by the time this thread got a chance, the file was deleted by the previous thread
@@ -431,7 +431,7 @@ class Archiver:
                                         # A more ideal fix will be to check for files_to_compress's presence in zipfile at this stage
                                         self.file_possibly_deleted = True
                                         raise AptOfflineErrors("Ignoring err ENOENT, multiarch package name clash %s\n" % (files_to_compress))
-                        except UserWarning, e:
+                        except UserWarning as e:
                             raise AptOfflineErrors("Ignoring err type %s\n" % (e.args))
                         finally:
                             filename.close()
@@ -600,7 +600,7 @@ class FileMgmt( object ):
                                         #self.duplicate_files = set(self.duplicate_files)
                 
                 len = self.duplicate_files.__len__()
-                print len
+                print(len)
                 for x in range( len ):
                         self.duplicate_files[x].sort()
                 self.duplicate_files.sort()
@@ -610,9 +610,9 @@ class FileMgmt( object ):
                         while number < len - 1:
                                 if x in self.duplicate_files[number] or y in self.duplicate_files[number]:
                                         num += 1
-                                        print num
+                                        print(num)
                                         if num > 1:
-                                                print "Num went 2"
+                                                print("Num went 2")
                                                 self.duplicate_files.pop( number )
                                                 num -= 0
                                 number += 1

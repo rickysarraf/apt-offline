@@ -27,7 +27,7 @@ Bugreport class which represents a bugreport from the BTS.
 """
 
 
-from __future__ import division, unicode_literals, absolute_import, print_function
+
 
 import base64
 import email.feedparser
@@ -158,7 +158,7 @@ class Bugreport(object):
 
     def __unicode__(self):
         s = '\n'.join('{}: {}'.format(key, value)
-                       for key, value in self.__dict__.items())
+                       for key, value in list(self.__dict__.items()))
         return s + '\n'
 
     if PY2:
