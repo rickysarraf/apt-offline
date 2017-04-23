@@ -2062,7 +2062,7 @@ def main():
         global_options.add_argument("--simulate", dest="simulate", help="Just simulate. Very helpful when debugging",
                             action="store_true" )
         
-        if argparse.__version__ >= 1.1:
+        if float(argparse.__version__) >= 1.1:
                 parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
                                           epilog=myCopyright + " - " + terminal_license, parents=[global_options])
                 parser.add_argument("-v", "--version", action='version', version=version)
