@@ -2173,7 +2173,8 @@ def main():
         
         parser_install.add_argument("--allow-unauthenticated", dest="allow_unauthenticated",
                                     help="Ignore apt gpg signatures mismatch", action="store_true")
-        
+        if len(sys.argv) <= 1:
+                sys.argv.append('--help')
         
         args = parser.parse_args()
 
