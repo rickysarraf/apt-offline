@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # apt-offline
 #
 ############################################################################
-#    Copyright (C) 2005, 2010 Ritesh Raj Sarraf                            #
+#    Copyright (C) 2005, 2017 Ritesh Raj Sarraf                            #
 #    rrs@researchut.com                                                    #
 #                                                                          #
 #    This program is free software; you can redistribute it and/or modify  #
