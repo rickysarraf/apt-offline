@@ -802,28 +802,39 @@ def stripper(item):
         item = item.split(' ')
         log.verbose("Item is %s\n" % (item) )
 
-        url = string.rstrip(string.lstrip(''.join(item[0]), chars="'"), chars="'")
+        item0 = ''.join(item[0])
+        item0 = item0.rstrip("'")
+        item0 = item0.lstrip("'")
+        url = item0
         log.verbose("Stripped item URL is: %s\n" % url)
         
-        localFile = string.rstrip(string.lstrip(''.join(item[1]), chars="'"), chars="'")
+        item1 = ''.join(item[1])
+        item1 = item1.rstrip("'")
+        item1 = item1.lstrip("'")
+        localFile = item1
         log.verbose("Stripped item FILE is: %s\n" % localFile)
         
         try:
-                size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
+                item2 = ''.join(item[2])
+                item2 = item2.rstrip("'")
+                item2 = item2.lstrip("'")
+                size = int(item2)
         except ValueError:
                 log.verbose("%s is malformed\n" % (" ".join(item) ) )
                 size = 0
         log.verbose("Stripped item SIZE is: %d\n" % size)
-        
 
         #INFO: md5 ends up having '\n' with it.
         # That needs to be stripped too.
         try:
-                checksum = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
-                checksum = string.rstrip(checksum, chars = "\n")
+            item3 = ''.join(item[3])
+            item3 = item3.rstrip("'")
+            item3 = item3.lstrip("'")
+            item3 = item3.rstrip("\n")
+            checksum = item3
         except IndexError:
-                if item[1].endswith("_Release") or item[1].endswith("_Release.gpg"):
-                        checksum = None
+            if item[1].endswith("_Release") or item[1].endswith("_Release.gpg"):
+                checksum = None
         log.verbose("Stripped item CHECKSUM is: %s\n" % checksum)
         
         return url, localFile, size, checksum
