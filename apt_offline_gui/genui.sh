@@ -21,5 +21,5 @@ done
 #pyuic4  AptOfflineQtInstallBugList.ui > Ui_AptOfflineQtInstallBugList.py
 
 echo "Compiling Resources files"
-pyrcc4 -o resources_rc.py resources.qrc
+pyrcc4 -py3 -o resources_rc.py resources.qrc
 echo "Done"
