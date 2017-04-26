@@ -1314,10 +1314,15 @@ def fetcher( args ):
                                                 headers = temp.info()
                                                 size = int(headers['Content-Length'])
                                         totalSize[0] += size
-                                except Exception:
-                                        log.verbose(traceback.format_exc())
-                                        log.err("some int parsing problem\n")
-
+                                except urllib.error.HTTPError as errstring:
+                                    errfunc(errstring.code, errstring.reason, url)
+                                    log.verbose(traceback.format_exc())
+                                except urllib.error.URLError as errstring:
+                                    if errstring.errno is None:
+                                        errfunc(504, errstring.reason, url)
+                                    else:
+                                        errfunc(errstring.errno, errstring.reason, url)
+                                    log.verbose(traceback.format_exc())
             
         if not guiTerminateSignal:
                 ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
