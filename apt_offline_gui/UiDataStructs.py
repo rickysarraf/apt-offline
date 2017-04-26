@@ -26,12 +26,12 @@ class SetterArgs():
         self.generate_changelog = changelog
     
     def __str__(self):
-        print "self.set=",self.set
-        print "self.set_update=",self.set_update
-        print "self.set_upgrade=",self.set_upgrade
-        print "self.upgrade_type=",self.upgrade_type
-        print "self.set_install_packages=",self.set_install_packages
-        print "self.simulate=", self.simulate
+        print("self.set=",self.set)
+        print("self.set_update=",self.set_update)
+        print("self.set_upgrade=",self.set_upgrade)
+        print("self.upgrade_type=",self.upgrade_type)
+        print("self.set_install_packages=",self.set_install_packages)
+        print("self.simulate=", self.simulate)
         
         return ""
     
@@ -60,15 +60,15 @@ class GetterArgs():
         self.progress_label = progress_label
 
     def __str__(self):
-        print "self.get=",self.get
-        print "self.filename=",self.filename
-        print "self.bundle_file=",self.bundle_file
-        print "self.socket_timeout=",self.socket_timeout
-        print "self.num_of_threads=",self.num_of_threads
-        print "self.disable_md5_check=",self.disable_md5check
-        print "self.deb_bugs=",self.deb_bugs
-        print "self.download_dir=",self.download_dir
-        print "self.cache_dir=",self.cache_dir
+        print("self.get=",self.get)
+        print("self.filename=",self.filename)
+        print("self.bundle_file=",self.bundle_file)
+        print("self.socket_timeout=",self.socket_timeout)
+        print("self.num_of_threads=",self.num_of_threads)
+        print("self.disable_md5_check=",self.disable_md5check)
+        print("self.deb_bugs=",self.deb_bugs)
+        print("self.download_dir=",self.download_dir)
+        print("self.cache_dir=",self.cache_dir)
         
         return ""
 
