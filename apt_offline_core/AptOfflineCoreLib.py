@@ -1425,8 +1425,8 @@ def installer( args ):
                         log.err("EACCES: You need superuser privileges to execute this option\n")
                         sys.exit(13)
                 except AttributeError:
-                    log.err("Unsupported platform: %s\n" % (platform.platform()))
-                    return False
+                    log.err("EOPNOTSUPP: Unsupported platform: %s\n" % (platform.platform()))
+                    sys.exit(95)
                 
 
         def cleanAptPartial(self, path):
