@@ -1444,8 +1444,8 @@ def installer( args ):
                 
                 try:
                     if os.geteuid() != 0:
-                        log.err("You need superuser privileges to execute this option\n")
-                        return False
+                        log.err("EACCES: You need superuser privileges to execute this option\n")
+                        sys.exit(13)
                 except AttributeError:
                     log.err("Unsupported platform: %s\n" % (platform.platform()))
                     return False
