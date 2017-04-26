@@ -1884,19 +1884,19 @@ def installer( args ):
                         
     if InstallerInstance.Bool_Untrusted:
             log.err("Disabling apt gpg check can risk your machine to compromise.\n")
-            for x in os.listdir(apt_update_target_path):
-                    x = os.path.join(apt_update_target_path, x)
-                    shutil.copy2(x, apt_update_final_path) # Do we do a move ??
-                    log.verbose("%s %s\n" % (x, apt_update_final_path) )
+            for x in os.listdir(InstallerInstance.apt_update_target_path):
+                    x = os.path.join(InstallerInstance.apt_update_target_path, x)
+                    shutil.copy2(x, InstallerInstance.apt_update_final_path) # Do we do a move ??
+                    log.verbose("%s %s\n" % (x, InstallerInstance.apt_update_final_path) )
                     log.msg("%s synced.\n" % (x) )
     else:
             AptSecure = APTVerifySigs(Simulate=InstallerInstance.Bool_TestWindows)
 
-            lFileList= os.listdir(apt_update_target_path)
+            lFileList= os.listdir(InstallerInstance.apt_update_target_path)
             lFileList.sort()
             lVerifiedWhitelist = []
             for localFile in lFileList:
-                    localFile = os.path.join(apt_update_target_path, localFile)
+                    localFile = os.path.join(InstallerInstance.apt_update_target_path, localFile)
                     if localFile.endswith('.gpg'):
                             log.verbose("%s\n" % (localFile) )
                             localFile = os.path.abspath(localFile)
@@ -1914,8 +1914,8 @@ def installer( args ):
                     for whitelist_item in lVerifiedWhitelist:
                             for final_item in lFileList:
                                     if whitelist_item in final_item:
-                                            partialFile = os.path.join(apt_update_target_path, final_item)
-                                            shutil.copy2(partialFile, apt_update_final_path)
+                                            partialFile = os.path.join(InstallerInstance.apt_update_target_path, final_item)
+                                            shutil.copy2(partialFile, InstallerInstance.apt_update_final_path)
                                             log.msg("%s synced.\n" % (final_item) )
 
                         
