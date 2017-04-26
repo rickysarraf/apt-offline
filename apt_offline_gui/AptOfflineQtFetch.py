@@ -262,9 +262,9 @@ class AptOfflineQtFetch(QtGui.QDialog):
             ''' nothing to do '''
 
     def controlStartDownloadBox(self):
-        if self.ui.profileFilePath.text().isEmpty():
+        if not self.ui.profileFilePath.text():
             self.disableAction()
-        if self.ui.zipFilePath.text().isEmpty():
+        if not self.ui.zipFilePath.text():
             self.disableAction()
         else:
             self.enableAction()
