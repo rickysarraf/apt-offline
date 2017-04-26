@@ -171,7 +171,7 @@ class AptOfflineQtInstall(QtGui.QDialog):
     def finishedWork(self):
         self.enableActions()
         guicommon.updateInto (self.ui.rawLogHolder,
-            guicommon.style("Finished syncting updates/packages","green_fin"))
+            guicommon.style("Finished syncing updates/packages","green_fin"))
         self.ui.progressStatusDescription.setText("Finished Syncing")
         
     def disableActions(self):
