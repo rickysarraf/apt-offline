@@ -24,7 +24,7 @@ class AptOfflineQtSaveZip(QtGui.QDialog):
         
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
-        directory = QtGui.QFileDialog.getExistingDirectory(self, u'Open Directory')
+        directory = QtGui.QFileDialog.getExistingDirectory(self, 'Open Directory')
         # Show the selected file path in the field marked for showing directory path
         self.ui.zipFilePath.setText(directory)
 

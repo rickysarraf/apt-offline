@@ -130,7 +130,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
     
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
-        directory = QtGui.QFileDialog.getOpenFileName(self, u'Select the signature file')
+        directory = QtGui.QFileDialog.getOpenFileName(self, 'Select the signature file')
         # Show the selected file path in the field marked for showing directory path
         self.ui.profileFilePath.setText(directory)
         
@@ -139,10 +139,10 @@ class AptOfflineQtFetch(QtGui.QDialog):
     def popupZipFileDialog(self):
         
         if self.ui.saveDatacheckBox.isChecked() is True:
-                filename = QtGui.QFileDialog.getExistingDirectory(self, u'Select the folder to save downlaods to')
+                filename = QtGui.QFileDialog.getExistingDirectory(self, 'Select the folder to save downlaods to')
         else:
                 # Popup a Zip File selection box
-                filename = QtGui.QFileDialog.getSaveFileName(self, u'Select the zip file to save downloads')
+                filename = QtGui.QFileDialog.getSaveFileName(self, 'Select the zip file to save downloads')
         
         # Show the selected file path in the field marked for showing directory path
         self.ui.zipFilePath.setText(filename)

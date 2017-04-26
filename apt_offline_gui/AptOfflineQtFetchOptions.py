@@ -83,7 +83,7 @@ class AptOfflineQtFetchOptions(QtGui.QDialog):
                     
             
     def populateCacheDir(self):
-            directory = QtGui.QFileDialog.getExistingDirectory(None, u'Provide path to APT\'s Cache Dir')
+            directory = QtGui.QFileDialog.getExistingDirectory(None, 'Provide path to APT\'s Cache Dir')
             self.ui.cacheDirLineEdit.setText(directory)
             self._cache_dir = directory
             
