@@ -1077,7 +1077,7 @@ def fetcher( args ):
 
                                 #INFO: python-apt is able to read the data from the gzipped changelog dynamically
                                 try:
-                                    chlogFile.writelines(pkgHandle.data_content(pkgFile).encode('utf-8'))
+                                    chlogFile.writelines(pkgHandle.data_content(pkgFile))
                                 except TypeError:
                                     log.warn("Couldn't extract changelog for package %s\n" % (pkgHandle.pkgname))
                                     log.verbose(traceback.format_exc())
@@ -1773,7 +1773,7 @@ def installer( args ):
                     temp.file.flush()
                     temp.file.seek( 0 ) #Let's go back to the start of the file
                     for bug_subject_identifier in temp.file.readlines():
-                        if bug_subject_identifier.decode('utf8').startswith( 'Subject:' ):
+                        if bug_subject_identifier.startswith( 'Subject:' ):
                             subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
                             subject = subject.rstrip( "\n" )
                             break
@@ -1888,7 +1888,7 @@ def installer( args ):
                                 filename = os.path.join(installPath, filename)
                                 temp = open(filename, 'r')
                                 for bug_subject_identifier in temp.readlines():
-                                        if bug_subject_identifier.decode('utf8').startswith( 'Subject:' ):
+                                        if bug_subject_identifier.startswith( 'Subject:' ):
                                                 subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
                                                 subject = subject.rstrip( "\n" )
                                                 break
