@@ -571,7 +571,11 @@ class FileMgmt( object ):
                 FP = open(destFile, 'wb')
                 
                 FP.write(srcFile.read())
+                FP.flush()
+                FP.close()
+                srcFile.close()
             except IOError:
+                srcFile.close()
                 return False
             
         def move_folder( self, src, dest ):
