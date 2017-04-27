@@ -1072,7 +1072,7 @@ def fetcher( args ):
                         pkgHandle = DebPackage(pkgPath)
                         for pkgFile in pkgHandle.filelist:
                             if constChangelog in pkgFile:
-                                chlogFile = tempfile.NamedTemporaryFile('rw+', buffering=-1, dir=None, delete=True)
+                                chlogFile = tempfile.NamedTemporaryFile('r+', buffering=-1, dir=None, delete=True)
                                 pkgLogFile = open(os.path.join(tempfile.gettempdir(), pkgHandle.pkgname + ".changelog"), 'w')
 
                                 #INFO: python-apt is able to read the data from the gzipped changelog dynamically
