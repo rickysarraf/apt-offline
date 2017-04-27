@@ -1118,8 +1118,8 @@ def fetcher( args ):
         if Str_GetArg is not None:
                 try:
                         raw_data_list = open( Str_GetArg, 'r' ).readlines()
-                except IOError as xxx_todo_changeme1:
-                        ( errno, strerror ) = xxx_todo_changeme1.args
+                except IOError as e:
+                        ( errno, strerror ) = e.args
                         log.err( "%s %s\n" % ( errno, strerror ) )
                         errfunc( errno, '', Str_GetArg)
                         
