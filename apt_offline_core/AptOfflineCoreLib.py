@@ -1105,6 +1105,8 @@ def fetcher( args ):
                                             log.verbose("%s added to download dir %s\n" % (pkgLogFile.name, self.DownloadDir))
                                     except AptOfflineLibShutilError as msg:
                                         log.warn("%s\n" % (msg))
+                                chlogFile.close()
+                                pkgLogFile.close()
                                 break
         
         FetchData = {} #Info: Initialize an empty dictionary.
