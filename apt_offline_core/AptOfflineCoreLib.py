@@ -1589,7 +1589,7 @@ def installer( args ):
                     log.msg("No changelog available\n")
             else:    
                     chlogFile.seek(0)
-                    pydoc.pager(chlogFile.read())
+                    pydoc.pager(chlogFile.read().decode('utf-8'))
             
             self.display_options("Chlog")
             response = self.get_response()
@@ -1600,7 +1600,7 @@ def installer( args ):
                     response = self.get_response()
                 elif response.startswith('C') or response.startswith('c'):
                     chlogFile.seek(0)
-                    pydoc.pager(chlogFile.read())
+                    pydoc.pager(chlogFile.read().decode('utf-8'))
                     self.display_options("Chlog")
                     response = self.get_response()
                 elif response.startswith('y') or response.startswith('Y'):
