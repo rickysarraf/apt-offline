@@ -2039,7 +2039,7 @@ def setter(args):
             aptCache.open()
             
             try:
-                    sigFile = open(Str_SetArg, 'rw+')
+                    sigFile = open(Str_SetArg, 'r+')
             except Exception:
                     log.err(traceback.format_exc())
             
