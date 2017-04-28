@@ -48,7 +48,7 @@ class AptOfflineQtInstallChangelog(QtGui.QDialog):
             else:    
                 self.ui.changelogPlainTextEdit.clear()
                 self.chlogFile.seek(0)
-                self.ui.changelogPlainTextEdit.appendPlainText(self.chlogFile.read())
+                self.ui.changelogPlainTextEdit.appendPlainText(self.chlogFile.read().decode('utf-8'))
 
                 myCursor = self.ui.changelogPlainTextEdit.textCursor()
                 myCursor.movePosition(myCursor.Start)
