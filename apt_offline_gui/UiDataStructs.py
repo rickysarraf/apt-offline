@@ -83,13 +83,14 @@ class GetterArgs():
 
 class InstallerArgs():
 
-    def __init__(self, filename=None, skip_bug_reports=True, allow_unauthenticated=False, install_src_path=None, progress_bar=None, progress_label=None, simulate = False):
+    def __init__(self, filename=None, skip_bug_reports=True, skip_changelog=False, allow_unauthenticated=False, install_src_path=None, progress_bar=None, progress_label=None, simulate = False):
 
         self.install = filename
 
         # TODO: to be implemented in next revision
         self.simulate = simulate 
         self.skip_bug_reports = skip_bug_reports
+        self.skip_changelog = skip_changelog
         self.allow_unauthenticated = allow_unauthenticated
         self.install_src_path = install_src_path
         
