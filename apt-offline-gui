@@ -26,7 +26,7 @@ import sys
 import os
 sys.path.append("apt_offline_gui/")
 sys.path.append("apt_offline_core/")
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from apt_offline_gui.AptOfflineQtMain import AptOfflineQtMain
 
 try:
@@ -38,7 +38,7 @@ except:
 
 
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     myapp = AptOfflineQtMain()
     myapp.show()
     sys.exit(app.exec_())

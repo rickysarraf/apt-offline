@@ -1,5 +1,5 @@
 import sys
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui
 
 from apt_offline_gui.Ui_AptOfflineQtSaveZip import Ui_SaveZipFile
 

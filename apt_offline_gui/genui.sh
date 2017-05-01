@@ -9,7 +9,7 @@ for each_file in *.ui;
 do
 	filename=$(echo $each_file | cut -d "." -f1)
 	echo "Compiling file $each_file into Ui_$filename.py";
-	pyuic4 $each_file > Ui_$filename.py;
+	pyuic5 $each_file > Ui_$filename.py;
 done
 
 #pyuic4 AptOfflineQtMain.ui > Ui_AptOfflineQtMain.py
@@ -21,5 +21,5 @@ done
 #pyuic4  AptOfflineQtInstallBugList.ui > Ui_AptOfflineQtInstallBugList.py
 
 echo "Compiling Resources files"
-pyrcc4 -py3 -o resources_rc.py resources.qrc
+pyrcc5 -o resources_rc.py resources.qrc
 echo "Done"

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from apt_offline_gui.Ui_AptOfflineQtInstall import Ui_AptOfflineQtInstall
 from apt_offline_gui.UiDataStructs import InstallerArgs
@@ -63,9 +63,9 @@ class Worker(QtCore.QThread):
         self.emit (QtCore.SIGNAL('finished()'))
         
         
-class AptOfflineQtInstall(QtGui.QDialog):
+class AptOfflineQtInstall(QtWidgets.QDialog):
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_AptOfflineQtInstall()
         self.ui.setupUi(self)
         

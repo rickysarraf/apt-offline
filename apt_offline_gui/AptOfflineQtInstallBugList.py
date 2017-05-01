@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import os,sys
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import zipfile, tempfile
 
 from apt_offline_gui.Ui_AptOfflineQtInstallBugList import Ui_AptOfflineQtInstallBugList
 import apt_offline_core.AptOfflineCoreLib as AptOfflineCoreLib
 
-class AptOfflineQtInstallBugList(QtGui.QDialog):
+class AptOfflineQtInstallBugList(QtWidgets.QDialog):
         def __init__(self, filepath, parent=None):
-            QtGui.QWidget.__init__(self, parent)
+            QtWidgets.QWidget.__init__(self, parent)
             self.ui = Ui_AptOfflineQtInstallBugList()
             
             self.bugList = {}

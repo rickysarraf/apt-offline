@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import QMessageBox
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QMessageBox
 
 from apt_offline_gui.Ui_AptOfflineQtFetch import Ui_AptOfflineQtFetch
 from apt_offline_gui.UiDataStructs import GetterArgs
@@ -67,55 +67,79 @@ class Worker(QtCore.QThread):
         self.emit (QtCore.SIGNAL('finished()'))
 
 
-class AptOfflineQtFetch(QtGui.QDialog):
+class AptOfflineQtFetch(QtWidgets.QDialog):
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_AptOfflineQtFetch()
         self.ui.setupUi(self)
         self.advancedOptionsDialog = AptOfflineQtFetchOptions()
         
         # Connect the clicked signal of the Signature File Browse button to it's slot
-        QtCore.QObject.connect(self.ui.browseFilePathButton, QtCore.SIGNAL("clicked()"),
-                        self.popupDirectoryDialog )
+        #QtCore.QObject.connect(self.ui.browseFilePathButton, QtCore.SIGNAL("clicked()"),
+        #                self.popupDirectoryDialog )
+        self.ui.browseFilePathButton.clicked.connect(self.popupDirectoryDialog)
         
         # Connect the clicked signal of the Zip File Browse button to it's slot
-        QtCore.QObject.connect(self.ui.browseZipFileButton, QtCore.SIGNAL("clicked()"),
-                        self.popupZipFileDialog )
+        #QtCore.QObject.connect(self.ui.browseZipFileButton, QtCore.SIGNAL("clicked()"),
+        #                self.popupZipFileDialog )
+        self.ui.browseZipFileButton.clicked.connect(self.popupZipFileDialog)
                                                 
         # Connect the clicked signal of the Save to it's Slot - accept
-        QtCore.QObject.connect(self.ui.startDownloadButton, QtCore.SIGNAL("clicked()"),
-                        self.StartDownload )
+        #QtCore.QObject.connect(self.ui.startDownloadButton, QtCore.SIGNAL("clicked()"),
+        #                self.StartDownload )
+        self.ui.startDownloadButton.clicked.connect(self.StartDownload)
                         
         # Connect the clicked signal of the Cancel to it's Slot - reject
-        QtCore.QObject.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
-                        self.handleCancel )
+        #QtCore.QObject.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
+        #                self.handleCancel )
+        self.ui.cancelButton.clicked.connect(self.handleCancel)
                         
-        QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
-                        self.controlStartDownloadBox )
+        #QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
+        #                self.controlStartDownloadBox )
+        self.ui.profileFilePath.textChanged.connect(self.controlStartDownloadBox)
 
-        QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
-                        self.controlStartDownloadBox )
-        QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
-                        self.controlStartDownloadBox )
-        QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
-                        self.controlStartDownloadBox )
+        #QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
+        #                self.controlStartDownloadBox )
+
+        #QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
+        #                self.controlStartDownloadBox )
+        self.ui.zipFilePath.textChanged.connect(self.controlStartDownloadBox)
+
+        #QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
+        #                self.controlStartDownloadBox )
         
-        QtCore.QObject.connect(self.ui.advancedOptionsButton, QtCore.SIGNAL("clicked()"),
-                        self.showAdvancedOptions )
+        #QtCore.QObject.connect(self.ui.advancedOptionsButton, QtCore.SIGNAL("clicked()"),
+        #                self.showAdvancedOptions )
+        self.ui.advancedOptionsButton.clicked.connect(self.showAdvancedOptions)
         
         
-        
+        output = QtCore.pyqtSignal(str)
+        progress = QtCore.pyqtSignal(str)
+        status = QtCore.pyqtSignal(str)
+        finished = QtCore.pyqtSignal()
+        terminated = QtCore.pyqtSignal()
+
         self.worker = Worker(parent=self)
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("output(QString)"),
-                        self.updateLog )
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("progress(QString,QString)"),
-                        self.updateProgress )
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("status(QString)"),
-                        self.updateStatus )
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("finished()"),
-                        self.finishedWork )
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("terminated()"),
-                        self.finishedWork )
+
+        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("output(QString)"),
+        #                self.updateLog )
+        #self.worker.output.connect(self.updateLog)
+
+        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("progress(QString,QString)"),
+        #                self.updateProgress )
+        #self.worker.progress.connect(self.updateProgress)
+
+        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("status(QString)"),
+        #                self.updateStatus )
+        #self.worker.status.connect(self.updateStatus)
+
+        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("finished()"),
+        #                self.finishedWork )
+        #self.worker.finished.connect(self.finishedWork)
+
+        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("terminated()"),
+        #                self.finishedWork )
+        #self.worker.terminated.connect(self.finishedWork)
         
 
         #INFO: inform CLI that it's a gui app
