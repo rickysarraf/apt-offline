@@ -90,10 +90,10 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
     def CreateProfile(self):
         try:
                 if os.geteuid() != 0:
-                        QtGui.QMessageBox.critical(self, "Error", "You need to run with root privileges!")
+                        QtWidgets.QMessageBox.critical(self, "Error", "You need to run with root privileges!")
                         return
         except AttributeError:
-                QtGui.QMessageBox.critical(self, "Error", "This is supported only on Unix like systems with apt installed.")
+                QtWidgets.QMessageBox.critical(self, "Error", "This is supported only on Unix like systems with apt installed.")
                 return
         # Code for creating Modal Dialog for Create Profile
         self.createProfileDialog.resetUI()
@@ -107,10 +107,10 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
     def InstallPackagesUpgrades(self):
         try:
                 if os.geteuid() != 0:
-                        QtGui.QMessageBox.critical(self, "Error", "You need to run with root privileges!")
+                        QtWidgets.QMessageBox.critical(self, "Error", "You need to run with root privileges!")
                         return
         except AttributeError:
-                QtGui.QMessageBox.critical(self, "Error", "This is supported only on Unix like systems with apt installed.")
+                QtWidgets.QMessageBox.critical(self, "Error", "This is supported only on Unix like systems with apt installed.")
                 return
         # Code for creating Modal Dialog for Installing Packages/Upgrades
         self.createInstallDialog.show()
@@ -120,7 +120,7 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
         self.createAboutDialog.show()
         
     def ShowHelp(self):
-        QtGui.QMessageBox.information(self, "Info", "Please refer to the apt-offline(8) man page")
+        QtWidgets.QMessageBox.information(self, "Info", "Please refer to the apt-offline(8) man page")
 
     def CreateButtonHoverHelp(self):
         pass

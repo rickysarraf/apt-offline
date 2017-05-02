@@ -11,10 +11,14 @@ import apt_offline_core.AptOfflineCoreLib
 from apt_offline_gui.AptOfflineQtFetchOptions import AptOfflineQtFetchOptions
 
 class Worker(QtCore.QThread):
+    
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
         self.parent = parent
         self.exiting = False
+        
+        super(Worker, self).__init__(parent)
+        
 
     def __del__(self):
         self.exiting = True
@@ -68,6 +72,13 @@ class Worker(QtCore.QThread):
 
 
 class AptOfflineQtFetch(QtWidgets.QDialog):
+
+    output = QtCore.pyqtSignal()
+    progress = QtCore.pyqtSignal(str)
+    status = QtCore.pyqtSignal(str)
+    finished = QtCore.pyqtSignal()
+    terminated = QtCore.pyqtSignal()
+    
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_AptOfflineQtFetch()
@@ -113,33 +124,29 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
         self.ui.advancedOptionsButton.clicked.connect(self.showAdvancedOptions)
         
         
-        output = QtCore.pyqtSignal(str)
-        progress = QtCore.pyqtSignal(str)
-        status = QtCore.pyqtSignal(str)
-        finished = QtCore.pyqtSignal()
-        terminated = QtCore.pyqtSignal()
+        
 
         self.worker = Worker(parent=self)
 
         #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("output(QString)"),
         #                self.updateLog )
-        #self.worker.output.connect(self.updateLog)
+        self.output.connect(self.updateLog)
 
         #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("progress(QString,QString)"),
         #                self.updateProgress )
-        #self.worker.progress.connect(self.updateProgress)
+        self.progress.connect(self.updateProgress)
 
         #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("status(QString)"),
         #                self.updateStatus )
-        #self.worker.status.connect(self.updateStatus)
+        self.status.connect(self.updateStatus)
 
         #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("finished()"),
         #                self.finishedWork )
-        #self.worker.finished.connect(self.finishedWork)
+        self.finished.connect(self.finishedWork)
 
         #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("terminated()"),
         #                self.finishedWork )
-        #self.worker.terminated.connect(self.finishedWork)
+        self.terminated.connect(self.finishedWork)
         
 
         #INFO: inform CLI that it's a gui app
@@ -154,7 +161,7 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
     
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
-        directory = QtGui.QFileDialog.getOpenFileName(self, 'Select the signature file')
+        directory, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Select the signature file')
         # Show the selected file path in the field marked for showing directory path
         self.ui.profileFilePath.setText(directory)
         
@@ -163,10 +170,10 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
     def popupZipFileDialog(self):
         
         if self.ui.saveDatacheckBox.isChecked() is True:
-                filename = QtGui.QFileDialog.getExistingDirectory(self, 'Select the folder to save downlaods to')
+                filename, _ = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select the folder to save downlaods to')
         else:
                 # Popup a Zip File selection box
-                filename = QtGui.QFileDialog.getSaveFileName(self, 'Select the zip file to save downloads')
+                filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Select the zip file to save downloads')
         
         # Show the selected file path in the field marked for showing directory path
         self.ui.zipFilePath.setText(filename)

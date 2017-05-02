@@ -52,14 +52,14 @@ class AptOfflineQtFetchOptions(QtWidgets.QDialog):
             self.storeOptions()
             
             if len(self._cache_dir) > 0 and not (os.access(self._cache_dir, os.W_OK) or os.access(self._cache_dir, os.R_OK) ):
-                    QtGui.QMessageBox.critical(self, "Error", "Could not locate cache directory")
+                    QtWidgets.QMessageBox.critical(self, "Error", "Could not locate cache directory")
                     return
                                 
             if self._proxy_port:
                     try:
                             int(self._proxy_port)
                     except:
-                            QtGui.QMessageBox.critical(self, "Error", "Invalid Proxy Port Number")
+                            QtWidgets.QMessageBox.critical(self, "Error", "Invalid Proxy Port Number")
                             return
             self.applyOptionValues()
             self.hide()
@@ -86,7 +86,7 @@ class AptOfflineQtFetchOptions(QtWidgets.QDialog):
                     
             
     def populateCacheDir(self):
-            directory = QtGui.QFileDialog.getExistingDirectory(None, 'Provide path to APT\'s Cache Dir')
+            directory = QtWidgets.QFileDialog.getExistingDirectory(None, 'Provide path to APT\'s Cache Dir')
             self.ui.cacheDirLineEdit.setText(directory)
             self._cache_dir = directory
             

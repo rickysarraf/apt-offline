@@ -155,7 +155,7 @@ class AptOfflineQtCreateProfile(QtWidgets.QDialog):
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
         signatureFilePath = os.path.join (os.path.expanduser("~"), "/Desktop/"+"apt-offline.sig")
-        directory = QtGui.QFileDialog.getSaveFileName(self, 'Select a filename to save the signature', signatureFilePath, "apt-offline Signatures (*.sig)")
+        directory, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Select a filename to save the signature', signatureFilePath, "apt-offline Signatures (*.sig)")
         # Show the selected file path in the field marked for showing directory path
         self.ui.profileFilePath.setText(directory)
 
