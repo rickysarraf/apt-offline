@@ -173,6 +173,9 @@
    <property name="readOnly">
     <bool>false</bool>
    </property>
+   <property name="clearButtonEnabled">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QLabel" name="label">
    <property name="geometry">
@@ -320,6 +323,18 @@
    <property name="focusPolicy">
     <enum>Qt::NoFocus</enum>
    </property>
+   <property name="autoFormatting">
+    <set>QTextEdit::AutoAll</set>
+   </property>
+   <property name="tabChangesFocus">
+    <bool>true</bool>
+   </property>
+   <property name="undoRedoEnabled">
+    <bool>false</bool>
+   </property>
+   <property name="textInteractionFlags">
+    <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+   </property>
   </widget>
   <widget class="QLabel" name="lblSaveProfile">
    <property name="geometry">
@@ -366,6 +381,9 @@
    </property>
    <property name="toolTip">
     <string>New filename to save the signature data</string>
+   </property>
+   <property name="clearButtonEnabled">
+    <bool>true</bool>
    </property>
   </widget>
   <widget class="QPushButton" name="browseFilePathButton">
@@ -417,6 +435,9 @@
    <property name="readOnly">
     <bool>false</bool>
    </property>
+   <property name="clearButtonEnabled">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QCheckBox" name="installSrcPackagesCheckBox">
    <property name="geometry">
@@ -463,6 +484,9 @@
    </property>
    <property name="readOnly">
     <bool>false</bool>
+   </property>
+   <property name="clearButtonEnabled">
+    <bool>true</bool>
    </property>
   </widget>
   <widget class="QCheckBox" name="installPackagesCheckBox">

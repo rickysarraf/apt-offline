@@ -65,7 +65,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>3</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="aboutTab">
     <attribute name="title">
@@ -167,6 +167,9 @@ This is a Graphical User Interface which exposes the functionality of apt-offlin
      <property name="text">
       <string>Manish Sinha &lt;mail@manishsinha.net&gt;</string>
      </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QLabel" name="label_8">
      <property name="geometry">
@@ -179,6 +182,25 @@ This is a Graphical User Interface which exposes the functionality of apt-offlin
      </property>
      <property name="text">
       <string>Abhishek Mishra &lt;ideamonk@gmail.com&gt;</string>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_15">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>120</y>
+       <width>280</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Ritesh Raj Sarraf &lt;rrs@researchut.com&gt;</string>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
      </property>
     </widget>
    </widget>
@@ -273,11 +295,14 @@ This is a Graphical User Interface which exposes the functionality of apt-offlin
      </property>
      <property name="font">
       <font>
-       <pointsize>8</pointsize>
+       <pointsize>10</pointsize>
       </font>
      </property>
      <property name="acceptDrops">
       <bool>false</bool>
+     </property>
+     <property name="tabChangesFocus">
+      <bool>true</bool>
      </property>
      <property name="undoRedoEnabled">
       <bool>false</bool>

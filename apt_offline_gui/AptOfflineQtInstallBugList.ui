@@ -47,6 +47,11 @@
      <height>121</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
    <property name="toolTip">
     <string>Bug List</string>
    </property>
@@ -90,6 +95,11 @@
      <width>581</width>
      <height>461</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
    </property>
    <property name="acceptDrops">
     <bool>false</bool>
