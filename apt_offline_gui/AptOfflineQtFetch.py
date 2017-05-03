@@ -236,6 +236,7 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
                 guicommon.updateInto (self.ui.rawLogHolder,
                                     guicommon.style(text,'green_fin'))
                 self.ui.progressStatusDescription.setText('Finished.')
+                self.finishedWork()
             else:
                 guicommon.updateInto (self.ui.rawLogHolder,text)
 
