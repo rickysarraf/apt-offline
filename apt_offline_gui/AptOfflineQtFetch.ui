@@ -43,6 +43,12 @@
      <height>30</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Path to signature file</string>
+   </property>
+   <property name="clearButtonEnabled">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QPushButton" name="browseFilePathButton">
    <property name="geometry">
@@ -69,6 +75,9 @@
      <height>30</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Start download</string>
+   </property>
    <property name="text">
     <string>Download</string>
    </property>
@@ -94,9 +103,12 @@
     <rect>
      <x>319</x>
      <y>148</y>
-     <width>111</width>
+     <width>110</width>
      <height>30</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Close window</string>
    </property>
    <property name="text">
     <string>Close</string>
@@ -182,11 +194,38 @@
      <height>211</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
    <property name="acceptDrops">
+    <bool>false</bool>
+   </property>
+   <property name="sizeAdjustPolicy">
+    <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
+   </property>
+   <property name="autoFormatting">
+    <set>QTextEdit::AutoAll</set>
+   </property>
+   <property name="undoRedoEnabled">
     <bool>false</bool>
    </property>
    <property name="readOnly">
     <bool>true</bool>
+   </property>
+   <property name="html">
+    <string notr="true">&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Cantarell'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="tabStopWidth">
+    <number>80</number>
+   </property>
+   <property name="textInteractionFlags">
+    <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
    </property>
   </widget>
   <widget class="QPushButton" name="browseZipFileButton">
@@ -229,6 +268,12 @@
      <height>30</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Data save location file/directory</string>
+   </property>
+   <property name="clearButtonEnabled">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QPushButton" name="advancedOptionsButton">
    <property name="enabled">
@@ -238,7 +283,7 @@
     <rect>
      <x>31</x>
      <y>148</y>
-     <width>131</width>
+     <width>120</width>
      <height>30</height>
     </rect>
    </property>
@@ -273,6 +318,9 @@
      <width>110</width>
      <height>18</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Click if target save location is a directory</string>
    </property>
    <property name="text">
     <string>Is Directory</string>
