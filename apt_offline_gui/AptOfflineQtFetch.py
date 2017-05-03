@@ -98,24 +98,15 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
         self.ui.cancelButton.clicked.connect(self.handleCancel)
                         
         self.ui.profileFilePath.textChanged.connect(self.controlStartDownloadBox)
-
         self.ui.zipFilePath.textChanged.connect(self.controlStartDownloadBox)
-
         self.ui.advancedOptionsButton.clicked.connect(self.showAdvancedOptions)
-        
 
         self.worker = Worker(parent=self)
-
         self.worker.output.connect(self.updateLog)
-
         self.worker.progress.connect(self.updateProgress)
-
         self.worker.status.connect(self.updateStatus)
-
         self.worker.finished.connect(self.finishedWork)
-
         self.worker.terminated.connect(self.finishedWork)
-        
 
         #INFO: inform CLI that it's a gui app
         apt_offline_core.AptOfflineCoreLib.guiBool = True
@@ -193,7 +184,6 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
                                 return
                 targetFilePath = self.zipfilepath
                 targetDirPath = None
-                    
         else:
                 if os.path.exists(self.zipfilepath):
                         if os.access(self.zipfilepath, os.W_OK) == False:
