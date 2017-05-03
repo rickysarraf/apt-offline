@@ -11,15 +11,24 @@ import apt_offline_core.AptOfflineCoreLib
 from apt_offline_gui.AptOfflineQtFetchOptions import AptOfflineQtFetchOptions
 
 class Worker(QtCore.QThread):
+    output = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(str, str)
+    status = QtCore.pyqtSignal(str)
+    finished = QtCore.pyqtSignal()
+    terminated = QtCore.pyqtSignal()
     
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
         self.parent = parent
         self.exiting = False
         
-        super(Worker, self).__init__(parent)
+        #INFO: Qt5 Signal and Slots
+        self.output.emit('')
+        self.progress.emit('','')
+        self.status.emit('')
+        self.finished.emit()
+        self.terminated.emit()
         
-
     def __del__(self):
         self.exiting = True
         self.wait()
@@ -41,43 +50,34 @@ class Worker(QtCore.QThread):
             return
             
         if ("MSG_START" in text):
-            self.emit (QtCore.SIGNAL('status(QString)'), "Fetching missing meta data ...")
+            self.status.emit("Fetching missing meta data...")
         elif ("MSG_END" in text):
-            self.emit (QtCore.SIGNAL('status(QString)'), "Downloading packages ...")
+            self.status.emit("Downloading packages ...")
         elif ("WARNING" in text):
-            self.emit (QtCore.SIGNAL('output(QString)'), 
-                                    guicommon.style(text,"red"))
+            self.output.emit("%s" % (guicommon.style(text,"red")))
         elif ("Downloading" in text):
-            self.emit (QtCore.SIGNAL('output(QString)'), 
-                                    guicommon.style(text,"orange"))
+            self.output.emit("%s" % (guicommon.style(text,"orange")))
         elif ("done." in text):
-            self.emit (QtCore.SIGNAL('output(QString)'), 
-                                    guicommon.style(text,"green"))
+            self.output.emit("%s" % (guicommon.style(text,"green")))
         elif ("[" in text and "]" in text):
             try:
                 # no more splits, we know the exact byte count now
                 progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
                 total = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
-                self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
+                self.progress.emit(progress,total)
             except:
                 ''' nothing to do '''
         else:
-            self.emit (QtCore.SIGNAL('output(QString)'), text.strip())
+            self.output.emit(text.strip())
 
     def flush(self):
         ''' nothing to do :D '''
 
     def quit(self):
-        self.emit (QtCore.SIGNAL('finished()'))
+        self.finished.emit()
 
 
 class AptOfflineQtFetch(QtWidgets.QDialog):
-
-    output = QtCore.pyqtSignal()
-    progress = QtCore.pyqtSignal(str)
-    status = QtCore.pyqtSignal(str)
-    finished = QtCore.pyqtSignal()
-    terminated = QtCore.pyqtSignal()
     
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
@@ -86,67 +86,35 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
         self.advancedOptionsDialog = AptOfflineQtFetchOptions()
         
         # Connect the clicked signal of the Signature File Browse button to it's slot
-        #QtCore.QObject.connect(self.ui.browseFilePathButton, QtCore.SIGNAL("clicked()"),
-        #                self.popupDirectoryDialog )
         self.ui.browseFilePathButton.clicked.connect(self.popupDirectoryDialog)
         
         # Connect the clicked signal of the Zip File Browse button to it's slot
-        #QtCore.QObject.connect(self.ui.browseZipFileButton, QtCore.SIGNAL("clicked()"),
-        #                self.popupZipFileDialog )
         self.ui.browseZipFileButton.clicked.connect(self.popupZipFileDialog)
                                                 
         # Connect the clicked signal of the Save to it's Slot - accept
-        #QtCore.QObject.connect(self.ui.startDownloadButton, QtCore.SIGNAL("clicked()"),
-        #                self.StartDownload )
         self.ui.startDownloadButton.clicked.connect(self.StartDownload)
                         
         # Connect the clicked signal of the Cancel to it's Slot - reject
-        #QtCore.QObject.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
-        #                self.handleCancel )
         self.ui.cancelButton.clicked.connect(self.handleCancel)
                         
-        #QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
-        #                self.controlStartDownloadBox )
         self.ui.profileFilePath.textChanged.connect(self.controlStartDownloadBox)
 
-        #QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
-        #                self.controlStartDownloadBox )
-
-        #QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
-        #                self.controlStartDownloadBox )
         self.ui.zipFilePath.textChanged.connect(self.controlStartDownloadBox)
 
-        #QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
-        #                self.controlStartDownloadBox )
-        
-        #QtCore.QObject.connect(self.ui.advancedOptionsButton, QtCore.SIGNAL("clicked()"),
-        #                self.showAdvancedOptions )
         self.ui.advancedOptionsButton.clicked.connect(self.showAdvancedOptions)
-        
-        
         
 
         self.worker = Worker(parent=self)
 
-        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("output(QString)"),
-        #                self.updateLog )
-        self.output.connect(self.updateLog)
+        self.worker.output.connect(self.updateLog)
 
-        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("progress(QString,QString)"),
-        #                self.updateProgress )
-        self.progress.connect(self.updateProgress)
+        self.worker.progress.connect(self.updateProgress)
 
-        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("status(QString)"),
-        #                self.updateStatus )
-        self.status.connect(self.updateStatus)
+        self.worker.status.connect(self.updateStatus)
 
-        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("finished()"),
-        #                self.finishedWork )
-        self.finished.connect(self.finishedWork)
+        self.worker.finished.connect(self.finishedWork)
 
-        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("terminated()"),
-        #                self.finishedWork )
-        self.terminated.connect(self.finishedWork)
+        self.worker.terminated.connect(self.finishedWork)
         
 
         #INFO: inform CLI that it's a gui app
@@ -362,5 +330,3 @@ if __name__ == "__main__":
     myapp = AptOfflineQtFetch()
     myapp.show()
     sys.exit(app.exec_())
-
-
