@@ -7,6 +7,12 @@ import zipfile, tempfile
 from apt_offline_gui.Ui_AptOfflineQtInstallChangelog import Ui_AptOfflineQtInstallChangelog
 
 class AptOfflineQtInstallChangelog(QtWidgets.QDialog):
+        output = QtCore.pyqtSignal(str)
+        progress = QtCore.pyqtSignal(str, str)
+        status = QtCore.pyqtSignal(str)
+        finished = QtCore.pyqtSignal()
+        terminated = QtCore.pyqtSignal()
+
         def __init__(self, filepath, parent=None):
             QtWidgets.QWidget.__init__(self, parent)
             self.ui = Ui_AptOfflineQtInstallChangelog()
@@ -17,8 +23,9 @@ class AptOfflineQtInstallChangelog(QtWidgets.QDialog):
             self.populateChangelog(self.filepath)            
             
             # Connect the clicked signal of the Browse button to it's slot
-            QtCore.QObject.connect(self.ui.closeButton, QtCore.SIGNAL("clicked()"),
-                            self.reject )
+            #QtCore.QObject.connect(self.ui.closeButton, QtCore.SIGNAL("clicked()"),
+            #                self.reject )
+            self.ui.closeButton.clicked.connect(self.reject)
 
         def populateChangelog(self, path):
                 

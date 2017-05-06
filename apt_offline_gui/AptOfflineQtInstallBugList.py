@@ -8,6 +8,12 @@ from apt_offline_gui.Ui_AptOfflineQtInstallBugList import Ui_AptOfflineQtInstall
 import apt_offline_core.AptOfflineCoreLib as AptOfflineCoreLib
 
 class AptOfflineQtInstallBugList(QtWidgets.QDialog):
+        output = QtCore.pyqtSignal(str)
+        progress = QtCore.pyqtSignal(str, str)
+        status = QtCore.pyqtSignal(str)
+        finished = QtCore.pyqtSignal()
+        terminated = QtCore.pyqtSignal()
+
         def __init__(self, filepath, parent=None):
             QtWidgets.QWidget.__init__(self, parent)
             self.ui = Ui_AptOfflineQtInstallBugList()
@@ -21,8 +27,9 @@ class AptOfflineQtInstallBugList(QtWidgets.QDialog):
             self.ui.bugListViewWindow.itemSelectionChanged.connect(self.populateBugListPlainTextEdit)
             
             # Connect the clicked signal of the Browse button to it's slot
-            QtCore.QObject.connect(self.ui.closeButton, QtCore.SIGNAL("clicked()"),
-                            self.reject )
+            #QtCore.QObject.connect(self.ui.closeButton, QtCore.SIGNAL("clicked()"),
+            #                self.reject )
+            self.ui.closeButton.clicked.connect(self.reject)
 
         def populateBugListPlainTextEdit(self):
                 self.ui.bugListplainTextEdit.clear()
