@@ -90,34 +90,20 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
         
         self.ui.changelogButton.clicked.connect(self.showChangelog)
         
-        #QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("editingFinished()"),
-        #                self.ControlStartInstallBox )
         self.ui.zipFilePath.editingFinished.connect(self.ControlStartInstallBox)
 
-        #QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
-        #                self.ControlStartInstallBox )
         self.ui.zipFilePath.textChanged.connect(self.ControlStartInstallBox)
         
         self.worker = Worker(parent=self)
         
-        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("output(QString)"),
-        #                self.updateLog )
         self.worker.output.connect(self.updateLog)
         
-        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("progress(QString,QString)"),
-        #                self.updateProgress )
         self.worker.progress.connect(self.updateProgress)
         
-        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("status(QString)"),
-        #                self.updateStatus )
         self.worker.status.connect(self.updateStatus)
         
-        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("finished()"),
-        #                self.finishedWork )
         self.worker.finished.connect(self.finishedWork)
         
-        #QtCore.QObject.connect(self.worker, QtCore.SIGNAL("terminated()"),
-        #                self.finishedWork )
         self.worker.terminated.connect(self.finishedWork)
         
     def StartInstall(self):
@@ -188,7 +174,6 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
         guicommon.updateInto (self.ui.rawLogHolder,
             guicommon.style("Finished syncing updates/packages","green_fin"))
         self.ui.progressStatusDescription.setText("Finished Syncing")
-        self.ui.cancelButton.setEnabled(True)
         self.ui.cancelButton.setText("Close")
         
     def disableActions(self):
