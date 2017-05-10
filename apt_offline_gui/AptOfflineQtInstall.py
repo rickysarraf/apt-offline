@@ -22,7 +22,7 @@ class Worker(QtCore.QThread):
         QtCore.QThread.__init__(self, parent)
         self.parent = parent
         self.exiting = False
-
+        
     def __del__(self):
         self.exiting = True
         self.wait()
@@ -190,6 +190,7 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
         self.ui.progressStatusDescription.setText("Finished Syncing")
         
     def disableActions(self):
+        self.ui.browseFileFoldercheckBox.setEnabled(False)
         self.ui.cancelButton.setEnabled(False)
         self.ui.startInstallButton.setEnabled(False)
         self.ui.bugReportsButton.setEnabled(False)
@@ -198,6 +199,7 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
         self.ui.changelogButton.setEnabled(False)
 
     def enableActions(self):
+        self.ui.browseFileFoldercheckBox.setEnabled(True)
         self.ui.cancelButton.setEnabled(True)
         self.ui.startInstallButton.setEnabled(True)
         self.ui.bugReportsButton.setEnabled(True)
