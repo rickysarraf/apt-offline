@@ -341,7 +341,7 @@ class ProgressBar( object ):
                 self.display()
         
         def display( self ):
-                print("\r%3s / %3s items: %s\r" % ( self.complete, self.items, str( self ) ), end=' ')
+                sys.stdout.write("\r%3s / %3s items: %s\r" % ( self.complete, self.items, str( self ) ))
         
         def __str__( self ):
                 #compute display fraction
