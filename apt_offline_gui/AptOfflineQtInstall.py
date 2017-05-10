@@ -188,6 +188,8 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
         guicommon.updateInto (self.ui.rawLogHolder,
             guicommon.style("Finished syncing updates/packages","green_fin"))
         self.ui.progressStatusDescription.setText("Finished Syncing")
+        self.ui.cancelButton.setEnabled(True)
+        self.ui.cancelButton.setText("Close")
         
     def disableActions(self):
         self.ui.browseFileFoldercheckBox.setEnabled(False)
