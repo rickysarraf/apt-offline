@@ -87,23 +87,15 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
         self.ui.cancelButton.clicked.connect(self.reject)
         
         self.ui.bugReportsButton.clicked.connect(self.showBugReports)
-        
         self.ui.changelogButton.clicked.connect(self.showChangelog)
-        
         self.ui.zipFilePath.editingFinished.connect(self.ControlStartInstallBox)
-
         self.ui.zipFilePath.textChanged.connect(self.ControlStartInstallBox)
         
         self.worker = Worker(parent=self)
-        
         self.worker.output.connect(self.updateLog)
-        
         self.worker.progress.connect(self.updateProgress)
-        
         self.worker.status.connect(self.updateStatus)
-        
         self.worker.finished.connect(self.finishedWork)
-        
         self.worker.terminated.connect(self.finishedWork)
         
     def StartInstall(self):
