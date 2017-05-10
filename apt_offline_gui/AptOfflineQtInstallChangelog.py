@@ -50,7 +50,6 @@ class AptOfflineQtInstallChangelog(QtWidgets.QDialog):
             
             if self.chlogPresent is False:
                 self.ui.changelogPlainTextEdit.clear()
-                self.ui.changelogPlainTextEdit.appendPlainText("ABC")
                 self.ui.changelogPlainTextEdit.appendPlainText('No changelog present')
             else:    
                 self.ui.changelogPlainTextEdit.clear()
