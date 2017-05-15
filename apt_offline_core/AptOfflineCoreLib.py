@@ -732,6 +732,9 @@ class GenericDownloadFunction():
                 log.err("BadStatusLine exception: Python Bug 8823")
                 log.err(e)
                 return False
+            except socket.timeout:
+                log.err("Socket timeout. Skipping URL: %s\n" % (url))
+                return False
             
             data = open(localFile,'wb')
             socket_counter = 0
