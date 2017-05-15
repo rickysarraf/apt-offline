@@ -1,15 +1,21 @@
 # -*- coding: utf-8 -*-
 import os,sys
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import zipfile, tempfile
 
 from apt_offline_gui.Ui_AptOfflineQtInstallBugList import Ui_AptOfflineQtInstallBugList
 import apt_offline_core.AptOfflineCoreLib as AptOfflineCoreLib
 
-class AptOfflineQtInstallBugList(QtGui.QDialog):
+class AptOfflineQtInstallBugList(QtWidgets.QDialog):
+        output = QtCore.pyqtSignal(str)
+        progress = QtCore.pyqtSignal(str, str)
+        status = QtCore.pyqtSignal(str)
+        finished = QtCore.pyqtSignal()
+        terminated = QtCore.pyqtSignal()
+
         def __init__(self, filepath, parent=None):
-            QtGui.QWidget.__init__(self, parent)
+            QtWidgets.QWidget.__init__(self, parent)
             self.ui = Ui_AptOfflineQtInstallBugList()
             
             self.bugList = {}
@@ -21,8 +27,9 @@ class AptOfflineQtInstallBugList(QtGui.QDialog):
             self.ui.bugListViewWindow.itemSelectionChanged.connect(self.populateBugListPlainTextEdit)
             
             # Connect the clicked signal of the Browse button to it's slot
-            QtCore.QObject.connect(self.ui.closeButton, QtCore.SIGNAL("clicked()"),
-                            self.reject )
+            #QtCore.QObject.connect(self.ui.closeButton, QtCore.SIGNAL("clicked()"),
+            #                self.reject )
+            self.ui.closeButton.clicked.connect(self.reject)
 
         def populateBugListPlainTextEdit(self):
                 self.ui.bugListplainTextEdit.clear()
@@ -77,13 +84,13 @@ class AptOfflineQtInstallBugList(QtGui.QDialog):
                                                         break
                                         temp.close()
                 else:
-                        print "Invalid Path"
+                        print("Invalid Path")
                         return False
 
-                if len(self.bugList.keys()) is 0:
+                if len(list(self.bugList.keys())) is 0:
                         self.noBugPopulateBugListPlainTextEdit()
                 else:
-                        for eachItem in self.bugList.keys():
+                        for eachItem in list(self.bugList.keys()):
                                 item = QtGui.QListWidgetItem(eachItem)
                                 self.ui.bugListViewWindow.addItem(item)
                         

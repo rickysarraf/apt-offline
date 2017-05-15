@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys,os
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from apt_offline_gui.Ui_AptOfflineQtCreateProfile import Ui_CreateProfile
 from apt_offline_gui.UiDataStructs import SetterArgs
@@ -8,38 +8,51 @@ from apt_offline_gui import AptOfflineQtCommon as guicommon
 import apt_offline_core.AptOfflineCoreLib
 
 
-class AptOfflineQtCreateProfile(QtGui.QDialog):
+class AptOfflineQtCreateProfile(QtWidgets.QDialog):
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_CreateProfile()
         self.ui.setupUi(self)
         
         # Connect the clicked signal of the Browse button to it's slot
-        QtCore.QObject.connect(self.ui.browseFilePathButton, QtCore.SIGNAL("clicked()"),
-                        self.popupDirectoryDialog )
+        #QtCore.QObject.connect(self.ui.browseFilePathButton, QtCore.SIGNAL("clicked()"),
+        #                self.popupDirectoryDialog )
+
+        self.ui.browseFilePathButton.clicked.connect(self.popupDirectoryDialog)
                         
         # Connect the clicked signal of the Save to it's Slot - accept
-        QtCore.QObject.connect(self.ui.createProfileButton, QtCore.SIGNAL("clicked()"),
-                        self.CreateProfile )
+        #QtCore.QObject.connect(self.ui.createProfileButton, QtCore.SIGNAL("clicked()"),
+        #                self.CreateProfile )
+
+        self.ui.createProfileButton.clicked.connect(self.CreateProfile)
                         
         # Connect the clicked signal of the Cancel to it's Slot - reject
-        QtCore.QObject.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
-                        self.reject )
+        #QtCore.QObject.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
+        #                self.reject )
+
+        self.ui.cancelButton.clicked.connect(self.reject)
         
         # Disable or Enable the Package List field
-        QtCore.QObject.connect(self.ui.installPackagesCheckBox, QtCore.SIGNAL("toggled(bool)"),
-                        self.PackageListFieldStatus )
+        #QtCore.QObject.connect(self.ui.installPackagesCheckBox, QtCore.SIGNAL("toggled(bool)"),
+        #                self.PackageListFieldStatus )
 
-        QtCore.QObject.connect(self.ui.installSrcPackagesCheckBox, QtCore.SIGNAL("toggled(bool)"),
-                        self.SrcPackageListFieldStatus )
-        QtCore.QObject.connect(self.ui.srcBuildDeps, QtCore.SIGNAL("toggled(bool)"),
-                        self.SrcPackageListFieldStatus )
+        self.ui.installPackagesCheckBox.toggled.connect(self.PackageListFieldStatus)
 
-        QtCore.QObject.connect(self.ui.targetReleaseCheckBox, QtCore.SIGNAL("toggled(bool)"),
-                        self.TargetReleaseFieldStatus )
+        #QtCore.QObject.connect(self.ui.installSrcPackagesCheckBox, QtCore.SIGNAL("toggled(bool)"),
+        #                self.SrcPackageListFieldStatus )
+        self.ui.installSrcPackagesCheckBox.toggled.connect(self.SrcPackageListFieldStatus)
 
-        QtCore.QObject.connect(self.ui.upgradePackagesCheckBox, QtCore.SIGNAL("toggled(bool)"),
-                        self.UpgradeCheckStatus )
+        #QtCore.QObject.connect(self.ui.srcBuildDeps, QtCore.SIGNAL("toggled(bool)"),
+        #                self.SrcPackageListFieldStatus )
+        self.ui.srcBuildDeps.toggled.connect(self.SrcPackageListFieldStatus)
+
+        #QtCore.QObject.connect(self.ui.targetReleaseCheckBox, QtCore.SIGNAL("toggled(bool)"),
+        #                self.TargetReleaseFieldStatus )
+        self.ui.targetReleaseCheckBox.toggled.connect(self.TargetReleaseFieldStatus)
+
+        #QtCore.QObject.connect(self.ui.upgradePackagesCheckBox, QtCore.SIGNAL("toggled(bool)"),
+        #                self.UpgradeCheckStatus )
+        self.ui.upgradePackagesCheckBox.toggled.connect(self.UpgradeCheckStatus)
 
     def UpgradeCheckStatus(self):
         self.isFieldChecked = self.ui.upgradePackagesCheckBox.isChecked()
@@ -142,7 +155,7 @@ class AptOfflineQtCreateProfile(QtGui.QDialog):
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
         signatureFilePath = os.path.join (os.path.expanduser("~"), "/Desktop/"+"apt-offline.sig")
-        directory = QtGui.QFileDialog.getSaveFileName(self, u'Select a filename to save the signature', signatureFilePath, "apt-offline Signatures (*.sig)")
+        directory, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Select a filename to save the signature', signatureFilePath, "apt-offline Signatures (*.sig)")
         # Show the selected file path in the field marked for showing directory path
         self.ui.profileFilePath.setText(directory)
 

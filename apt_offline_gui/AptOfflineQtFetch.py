@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import QMessageBox
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QMessageBox
 
 from apt_offline_gui.Ui_AptOfflineQtFetch import Ui_AptOfflineQtFetch
 from apt_offline_gui.UiDataStructs import GetterArgs
@@ -11,11 +11,24 @@ import apt_offline_core.AptOfflineCoreLib
 from apt_offline_gui.AptOfflineQtFetchOptions import AptOfflineQtFetchOptions
 
 class Worker(QtCore.QThread):
+    output = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(str, str)
+    status = QtCore.pyqtSignal(str)
+    finished = QtCore.pyqtSignal()
+    terminated = QtCore.pyqtSignal()
+    
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
         self.parent = parent
         self.exiting = False
-
+        
+        #INFO: Qt5 Signal and Slots
+        self.output.emit('')
+        self.progress.emit('','')
+        self.status.emit('')
+        self.finished.emit()
+        self.terminated.emit()
+        
     def __del__(self):
         self.exiting = True
         self.wait()
@@ -37,86 +50,63 @@ class Worker(QtCore.QThread):
             return
             
         if ("MSG_START" in text):
-            self.emit (QtCore.SIGNAL('status(QString)'), "Fetching missing meta data ...")
+            self.status.emit("Fetching missing meta data...")
         elif ("MSG_END" in text):
-            self.emit (QtCore.SIGNAL('status(QString)'), "Downloading packages ...")
+            self.status.emit("Downloading packages ...")
         elif ("WARNING" in text):
-            self.emit (QtCore.SIGNAL('output(QString)'), 
-                                    guicommon.style(text,"red"))
+            self.output.emit("%s" % (guicommon.style(text,"red")))
         elif ("Downloading" in text):
-            self.emit (QtCore.SIGNAL('output(QString)'), 
-                                    guicommon.style(text,"orange"))
+            self.output.emit("%s" % (guicommon.style(text,"orange")))
         elif ("done." in text):
-            self.emit (QtCore.SIGNAL('output(QString)'), 
-                                    guicommon.style(text,"green"))
+            self.output.emit("%s" % (guicommon.style(text,"green")))
         elif ("[" in text and "]" in text):
             try:
                 # no more splits, we know the exact byte count now
                 progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
                 total = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
-                self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
+                self.progress.emit(progress,total)
             except:
                 ''' nothing to do '''
         else:
-            self.emit (QtCore.SIGNAL('output(QString)'), text.strip())
+            self.output.emit(text.strip())
 
     def flush(self):
         ''' nothing to do :D '''
 
     def quit(self):
-        self.emit (QtCore.SIGNAL('finished()'))
+        self.finished.emit()
 
 
-class AptOfflineQtFetch(QtGui.QDialog):
+class AptOfflineQtFetch(QtWidgets.QDialog):
+    
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_AptOfflineQtFetch()
         self.ui.setupUi(self)
         self.advancedOptionsDialog = AptOfflineQtFetchOptions()
         
         # Connect the clicked signal of the Signature File Browse button to it's slot
-        QtCore.QObject.connect(self.ui.browseFilePathButton, QtCore.SIGNAL("clicked()"),
-                        self.popupDirectoryDialog )
+        self.ui.browseFilePathButton.clicked.connect(self.popupDirectoryDialog)
         
         # Connect the clicked signal of the Zip File Browse button to it's slot
-        QtCore.QObject.connect(self.ui.browseZipFileButton, QtCore.SIGNAL("clicked()"),
-                        self.popupZipFileDialog )
+        self.ui.browseZipFileButton.clicked.connect(self.popupZipFileDialog)
                                                 
         # Connect the clicked signal of the Save to it's Slot - accept
-        QtCore.QObject.connect(self.ui.startDownloadButton, QtCore.SIGNAL("clicked()"),
-                        self.StartDownload )
+        self.ui.startDownloadButton.clicked.connect(self.StartDownload)
                         
         # Connect the clicked signal of the Cancel to it's Slot - reject
-        QtCore.QObject.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
-                        self.handleCancel )
+        self.ui.cancelButton.clicked.connect(self.handleCancel)
                         
-        QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
-                        self.controlStartDownloadBox )
+        self.ui.profileFilePath.textChanged.connect(self.controlStartDownloadBox)
+        self.ui.zipFilePath.textChanged.connect(self.controlStartDownloadBox)
+        self.ui.advancedOptionsButton.clicked.connect(self.showAdvancedOptions)
 
-        QtCore.QObject.connect(self.ui.profileFilePath, QtCore.SIGNAL("textChanged(QString)"),
-                        self.controlStartDownloadBox )
-        QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
-                        self.controlStartDownloadBox )
-        QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
-                        self.controlStartDownloadBox )
-        
-        QtCore.QObject.connect(self.ui.advancedOptionsButton, QtCore.SIGNAL("clicked()"),
-                        self.showAdvancedOptions )
-        
-        
-        
         self.worker = Worker(parent=self)
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("output(QString)"),
-                        self.updateLog )
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("progress(QString,QString)"),
-                        self.updateProgress )
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("status(QString)"),
-                        self.updateStatus )
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("finished()"),
-                        self.finishedWork )
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("terminated()"),
-                        self.finishedWork )
-        
+        self.worker.output.connect(self.updateLog)
+        self.worker.progress.connect(self.updateProgress)
+        self.worker.status.connect(self.updateStatus)
+        self.worker.finished.connect(self.finishedWork)
+        self.worker.terminated.connect(self.finishedWork)
 
         #INFO: inform CLI that it's a gui app
         apt_offline_core.AptOfflineCoreLib.guiBool = True
@@ -130,7 +120,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
     
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
-        directory = QtGui.QFileDialog.getOpenFileName(self, u'Select the signature file')
+        directory, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Select the signature file')
         # Show the selected file path in the field marked for showing directory path
         self.ui.profileFilePath.setText(directory)
         
@@ -139,10 +129,10 @@ class AptOfflineQtFetch(QtGui.QDialog):
     def popupZipFileDialog(self):
         
         if self.ui.saveDatacheckBox.isChecked() is True:
-                filename = QtGui.QFileDialog.getExistingDirectory(self, u'Select the folder to save downlaods to')
+                filename, _ = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select the folder to save downlaods to')
         else:
                 # Popup a Zip File selection box
-                filename = QtGui.QFileDialog.getSaveFileName(self, u'Select the zip file to save downloads')
+                filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Select the zip file to save downloads')
         
         # Show the selected file path in the field marked for showing directory path
         self.ui.zipFilePath.setText(filename)
@@ -194,7 +184,6 @@ class AptOfflineQtFetch(QtGui.QDialog):
                                 return
                 targetFilePath = self.zipfilepath
                 targetDirPath = None
-                    
         else:
                 if os.path.exists(self.zipfilepath):
                         if os.access(self.zipfilepath, os.W_OK) == False:
@@ -247,6 +236,7 @@ class AptOfflineQtFetch(QtGui.QDialog):
                 guicommon.updateInto (self.ui.rawLogHolder,
                                     guicommon.style(text,'green_fin'))
                 self.ui.progressStatusDescription.setText('Finished.')
+                self.finishedWork()
             else:
                 guicommon.updateInto (self.ui.rawLogHolder,text)
 
@@ -262,9 +252,9 @@ class AptOfflineQtFetch(QtGui.QDialog):
             ''' nothing to do '''
 
     def controlStartDownloadBox(self):
-        if self.ui.profileFilePath.text().isEmpty():
+        if not self.ui.profileFilePath.text():
             self.disableAction()
-        if self.ui.zipFilePath.text().isEmpty():
+        if not self.ui.zipFilePath.text():
             self.disableAction()
         else:
             self.enableAction()
@@ -331,5 +321,3 @@ if __name__ == "__main__":
     myapp = AptOfflineQtFetch()
     myapp.show()
     sys.exit(app.exec_())
-
-

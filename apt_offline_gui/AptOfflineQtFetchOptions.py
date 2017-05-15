@@ -1,23 +1,26 @@
 import sys, os
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from apt_offline_gui.Ui_AptOfflineQtFetchOptions import Ui_downloadOptionsDialog
 
-class AptOfflineQtFetchOptions(QtGui.QDialog):
+class AptOfflineQtFetchOptions(QtWidgets.QDialog):
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_downloadOptionsDialog()
         self.ui.setupUi(self)
         
         # Connect the clicked signal of the Ok button to it's slot
-        QtCore.QObject.connect(self.ui.downloadOptionDialogOkButton, QtCore.SIGNAL("clicked()"),
-                        self.validateOptions )
+        #QtCore.QObject.connect(self.ui.downloadOptionDialogOkButton, QtCore.SIGNAL("clicked()"),
+        #                self.validateOptions )
+        self.ui.downloadOptionDialogOkButton.clicked.connect(self.validateOptions)
         
-        QtCore.QObject.connect(self.ui.useProxyCheckBox, QtCore.SIGNAL("toggled(bool)"),
-                        self.toggleProxyControls )
+        #QtCore.QObject.connect(self.ui.useProxyCheckBox, QtCore.SIGNAL("toggled(bool)"),
+        #                self.toggleProxyControls )
+        self.ui.useProxyCheckBox.toggled.connect(self.toggleProxyControls)
         
-        QtCore.QObject.connect(self.ui.cacheDirBrowseButton, QtCore.SIGNAL("clicked()"),
-                        self.populateCacheDir )
+        #QtCore.QObject.connect(self.ui.cacheDirBrowseButton, QtCore.SIGNAL("clicked()"),
+        #                self.populateCacheDir )
+        self.ui.cacheDirBrowseButton.clicked.connect(self.populateCacheDir)
         
         # defaults
         self.num_of_threads = 1
@@ -49,14 +52,14 @@ class AptOfflineQtFetchOptions(QtGui.QDialog):
             self.storeOptions()
             
             if len(self._cache_dir) > 0 and not (os.access(self._cache_dir, os.W_OK) or os.access(self._cache_dir, os.R_OK) ):
-                    QtGui.QMessageBox.critical(self, "Error", "Could not locate cache directory")
+                    QtWidgets.QMessageBox.critical(self, "Error", "Could not locate cache directory")
                     return
                                 
             if self._proxy_port:
                     try:
                             int(self._proxy_port)
                     except:
-                            QtGui.QMessageBox.critical(self, "Error", "Invalid Proxy Port Number")
+                            QtWidgets.QMessageBox.critical(self, "Error", "Invalid Proxy Port Number")
                             return
             self.applyOptionValues()
             self.hide()
@@ -83,7 +86,7 @@ class AptOfflineQtFetchOptions(QtGui.QDialog):
                     
             
     def populateCacheDir(self):
-            directory = QtGui.QFileDialog.getExistingDirectory(None, u'Provide path to APT\'s Cache Dir')
+            directory = QtWidgets.QFileDialog.getExistingDirectory(None, 'Provide path to APT\'s Cache Dir')
             self.ui.cacheDirLineEdit.setText(directory)
             self._cache_dir = directory
             

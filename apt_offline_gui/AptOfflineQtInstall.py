@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from apt_offline_gui.Ui_AptOfflineQtInstall import Ui_AptOfflineQtInstall
 from apt_offline_gui.UiDataStructs import InstallerArgs
@@ -11,11 +11,18 @@ from apt_offline_gui.AptOfflineQtInstallBugList import AptOfflineQtInstallBugLis
 from apt_offline_gui.AptOfflineQtInstallChangelog import AptOfflineQtInstallChangelog
 
 class Worker(QtCore.QThread):
+    
+    output = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(str, str)
+    status = QtCore.pyqtSignal(str)
+    finished = QtCore.pyqtSignal()
+    terminated = QtCore.pyqtSignal()
+
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
         self.parent = parent
         self.exiting = False
-
+        
     def __del__(self):
         self.exiting = True
         self.wait()
@@ -37,7 +44,7 @@ class Worker(QtCore.QThread):
                 text = guicommon.style("Package : ",'orange') + guicommon.style(text.split("/")[-1],'green')
             except:
                 pass
-            self.emit (QtCore.SIGNAL('output(QString)'), text)
+            self.output.emit(text)
         elif ('apt/lists' in text):
             try:
                 # this part is always done on a linux system so we can hardcode / for a while
@@ -45,65 +52,51 @@ class Worker(QtCore.QThread):
             except:
                 # let the text be original otherwise
                 pass
-            self.emit (QtCore.SIGNAL('output(QString)'), text)
+            self.output.emit(text)
         elif ('[' in text and ']' in text):
             try:
                 progress = str(apt_offline_core.AptOfflineCoreLib.totalSize[0])
                 total = str(apt_offline_core.AptOfflineCoreLib.totalSize[1])
-                self.emit (QtCore.SIGNAL('progress(QString,QString)'), progress,total)
+                self.progress.emit("%s%s" % (progress, total))
             except:
                 ''' nothing to do '''
         else:
-            self.emit (QtCore.SIGNAL('output(QString)'), guicommon.style(text,'red'))
+            self.output.emit(text)
                             
     def flush(self):
         ''' nothing to do :D '''
         
     def quit(self):
-        self.emit (QtCore.SIGNAL('finished()'))
+        self.finished.emit()
         
         
-class AptOfflineQtInstall(QtGui.QDialog):
+class AptOfflineQtInstall(QtWidgets.QDialog):
+    
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_AptOfflineQtInstall()
         self.ui.setupUi(self)
         
         # Connect the clicked signal of the Browse button to it's slot
-        QtCore.QObject.connect(self.ui.browseFilePathButton, QtCore.SIGNAL("clicked()"),
-                        self.popupDirectoryDialog )
+        self.ui.browseFilePathButton.clicked.connect(self.popupDirectoryDialog)
                         
         # Connect the clicked signal of the Save to it's Slot - accept
-        QtCore.QObject.connect(self.ui.startInstallButton, QtCore.SIGNAL("clicked()"),
-                        self.StartInstall )
+        self.ui.startInstallButton.clicked.connect(self.StartInstall)
                         
         # Connect the clicked signal of the Cancel to it's Slot - reject
-        QtCore.QObject.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
-                        self.reject )
+        self.ui.cancelButton.clicked.connect(self.reject)
         
-        QtCore.QObject.connect(self.ui.bugReportsButton, QtCore.SIGNAL("clicked()"),
-                        self.showBugReports )
-        
-        QtCore.QObject.connect(self.ui.changelogButton, QtCore.SIGNAL("clicked()"),
-                        self.showChangelog )
-        
-        QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("editingFinished()"),
-                        self.ControlStartInstallBox )
-
-        QtCore.QObject.connect(self.ui.zipFilePath, QtCore.SIGNAL("textChanged(QString)"),
-                        self.ControlStartInstallBox )
+        self.ui.bugReportsButton.clicked.connect(self.showBugReports)
+        self.ui.changelogButton.clicked.connect(self.showChangelog)
+        self.ui.zipFilePath.editingFinished.connect(self.ControlStartInstallBox)
+        self.ui.zipFilePath.textChanged.connect(self.ControlStartInstallBox)
         
         self.worker = Worker(parent=self)
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("output(QString)"),
-                        self.updateLog )
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("progress(QString,QString)"),
-                        self.updateProgress )
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("status(QString)"),
-                        self.updateStatus )
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("finished()"),
-                        self.finishedWork )
-        QtCore.QObject.connect(self.worker, QtCore.SIGNAL("terminated()"),
-                        self.finishedWork )
+        self.worker.output.connect(self.updateLog)
+        self.worker.progress.connect(self.updateProgress)
+        self.worker.status.connect(self.updateStatus)
+        self.worker.finished.connect(self.finishedWork)
+        self.worker.terminated.connect(self.finishedWork)
         
     def StartInstall(self):
         # gui validation
@@ -135,9 +128,9 @@ class AptOfflineQtInstall(QtGui.QDialog):
 
         # Popup a Directory selection box
         if self.ui.browseFileFoldercheckBox.isChecked() is True:
-                directory  = QtGui.QFileDialog.getExistingDirectory(self, u'Select the folder')
+                directory  = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select the folder')
         else:
-                directory = QtGui.QFileDialog.getOpenFileName(self, u'Select the Zip File')
+                directory = QtWidgets.QFileDialog.getOpenFileName(self, 'Select the Zip File')
         
         # Show the selected file path in the field marked for showing directory path
         self.ui.zipFilePath.setText(directory)
@@ -171,10 +164,12 @@ class AptOfflineQtInstall(QtGui.QDialog):
     def finishedWork(self):
         self.enableActions()
         guicommon.updateInto (self.ui.rawLogHolder,
-            guicommon.style("Finished syncting updates/packages","green_fin"))
+            guicommon.style("Finished syncing updates/packages","green_fin"))
         self.ui.progressStatusDescription.setText("Finished Syncing")
+        self.ui.cancelButton.setText("Close")
         
     def disableActions(self):
+        self.ui.browseFileFoldercheckBox.setEnabled(False)
         self.ui.cancelButton.setEnabled(False)
         self.ui.startInstallButton.setEnabled(False)
         self.ui.bugReportsButton.setEnabled(False)
@@ -183,6 +178,7 @@ class AptOfflineQtInstall(QtGui.QDialog):
         self.ui.changelogButton.setEnabled(False)
 
     def enableActions(self):
+        self.ui.browseFileFoldercheckBox.setEnabled(True)
         self.ui.cancelButton.setEnabled(True)
         self.ui.startInstallButton.setEnabled(True)
         self.ui.bugReportsButton.setEnabled(True)

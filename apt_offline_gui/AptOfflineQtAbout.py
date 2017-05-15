@@ -1,13 +1,13 @@
 import os
 import sys
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from apt_offline_gui.Ui_AptOfflineQtAbout import Ui_AboutAptOffline
 
 
-class AptOfflineQtAbout(QtGui.QDialog):
+class AptOfflineQtAbout(QtWidgets.QDialog):
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_AboutAptOffline()
         self.ui.setupUi(self)
         self.setupLicense()

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # apt-offline
 #
@@ -24,7 +24,9 @@
 
 import sys
 import os
-from PyQt4 import QtCore, QtGui
+sys.path.append("apt_offline_gui/")
+sys.path.append("apt_offline_core/")
+from PyQt5 import QtCore, QtGui, QtWidgets
 from apt_offline_gui.AptOfflineQtMain import AptOfflineQtMain
 
 try:
@@ -34,8 +36,9 @@ except:
     sys.stderr.write("Couldn't set environment variable\n")
 
 
+
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     myapp = AptOfflineQtMain()
     myapp.show()
     sys.exit(app.exec_())
