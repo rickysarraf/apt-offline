@@ -92,7 +92,7 @@ _apt_offline()
                     COMPREPLY=( $( compgen -W '-h --help -v --verbose --version
                         --simulate --install-packages --install-src-packages
                         --src-build-dep --release --update --upgrade
-                        --upgrade-type' -- "$cur" ) )
+                        --upgrade-type --generate-changelog' -- "$cur" ) )
                 else
                     _filedir
                 fi
