@@ -727,6 +727,10 @@ class GenericDownloadFunction():
                 else:
                     errfunc(errstring.errno, errstring.reason, url)
                 return False
+            except http.client.RemoteDisconnected as e:
+                log.err("Remote server disconnected the session")
+                log.err(e)
+                return False
             except http.client.BadStatusLine as e:
                 #INFO: See Python Bug: https://bugs.python.org/issue8823
                 log.err("BadStatusLine exception: Python Bug 8823")
