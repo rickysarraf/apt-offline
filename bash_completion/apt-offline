@@ -87,6 +87,11 @@ _apt_offline()
                             dselect-ugprade' -- "$cur" ) )
                         return 0
                         ;;
+                    --apt-backend)
+                        COMPREPLY=( $( compgen -W 'apt apt-get
+                            python-apt' -- "$cur" ) )
+                        return 0
+                        ;;
                 esac
                 if [[ "$cur" == -* || -e $prev ]]; then
                     COMPREPLY=( $( compgen -W '-h --help -v --verbose --version
