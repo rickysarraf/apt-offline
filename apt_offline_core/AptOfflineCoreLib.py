@@ -727,8 +727,8 @@ class GenericDownloadFunction():
                 else:
                     errfunc(errstring.errno, errstring.reason, url)
                 return False
-            except http.client.RemoteDisconnected as e:
-                log.err("Remote server disconnected the session")
+            except http.client.HTTPException as e:
+                log.err("Type HTTPException occured")
                 log.err(e)
                 return False
             except http.client.BadStatusLine as e:
