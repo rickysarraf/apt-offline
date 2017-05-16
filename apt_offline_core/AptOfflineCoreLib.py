@@ -1696,7 +1696,7 @@ def installer( args ):
                         response = self.get_response()
                     if found:
                         if dataType is "file":
-                            pydoc.pager(zipBugFile.read(bug_file_to_display) )
+                            pydoc.pager(zipBugFile.read(bug_file_to_display).decode('utf-8') )
                             # Redisplay the menu
                             # FIXME: See a pythonic possibility of cleaning the screen at this stage
                             response = self.get_response()
@@ -1778,6 +1778,7 @@ def installer( args ):
                     temp.file.flush()
                     temp.file.seek( 0 ) #Let's go back to the start of the file
                     for bug_subject_identifier in temp.file.readlines():
+                        bug_subject_identifier = bug_subject_identifier.decode('utf-8')
                         if bug_subject_identifier.startswith( 'Subject:' ):
                             subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
                             subject = subject.rstrip( "\n" )
