@@ -364,14 +364,14 @@ class AptManip(ExecCmd):
                                 os.rename(localFile, os.path.join(apt_update_final_path + sig_file) )
                                 
         def __AptUpdate(self):
-                log.msg("\nGenerating database of files that are needed for an update.\n")
+                log.msg("Gathering details needed for 'update' operation\n")
                 if self.ExecSystemCmd(["/usr/bin/apt", "-qq", "--print-uris", "update"], self.WriteTo) is False:
                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                 log.verbose("Calling __FixAptSigs to fix the apt sig problem")
                 self.__FixAptSigs()
                                         
         def __AptGetUpdate(self):
-                log.msg("\nGenerating database of files that are needed for an update.\n")
+                log.msg("Gathering details needed for 'update' operation\n")
                 if self.ExecSystemCmd(["/usr/bin/apt-get", "-q", "--print-uris", "update"], self.WriteTo) is False:
                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                 log.verbose("Calling __FixAptSigs to fix the apt sig problem")
@@ -389,7 +389,7 @@ class AptManip(ExecCmd):
                     log.err("Failed to open file %s for write. Exiting\n" % (self.WriteTo))
                     sys.exit(1)
                 
-                log.msg("\nGenerating database of files that are needed for an update.\n")
+                log.msg("Gathering details needed for 'update' operation\n")
                 log.verbose("\nUsing python apt interface\n")
                 
                 apt_pkg.init_config()
@@ -431,7 +431,7 @@ class AptManip(ExecCmd):
                     log.err("Failed to open file %s for write. Exiting\n")
                     sys.exit(1)
                 
-                log.msg("\nGenerating database of files that are needed for an upgrade.\n")
+                log.msg("Gathering details needed for 'upgrade' operation\n")
                 log.warn("Option --upgrade-type not supported with this backend\n")
                 log.verbose("\nUsing python apt interface\n")
                 
@@ -461,7 +461,7 @@ class AptManip(ExecCmd):
                         cmd = ["/usr/bin/apt", "-qqq", "--print-uris"]
                         cmd.append(UpgradeType)
 
-                log.msg("\nGenerating database of file that are needed for operation %s\n" % (UpgradeType) )
+                log.msg("Gathering details needed for '%s' operation\n" % (UpgradeType) )
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
                         log.err("FATAL: Something is wrong with the APT system\n")
 
@@ -476,7 +476,7 @@ class AptManip(ExecCmd):
                         cmd = ["/usr/bin/apt-get", "-qq", "--print-uris"]
                         cmd.append(UpgradeType)
 
-                log.msg("\nGenerating database of file that are needed for operation %s\n" % (UpgradeType) )
+                log.msg("Gathering details needed for '%s' operation\n" % (UpgradeType) )
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
                         log.err("FATAL: Something is wrong with the APT system\n")
 
@@ -485,7 +485,7 @@ class AptManip(ExecCmd):
 
                 self.ReleaseType = ReleaseType
 
-                log.msg( "\nGenerating database of package %s and its dependencies.\n" % (PackageList) )
+                log.msg("Gathering installation details for package %s\n" % (PackageList) )
 
                 if self.ReleaseType is not None:
                         cmd = ["/usr/bin/apt", "-qqq", "--print-uris", "install", "-t"]
@@ -503,7 +503,7 @@ class AptManip(ExecCmd):
                 
                 self.ReleaseType = ReleaseType
                 
-                log.msg( "\nGenerating database of source packages %s.\n" % (SrcPackageList) )
+                log.msg("Gathering installation details for source package %s\n" % (PackageList) )
                 
                 if self.ReleaseType is not None:
                         cmd = ["/usr/bin/apt", "-qqq", "--print-uris", "source", "-t"]
@@ -530,7 +530,7 @@ class AptManip(ExecCmd):
 
                 self.ReleaseType = ReleaseType
 
-                log.msg( "\nGenerating database of package %s and its dependencies.\n" % (PackageList) )
+                log.msg("Gathering installation details for package %s\n" % (PackageList) )
 
                 if self.ReleaseType is not None:
                         cmd = ["/usr/bin/apt-get", "-qq", "--print-uris", "install", "-t"]
@@ -548,7 +548,7 @@ class AptManip(ExecCmd):
                 
                 self.ReleaseType = ReleaseType
                 
-                log.msg( "\nGenerating database of source packages %s.\n" % (SrcPackageList) )
+                log.msg("Gathering installation details for source package %s\n" % (PackageList) )
                 
                 if self.ReleaseType is not None:
                         cmd = ["/usr/bin/apt-get", "-qq", "--print-uris", "source", "-t"]
