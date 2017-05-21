@@ -35,6 +35,7 @@ import random   # to generate random directory names for installing multiple bun
 import zipfile
 import pydoc
 import traceback
+import argparse
 
 from ssl import SSLError, SSLEOFError
 import zlib
@@ -48,15 +49,6 @@ except ImportError:
         # Only available on platform Unix
         FCNTL_LOCK = False
                 
-# Given the merits of argparse, I hope it'll soon be part
-# of the Python Standard Library.
-# http://code.google.com/argparse
-# Till then we use it this way.
-try:
-        import argparse
-except ImportError:
-        from apt_offline_core import AptOffline_argparse as argparse
-
 # On Debian, python-debianbts package provides this library
 DebianBTS = True
 try:
