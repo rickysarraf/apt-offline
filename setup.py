@@ -11,7 +11,7 @@ import distutils.core
 
 distutils.core.setup(
     name='apt-offline',
-    version='1.7.2',
+    version='1.8.0',
     author='Ritesh Raj Sarraf',
     author_email='rrs@researchut.com',
     url='http://apt-offline.alioth.debian.org',
@@ -44,6 +44,7 @@ distutils.core.setup(
 	    'apt_offline_gui.AptOfflineQtFetchOptions',
 	    'apt_offline_gui.AptOfflineQtInstall',
 	    'apt_offline_gui.AptOfflineQtInstallBugList',
+	    'apt_offline_gui.AptOfflineQtInstallChangelog',
 	    'apt_offline_gui.AptOfflineQtMain',
 	    'apt_offline_gui.AptOfflineQtSaveZip',
 	    'apt_offline_gui.__init__',
@@ -55,6 +56,7 @@ distutils.core.setup(
 	    'apt_offline_gui.Ui_AptOfflineQtFetchOptions',
 	    'apt_offline_gui.Ui_AptOfflineQtInstall',
 	    'apt_offline_gui.Ui_AptOfflineQtInstallBugList',
+	    'apt_offline_gui.Ui_AptOfflineQtInstallChangelog',
 	    'apt_offline_gui.Ui_AptOfflineQtMain',
 	    'apt_offline_gui.Ui_AptOfflineQtSaveZip',
 	    'apt_offline_gui.UiDataStructs',],

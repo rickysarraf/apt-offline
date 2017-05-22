@@ -4,7 +4,7 @@ Content-type: text/html; charset=UTF-8
 <HTML><HEAD><TITLE>Man page of apt-offline</TITLE>
 </HEAD><BODY>
 <H1>apt-offline</H1>
-Section: USER COMMANDS (8)<BR>Updated: September, 2016<BR><A HREF="#index">Index</A>
+Section: USER COMMANDS (8)<BR>Updated: May, 2017<BR><A HREF="#index">Index</A>
 <A HREF="/cgi-bin/man/man2html">Return to Main Contents</A><HR>
 
 <A NAME="lbAB">&nbsp;</A>
@@ -92,6 +92,15 @@ Type of upgrade you would like to perform. Default is
 Other valid types are
 <B>dist-upgrade and dselect-upgrade</B>
 
+<P>
+<DT>Note:<DD>
+If neither of the
+<B>--update or --upgrade</B>
+
+option is explicitly mentioned, the
+<B>set</B>
+
+command will generate signature for both the --update and --upgrade options.
 <P>
 </DL>
 <A NAME="lbAF">&nbsp;</A>
@@ -193,8 +202,8 @@ Show help message
 <DT>--verbose<DD>
 Run in verbose mode
 <P>
-<DT>--test-windows<DD>
-Developer only. Used for testing on windows
+<DT>--simulate<DD>
+Developer only. Used for testing.
 <P>
 <DT>-v, --version<DD>
 Display the version of the program
@@ -258,24 +267,7 @@ to the APT Package Database and update it.
 Depending on where the data was downloaded to or packed into, either the
 absolute FOLDER path or the archive FILE path can be specified.
 <P>
-<DT>The following sequence of commands will keep a machine up to date, with the package lists one step ahead of the upgrade:<DD>
-<B>apt-offline set foo.sig --upgrade --update</B>
-
-Requests the packages needed to upgrade the machine, based on the current package lists. Also, requests the new package lists for the next update.
-<P>
-<B>apt-offline get foo.sig -d FOLDER</B>
-
-Downloads the packages for upgrading the machine, along with the package lists for the next time apt-offline set --upgrade is run.
-<P>
-<B>apt-offline install FOLDER/FILE</B>
-
-Positions the packages for the upgrade, along with new the package lists.
-<P>
-<B>apt-get upgrade</B>
-
-Upgrades to the state of the earlier package lists.
-<P>
-<B>NOTE:</B>
+<B>NOTE1:</B>
 
 On a freshly installed box, that was installed without the network, the package database is null. In that case, you first need to run 
 <B>apt-offline </B>
@@ -288,6 +280,83 @@ option to ensure you have a meaningful package database
 <B>Example: apt-offline set set.uris --update</B>
 
 <P>
+<B>NOTE2:</B>
+
+On a fresh setup installed through CD/DVD, the default APT setting lists only the install media URLs. In such case, you need to add the default APT network repositories to the list. For example, for a fresh (DVD) installed Debian box, add the relevant repository to
+<P>
+<I>/etc/apt/sources.list.d/apt-offline.list or /etc/apt/sources.list</I>
+
+<P>
+deb <A HREF="http://httpredir.debian.org/debian">http://httpredir.debian.org/debian</A> stable main contrib
+<P>
+<B>(For Debian Stable)</B>
+
+<P>
+deb <A HREF="http://httpredir.debian.org/debian">http://httpredir.debian.org/debian</A> unstable main contrib
+<P>
+<B>(For Debian Unstable/Sid)</B>
+
+<P>
+deb <A HREF="http://httpredir.debian.org/debian">http://httpredir.debian.org/debian</A> stretch main contrib
+<P>
+<B>(For Debian Stretch)</B>
+
+<P>
+deb <A HREF="http://security.debian.org">http://security.debian.org</A> stable/updates main contrib
+<P>
+<B>(Security Updates for Debian Stable)</B>
+
+<P>
+deb <A HREF="http://security.debian.org">http://security.debian.org</A> testing/updates main contrib
+<P>
+<B>(Security Updates for Debian Testing)</B>
+
+<P>
+<DT>Sequence 1: The following set of commands, when run in sequence, will update a disconnected machine.<DD>
+<P>
+<B>apt-offline set update.sig --update</B>
+
+<P>
+(Generate the required data needed to update the APT database. Should be run on the disconnected machine)
+<P>
+<B>apt-offline get update.sig --bundle update.zip</B>
+
+<P>
+(Download the required data needed to update the APT database. Should be run on a machine with internet connectivity)
+<P>
+<B>apt-offline install update.zip</B>
+
+<P>
+(Installs the data needed to update the APT database. Should be run on the disconnected machine)
+<P>
+<DT>Sequence 2: With successful completion of Sequence 1, the APT database on the disconnected machine will be up-to-date. Now, the following set of commands, when run in sequence, will upgrade a disconnected machine.<DD>
+<P>
+<B>apt-offline set upgrade.sig --upgrade</B>
+
+<P>
+(Genereate the required data needed to upgrade the upgradable packages. Should be run on the disconnected machine)
+<P>
+<B>apt-offline get upgrade.sig --bundle upgrade.zip</B>
+
+<P>
+(Download the required data needed to upgrade the upgradable packages. Should be run on a machine with internet connectivity)
+<P>
+<B>apt-offline install upgrade.zip</B>
+
+<P>
+(Installs the data needed to upgrade the upgradable packages. Should be run on the disconnected machine)
+<P>
+<DT>After successful completion of<DD>
+<B>Sequence 1</B>
+
+and
+<B>Sequence 2</B>
+
+in order, further running
+<B>apt-get upgrade</B>
+
+will result in 0 bytes of additional download.
+<P>
 </DL>
 <A NAME="lbAJ">&nbsp;</A>
 <H2>AUTHOR</H2>
@@ -298,7 +367,10 @@ option to ensure you have a meaningful package database
 If you wish to report a bug in apt-offline, please see 
 <B><A HREF="http://apt-offline.alioth.debian.org">http://apt-offline.alioth.debian.org</A></B>
 
-or send an email to me at
+or 
+<B><A HREF="http://github.com/rickysarraf/apt-offline">http://github.com/rickysarraf/apt-offline</A></B>
+
+or else, send an email to me at
 <B><A HREF="mailto:rrs@researchut.com">rrs@researchut.com</A></B>
 
 <P>
@@ -337,6 +409,6 @@ This software is dedicated to the memory of my father Santosh Kumar Sarraf. We m
 This document was created by
 <A HREF="/cgi-bin/man/man2html">man2html</A>,
 using the manual pages.<BR>
-Time: 16:35:30 GMT, November 10, 2016
+Time: 20:51:54 GMT, May 21, 2017
 </BODY>
 </HTML>

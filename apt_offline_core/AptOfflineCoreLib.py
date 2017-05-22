@@ -24,9 +24,9 @@ import sys
 import shutil
 import platform
 import string
-import urllib2
-import httplib
-import Queue
+import urllib.request, urllib.error, urllib.parse
+import http.client
+import queue
 import threading
 import subprocess
 import socket
@@ -35,11 +35,12 @@ import random   # to generate random directory names for installing multiple bun
 import zipfile
 import pydoc
 import traceback
+import argparse
 
 from ssl import SSLError, SSLEOFError
 import zlib
 
-from apt_offline_core.AptOfflineLib import AptOfflineErrors
+from apt_offline_core.AptOfflineLib import AptOfflineErrors, AptOfflineLibShutilError
 
 FCNTL_LOCK = True
 try:
@@ -48,15 +49,6 @@ except ImportError:
         # Only available on platform Unix
         FCNTL_LOCK = False
                 
-# Given the merits of argparse, I hope it'll soon be part
-# of the Python Standard Library.
-# http://code.google.com/argparse
-# Till then we use it this way.
-try:
-        import argparse
-except ImportError:
-        from apt_offline_core import AptOffline_argparse as argparse
-
 # On Debian, python-debianbts package provides this library
 DebianBTS = True
 try:
@@ -107,8 +99,8 @@ figuring out if the packages are in the local cache, handling exceptions and man
 
 
 app_name = "apt-offline"
-version = "1.7.2"
-myCopyright = "(C) 2005 - 2016 Ritesh Raj Sarraf"
+version = "1.8.0"
+myCopyright = "(C) 2005 - 2017 Ritesh Raj Sarraf"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
 the GNU GPL Version 3 (or later) License\n"
@@ -146,6 +138,9 @@ class FetchBugReports:
                 self.apt_bug = apt_bug_file_format
                 self.DownloadDir = DownloadDir
                 self.ArchiveFile = ArchiveFile
+                
+                self.fileMgmt = AptOfflineLib.FileMgmt()
+                
         
         def FetchBugsDebian( self, PackageName):
                 '''0 => False
@@ -186,32 +181,33 @@ class FetchBugReports:
                                 file_handle = open( self.fileName, 'w' )
             
                                 #TODO: Can we manipulate these headers in a more efficient way???
-                                for line in bugReport[writeBugReport]['header'].encode('utf8').split("\n"):
+                                for line in bugReport[writeBugReport]['header'].split("\n"):
                                         if line.startswith("Subject:"):
                                                 file_handle.write(line)
                                                 file_handle.write("\n")
                                                 break
                                     
                                 while writeBugReport < bugReportLength:
-                                        file_handle.write(bugReport[writeBugReport]['body'].encode('utf8'))
-                                        file_handle.write("\n\n".encode('utf8'))
+                                        file_handle.write(bugReport[writeBugReport]['body'])
+                                        file_handle.write("\n\n")
                                         writeBugReport += 1
                                         if writeBugReport < bugReportLength:
-                                                file_handle.write("Follow-Up #%d\n\n".encode('utf8') % writeBugReport)
+                                                file_handle.write("Follow-Up #%d\n\n" % writeBugReport)
                                 file_handle.flush()
                                 file_handle.close()
 
                                 #We're adding to an archive file here.
                                 if self.ArchiveFile:
-                                    self.AddToArchive( self.ArchiveFile, self.fileName )
+                                    if self.AddToArchive( self.ArchiveFile, self.fileName ):
+                                        log.verbose("%s added to file %s\n" % (self.fileName, self.ArchiveFile))
+                                    else:
+                                        log.warn("%s failed to be added to file %s\n" % (self.fileName, self.ArchiveFile))
                                 elif self.DownloadDir:
                                     try:
-                                        shutil.move(self.fileName, self.DownloadDir)
-                                    except StandardError:
-                                        #INFO: Look at shutil's documentation
-                                        # It does't claim to be a full implementation in Python
-                                        # Even this exception is odd. But let's live with it for now.
-                                        log.verbose("In all probability, it is a duplicate file: %s\n" % self.fileName)     
+                                        if self.fileMgmt.move_file(self.fileName, self.DownloadDir):
+                                            log.verbose("%s added to download dir %s\n" % (self.fileName, self.DownloadDir))
+                                    except AptOfflineLibShutilError as msg:
+                                        log.warn("%s\n" % (msg))
                                 
                                 atleast_one_bug_report_downloaded = True
                         if atleast_one_bug_report_downloaded:
@@ -228,7 +224,7 @@ class FetchBugReports:
                     if self.compress_the_file(ArchiveFile, fileName):
                         if self.file_possibly_deleted is not True:
                                 os.unlink(fileName)
-                except AptOfflineErrors, message:
+                except AptOfflineErrors as message:
                     log.warn("%s\n" % (message))
                 return True
         
@@ -360,14 +356,14 @@ class AptManip(ExecCmd):
                                 os.rename(localFile, os.path.join(apt_update_final_path + sig_file) )
                                 
         def __AptUpdate(self):
-                log.msg("\nGenerating database of files that are needed for an update.\n")
+                log.msg("Gathering details needed for 'update' operation\n")
                 if self.ExecSystemCmd(["/usr/bin/apt", "-qq", "--print-uris", "update"], self.WriteTo) is False:
                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                 log.verbose("Calling __FixAptSigs to fix the apt sig problem")
                 self.__FixAptSigs()
                                         
         def __AptGetUpdate(self):
-                log.msg("\nGenerating database of files that are needed for an update.\n")
+                log.msg("Gathering details needed for 'update' operation\n")
                 if self.ExecSystemCmd(["/usr/bin/apt-get", "-q", "--print-uris", "update"], self.WriteTo) is False:
                         log.err( "FATAL: Something is wrong with the apt system.\n" )
                 log.verbose("Calling __FixAptSigs to fix the apt sig problem")
@@ -385,7 +381,7 @@ class AptManip(ExecCmd):
                     log.err("Failed to open file %s for write. Exiting\n" % (self.WriteTo))
                     sys.exit(1)
                 
-                log.msg("\nGenerating database of files that are needed for an update.\n")
+                log.msg("Gathering details needed for 'update' operation\n")
                 log.verbose("\nUsing python apt interface\n")
                 
                 apt_pkg.init_config()
@@ -427,7 +423,7 @@ class AptManip(ExecCmd):
                     log.err("Failed to open file %s for write. Exiting\n")
                     sys.exit(1)
                 
-                log.msg("\nGenerating database of files that are needed for an upgrade.\n")
+                log.msg("Gathering details needed for 'upgrade' operation\n")
                 log.warn("Option --upgrade-type not supported with this backend\n")
                 log.verbose("\nUsing python apt interface\n")
                 
@@ -457,7 +453,7 @@ class AptManip(ExecCmd):
                         cmd = ["/usr/bin/apt", "-qqq", "--print-uris"]
                         cmd.append(UpgradeType)
 
-                log.msg("\nGenerating database of file that are needed for operation %s\n" % (UpgradeType) )
+                log.msg("Gathering details needed for '%s' operation\n" % (UpgradeType) )
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
                         log.err("FATAL: Something is wrong with the APT system\n")
 
@@ -472,7 +468,7 @@ class AptManip(ExecCmd):
                         cmd = ["/usr/bin/apt-get", "-qq", "--print-uris"]
                         cmd.append(UpgradeType)
 
-                log.msg("\nGenerating database of file that are needed for operation %s\n" % (UpgradeType) )
+                log.msg("Gathering details needed for '%s' operation\n" % (UpgradeType) )
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
                         log.err("FATAL: Something is wrong with the APT system\n")
 
@@ -481,7 +477,7 @@ class AptManip(ExecCmd):
 
                 self.ReleaseType = ReleaseType
 
-                log.msg( "\nGenerating database of package %s and its dependencies.\n" % (PackageList) )
+                log.msg("Gathering installation details for package %s\n" % (PackageList) )
 
                 if self.ReleaseType is not None:
                         cmd = ["/usr/bin/apt", "-qqq", "--print-uris", "install", "-t"]
@@ -499,7 +495,7 @@ class AptManip(ExecCmd):
                 
                 self.ReleaseType = ReleaseType
                 
-                log.msg( "\nGenerating database of source packages %s.\n" % (SrcPackageList) )
+                log.msg("Gathering installation details for source package %s\n" % (PackageList) )
                 
                 if self.ReleaseType is not None:
                         cmd = ["/usr/bin/apt", "-qqq", "--print-uris", "source", "-t"]
@@ -526,7 +522,7 @@ class AptManip(ExecCmd):
 
                 self.ReleaseType = ReleaseType
 
-                log.msg( "\nGenerating database of package %s and its dependencies.\n" % (PackageList) )
+                log.msg("Gathering installation details for package %s\n" % (PackageList) )
 
                 if self.ReleaseType is not None:
                         cmd = ["/usr/bin/apt-get", "-qq", "--print-uris", "install", "-t"]
@@ -544,7 +540,7 @@ class AptManip(ExecCmd):
                 
                 self.ReleaseType = ReleaseType
                 
-                log.msg( "\nGenerating database of source packages %s.\n" % (SrcPackageList) )
+                log.msg("Gathering installation details for source package %s\n" % (PackageList) )
                 
                 if self.ReleaseType is not None:
                         cmd = ["/usr/bin/apt-get", "-qq", "--print-uris", "source", "-t"]
@@ -652,8 +648,8 @@ class LockAPT:
         def __init__(self, lists, packages):
                 
                 try:
-                        self.listLock = os.open(lists, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
-                        self.pkgLock = os.open(packages, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
+                        self.listLock = os.open(lists, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0o640)
+                        self.pkgLock = os.open(packages, os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0o640)
                 except Exception:
                         log.verbose(traceback.format_exc())
                         log.err("Couldn't open lockfile\n")
@@ -693,87 +689,99 @@ class LockAPT:
 
 class GenericDownloadFunction():
         def download_from_web(self, url, localFile, download_dir):
-                '''url = url to fetch
-                localFile = file to save to
-                donwload_dir = download path'''
-                try:
-                        block_size = 4096
-                        i = 0
-                        counter = 0
-                        
-                        os.chdir(download_dir)
-                        temp = urllib2.urlopen(url)
-                        headers = temp.info()
-                        size = int(headers['Content-Length'])
-                        data = open(localFile,'wb')
+            '''url = url to fetch
+            localFile = file to save to
+            donwload_dir = download path'''
+            block_size = 4096
+            i = 0
+            counter = 0
             
-                        #INFO: Add the download thread into the Global ProgressBar Thread
-                        self.addItem(size)
-     
-                        socket_counter = 0
-                        while i < size:
-                                socket_timeout = None
-                                try:
-                                        data.write (temp.read(block_size))
-                                except socket.timeout:
-                                        socket_timeout = True
-                                        socket_counter += 1
-                                except socket.error:
-                                        socket_timeout = True
-                                        socket_counter += 1
-                                
-                                if socket_counter == SOCKET_TIMEOUT_RETRY:
-                                        errfunc(101010, "Max timeout retry count reached. Discontinuing download.\n", url)
-                                        
-                                        # Clean the half downloaded file.
-                                        os.unlink(localFile)
-                                        return False
-                                
-                                if socket_timeout is True:
-                                        errfunc(10054, "Socket Timeout. Retry - %d\n" % (socket_counter) , url)
-                                        continue
-                                    
-                                increment = min(block_size, size - i)
-                                i += block_size
-                                counter += 1
-                                self.updateValue(increment)
-                                #REAL_PROGRESS: update current total in totalSize
-                                if guiBool and not guiTerminateSignal:
-                                        totalSize[1] += block_size
-                                if guiTerminateSignal:
-                                        data.close()
-                                        temp.close()
-                                        return False
-                        self.completed()
-                        data.close()
-                        temp.close()
-                        return True
-                #FIXME: Find out optimal fix for this exception handling
-                except OSError, (errno, strerror):
-                        errfunc(errno, strerror, download_dir)
-                except urllib2.HTTPError, errstring:
-                        errfunc(errstring.code, errstring.msg, url)
-                except urllib2.URLError, errstring:
-                        #INFO: Weird. But in urllib2.URLError, I noticed that for
-                        # error type "timeouts", no errno was defined.
-                        # errstring.errno was listed as None 
-                        # In my tests, wget categorized this behavior as:
-                        # 504: gateway timeout
-                        # So I am doing the same here.
-                        if errstring.errno is None:
-                                errfunc(504, errstring.reason, url)
-                        else:
-                                errfunc(errstring.errno, errstring.reason, url)
-                except httplib.BadStatusLine:
-                        #INFO: See Python Bug: https://bugs.python.org/issue8823
-                        log.err("BadStatusLine exception: Python Bug 8823")
-                except IOError, e:
-                        if hasattr(e, 'reason'):
-                                log.err("%s\n" % (e.reason))
-                        if hasattr(e, 'code') and hasattr(e, 'reason'):
-                                errfunc(e.code, e.reason, localFile)
+            os.chdir(download_dir)
+            try:
+                temp = urllib.request.urlopen(url)
+                headers = temp.info()
+                size = int(headers['Content-Length'])
+                
+                #INFO: Add the download thread into the Global ProgressBar Thread
+                self.addItem(size)
+            except urllib.error.HTTPError as errstring:
+                errfunc(errstring.code, errstring.reason, url)
+                return False
+            except urllib.error.URLError as errstring:
+                #INFO: Weird. But in urllib2.URLError, I noticed that for
+                # error type "timeouts", no errno was defined.
+                # errstring.errno was listed as None 
+                # In my tests, wget categorized this behavior as:
+                # 504: gateway timeout
+                # So I am doing the same here.
+                if errstring.errno is None:
+                    errfunc(504, errstring.reason, url)
+                else:
+                    errfunc(errstring.errno, errstring.reason, url)
+                return False
+            except http.client.HTTPException as e:
+                log.err("Type HTTPException occured")
+                log.err(e)
+                return False
+            except http.client.BadStatusLine as e:
+                #INFO: See Python Bug: https://bugs.python.org/issue8823
+                log.err("BadStatusLine exception: Python Bug 8823")
+                log.err(e)
+                return False
+            except socket.timeout:
+                log.err("Socket timeout. Skipping URL: %s\n" % (url))
+                return False
+            
+            data = open(localFile,'wb')
+            socket_counter = 0
+            while i < size:
+                socket_timeout = None
+                try:
+                    data.write (temp.read(block_size))
                 except socket.timeout:
-                        errfunc(10054, "Socket timeout.\n", url)
+                    socket_timeout = True
+                    socket_counter += 1
+                except socket.error:
+                    socket_timeout = True
+                    socket_counter += 1
+                
+                if socket_counter == SOCKET_TIMEOUT_RETRY:
+                    errfunc(101010, "Max timeout retry count reached. Discontinuing download.\n", url)
+                        
+                    # Clean the half downloaded file.
+                    os.unlink(localFile)
+                    return False
+                
+                if socket_timeout is True:
+                    errfunc(10054, "Socket Timeout. Retry - %d\n" % (socket_counter) , url)
+                    continue
+                    
+                increment = min(block_size, size - i)
+                i += block_size
+                counter += 1
+                self.updateValue(increment)
+                #REAL_PROGRESS: update current total in totalSize
+                if guiBool and not guiTerminateSignal:
+                    totalSize[1] += block_size
+                if guiTerminateSignal:
+                    data.close()
+                    temp.close()
+                    return False
+            self.completed()
+            data.close()
+            temp.close()
+            return True
+#                 #FIXME: Find out optimal fix for this exception handling
+#                 except OSError as erret:
+#                     (errno, strerror) = erret
+#                     errfunc(errno, strerror, download_dir)
+#                 except IOError as e:
+#                     if hasattr(e, 'reason'):
+#                             log.err("%s\n" % (e.reason))
+#                     if hasattr(e, 'code') and hasattr(e, 'reason'):
+#                             errfunc(e.code, e.reason, localFile)
+#                 except socket.timeout:
+#                     errfunc(10054, "Socket timeout.\n", url)
      
 class DownloadFromWeb(AptOfflineLib.ProgressBar, GenericDownloadFunction):
         '''Class for DownloadFromWeb
@@ -797,28 +805,39 @@ def stripper(item):
         item = item.split(' ')
         log.verbose("Item is %s\n" % (item) )
 
-        url = string.rstrip(string.lstrip(''.join(item[0]), chars="'"), chars="'")
+        item0 = ''.join(item[0])
+        item0 = item0.rstrip("'")
+        item0 = item0.lstrip("'")
+        url = item0
         log.verbose("Stripped item URL is: %s\n" % url)
         
-        localFile = string.rstrip(string.lstrip(''.join(item[1]), chars="'"), chars="'")
+        item1 = ''.join(item[1])
+        item1 = item1.rstrip("'")
+        item1 = item1.lstrip("'")
+        localFile = item1
         log.verbose("Stripped item FILE is: %s\n" % localFile)
         
         try:
-                size = int(string.rstrip(string.lstrip(''.join(item[2]), chars = "'"), chars="'"))
+                item2 = ''.join(item[2])
+                item2 = item2.rstrip("'")
+                item2 = item2.lstrip("'")
+                size = int(item2)
         except ValueError:
                 log.verbose("%s is malformed\n" % (" ".join(item) ) )
                 size = 0
         log.verbose("Stripped item SIZE is: %d\n" % size)
-        
 
         #INFO: md5 ends up having '\n' with it.
         # That needs to be stripped too.
         try:
-                checksum = string.rstrip(string.lstrip(''.join(item[3]), chars = "'"), chars = "'")
-                checksum = string.rstrip(checksum, chars = "\n")
+            item3 = ''.join(item[3])
+            item3 = item3.rstrip("'")
+            item3 = item3.lstrip("'")
+            item3 = item3.rstrip("\n")
+            checksum = item3
         except IndexError:
-                if item[1].endswith("_Release") or item[1].endswith("_Release.gpg"):
-                        checksum = None
+            if item[1].endswith("_Release") or item[1].endswith("_Release.gpg"):
+                checksum = None
         log.verbose("Stripped item CHECKSUM is: %s\n" % checksum)
         
         return url, localFile, size, checksum
@@ -891,14 +910,14 @@ def fetcher( args ):
         if Str_ProxyHost:
                 if Str_ProxyPort:
                         log.verbose(Str_ProxyHost + ":" + str(Str_ProxyPort))
-                        proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
-                        opener = urllib2.build_opener(proxy_support)
-                        urllib2.install_opener(opener)
+                        proxy_support = urllib.request.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
+                        opener = urllib.request.build_opener(proxy_support)
+                        urllib.request.install_opener(opener)
                         log.verbose("Proxy successfully set up with Host %s and port %d\n" % (Str_ProxyHost, Str_ProxyPort))
                 else:
-                        proxy_support = urllib2.ProxyHandler({'http': Str_ProxyHost})
-                        opener = urllib2.build_opener(proxy_support)
-                        urllib2.install_opener(opener)
+                        proxy_support = urllib.request.ProxyHandler({'http': Str_ProxyHost})
+                        opener = urllib.request.build_opener(proxy_support)
+                        urllib.request.install_opener(opener)
                         log.verbose("Proxy successfully set up with Host %s and default port\n" % (Str_ProxyHost) )
         
         #INFO: Python 2.5 has hashlib which supports sha256
@@ -943,7 +962,7 @@ def fetcher( args ):
             tempdir = tempfile.gettempdir()
             if os.access( tempdir, os.W_OK ):
                 pidname = os.getpid()
-                randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
+                randomjunk = ''.join(chr(random.randint(97,122)) for x in range(5)) if guiBool else ''
                 # 5 byte random junk to make mkdir possible multiple times
                 # use-case -> download many sigs of different machines using one instance
                 tempdir = os.path.join(tempdir , "apt-offline-downloads-" + str(pidname) + randomjunk)
@@ -1022,7 +1041,7 @@ def fetcher( args ):
                     '''Write data to archive file'''
                     try:
                         self.compress_the_file(self.BundleFile, data)
-                    except AptOfflineErrors, message:
+                    except AptOfflineErrors as message:
                         log.warn("%s\n" % (message))
                 
                 def writeToCache(self, data):
@@ -1052,12 +1071,12 @@ def fetcher( args ):
                         pkgHandle = DebPackage(pkgPath)
                         for pkgFile in pkgHandle.filelist:
                             if constChangelog in pkgFile:
-                                chlogFile = tempfile.NamedTemporaryFile('rw+', bufsize=-1, dir=None, delete=True)
+                                chlogFile = tempfile.NamedTemporaryFile('r+', buffering=-1, dir=None, delete=True)
                                 pkgLogFile = open(os.path.join(tempfile.gettempdir(), pkgHandle.pkgname + ".changelog"), 'w')
 
                                 #INFO: python-apt is able to read the data from the gzipped changelog dynamically
                                 try:
-                                    chlogFile.writelines(pkgHandle.data_content(pkgFile).encode('utf-8'))
+                                    chlogFile.writelines(pkgHandle.data_content(pkgFile))
                                 except TypeError:
                                     log.warn("Couldn't extract changelog for package %s\n" % (pkgHandle.pkgname))
                                     log.verbose(traceback.format_exc())
@@ -1075,9 +1094,18 @@ def fetcher( args ):
                                         pkgLogFile.writelines(eachLine)
                                 pkgLogFile.flush()
                                 if self.ArchiveFile:
-                                    self.AddToArchive(self.ArchiveFile, pkgLogFile.name)
+                                    if self.AddToArchive(self.ArchiveFile, pkgLogFile.name):
+                                        log.verbose("%s added to file %s\n" % (pkgLogFile.name, self.ArchiveFile))
+                                    else:
+                                        log.warn("%s failed to be added to file %s\n" % (pkgLogFile.name, self.ArchiveFile))
                                 else:
-                                    self.move_file(pkgLogFile.name, self.DownloadDir)
+                                    try:
+                                        if self.move_file(pkgLogFile.name, self.DownloadDir):
+                                            log.verbose("%s added to download dir %s\n" % (pkgLogFile.name, self.DownloadDir))
+                                    except AptOfflineLibShutilError as msg:
+                                        log.warn("%s\n" % (msg))
+                                chlogFile.close()
+                                pkgLogFile.close()
                                 break
         
         FetchData = {} #Info: Initialize an empty dictionary.
@@ -1089,7 +1117,8 @@ def fetcher( args ):
         if Str_GetArg is not None:
                 try:
                         raw_data_list = open( Str_GetArg, 'r' ).readlines()
-                except IOError, ( errno, strerror ):
+                except IOError as e:
+                        ( errno, strerror ) = e.args
                         log.err( "%s %s\n" % ( errno, strerror ) )
                         errfunc( errno, '', Str_GetArg)
                         
@@ -1152,14 +1181,17 @@ def fetcher( args ):
                 # On many boxes, the cdrom apt repository will be enabled.
                 # For now, let's skip the cdrom repository items.
                 if item.startswith("\'cdrom"):
-                        log.verbose("cdrom apt repository not supported. Skipping\n")
-                        log.verbose(item)
-                        return True
+                    log.error("cdrom apt repository not supported. Skipping %s\n" % (item))
+                    return True
+                    
                 
                 #INFO: Everything
                 (url, pkgFile, download_size, checksum) = stripper(item)
                 thread_name = threading.currentThread().getName()
                 log.verbose("Thread is %s\n" % (thread_name) )
+                
+                if url.startswith("https"):
+                    log.warn("HTTPS auth is not supported. Will try download without auth: %s\n" % (item))
                 
                 if url.endswith(".deb"):
                         try:
@@ -1181,7 +1213,7 @@ def fetcher( args ):
                         
                         #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
                         if full_file_path is not False:
-                            if PackageName in PackageInstalledVersion.keys():
+                            if PackageName in list(PackageInstalledVersion.keys()):
                                     FetcherInstance.buildChangelog(full_file_path, PackageInstalledVersion[PackageName])
                             
                             if FetcherInstance.verifyPayloadIntegrity(full_file_path, checksum):
@@ -1264,11 +1296,11 @@ def fetcher( args ):
                         FetcherInstance.completed()
 
         # Create two Queues for the requests and responses
-        requestQueue = Queue.Queue()
-        responseQueue = Queue.Queue()
+        requestQueue = queue.Queue()
+        responseQueue = queue.Queue()
 
         # create size metadata for progress
-        for key in FetchData.keys():
+        for key in list(FetchData.keys()):
                 for item in FetchData.get(key):
                         if guiBool:
                                 #REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
@@ -1279,14 +1311,19 @@ def fetcher( args ):
                                         size = int(download_size)
                                         if size == 0:
                                                 log.msg("MSG_START")
-                                                temp = urllib2.urlopen(url)
+                                                temp = urllib.request.urlopen(url)
                                                 headers = temp.info()
                                                 size = int(headers['Content-Length'])
                                         totalSize[0] += size
-                                except Exception:
-                                        log.verbose(traceback.format_exc())
-                                        log.err("some int parsing problem\n")
-
+                                except urllib.error.HTTPError as errstring:
+                                    errfunc(errstring.code, errstring.reason, url)
+                                    log.verbose(traceback.format_exc())
+                                except urllib.error.URLError as errstring:
+                                    if errstring.errno is None:
+                                        errfunc(504, errstring.reason, url)
+                                    else:
+                                        errfunc(errstring.errno, errstring.reason, url)
+                                    log.verbose(traceback.format_exc())
             
         if not guiTerminateSignal:
                 ConnectThread = AptOfflineLib.MyThread(DataFetcher, requestQueue, responseQueue, Int_NumOfThreads)
@@ -1294,7 +1331,7 @@ def fetcher( args ):
         ConnectThread.startThreads()
         # Queue up the requests.
         #for item in raw_data_list: requestQueue.put(item)
-        for key in FetchData.keys():
+        for key in list(FetchData.keys()):
                 for item in FetchData.get(key):
                         ConnectThread.populateQueue( (key, item) )
         if guiBool:
@@ -1370,7 +1407,7 @@ def installer( args ):
                         
             if self.Str_InstallSrcPath is None:
                 pidname = os.getpid()
-                randomjunk = ''.join(chr(random.randint(97,122)) for x in xrange(5)) if guiBool else ''
+                randomjunk = ''.join(chr(random.randint(97,122)) for x in range(5)) if guiBool else ''
                 # 5 byte random junk to make mkdir possible multiple times
                 # use-case -> installing multiple bundles with one dialog
                 srcDownloadsPath = os.path.join(self.tempdir , "apt-offline-src-downloads-" + str(pidname) + randomjunk )
@@ -1408,11 +1445,11 @@ def installer( args ):
                 
                 try:
                     if os.geteuid() != 0:
-                        log.err("You need superuser privileges to execute this option\n")
-                        return False
+                        log.err("EACCES: You need superuser privileges to execute this option\n")
+                        sys.exit(13)
                 except AttributeError:
-                    log.err("Unsupported platform: %s\n" % (platform.platform()))
-                    return False
+                    log.err("EOPNOTSUPP: Unsupported platform: %s\n" % (platform.platform()))
+                    sys.exit(95)
                 
 
         def cleanAptPartial(self, path):
@@ -1433,7 +1470,7 @@ def installer( args ):
             log.msg( "(?) Display this help message.\n" )
         
         def get_response(self):
-            response = raw_input( "What would you like to do next:\t (y, N, ?)" )
+            response = input( "What would you like to do next:\t (y, N, ?)" )
             response = response.rstrip( "\r" )
             return response
 
@@ -1444,7 +1481,7 @@ def installer( args ):
             value => subject string
             '''
             log.msg( "\n\nFollowing are the list of bugs present.\n" )
-            sortedKeyList = dictList.keys()
+            sortedKeyList = list(dictList.keys())
             sortedKeyList.sort()
             for each_bug in sortedKeyList:
                     #INFO: '{}' is the bug split identifier - Used at another place also
@@ -1496,7 +1533,7 @@ def installer( args ):
                 debFile = os.path.join(self.apt_package_target_path, filename)
                 if os.access( self.apt_package_target_path, os.W_OK ):
                     shutil.copy2( archive_file, debFile )
-                    os.chmod(debFile, 0644)
+                    os.chmod(debFile, 0o644)
                     log.msg("%s file synced.\n" % (filename) )
                     retval = True
                 else:
@@ -1515,13 +1552,15 @@ def installer( args ):
             else:
                 log.err( "I couldn't understand file type %s.\n" % ( filename ) )
             
+            #INFO: Close the handle and conserve precious memory
+            magicMIME.close()
             if retval:
                 #CHANGE: track progress
                 totalSize[0]+=1 
                 if guiBool:
                     log.msg("[%d/%d]" % (totalSize[0], totalSize[1]))
                 #ENDCHANGE
-                log.verbose( "%s file synced to %s.\n" % ( filename, self.apt_update_target_path ) )
+                log.verbose( "%s file synced to APT.\n" % ( filename ) )
 
         def displayChangelog(self, dataType=None):
             '''Takes file or directory as input'''
@@ -1549,7 +1588,7 @@ def installer( args ):
                     log.msg("No changelog available\n")
             else:    
                     chlogFile.seek(0)
-                    pydoc.pager(chlogFile.read())
+                    pydoc.pager(chlogFile.read().decode('utf-8'))
             
             self.display_options("Chlog")
             response = self.get_response()
@@ -1560,7 +1599,7 @@ def installer( args ):
                     response = self.get_response()
                 elif response.startswith('C') or response.startswith('c'):
                     chlogFile.seek(0)
-                    pydoc.pager(chlogFile.read())
+                    pydoc.pager(chlogFile.read().decode('utf-8'))
                     self.display_options("Chlog")
                     response = self.get_response()
                 elif response.startswith('y') or response.startswith('Y'):
@@ -1591,7 +1630,7 @@ def installer( args ):
                             
                             #INFO: Take care of Src Pkgs
                             found = False
-                            for item in SrcPkgDict.keys():
+                            for item in list(SrcPkgDict.keys()):
                                 if filename in SrcPkgDict[item]:
                                     found = True
                                     break
@@ -1653,7 +1692,7 @@ def installer( args ):
                         response = self.get_response()
                     if found:
                         if dataType is "file":
-                            pydoc.pager(zipBugFile.read(bug_file_to_display) )
+                            pydoc.pager(zipBugFile.read(bug_file_to_display).decode('utf-8') )
                             # Redisplay the menu
                             # FIXME: See a pythonic possibility of cleaning the screen at this stage
                             response = self.get_response()
@@ -1735,7 +1774,8 @@ def installer( args ):
                     temp.file.flush()
                     temp.file.seek( 0 ) #Let's go back to the start of the file
                     for bug_subject_identifier in temp.file.readlines():
-                        if bug_subject_identifier.decode('utf8').startswith( 'Subject:' ):
+                        bug_subject_identifier = bug_subject_identifier.decode('utf-8')
+                        if bug_subject_identifier.startswith( 'Subject:' ):
                             subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
                             subject = subject.rstrip( "\n" )
                             break
@@ -1754,7 +1794,7 @@ def installer( args ):
             for filename in zipBugFile.namelist():
                 #INFO: Take care of Src Pkgs
                 found = False
-                for item in SrcPkgDict.keys():
+                for item in list(SrcPkgDict.keys()):
                     if filename in SrcPkgDict[item]:
                         found = True
                         break
@@ -1823,7 +1863,7 @@ def installer( args ):
                                 continue
                         #INFO: Take care of Src Pkgs
                         found = False
-                        for item in SrcPkgDict.keys():
+                        for item in list(SrcPkgDict.keys()):
                                 if filename in SrcPkgDict[item]:
                                         found = True
                                         break
@@ -1850,7 +1890,7 @@ def installer( args ):
                                 filename = os.path.join(installPath, filename)
                                 temp = open(filename, 'r')
                                 for bug_subject_identifier in temp.readlines():
-                                        if bug_subject_identifier.decode('utf8').startswith( 'Subject:' ):
+                                        if bug_subject_identifier.startswith( 'Subject:' ):
                                                 subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
                                                 subject = subject.rstrip( "\n" )
                                                 break
@@ -1862,22 +1902,25 @@ def installer( args ):
         else:
                 log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
                 DirInstallPackages(installPath)
-                    
+    else:
+        log.err("Invalid path argument specified: %s\n" % (installPath))
+        sys.exit(1)
+                        
     if InstallerInstance.Bool_Untrusted:
             log.err("Disabling apt gpg check can risk your machine to compromise.\n")
-            for x in os.listdir(apt_update_target_path):
-                    x = os.path.join(apt_update_target_path, x)
-                    shutil.copy2(x, apt_update_final_path) # Do we do a move ??
-                    log.verbose("%s %s\n" % (x, apt_update_final_path) )
+            for x in os.listdir(InstallerInstance.apt_update_target_path):
+                    x = os.path.join(InstallerInstance.apt_update_target_path, x)
+                    shutil.copy2(x, InstallerInstance.apt_update_final_path) # Do we do a move ??
+                    log.verbose("%s %s\n" % (x, InstallerInstance.apt_update_final_path) )
                     log.msg("%s synced.\n" % (x) )
     else:
             AptSecure = APTVerifySigs(Simulate=InstallerInstance.Bool_TestWindows)
 
-            lFileList= os.listdir(apt_update_target_path)
+            lFileList= os.listdir(InstallerInstance.apt_update_target_path)
             lFileList.sort()
             lVerifiedWhitelist = []
             for localFile in lFileList:
-                    localFile = os.path.join(apt_update_target_path, localFile)
+                    localFile = os.path.join(InstallerInstance.apt_update_target_path, localFile)
                     if localFile.endswith('.gpg'):
                             log.verbose("%s\n" % (localFile) )
                             localFile = os.path.abspath(localFile)
@@ -1895,8 +1938,8 @@ def installer( args ):
                     for whitelist_item in lVerifiedWhitelist:
                             for final_item in lFileList:
                                     if whitelist_item in final_item:
-                                            partialFile = os.path.join(apt_update_target_path, final_item)
-                                            shutil.copy2(partialFile, apt_update_final_path)
+                                            partialFile = os.path.join(InstallerInstance.apt_update_target_path, final_item)
+                                            shutil.copy2(partialFile, InstallerInstance.apt_update_final_path)
                                             log.msg("%s synced.\n" % (final_item) )
 
                         
@@ -1998,7 +2041,7 @@ def setter(args):
             aptCache.open()
             
             try:
-                    sigFile = open(Str_SetArg, 'rw+')
+                    sigFile = open(Str_SetArg, 'r+')
             except Exception:
                     log.err(traceback.format_exc())
             
@@ -2041,7 +2084,7 @@ def main():
         global_options.add_argument("--simulate", dest="simulate", help="Just simulate. Very helpful when debugging",
                             action="store_true" )
         
-        if argparse.__version__ >= 1.1:
+        if float(argparse.__version__) >= 1.1:
                 parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
                                           epilog=myCopyright + " - " + terminal_license, parents=[global_options])
                 parser.add_argument("-v", "--version", action='version', version=version)
@@ -2152,7 +2195,8 @@ def main():
         
         parser_install.add_argument("--allow-unauthenticated", dest="allow_unauthenticated",
                                     help="Ignore apt gpg signatures mismatch", action="store_true")
-        
+        if len(sys.argv) <= 1:
+                sys.argv.append('--help')
         
         args = parser.parse_args()
 

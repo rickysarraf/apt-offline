@@ -68,7 +68,7 @@ _apt_offline()
                 if [[ "$cur" == -* || -e $prev ]]; then
                     COMPREPLY=( $( compgen -W '-h --help -v --verbose --version
                         --simulate --install-src-path --skip-bug-reports
-                        --allow-unauthenticated' -- "$cur" ) )
+                        --allow-unauthenticated --skip-changelog' -- "$cur" ) )
                 else
                     _filedir
                 fi
@@ -87,12 +87,17 @@ _apt_offline()
                             dselect-ugprade' -- "$cur" ) )
                         return 0
                         ;;
+                    --apt-backend)
+                        COMPREPLY=( $( compgen -W 'apt apt-get
+                            python-apt' -- "$cur" ) )
+                        return 0
+                        ;;
                 esac
                 if [[ "$cur" == -* || -e $prev ]]; then
                     COMPREPLY=( $( compgen -W '-h --help -v --verbose --version
                         --simulate --install-packages --install-src-packages
                         --src-build-dep --release --update --upgrade
-                        --upgrade-type' -- "$cur" ) )
+                        --upgrade-type --generate-changelog' -- "$cur" ) )
                 else
                     _filedir
                 fi
