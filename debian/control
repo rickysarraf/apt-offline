@@ -2,16 +2,16 @@ Source: apt-offline
 Section: admin
 Priority: optional
 Maintainer: Ritesh Raj Sarraf <rrs@debian.org>
-Build-Depends: debhelper (>= 9), python3, dh-python
+Build-Depends: debhelper (>= 10), python3-setuptools, python3-all, dh-python
+X-Python3-Version: 3.2
 Standards-Version: 3.9.8
-X-Python-Version: >= 3
 Homepage: https://github.com/rickysarraf/apt-offline
 Vcs-Git: https://anonscm.debian.org/git/apt-offline/apt-offline.git
 Vcs-Browser: https://anonscm.debian.org/cgit/apt-offline/apt-offline.git
 
 Package: apt-offline
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python3, apt, less, python3-magic
+Depends: ${misc:Depends}, ${python3:Depends}, apt, less, python3-magic
 Recommends: python-soappy, debian-archive-keyring, python-lzma, python3-debianbts
 Description: offline APT package manager
  apt-offline is an Offline APT Package Manager.
@@ -31,7 +31,7 @@ Description: offline APT package manager
 
 Package: apt-offline-gui
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, apt-offline (= ${binary:Version}),
+Depends: ${misc:Depends}, ${python3:Depends}, apt-offline (= ${binary:Version}),
  python3-pyqt5
 Description: offline APT package manager - GUI
  apt-offline is an Offline APT Package Manager.
