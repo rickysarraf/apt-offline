@@ -36,7 +36,6 @@ distutils.core.setup(
             'apt_offline_core.AptOfflineDebianBtsLib',
             'apt_offline_core.AptOfflineLib',
             'apt_offline_core.AptOfflineMagicLib',
-            'apt_offline_core.AptOffline_argparse',
             'apt_offline_gui.AptOfflineQtAbout',
 	    'apt_offline_gui.AptOfflineQtCommon',
 	    'apt_offline_gui.AptOfflineQtCreateProfile',
