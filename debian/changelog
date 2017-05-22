@@ -1,3 +1,21 @@
+apt-offline (1.8.0) unstable; urgency=medium
+
+  * New Major Release. Port to Python 3 and Py3Qt5
+  * Update manapge to make the sequence of execution more obvious.
+    Thanks to Sylvain Pelissier
+  * Add python-debianbts to Recommends
+  * Close MIME file handle and conserve precious memory
+  * Point Vcs fields back to Alioth. Lots of debian tools use these
+    fields and thus it is better to keep it within the Debian
+    infrastructure
+  * Update Homepage feild to Github
+  * Add mailmap file to map old email addresses to correct new ones.
+    Thanks to Paul Wise
+  * Bump version to 1.8.0
+  * Switch dependencies to Python 3
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Mon, 22 May 2017 10:18:45 +0545
+
 apt-offline (1.7.2) unstable; urgency=medium
 
   * New Upstream Release
