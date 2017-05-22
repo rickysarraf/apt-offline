@@ -14,7 +14,7 @@ apt-offline (1.8.0) unstable; urgency=medium
   * Bump version to 1.8.0
   * Switch dependencies to Python 3
 
- -- Ritesh Raj Sarraf <rrs@debian.org>  Mon, 22 May 2017 10:18:45 +0545
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Mon, 22 May 2017 10:57:10 +0545
 
 apt-offline (1.7.2) unstable; urgency=medium
 
