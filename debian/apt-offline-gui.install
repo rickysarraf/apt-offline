@@ -1,5 +1,5 @@
 apt-offline-gui		/usr/bin/
 apt_offline_gui/icons/*	/usr/share/pixmaps/apt-offline-gui/
-apt_offline_gui/*.py	/usr/share/pyshared/apt_offline_gui/
+apt_offline_gui/*.py	/usr/lib/python3/dist-packages/apt_offline_gui/
 apt-offline-gui.desktop	/usr/share/applications/
 org.debian.apt.aptoffline.policy	/usr/share/polkit-1/actions/
