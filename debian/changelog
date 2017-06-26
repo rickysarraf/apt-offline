@@ -1,3 +1,10 @@
+apt-offline (1.8.0.1) unstable; urgency=medium
+
+  * Switch to pybuild buildsystem to avoid needing pyversions.
+    Thanks to Logan Rosen (Closes: #865292)
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Mon, 26 Jun 2017 21:38:29 +0545
+
 apt-offline (1.8.0) unstable; urgency=medium
 
   * New Major Release. Port to Python 3 and Py3Qt5
