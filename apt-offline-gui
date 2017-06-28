@@ -24,8 +24,6 @@
 
 import sys
 import os
-sys.path.append("apt_offline_gui/")
-sys.path.append("apt_offline_core/")
 from PyQt5 import QtCore, QtGui, QtWidgets
 from apt_offline_gui.AptOfflineQtMain import AptOfflineQtMain
 
