@@ -47,4 +47,4 @@ class Ui_SaveZipFile(object):
         self.saveButton.setText(_translate("SaveZipFile", "Save"))
         self.cancelButton.setText(_translate("SaveZipFile", "Cancel"))
 
-import resources_rc
+from . import resources_rc

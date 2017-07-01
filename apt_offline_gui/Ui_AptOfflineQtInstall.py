@@ -113,4 +113,4 @@ class Ui_AptOfflineQtInstall(object):
         self.changelogButton.setToolTip(_translate("AptOfflineQtInstall", "Display Changelog"))
         self.changelogButton.setText(_translate("AptOfflineQtInstall", "Changelog"))
 
-import resources_rc
+from . import resources_rc

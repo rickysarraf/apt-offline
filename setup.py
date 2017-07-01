@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # -*- coding: utf-8 -*-
 
@@ -11,7 +11,7 @@ import distutils.core
 
 distutils.core.setup(
     name='apt-offline',
-    version='1.8.0',
+    version='1.8.1',
     author='Ritesh Raj Sarraf',
     author_email='rrs@researchut.com',
     url='http://apt-offline.alioth.debian.org',
@@ -36,7 +36,6 @@ distutils.core.setup(
             'apt_offline_core.AptOfflineDebianBtsLib',
             'apt_offline_core.AptOfflineLib',
             'apt_offline_core.AptOfflineMagicLib',
-            'apt_offline_core.AptOffline_argparse',
             'apt_offline_gui.AptOfflineQtAbout',
 	    'apt_offline_gui.AptOfflineQtCommon',
 	    'apt_offline_gui.AptOfflineQtCreateProfile',

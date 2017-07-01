@@ -153,4 +153,4 @@ class Ui_AboutAptOffline(object):
         self.label_2.setText(_translate("AboutAptOffline", "A GUI for apt-offline - an offline APT Package Manager"))
         self.pushButton.setText(_translate("AboutAptOffline", "Close"))
 
-import resources_rc
+from . import resources_rc

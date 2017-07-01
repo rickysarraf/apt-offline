@@ -216,4 +216,4 @@ class Ui_CreateProfile(object):
         self.lblInstallType.setToolTip(_translate("CreateProfile", "Check all tasks that apply. Eg. Update, Upgrade"))
         self.lblInstallType.setText(_translate("CreateProfile", "Installation Type"))
 
-import resources_rc
+from . import resources_rc
