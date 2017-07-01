@@ -152,4 +152,4 @@ class Ui_AptOfflineMain(object):
         self.menuHelp_2.setShortcut(_translate("AptOfflineMain", "F1"))
         self.menuAbout.setText(_translate("AptOfflineMain", "About apt-offline"))
 
-import resources_rc
+from . import resources_rc

@@ -143,4 +143,4 @@ class Ui_AptOfflineQtFetch(object):
         self.saveDatacheckBox.setToolTip(_translate("AptOfflineQtFetch", "Click if target save location is a directory"))
         self.saveDatacheckBox.setText(_translate("AptOfflineQtFetch", "Is Directory"))
 
-import resources_rc
+from . import resources_rc

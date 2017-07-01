@@ -44,4 +44,4 @@ class Ui_AptOfflineQtInstallChangelog(object):
         self.closeButton.setText(_translate("AptOfflineQtInstallChangelog", "Close"))
         self.label.setText(_translate("AptOfflineQtInstallChangelog", "Changelog"))
 
-import resources_rc
+from . import resources_rc

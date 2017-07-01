@@ -72,4 +72,4 @@ class Ui_AptOfflineQtInstallBugList(object):
         self.closeButton.setToolTip(_translate("AptOfflineQtInstallBugList", "Close this window"))
         self.closeButton.setText(_translate("AptOfflineQtInstallBugList", "Close"))
 
-import resources_rc
+from . import resources_rc

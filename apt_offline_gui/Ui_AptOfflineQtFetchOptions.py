@@ -200,4 +200,4 @@ class Ui_downloadOptionsDialog(object):
         self.lblProxyHost.setToolTip(_translate("downloadOptionsDialog", "Cache folder to search for"))
         self.lblProxyHost.setText(_translate("downloadOptionsDialog", "Host"))
 
-import resources_rc
+from . import resources_rc
