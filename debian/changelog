@@ -1,3 +1,12 @@
+apt-offline (1.8.1) unstable; urgency=medium
+
+  * Switch setuptools to invoke py3
+  * No more argparse needed on py3
+  * Fix genui.sh based on comments from pyqt mailing list
+  * Bump version number to 1.8.1
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Sat, 01 Jul 2017 21:39:24 +0545
+
 apt-offline (1.8.0.1) unstable; urgency=medium
 
   * Switch to pybuild buildsystem to avoid needing pyversions.
