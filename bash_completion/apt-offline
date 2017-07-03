@@ -35,6 +35,14 @@ _apt_offline()
                         _filedir
                         return 0
                         ;;
+                    --https-cert-file)
+                        _filedir
+                        return 0
+                        ;;
+                    --https-key-file)
+                        _filedir
+                        return 0
+                        ;;
                     --proxy-host)
                         _ip_addresses
                         return 0

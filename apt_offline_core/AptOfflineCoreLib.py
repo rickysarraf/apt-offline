@@ -24,6 +24,7 @@ import sys
 import shutil
 import platform
 import string
+import ssl
 import urllib.request, urllib.error, urllib.parse
 import http.client
 import queue
@@ -895,6 +896,8 @@ def fetcher( args ):
         Str_BundleFile = args.bundle_file
         Str_ProxyHost = args.proxy_host
         Str_ProxyPort = args.proxy_port
+        Str_HttpsCertFile = args.https_cert_file
+        Str_HttpsCertKey = args.https_key_file
         Bool_BugReports = args.deb_bugs
         global guiTerminateSignal
         
@@ -919,6 +922,14 @@ def fetcher( args ):
                         opener = urllib.request.build_opener(proxy_support)
                         urllib.request.install_opener(opener)
                         log.verbose("Proxy successfully set up with Host %s and default port\n" % (Str_ProxyHost) )
+        
+        if Str_HttpsCertFile and Str_HttpsKeyFile:
+                log.verbose("cert-file:" + Str_HttpsCertFile + " key-file:" + Str_HttpsKeyFile)
+                context = ssl.create_default_context()
+                context.load_cert_chain(Str_HttpsCertFile, Str_HttpsKeyFile)
+                opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=context))
+                urllib.request.install_opener(opener)
+                log.verbose("SSL Client Authentication successfully set up with certificate file %s and key file %s\n" % (Str_HttpsCertFile, Str_HttpsKeyFile))
         
         #INFO: Python 2.5 has hashlib which supports sha256
         # If we don't have Python 2.5, disable MD5/SHA256 checksum
@@ -1189,9 +1200,6 @@ def fetcher( args ):
                 (url, pkgFile, download_size, checksum) = stripper(item)
                 thread_name = threading.currentThread().getName()
                 log.verbose("Thread is %s\n" % (thread_name) )
-                
-                if url.startswith("https"):
-                    log.warn("HTTPS auth is not supported. Will try download without auth: %s\n" % (item))
                 
                 if url.endswith(".deb"):
                         try:
@@ -2175,6 +2183,12 @@ def main():
         
         parser_get.add_argument("--proxy-port", dest="proxy_port",
 						help="Proxy port number to use", type=int, default=None)
+        
+        parser_get.add_argument("--https-cert-file", dest="https_cert_file",
+						help="Certificate file for https client authentication", type=str, default=None)
+        
+        parser_get.add_argument("--https-key-file", dest="https_key_file",
+						help="Certificate key for https client authentication", type=str, default=None)
         
         # INSTALL command options
         parser_install = subparsers.add_parser('install', parents=[global_options])
