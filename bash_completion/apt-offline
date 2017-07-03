@@ -39,6 +39,14 @@ _apt_offline()
                         _ip_addresses
                         return 0
                         ;;
+                    --https-cert-file)
+                        _filedir
+                        return 0
+                        ;;
+                    --https-key-file)
+                        _filedir
+                        return 0
+                        ;;
                     --socket-timeout)
                         COMPREPLY=( $( compgen -W '10 30 100 300 1000' -- "$cur" ) )
                         return 0
