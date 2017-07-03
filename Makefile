@@ -1,13 +1,13 @@
-all:
-	@echo "To build GUI, run make gui"
+all: gui html
 
 gui:
-	@echo "look at genui.sh"
+	cd apt_offline_gui ; ./genui.sh
 
 html:
 	man2html apt-offline.8 > apt-offline.html
 	
 clean:
-	rm -f AptOfflineGUI.py
+	rm -f apt_offline_gui/Ui_*.py
+	rm -f apt_offline_gui/resources_rc.py
 	rm -f *.pyc
 	rm -f apt-offline.html
