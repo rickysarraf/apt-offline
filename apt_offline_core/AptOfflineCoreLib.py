@@ -898,6 +898,7 @@ def fetcher( args ):
         Str_ProxyPort = args.proxy_port
         Str_HttpsCertFile = args.https_cert_file
         Str_HttpsCertKey = args.https_key_file
+        Bool_DisableCertCheck = args.disable_cert_check
         Bool_BugReports = args.deb_bugs
         global guiTerminateSignal
         
@@ -922,11 +923,19 @@ def fetcher( args ):
                         opener = urllib.request.build_opener(proxy_support)
                         urllib.request.install_opener(opener)
                         log.verbose("Proxy successfully set up with Host %s and default port\n" % (Str_ProxyHost) )
-        
-        if Str_HttpsCertFile and Str_HttpsKeyFile:
-                log.verbose("cert-file:" + Str_HttpsCertFile + " key-file:" + Str_HttpsKeyFile)
+
+        if (Str_HttpsCertFile and Str_HttpsKeyFile) or Bool_DisableCertCheck:
                 context = ssl.create_default_context()
-                context.load_cert_chain(Str_HttpsCertFile, Str_HttpsKeyFile)
+
+                if Bool_DisableCertCheck:
+                        log.verbose("certificate checks for servers are ignored")
+                        context.check_hostname = False
+                        context.verify_mode = ssl.CERT_NONE
+
+                if Str_HttpsCertFile and Str_HttpsKeyFile:
+                        log.verbose("cert-file:" + Str_HttpsCertFile + " key-file:" + Str_HttpsKeyFile)
+                        context.load_cert_chain(Str_HttpsCertFile, Str_HttpsKeyFile)
+
                 opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=context))
                 urllib.request.install_opener(opener)
                 log.verbose("SSL Client Authentication successfully set up with certificate file %s and key file %s\n" % (Str_HttpsCertFile, Str_HttpsKeyFile))
@@ -2189,6 +2198,9 @@ def main():
         
         parser_get.add_argument("--https-key-file", dest="https_key_file",
 						help="Certificate key for https client authentication", type=str, default=None)
+
+        parser_get.add_argument("--disable-cert-check", dest="disable_cert_check",
+                          help="Disable Certificate check on https connections", action="store_true")
         
         # INSTALL command options
         parser_install = subparsers.add_parser('install', parents=[global_options])

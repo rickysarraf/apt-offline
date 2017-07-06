@@ -60,7 +60,8 @@ _apt_offline()
                     COMPREPLY=( $( compgen -W '-h --help -v --verbose --version
                         --simulate --socket-timeout -d --download-dir -s
                         --cache-dir --no-checksum -t --threads --bundle
-                        --bug-reports --proxy-host --proxy-port --https-key-file --https-cert-file' -- "$cur" ) )
+                        --bug-reports --proxy-host --proxy-port
+                        --https-key-file --https-cert-file --disable-cert-check' -- "$cur" ) )
                 else
                     _filedir
                 fi
