@@ -580,7 +580,7 @@ class APTVerifySigs(ExecCmd):
                         self.defaultPaths.append(apt_pkg.config.find_dir('Dir::Etc::trustedparts'))
                         self.defaultPaths.append(apt_pkg.config.find_file('Dir::Etc::trusted'))
                 else:
-                        command = str.encode("""
+                        command = b"""
                         # Unset variables in case they are set already
                         unset trusted
                         unset trustedparts
@@ -593,7 +593,8 @@ class APTVerifySigs(ExecCmd):
                         process = subprocess.Popen(['sh'], stdin=subprocess.PIPE,
                                                    stdout=subprocess.PIPE)
                         output = process.communicate(input=command)[0]
-                        trusted, trustedparts = output.decode().split('\x00')
+                        trusted, trustedparts = output.decode('utf-8').split('\x00')
+                        log.verbose("trusted is %s and trustedparts is %s\n" % (trusted, trustedparts))
                         
                         self.defaultPaths.append(trusted)
                         self.defaultPaths.append(trustedparts)
