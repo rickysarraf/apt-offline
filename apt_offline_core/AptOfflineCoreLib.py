@@ -897,7 +897,7 @@ def fetcher( args ):
         Str_ProxyHost = args.proxy_host
         Str_ProxyPort = args.proxy_port
         Str_HttpsCertFile = args.https_cert_file
-        Str_HttpsCertKey = args.https_key_file
+        Str_HttpsKeyFile = args.https_key_file
         Bool_DisableCertCheck = args.disable_cert_check
         Bool_BugReports = args.deb_bugs
         global guiTerminateSignal
