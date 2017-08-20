@@ -42,6 +42,7 @@ from ssl import SSLError, SSLEOFError
 import zlib
 
 from apt_offline_core.AptOfflineLib import AptOfflineErrors, AptOfflineLibShutilError
+import apt
 
 FCNTL_LOCK = True
 try:
@@ -589,7 +590,7 @@ class APTVerifySigs(ExecCmd):
                         eval $(apt-config shell trustedparts Dir::Etc::trustedparts/d)
                         # Securely pass the variables back to python-apt
                         printf "%s\\0%s" "$trusted" "$trustedparts"
-                        """)
+                        """
                         process = subprocess.Popen(['sh'], stdin=subprocess.PIPE,
                                                    stdout=subprocess.PIPE)
                         output = process.communicate(input=command)[0]
@@ -880,7 +881,7 @@ def errfunc(errno, errormsg, filename):
         log.err("Explicit program termination %s\n" % (errno))
         sys.exit(errno)
     else:
-        log.err("I don't understand this error code %s\nPlease file a bug report" % (errno))
+        log.err("I don't understand this error code %s\nPlease file a bug report\n" % (errno))
             
 
 def fetcher( args ):
@@ -1294,10 +1295,10 @@ def fetcher( args ):
                             else:
                                 errlist.append(PackageName)
                 else:
-                        def DownloadPackages(url):
-                            if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
-                                log.success("%s done %s\n" % (url, LINE_OVERWRITE_FULL) )
-                                FetcherInstance.writeData(os.path.join(Str_DownloadDir, pkgFile))
+                        def DownloadPackages(PackageName, PackageFile):
+                            if FetcherInstance.download_from_web(PackageName, PackageFile, Str_DownloadDir):
+                                log.success("%s done %s\n" % (PackageName, LINE_OVERWRITE_FULL) )
+                                FetcherInstance.writeData(os.path.join(Str_DownloadDir, PackageFile))
                                 FetcherInstance.updateValue(download_size)
                                 return True
                             else:
@@ -1311,18 +1312,23 @@ def fetcher( args ):
                         PackageName = url
                         PackageFile = url.split("/")[-1]
                         PackageFormat = PackageFile.split(".")[-1]
+                        if pkgFile.endswith(".gpg") or pkgFile.endswith("Release"):
+                            pkgFileWithType = pkgFile
+                        else:
+                            pkgFileWithType = pkgFile + "." + url.split("/")[-1].split(".")[-1]
                         if PackageFormat in SupportedFormats:
                                 SupportedFormats.remove(PackageFormat) #Remove the already tried format
-                        
+                        log.msg("PackageFile is %s\n" % pkgFileWithType)
                         log.msg("Downloading %s %s\n" % (PackageName, LINE_OVERWRITE_FULL) ) 
-                        if DownloadPackages(url) is False and guiTerminateSignal is False:
+                        if DownloadPackages(PackageName, pkgFileWithType) is False and guiTerminateSignal is False:
                                 # dont proceed retry if Ctrl+C in cli
                                 log.verbose("%s failed. Retry with the remaining possible formats\n" % (url) )
                                 
                                 # We could fail with the Packages format of what apt gave us. We can try the rest of the formats that apt or the archive could support
                                 reallyFailed = True
                                 for Format in SupportedFormats:
-                                        NewPackageFile = PackageFile.split(".")[0] + "." + Format
+                                        NewPackageFile = pkgFileWithType.rstrip(pkgFileWithType.split(".")[-1]).rstrip(".") + "." + Format
+                                        #NewPackageFile = pkgFileWithType.split(".")[0] + "." + Format
                                         NewUrl = url.strip(url.split("/")[-1]) + NewPackageFile
                                         log.verbose("Retry download %s %s\n" % (NewUrl, LINE_OVERWRITE_FULL) )
                                         
@@ -1333,7 +1339,7 @@ def fetcher( args ):
                                         # This ends up resulting in active items being more than total_items
                                         # By increasing the counter, the active/total item list is reflected correctly 
                                         FetcherInstance.items += 1
-                                        if DownloadPackages(NewUrl) is True:
+                                        if DownloadPackages(NewUrl, NewPackageFile) is True:
                                                 reallyFailed = False
                                                 break
                                         else:
@@ -1497,6 +1503,15 @@ def installer( args ):
                 except AttributeError:
                     log.err("EOPNOTSUPP: Unsupported platform: %s\n" % (platform.platform()))
                     sys.exit(95)
+
+        
+        def verifyPayloadIntegrity(self, payload, checksum, checksumType):
+            '''Verify the integrity of the payload against the checksum'''
+            
+            if self.HashMessageDigestAlgorithms(checksum, checksumType, payload):
+                return True
+            else:
+                return False
                 
 
         def cleanAptPartial(self, path):
@@ -1756,6 +1771,83 @@ def installer( args ):
                     log.err( 'Incorrect choice. Exiting\n' )
                     sys.exit( 1 )
                   
+        def verifyAptFileIntegrity(self, FileList):
+            self.AptSecure = APTVerifySigs(Simulate=InstallerInstance.Bool_TestWindows)
+
+            self.lFileList = FileList
+            self.lFileList.sort()
+            
+            self.lVerifiedWhitelist = []
+            self.checksumList = []
+            self.checksumHeader = "SHA256:"
+            
+            for localFile in self.lFileList:
+                if localFile.endswith('.gpg'):
+                    log.verbose("%s\n" % (localFile) )
+                    gpgFile = os.path.abspath(localFile)
+                    if self.AptSecure.VerifySig(gpgFile, gpgFile.rstrip(".gpg") ):
+                        self.lVerifiedWhitelist.append(gpgFile)
+                        self.lVerifiedWhitelist.append(gpgFile.rstrip(".gpg"))
+                        log.verbose("%s is gpg clean\n" % (gpgFile.rstrip(".gpg")))
+                        
+                        # Let's build a list of all checksums whose gpg signature was clean
+                        #INFO: We take the Release file and mark the start with keyword "SHA256Sum:"
+                        # and we keep track of the lines (' checksum')
+                        # We declare the end as soon as we don't find the line in the format: (' checksum')
+                        releaseFile = open(gpgFile.rstrip(".gpg"), 'r')
+                        for line in releaseFile.readlines():
+                            if line.startswith(self.checksumHeader):
+                                startTrack = True
+                            if not line.startswith(' ') and self.checksumHeader not in line:
+                                startTrack = False
+                            if startTrack:
+                                try:
+                                    (checksum, size, files) = line.split()
+                                except:
+                                    print("This error should be ignored")
+                                    continue
+                                
+                                aptPkgFile = gpgFile.rstrip("Release.gpg")
+                                aptPkgFile = aptPkgFile[:-1] #Remove the trailing _ underscore
+                                aptPkgFile = aptPkgFile.split("/")[-1]
+                                aptPkgFile = aptPkgFile + "_" + files.replace("/", "_")
+
+                                self.checksumList.append([checksum, size, aptPkgFile])
+                    else:
+                        # Bad sig.
+                        log.err("%s bad signature. Not syncing because in strict mode.\n" % (localFile) )
+            #INFO: It is inefficient and being run twice, but we need to do so to do a match
+            # for the proper checksummed files
+            for localFile in self.lFileList:
+                for checksumItem in self.checksumList:
+                    if os.path.basename(localFile) == checksumItem[2]:
+                        #localFile = os.path.join(installPath, localFile)
+                        if InstallerInstance.verifyPayloadIntegrity(localFile, checksumItem[0], "sha256"):
+                            log.verbose("localFile %s Integrity with checksum %s matches\n" % (localFile, checksumItem[0]))
+                            self.lVerifiedWhitelist.append(localFile)
+                        else:
+                            log.verbose("localFile %s integrity doesn't match to checksum %s\n" % (localFile, checksumItem[0]))
+                            
+            return self.lVerifiedWhitelist
+        
+        def installVerifiedList(self, verifiedWhiteList, masterList):
+            #INFO: Above, when verifying the integritiy of the Release Files, we built a list of the names of aptPkgFiles
+            # which were gpg clean.
+            # And in lFileList, we have the full list of aptPkgFiles that have been downloaded
+            # Below, we loop through both the list's items and match out gpg clean list item's name to be present in 
+            # lFileList's items
+            
+            for whitelist_item in verifiedWhiteList:
+                for final_item in masterList:
+                    if whitelist_item == final_item:
+                        partialFile = os.path.join(InstallerInstance.apt_update_target_path, final_item)
+                        shutil.copy2(partialFile, InstallerInstance.apt_update_final_path)
+                        log.msg("%s synced.\n" % (final_item) )
+            return True
+
+        def listdir_fullpath(self, d):
+            return [os.path.join(d, f) for f in os.listdir(d)]
+
     InstallerInstance = InstallerClass(args)
     installPath = InstallerInstance.Str_InstallArg
     if os.path.isfile(installPath):
@@ -1838,6 +1930,8 @@ def installer( args ):
             #response = response.rstrip( "\r" )
             #if response.endswith( 'y' ) or response.endswith( 'Y' ):
             #        log.verbose( "Continuing with syncing the files.\n" )
+            FileList = []
+            tempDir = tempfile.mkdtemp()
             for filename in zipBugFile.namelist():
                 #INFO: Take care of Src Pkgs
                 found = False
@@ -1845,30 +1939,44 @@ def installer( args ):
                     if filename in SrcPkgDict[item]:
                         found = True
                         break
-                        
-                data = tempfile.NamedTemporaryFile()
-                data.file.write( zipBugFile.read( filename ) )
-                data.file.flush()
-                archive_file = data.name
+                
+                tempZipFile = os.path.join(tempDir, filename)
+                data = open(tempZipFile, 'wb')
+                #data = tempfile.NamedTemporaryFile(delete=False)
+                data.write( zipBugFile.read( filename ) )
+                data.flush()
+                archive_file = tempZipFile
                 
                 if found is True: #We are src packages. And don't need a lock on the APT Database
                     shutil.copy2(archive_file, os.path.join(InstallerInstance.Str_InstallSrcPath, filename) )
                     log.msg("Installing src package file %s to %s.\n" % (filename, InstallerInstance.Str_InstallSrcPath) )
                     continue
+                FileList.append(archive_file)
 
+            verifiedList = InstallerInstance.verifyAptFileIntegrity(FileList)
+            print("Verified list is %s\n" % (verifiedList))
+            print("File List is %s\n" % (FileList))
+            if not InstallerInstance.installVerifiedList(verifiedList, FileList):
+                log.err("Failed to verify File Checksum integrity of APT files\n")
+                sys.exit(1)
+            
+            log.msg("Exiting here Ritesh\n")
+            sys.exit(1)
+            for filename in zipBugFile.namelist():
                 if InstallerInstance.Bool_TestWindows:
                     log.verbose("In simulate mode. No locking required.\n")
                 elif InstallerInstance.lockPackages() is False:
                     log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
                     sys.exit(1)
                 
+                print("archive_File is %s and filename is %s\n" % (archive_file, filename))
                 InstallerInstance.magic_check_and_uncompress( archive_file, filename )
 
                 if InstallerInstance.Bool_TestWindows:
                     log.verbose("In simulate mode. No locking required\n")
                 else:
                     InstallerInstance.unlockPackages()
-                data.file.close()
+
                             
     elif os.path.isdir(installPath):
         SrcPkgDict = {}
@@ -1930,66 +2038,42 @@ def installer( args ):
                                 
         bugs_number = {}                        
         if InstallerInstance.Bool_SkipBugReports:
-                log.verbose("Skipping bug report check as requested")
+            log.verbose("Skipping bug report check as requested")
         else:
-                for filename in os.listdir( installPath ):
-                        if filename.endswith( apt_bug_file_format ):
-                                filename = os.path.join(installPath, filename)
-                                temp = open(filename, 'r')
-                                for bug_subject_identifier in temp.readlines():
-                                        if bug_subject_identifier.startswith( 'Subject:' ):
-                                                subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
-                                                subject = subject.rstrip( "\n" )
-                                                break
-                                bugs_number[filename] = subject
-                                temp.close()
+            for filename in os.listdir( installPath ):
+                if filename.endswith( apt_bug_file_format ):
+                    filename = os.path.join(installPath, filename)
+                    temp = open(filename, 'r')
+                    for bug_subject_identifier in temp.readlines():
+                        if bug_subject_identifier.startswith( 'Subject:' ):
+                            subject = bug_subject_identifier.lstrip( bug_subject_identifier.split( ":" )[0] )
+                            subject = subject.rstrip( "\n" )
+                            break
+                    bugs_number[filename] = subject
+                    temp.close()
         log.verbose(str(bugs_number) + "\n")
         if bugs_number:
-                InstallerInstance.displayBugs(dataType="dir")
+            InstallerInstance.displayBugs(dataType="dir")
         else:
-                log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
-                DirInstallPackages(installPath)
+            log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
+            DirInstallPackages(installPath)
     else:
         log.err("Invalid path argument specified: %s\n" % (installPath))
         sys.exit(1)
                         
     if InstallerInstance.Bool_Untrusted:
-            log.err("Disabling apt gpg check can risk your machine to compromise.\n")
-            for x in os.listdir(InstallerInstance.apt_update_target_path):
-                    x = os.path.join(InstallerInstance.apt_update_target_path, x)
-                    shutil.copy2(x, InstallerInstance.apt_update_final_path) # Do we do a move ??
-                    log.verbose("%s %s\n" % (x, InstallerInstance.apt_update_final_path) )
-                    log.msg("%s synced.\n" % (x) )
+        log.err("Disabling apt gpg check can risk your machine to compromise.\n")
+        for x in os.listdir(InstallerInstance.apt_update_target_path):
+            x = os.path.join(InstallerInstance.apt_update_target_path, x)
+            shutil.copy2(x, InstallerInstance.apt_update_final_path) # Do we do a move ??
+            log.verbose("%s %s\n" % (x, InstallerInstance.apt_update_final_path) )
+            log.msg("%s synced.\n" % (x) )
     else:
-            AptSecure = APTVerifySigs(Simulate=InstallerInstance.Bool_TestWindows)
-
-            lFileList= os.listdir(InstallerInstance.apt_update_target_path)
-            lFileList.sort()
-            lVerifiedWhitelist = []
-            for localFile in lFileList:
-                    localFile = os.path.join(InstallerInstance.apt_update_target_path, localFile)
-                    if localFile.endswith('.gpg'):
-                            log.verbose("%s\n" % (localFile) )
-                            gpgFile = os.path.abspath(localFile)
-                            if AptSecure.VerifySig(gpgFile, gpgFile.rstrip(".gpg") ):
-                                    aptPkgFile = gpgFile.rstrip("Release.gpg")
-                                    aptPkgFile = aptPkgFile[:-1] #Remove the trailing _ underscore
-                                    aptPkgFile = aptPkgFile.split("/")[-1]
-                                    lVerifiedWhitelist.append(aptPkgFile)
-                                    log.verbose("%s is gpg clean\n" % (aptPkgFile) )
-                            else:
-                                    # Bad sig.
-                                    log.err("%s bad signature. Not syncing because in strict mode.\n" % (aptPkgFile) )
-            if lVerifiedWhitelist != []:
-                    log.verbose (str(lVerifiedWhitelist) + "\n")
-                    for whitelist_item in lVerifiedWhitelist:
-                            for final_item in lFileList:
-                                    if whitelist_item in final_item:
-                                            partialFile = os.path.join(InstallerInstance.apt_update_target_path, final_item)
-                                            shutil.copy2(partialFile, InstallerInstance.apt_update_final_path)
-                                            log.msg("%s synced.\n" % (final_item) )
-
-                        
+        lFileList = InstallerInstance.listdir_fullpath(installPath)
+        verifiedList = InstallerInstance.verifyAptFileIntegrity(lFileList)
+        if not InstallerInstance.installVerifiedList(verifiedList, lFileList):
+            log.err("Failed to verify File Checksum integrity of APT files\n")
+            sys.exit(1)
 
 def setter(args):
         #log.verbose(str(args))
