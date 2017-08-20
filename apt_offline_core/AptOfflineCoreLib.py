@@ -1979,7 +1979,7 @@ def installer( args ):
                                     log.verbose("%s is gpg clean\n" % (aptPkgFile) )
                             else:
                                     # Bad sig.
-                                    log.err("%s bad signature. Not syncing because in strict mode.\n" % (localFile) )
+                                    log.err("%s bad signature. Not syncing because in strict mode.\n" % (aptPkgFile) )
             if lVerifiedWhitelist != []:
                     log.verbose (str(lVerifiedWhitelist) + "\n")
                     for whitelist_item in lVerifiedWhitelist:
