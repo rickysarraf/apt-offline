@@ -1970,13 +1970,13 @@ def installer( args ):
                     localFile = os.path.join(InstallerInstance.apt_update_target_path, localFile)
                     if localFile.endswith('.gpg'):
                             log.verbose("%s\n" % (localFile) )
-                            localFile = os.path.abspath(localFile)
-                            if AptSecure.VerifySig(localFile, localFile.rstrip(".gpg") ):
-                                    localFile = localFile.rstrip("Release.gpg")
-                                    localFile = localFile[:-1] #Remove the trailing _ underscore
-                                    localFile = localFile.split("/")[-1]
-                                    lVerifiedWhitelist.append(localFile)
-                                    log.verbose("%s is gpg clean\n" % (localFile) )
+                            gpgFile = os.path.abspath(localFile)
+                            if AptSecure.VerifySig(gpgFile, gpgFile.rstrip(".gpg") ):
+                                    aptPkgFile = gpgFile.rstrip("Release.gpg")
+                                    aptPkgFile = aptPkgFile[:-1] #Remove the trailing _ underscore
+                                    aptPkgFile = aptPkgFile.split("/")[-1]
+                                    lVerifiedWhitelist.append(aptPkgFile)
+                                    log.verbose("%s is gpg clean\n" % (aptPkgFile) )
                             else:
                                     # Bad sig.
                                     log.err("%s bad signature. Not syncing because in strict mode.\n" % (localFile) )
