@@ -1119,8 +1119,8 @@ def fetcher( args ):
                         raw_data_list = open( Str_GetArg, 'r' ).readlines()
                 except IOError as e:
                         ( errno, strerror ) = e.args
-                        log.err( "%s %s\n" % ( errno, strerror ) )
-                        errfunc( errno, '', Str_GetArg)
+                        log.err( "%s %s %s\n" % ( errno, strerror, Str_GetArg ) )
+                        sys.exit(errno)
                         
                 FetchData['Item'] = []
                 for item in raw_data_list:
