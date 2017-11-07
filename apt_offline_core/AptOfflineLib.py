@@ -40,6 +40,8 @@ try:
         import lzma
 except ImportError:
         modLZMA = False
+        sys.stderr.write("WARN: lzma module unavailable\n")
+        sys.stderr.write("WARN: Please install python lzma module for APT lzma backend\n")
                 
 WindowColor = True
 try:
