@@ -1261,6 +1261,8 @@ def fetcher( args ):
                                 FetcherInstance.writeToCache(pkgFile)
                                 FetcherInstance.processBugReports(PackageName)
                                 FetcherInstance.updateValue(download_size)
+                                if PackageName in list(PackageInstalledVersion.keys()):
+                                    FetcherInstance.buildChangelog(pkgFile, PackageInstalledVersion[PackageName])
                             else:
                                 errlist.append(PackageName)
                 else:
