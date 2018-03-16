@@ -1230,9 +1230,6 @@ def fetcher( args ):
                         
                         #INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
                         if full_file_path is not False:
-                            if PackageName in list(PackageInstalledVersion.keys()):
-                                    FetcherInstance.buildChangelog(full_file_path, PackageInstalledVersion[PackageName])
-                            
                             if FetcherInstance.verifyPayloadIntegrity(full_file_path, checksum):
                                 log.success("%s found in cache%s\n" % (PackageName, LINE_OVERWRITE_FULL))
                                 #INFO: When we copy the payload from the local cache, we need to update the progressbar
@@ -1242,6 +1239,8 @@ def fetcher( args ):
                                 FetcherInstance.processBugReports(PackageName)
                                 FetcherInstance.updateValue(download_size)
                                 FetcherInstance.completed()
+                                if PackageName in list(PackageInstalledVersion.keys()):
+                                    FetcherInstance.buildChangelog(full_file_path, PackageInstalledVersion[PackageName])
                             else:
                                 log.verbose("%s checksum mismatch. Skipping file %s\n" % (pkgFile, LINE_OVERWRITE_FULL) )
                                 log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_FULL) )
