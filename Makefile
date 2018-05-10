@@ -3,6 +3,12 @@ all: gui html
 gui:
 	cd apt_offline_gui ; ./genui.sh
 
+build:gui
+	python3 setup.py build
+
+install:
+	python3 setup.py install
+
 html:
 	man2html apt-offline.8 > apt-offline.html
 	
