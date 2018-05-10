@@ -4,10 +4,10 @@
 Please refer to requirements.txt for dependencies that need to be pre-installed for apt-offline. Note: If using a package from your distribution, manual installation of dependencies should not be required
 
 # To build
-python setup.py build
+make build
 
 # To Install (You might need to be root)
-python setup.py install
+make install
 
 ## Under Microsoft Windows
 
