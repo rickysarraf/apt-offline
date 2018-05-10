@@ -14,8 +14,11 @@ make install
 # Execute the file using the python interpreter
 # Assuming python.exe is in your path
 
+#TODO: Find a windows native way to update/generate the Ui files
+# The equivalent of genui.sh
+
 # To build
-C:\> python setup.py build
+C:\> python3 setup.py build
 
 # To install
-C:\> python setup.py install
+C:\> python3 setup.py install
