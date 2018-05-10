@@ -10,4 +10,5 @@ clean:
 	rm -f apt_offline_gui/Ui_*.py
 	rm -f apt_offline_gui/resources_rc.py
 	rm -f *.pyc
+	rm -rf build/
 	rm -f apt-offline.html
