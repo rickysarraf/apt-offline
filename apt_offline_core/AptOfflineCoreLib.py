@@ -1159,11 +1159,11 @@ def fetcher( args ):
                                         GPGItemFile = ExtraItemFile + "Release.gpg"
                                         ReleaseItemFile = ExtraItemFile + "Release"
                                         
-                                        FetchData['Item'].append(GPGItemURL + " " + GPGItemFile + " " + str(ItemSize) + " " + ItemChecksum)
+                                        FetchData['Item'].append(GPGItemURL + " " + GPGItemFile + " " + str(ItemSize))
                                         log.verbose("Printing GPG URL/Files\n")
                                         log.verbose("%s %s" % (GPGItemURL, GPGItemFile) )
         
-                                        FetchData['Item'].append(ReleaseItemURL + " " + ReleaseItemFile + " " + str(ItemSize) + " " + ItemChecksum)
+                                        FetchData['Item'].append(ReleaseItemURL + " " + ReleaseItemFile + " " + str(ItemSize))
                                         log.verbose("Printing Release URL/Files\n")
                                         log.verbose("%s %s" % (ReleaseItemURL, ReleaseItemFile) )
                                 FetchData['Item'].append( item )
