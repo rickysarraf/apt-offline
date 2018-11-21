@@ -803,26 +803,28 @@ def stripper(item):
         checksum - The checksum string
         and returns them.'''
     
-        item = item.split(' ')
-        log.verbose("Item is %s\n" % (item) )
-
-        item0 = ''.join(item[0])
-        item0 = item0.rstrip("'")
-        item0 = item0.lstrip("'")
-        url = item0
+        log.verbose("Item before split is: %s\n" % (item))
+        try:
+            url, localFile, size, checksum = item.split(' ')
+        except ValueError:
+            #INFO: For apt metadata, no checksum is present
+            # For such case, set checksum to None
+            url, localFile, size = item.split(' ')
+            checksum = None
+        log.verbose("Item after split is: %s %s %s %s\n" % (url, localFile, size, checksum))
+            
+        url = url.rstrip("'")
+        url = url.lstrip("'")
         log.verbose("Stripped item URL is: %s\n" % url)
         
-        item1 = ''.join(item[1])
-        item1 = item1.rstrip("'")
-        item1 = item1.lstrip("'")
-        localFile = item1
+        localFile = localFile.rstrip("'")
+        localFile = localFile.lstrip("'")
         log.verbose("Stripped item FILE is: %s\n" % localFile)
         
         try:
-                item2 = ''.join(item[2])
-                item2 = item2.rstrip("'")
-                item2 = item2.lstrip("'")
-                size = int(item2)
+                size = size.rstrip("'")
+                size = size.lstrip("'")
+                size = int(size)
         except ValueError:
                 log.verbose("%s is malformed\n" % (" ".join(item) ) )
                 size = 0
@@ -830,15 +832,10 @@ def stripper(item):
 
         #INFO: md5 ends up having '\n' with it.
         # That needs to be stripped too.
-        try:
-            item3 = ''.join(item[3])
-            item3 = item3.rstrip("'")
-            item3 = item3.lstrip("'")
-            item3 = item3.rstrip("\n")
-            checksum = item3
-        except IndexError:
-            if item[1].endswith("_Release") or item[1].endswith("_Release.gpg"):
-                checksum = None
+        if checksum:
+            checksum = checksum.rstrip("'")
+            checksum = checksum.lstrip("'")
+            checksum = checksum.rstrip("\n")
         log.verbose("Stripped item CHECKSUM is: %s\n" % checksum)
         
         return url, localFile, size, checksum
