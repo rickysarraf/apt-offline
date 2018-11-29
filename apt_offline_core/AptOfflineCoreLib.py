@@ -750,6 +750,7 @@ class GenericDownloadFunction():
                     errfunc(101010, "Max timeout retry count reached. Discontinuing download.\n", url)
                         
                     # Clean the half downloaded file.
+                    data.close()
                     os.unlink(localFile)
                     return False
                 
