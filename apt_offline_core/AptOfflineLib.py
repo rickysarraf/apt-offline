@@ -566,18 +566,19 @@ class FileMgmt( object ):
                 #INFO: If src and dest are the same, it is effectively opening the same file
                 # in read and write modes, which leads to NULL data corruption
                 destFile = os.path.join(dest, os.path.basename(src))
-                #print src, destFile
-                if src == destFile:
+                srcFile = os.path.abspath(src)
+                #print(srcFile, destFile)
+                if srcFile == destFile:
                     return True
-                srcFile = open(src, 'rb')
-                FP = open(destFile, 'wb')
+                SFH = open(srcFile, 'rb')
+                DFH = open(destFile, 'wb')
                 
-                FP.write(srcFile.read())
-                FP.flush()
-                FP.close()
-                srcFile.close()
+                DFH.write(SFH.read())
+                DFH.flush()
+                DFH.close()
+                SFH.close()
             except IOError:
-                srcFile.close()
+                SFH.close()
                 return False
             
         def move_folder( self, src, dest ):
