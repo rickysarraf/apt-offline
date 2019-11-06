@@ -1804,7 +1804,7 @@ def installer( args ):
                                 try:
                                     (checksum, size, files) = line.split()
                                 except:
-                                    print("This error should be ignored")
+                                    log.verbose("This error should be ignored")
                                     continue
                                 
                                 aptPkgFile = gpgFile.rstrip("Release.gpg")
@@ -1954,14 +1954,13 @@ def installer( args ):
                 FileList.append(archive_file)
 
             verifiedList = InstallerInstance.verifyAptFileIntegrity(FileList)
-            print("Verified list is %s\n" % (verifiedList))
-            print("File List is %s\n" % (FileList))
             if not InstallerInstance.installVerifiedList(verifiedList, FileList):
                 log.err("Failed to verify File Checksum integrity of APT files\n")
                 sys.exit(1)
             
             log.msg("Exiting here Ritesh\n")
             sys.exit(1)
+
             for filename in zipBugFile.namelist():
                 if InstallerInstance.Bool_TestWindows:
                     log.verbose("In simulate mode. No locking required.\n")
@@ -1969,7 +1968,6 @@ def installer( args ):
                     log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
                     sys.exit(1)
                 
-                print("archive_File is %s and filename is %s\n" % (archive_file, filename))
                 InstallerInstance.magic_check_and_uncompress( archive_file, filename )
 
                 if InstallerInstance.Bool_TestWindows:
