@@ -1390,8 +1390,8 @@ def fetcher( args ):
         # Print the failed files
         if len(errlist) > 0:
                 log.msg("\n\n")
-                log.warn("The following files failed to be downloaded.\n")
-                log.success("Not all errors are fatal. For eg. Translation files are not present on all mirrors.\n")
+                log.verbose("The following files failed to be downloaded.\n")
+                log.verbose("Not all errors are fatal. For eg. Translation files are not present on all mirrors.\n")
                 for error in errlist:
                         log.warn("%s failed.\n" % (error))
         if args.bundle_file:
