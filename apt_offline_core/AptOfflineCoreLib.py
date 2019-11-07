@@ -111,7 +111,8 @@ errlist = []
 supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
 apt_update_target_path = '/var/lib/apt/lists/partial'
 apt_update_final_path = '/var/lib/apt/lists/'
-apt_package_target_path = '/var/cache/apt/archives/'
+apt_package_target_path = '/var/cache/apt/archives/partial/'
+apt_package_final_path = '/var/cache/apt/archives/'
 
 # Locks
 apt_lists_lock = '/var/lib/apt/lists/lock'
@@ -867,8 +868,8 @@ def errfunc(errno, errormsg, filename):
     # and better document them the next time you find it out.
     # 13 is for "Permission Denied" when you don't have privileges to access the destination 
     if errno in retriable_error_codes:
-        log.warn("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL))
-        log.warn("Will still try with other package uris\n")
+        log.verbose("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL))
+        log.verbose("Will still try with other package uris\n")
     elif errno == 10054:
         log.verbose("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL) )
     elif errno == 407 or errno == 2:
@@ -1318,7 +1319,6 @@ def fetcher( args ):
                             pkgFileWithType = pkgFile + "." + url.split("/")[-1].split(".")[-1]
                         if PackageFormat in SupportedFormats:
                                 SupportedFormats.remove(PackageFormat) #Remove the already tried format
-                        log.msg("PackageFile is %s\n" % pkgFileWithType)
                         log.msg("Downloading %s %s\n" % (PackageName, LINE_OVERWRITE_FULL) ) 
                         if DownloadPackages(PackageName, pkgFileWithType) is False and guiTerminateSignal is False:
                                 # dont proceed retry if Ctrl+C in cli
@@ -1428,7 +1428,7 @@ def fetcher( args ):
                 log.verbose("The following files failed to be downloaded.\n")
                 log.verbose("Not all errors are fatal. For eg. Translation files are not present on all mirrors.\n")
                 for error in errlist:
-                        log.warn("%s failed.\n" % (error))
+                        log.verbose("%s failed.\n" % (error))
         if args.bundle_file:
                 log.msg("\nDownloaded data to %s\n" % (Str_BundleFile) )
         else:
@@ -1457,6 +1457,10 @@ def installer( args ):
             AptOfflineLib.Archiver.__init__(self)
             LockAPT.__init__(self, apt_lists_lock, apt_packages_lock)
             
+            if MagicLib is False:
+                log.err("Please ensure libmagic is installed\n")
+                return False
+            self.magicMIME = AptOfflineMagicLib.open(AptOfflineMagicLib.MAGIC_MIME_TYPE)
                         
             if self.Str_InstallSrcPath is None:
                 pidname = os.getpid()
@@ -1481,7 +1485,7 @@ def installer( args ):
                 log.verbose("apt-package-target-path is %s\n" % (tempdir) )
                 os.mkdir(tempdir)
                 self.apt_package_target_path = os.path.abspath(tempdir)
-                    
+                
                 tempdir = os.path.join(self.tempdir , "apt-update-target-path-" + str(pidname) )
                 log.verbose("apt-update-target-path is %s\n" % (tempdir) )
                 os.mkdir(tempdir)
@@ -1554,22 +1558,16 @@ def installer( args ):
         
         def magic_check_and_uncompress(self, archive_file=None, filename=None):
                 
-            if MagicLib is False:
-                    log.err("Please ensure libmagic is installed\n")
-                    return False
-
-            magicMIME = AptOfflineMagicLib.open(AptOfflineMagicLib.MAGIC_MIME_TYPE)
-            magicMIME.load()
-            
+            self.magicMIME.load()
             retval = False
-            if magicMIME.file( archive_file ) == "application/x-bzip2" or magicMIME.file( archive_file ) == "application/gzip" or magicMIME.file(archive_file) == "application/x-xz":
+            if self.magicMIME.file( archive_file ) == "application/x-bzip2" or self.magicMIME.file( archive_file ) == "application/gzip" or self.magicMIME.file(archive_file) == "application/x-xz":
                     temp_filename = os.path.join(self.apt_update_target_path, filename + app_name)
                     filename = os.path.join(self.apt_update_target_path, filename)
-                    if magicMIME.file( archive_file ) == "application/x-bzip2":
+                    if self.magicMIME.file( archive_file ) == "application/x-bzip2":
                         retval = self.decompress_the_file( archive_file, temp_filename, "bzip2" )
-                    elif magicMIME.file( archive_file ) == "application/gzip":
+                    elif self.magicMIME.file( archive_file ) == "application/gzip":
                         retval = self.decompress_the_file( archive_file, temp_filename, "gzip" )
-                    elif magicMIME.file(archive_file) == "application/x-xz":
+                    elif self.magicMIME.file(archive_file) == "application/x-xz":
                         retval = self.decompress_the_file(archive_file, temp_filename, "xz")
                     else:
                         log.verbose("No filetype match for %s\n" % (filename) )
@@ -1584,14 +1582,14 @@ def installer( args ):
                         except OSError:
                             log.warn("Failed to unlink temproary file %s. Check respective decompressor library support\n" % (temp_filename) )
 
-            elif magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or magicMIME.file( archive_file ) == "application/pgp-signature":
+            elif self.magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or self.magicMIME.file( archive_file ) == "application/pgp-signature":
                 gpgFile = os.path.join(self.apt_update_target_path, filename)
                 shutil.copy2(archive_file, gpgFile)
                 # PGP armored data should be bypassed
                 log.verbose("File is %s, hence 'True'.\n" % (filename) )
                 retval = True
-            elif magicMIME.file( archive_file ) == "application/vnd.debian.binary-package" or \
-                magicMIME.file(archive_file) == "application/x-debian-package":
+            elif self.magicMIME.file( archive_file ) == "application/vnd.debian.binary-package" or \
+                self.magicMIME.file(archive_file) == "application/x-debian-package":
                 debFile = os.path.join(self.apt_package_target_path, filename)
                 if os.access( self.apt_package_target_path, os.W_OK ):
                     shutil.copy2( archive_file, debFile )
@@ -1603,7 +1601,7 @@ def installer( args ):
                     sys.exit( 1 )
             elif filename.endswith( apt_bug_file_format ):
                 pass
-            elif magicMIME.file( archive_file ) == "text/plain":
+            elif self.magicMIME.file( archive_file ) == "text/plain":
                 txtFile = os.path.join(self.apt_update_target_path, filename)
                 if os.access( self.apt_update_target_path, os.W_OK ):
                     shutil.copy( archive_file, txtFile )
@@ -1615,7 +1613,7 @@ def installer( args ):
                 log.err( "I couldn't understand file type %s.\n" % ( filename ) )
             
             #INFO: Close the handle and conserve precious memory
-            magicMIME.close()
+            self.magicMIME.close()
             if retval:
                 #CHANGE: track progress
                 totalSize[0]+=1 
@@ -1840,8 +1838,7 @@ def installer( args ):
             for whitelist_item in verifiedWhiteList:
                 for final_item in masterList:
                     if whitelist_item == final_item:
-                        partialFile = os.path.join(InstallerInstance.apt_update_target_path, final_item)
-                        shutil.copy2(partialFile, InstallerInstance.apt_update_final_path)
+                        shutil.copy2(final_item, InstallerInstance.apt_update_final_path)
                         log.msg("%s synced.\n" % (final_item) )
             return True
 
@@ -1932,6 +1929,7 @@ def installer( args ):
             #        log.verbose( "Continuing with syncing the files.\n" )
             FileList = []
             tempDir = tempfile.mkdtemp()
+            InstallerInstance.magicMIME.load()
             for filename in zipBugFile.namelist():
                 #INFO: Take care of Src Pkgs
                 found = False
@@ -1952,30 +1950,23 @@ def installer( args ):
                     log.msg("Installing src package file %s to %s.\n" % (filename, InstallerInstance.Str_InstallSrcPath) )
                     continue
                 FileList.append(archive_file)
+                
+                #INFO: Integrity of the .deb packages is delegated to apt on the target system
+                # We just copy the files to partial/ and apt will only use it if it meets all integrity checks
+                if filename.endswith(".deb"):
+                    if InstallerInstance.magicMIME.file( archive_file ) == "application/vnd.debian.binary-package" or InstallerInstance.magicMIME.file(archive_file) == "application/x-debian-package":
+                        debFile = os.path.join(InstallerInstance.apt_package_target_path, filename)
+                        if os.access( InstallerInstance.apt_package_target_path, os.W_OK ):
+                            shutil.copy2( archive_file, debFile )
+                            os.chmod(debFile, 0o644)
+                            log.msg("%s file synced.\n" % (debFile) )
+            InstallerInstance.magicMIME.close()
 
             verifiedList = InstallerInstance.verifyAptFileIntegrity(FileList)
             if not InstallerInstance.installVerifiedList(verifiedList, FileList):
                 log.err("Failed to verify File Checksum integrity of APT files\n")
                 sys.exit(1)
             
-            log.msg("Exiting here Ritesh\n")
-            sys.exit(1)
-
-            for filename in zipBugFile.namelist():
-                if InstallerInstance.Bool_TestWindows:
-                    log.verbose("In simulate mode. No locking required.\n")
-                elif InstallerInstance.lockPackages() is False:
-                    log.err("Couldn't acquire lock on APT\nIs another apt process running?\n")
-                    sys.exit(1)
-                
-                InstallerInstance.magic_check_and_uncompress( archive_file, filename )
-
-                if InstallerInstance.Bool_TestWindows:
-                    log.verbose("In simulate mode. No locking required\n")
-                else:
-                    InstallerInstance.unlockPackages()
-
-                            
     elif os.path.isdir(installPath):
         SrcPkgDict = {}
         
@@ -2054,11 +2045,13 @@ def installer( args ):
             InstallerInstance.displayBugs(dataType="dir")
         else:
             log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
-            DirInstallPackages(installPath)
+            #INFO: Check how delegating this step to installVerifiedList() impacats source package installation
+            #DirInstallPackages(installPath)
     else:
         log.err("Invalid path argument specified: %s\n" % (installPath))
         sys.exit(1)
-                        
+    
+    sys.exit(0)                    
     if InstallerInstance.Bool_Untrusted:
         log.err("Disabling apt gpg check can risk your machine to compromise.\n")
         for x in os.listdir(InstallerInstance.apt_update_target_path):
