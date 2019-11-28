@@ -946,9 +946,10 @@ def fetcher( args ):
                 try:
                         for authstr in Str_HttpBasicAuth:
                                 # Add the username and password.
-                                username = authstr.split("@")[0].split(":")[0]
-                                password = authstr.split("@")[0].split(":")[1]
-                                top_level_url = authstr.split("@")[1]
+                                parsedUrl = urllib.parse.urlparse(authstr)
+                                username = parsedUrl.username
+                                password = parsedUrl.password
+                                top_level_url = parsedUrl.hostname
                                 password_mgr.add_password(None, top_level_url, username, password)
                                 log.verbose("Added user %s with pass %s auth to domain %s\n" % (username, password, top_level_url))
 
