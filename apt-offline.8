@@ -71,7 +71,7 @@ option is explicitly mentioned, the
 .B set
 command will generate signature for both the \-\-update and \-\-upgrade options.
 
-.SS get FILENAME [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] [--proxy-host] [--proxy-port] [--https-cert-file --https-key-file] [--disable-cert-check]
+.SS get FILENAME [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] [--proxy-host] [--proxy-port] [--https-cert-file --https-key-file] [--http-basicauth] [--disable-cert-check]
 
 .PP
 
@@ -120,6 +120,9 @@ The Certificate-key-file to use if https-client-authentication is required on on
 
 .IP "\fB\-\-disable-cert-check\fP" 10
 Disable the check of https certificates on servers
+
+.IP "\fB\-\-http\-basicauth URL\fP" 10
+A username/password encoded in the URL. Note\: Passwords with special characters should be percent encoded as per RFC-3986 section 2.1
 
 .SS install FILE/FOLDER [-h] [--skip-bug-reports ] [--install-src-path PATH] [--allow-unauthenticated]
 
