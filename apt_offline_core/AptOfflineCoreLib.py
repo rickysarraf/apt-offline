@@ -2229,7 +2229,7 @@ def main():
 						help="Certificate key for https client authentication", type=str, default=None)
 
         parser_get.add_argument("--http-basicauth", dest="http_basicauth",  action='append',
-						help="A user/password for a certain domain in format: 'user:password@domain'. This argument can be passed as many times as required", type=str, default=[])
+                help="A user/password encoded URL. Passwords with special characters should be percent encoded", type=str, default=[], metavar="https://username:password@hostname.com/")
 
         parser_get.add_argument("--disable-cert-check", dest="disable_cert_check",
                           help="Disable Certificate check on https connections", action="store_true")
