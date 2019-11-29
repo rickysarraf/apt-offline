@@ -37,6 +37,7 @@ import zipfile
 import pydoc
 import traceback
 import argparse
+import re
 
 from ssl import SSLError, SSLEOFError
 import zlib
@@ -945,13 +946,16 @@ def fetcher( args ):
 
                 try:
                         for authstr in Str_HttpBasicAuth:
+                                # Add https schema if not provided any
+                                if not re.match('^[a-z]*:?//',authstr):
+                                        authstr = 'https://' + authstr
                                 # Add the username and password.
                                 parsedUrl = urllib.parse.urlparse(authstr)
                                 username = parsedUrl.username
                                 password = urllib.parse.unquote(parsedUrl.password)
                                 top_level_url = parsedUrl.hostname
                                 if parsedUrl.port:
-                                        top_level_url += ":" + parsedUrl.port
+                                        top_level_url += ":" + str(parsedUrl.port)
                                 password_mgr.add_password(None, top_level_url, username, password)
                                 log.verbose("Added user %s with pass %s auth to domain %s\n" % (username, password, top_level_url))
 
@@ -2231,7 +2235,7 @@ def main():
 						help="Certificate key for https client authentication", type=str, default=None)
 
         parser_get.add_argument("--http-basicauth", dest="http_basicauth",  action='append',
-						help="A user/password for a certain domain in format: 'user:password@domain'. This argument can be passed as many times as required", type=str, default=[])
+						help="A user/password for a certain domain in format: 'https://user:password@domain:port'. This argument can be passed as many times as required", type=str, default=[])
 
         parser_get.add_argument("--disable-cert-check", dest="disable_cert_check",
                           help="Disable Certificate check on https connections", action="store_true")
