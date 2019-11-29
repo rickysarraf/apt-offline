@@ -896,6 +896,7 @@ def fetcher( args ):
         Str_ProxyPort = args.proxy_port
         Str_HttpsCertFile = args.https_cert_file
         Str_HttpsKeyFile = args.https_key_file
+        Str_HttpBasicAuth = args.http_basicauth
         Bool_DisableCertCheck = args.disable_cert_check
         Bool_BugReports = args.deb_bugs
         global guiTerminateSignal
@@ -937,6 +938,33 @@ def fetcher( args ):
                 opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=context))
                 urllib.request.install_opener(opener)
                 log.verbose("SSL Client Authentication successfully set up with certificate file %s and key file %s\n" % (Str_HttpsCertFile, Str_HttpsKeyFile))
+
+        if Str_HttpBasicAuth:
+                # create a password manager
+                password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+
+                try:
+                        for authstr in Str_HttpBasicAuth:
+                                # Add the username and password.
+                                parsedUrl = urllib.parse.urlparse(authstr)
+                                username = parsedUrl.username
+                                password = parsedUrl.password
+                                top_level_url = parsedUrl.hostname
+                                password_mgr.add_password(None, top_level_url, username, password)
+                                log.verbose("Added user %s with pass %s auth to domain %s\n" % (username, password, top_level_url))
+
+                        handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
+
+                        # create "opener" (OpenerDirector instance)
+                        opener = urllib.request.build_opener(handler)
+
+                        # Install the opener.
+                        # Now all calls to urllib.request.urlopen use our opener.
+                        urllib.request.install_opener(opener)
+                except:
+                        log.err( "Incorrect value set for HttpBasicAuth.\n" )
+                        sys.exit( 1 )
+
         
         #INFO: Python 2.5 has hashlib which supports sha256
         # If we don't have Python 2.5, disable MD5/SHA256 checksum
@@ -2199,6 +2227,9 @@ def main():
         
         parser_get.add_argument("--https-key-file", dest="https_key_file",
 						help="Certificate key for https client authentication", type=str, default=None)
+
+        parser_get.add_argument("--http-basicauth", dest="http_basicauth",  action='append',
+						help="A user/password for a certain domain in format: 'user:password@domain'. This argument can be passed as many times as required", type=str, default=[])
 
         parser_get.add_argument("--disable-cert-check", dest="disable_cert_check",
                           help="Disable Certificate check on https connections", action="store_true")
