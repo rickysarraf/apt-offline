@@ -948,8 +948,10 @@ def fetcher( args ):
                                 # Add the username and password.
                                 parsedUrl = urllib.parse.urlparse(authstr)
                                 username = parsedUrl.username
-                                password = parsedUrl.password
+                                password = urllib.parse.unquote(parsedUrl.password)
                                 top_level_url = parsedUrl.hostname
+                                if parsedUrl.port:
+                                        top_level_url += ":" + parsedUrl.port
                                 password_mgr.add_password(None, top_level_url, username, password)
                                 log.verbose("Added user %s with pass %s auth to domain %s\n" % (username, password, top_level_url))
 
