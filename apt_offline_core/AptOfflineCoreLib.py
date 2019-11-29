@@ -1424,8 +1424,8 @@ def fetcher( args ):
         # Print the failed files
         if len(errlist) > 0:
                 log.msg("\n\n")
-                log.warn("The following files failed to be downloaded.\n")
-                log.success("Not all errors are fatal. For eg. Translation files are not present on all mirrors.\n")
+                log.verbose("The following files failed to be downloaded.\n")
+                log.verbose("Not all errors are fatal. For eg. Translation files are not present on all mirrors.\n")
                 for error in errlist:
                         log.warn("%s failed.\n" % (error))
         if args.bundle_file:
@@ -2235,7 +2235,7 @@ def main():
 						help="Certificate key for https client authentication", type=str, default=None)
 
         parser_get.add_argument("--http-basicauth", dest="http_basicauth",  action='append',
-						help="A user/password for a certain domain in format: 'https://user:password@domain:port'. This argument can be passed as many times as required", type=str, default=[])
+            help="A user/password encoded URL. Passwords with special characters should be percent encoded", type=str, default=[], metavar="https://username:password@hostname.com:443/")
 
         parser_get.add_argument("--disable-cert-check", dest="disable_cert_check",
                           help="Disable Certificate check on https connections", action="store_true")

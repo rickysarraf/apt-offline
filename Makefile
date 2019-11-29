@@ -1,7 +1,7 @@
 all: gui html
 
 gui:
-	cd apt_offline_gui ; ./genui.sh
+	cd apt_offline_gui ; ./genui.sh || exit 1
 
 build:gui
 	python3 setup.py build

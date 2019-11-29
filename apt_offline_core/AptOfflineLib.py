@@ -674,7 +674,7 @@ class MyThread( threading.Thread ):
                         else:
                                 # let threads also lookout for gui signals of cancellation
                                 thread.join(timeout)
-                                if not thread.isAlive():
+                                if not thread.is_alive():
                                         self.threads_finished += 1
                         
         def run( self, item=None):
