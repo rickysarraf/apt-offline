@@ -1558,23 +1558,28 @@ def installer( args ):
         
         def magic_check_and_uncompress(self, archive_file=None, filename=None):
                 
-            self.magicMIME.load()
+            #self.magicMIME.load()
             retval = False
             if self.magicMIME.file( archive_file ) == "application/x-bzip2" or self.magicMIME.file( archive_file ) == "application/gzip" or self.magicMIME.file(archive_file) == "application/x-xz":
                     temp_filename = os.path.join(self.apt_update_target_path, filename + app_name)
-                    filename = os.path.join(self.apt_update_target_path, filename)
                     if self.magicMIME.file( archive_file ) == "application/x-bzip2":
                         retval = self.decompress_the_file( archive_file, temp_filename, "bzip2" )
+                        filename = filename.rstrip(".bz2")
+                        filename = filename.rstrip(".bzip")
                     elif self.magicMIME.file( archive_file ) == "application/gzip":
                         retval = self.decompress_the_file( archive_file, temp_filename, "gzip" )
+                        filename = filename.rstrip(".tar.gz")
+                        filename = filename.rstrip(".gz")
                     elif self.magicMIME.file(archive_file) == "application/x-xz":
                         retval = self.decompress_the_file(archive_file, temp_filename, "xz")
+                        filename = filename.rstrip(".xz")
                     else:
                         log.verbose("No filetype match for %s\n" % (filename) )
                         retval = False
-
+                    filename = os.path.join(self.apt_update_final_path, filename)
                     if retval is True:
                         os.rename(temp_filename, filename)
+                        log.success("Synchronized file to %s\n" % (filename))
                     else:
                         log.err("Failed to sync file %s\n" % (filename))
                         try:
@@ -1583,7 +1588,7 @@ def installer( args ):
                             log.warn("Failed to unlink temproary file %s. Check respective decompressor library support\n" % (temp_filename) )
 
             elif self.magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or self.magicMIME.file( archive_file ) == "application/pgp-signature":
-                gpgFile = os.path.join(self.apt_update_target_path, filename)
+                gpgFile = os.path.join(self.apt_update_final_path, filename)
                 shutil.copy2(archive_file, gpgFile)
                 # PGP armored data should be bypassed
                 log.verbose("File is %s, hence 'True'.\n" % (filename) )
@@ -1602,18 +1607,18 @@ def installer( args ):
             elif filename.endswith( apt_bug_file_format ):
                 pass
             elif self.magicMIME.file( archive_file ) == "text/plain":
-                txtFile = os.path.join(self.apt_update_target_path, filename)
-                if os.access( self.apt_update_target_path, os.W_OK ):
+                txtFile = os.path.join(self.apt_update_final_path, filename)
+                if os.access( self.apt_update_final_path, os.W_OK ):
                     shutil.copy( archive_file, txtFile )
                     retval = True
                 else:
-                    log.err( "Cannot write to target path %s\n" % ( self.apt_update_target_path ) )
+                    log.err( "Cannot write to target path %s\n" % ( self.apt_update_final_path ) )
                     sys.exit( 1 )
             else:
                 log.err( "I couldn't understand file type %s.\n" % ( filename ) )
             
             #INFO: Close the handle and conserve precious memory
-            self.magicMIME.close()
+            #self.magicMIME.close()
             if retval:
                 #CHANGE: track progress
                 totalSize[0]+=1 
@@ -1838,7 +1843,8 @@ def installer( args ):
             for whitelist_item in verifiedWhiteList:
                 for final_item in masterList:
                     if whitelist_item == final_item:
-                        shutil.copy2(final_item, InstallerInstance.apt_update_final_path)
+                        self.magic_check_and_uncompress(final_item, os.path.basename(final_item))
+                        #shutil.copy2(final_item, InstallerInstance.apt_update_final_path)
                         log.msg("%s synced.\n" % (final_item) )
             return True
 
@@ -1960,7 +1966,7 @@ def installer( args ):
                             shutil.copy2( archive_file, debFile )
                             os.chmod(debFile, 0o644)
                             log.msg("%s file synced.\n" % (debFile) )
-            InstallerInstance.magicMIME.close()
+            #InstallerInstance.magicMIME.close()
 
             verifiedList = InstallerInstance.verifyAptFileIntegrity(FileList)
             if not InstallerInstance.installVerifiedList(verifiedList, FileList):
