@@ -2053,24 +2053,30 @@ def installer( args ):
             log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
             #INFO: Check how delegating this step to installVerifiedList() impacats source package installation
             #DirInstallPackages(installPath)
+        if InstallerInstance.Bool_Untrusted:
+            log.err("Disabling apt gpg check can risk your machine to compromise.\n")
+            for x in os.listdir(InstallerInstance.apt_update_target_path):
+                x = os.path.join(InstallerInstance.apt_update_target_path, x)
+                shutil.copy2(x, InstallerInstance.apt_update_final_path) # Do we do a move ??
+                log.verbose("%s %s\n" % (x, InstallerInstance.apt_update_final_path) )
+                log.msg("%s synced.\n" % (x) )
+        else:
+            #FileList = os.listdir(installPath)
+            #verifiedList = InstallerInstance.verifyAptFileIntegrity(FileList)
+            #if not InstallerInstance.installVerifiedList(verifiedList, FileList):
+            #    log.err("Failed to verify File Checksum integrity of APT files\n")
+            #    sys.exit(1)
+
+            lFileList = InstallerInstance.listdir_fullpath(installPath)
+            verifiedList = InstallerInstance.verifyAptFileIntegrity(lFileList)
+            if not InstallerInstance.installVerifiedList(verifiedList, lFileList):
+                log.err("Failed to verify File Checksum integrity of APT files\n")
+                sys.exit(1)
+
     else:
         log.err("Invalid path argument specified: %s\n" % (installPath))
         sys.exit(1)
     
-    sys.exit(0)                    
-    if InstallerInstance.Bool_Untrusted:
-        log.err("Disabling apt gpg check can risk your machine to compromise.\n")
-        for x in os.listdir(InstallerInstance.apt_update_target_path):
-            x = os.path.join(InstallerInstance.apt_update_target_path, x)
-            shutil.copy2(x, InstallerInstance.apt_update_final_path) # Do we do a move ??
-            log.verbose("%s %s\n" % (x, InstallerInstance.apt_update_final_path) )
-            log.msg("%s synced.\n" % (x) )
-    else:
-        lFileList = InstallerInstance.listdir_fullpath(installPath)
-        verifiedList = InstallerInstance.verifyAptFileIntegrity(lFileList)
-        if not InstallerInstance.installVerifiedList(verifiedList, lFileList):
-            log.err("Failed to verify File Checksum integrity of APT files\n")
-            sys.exit(1)
 
 def setter(args):
         #log.verbose(str(args))
