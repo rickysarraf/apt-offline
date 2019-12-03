@@ -111,7 +111,7 @@ errlist = []
 supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
 apt_update_target_path = '/var/lib/apt/lists/partial'
 apt_update_final_path = '/var/lib/apt/lists/'
-apt_package_target_path = '/var/cache/apt/archives/partial/'
+apt_package_target_path = '/var/cache/apt/archives/'
 apt_package_final_path = '/var/cache/apt/archives/'
 
 # Locks
