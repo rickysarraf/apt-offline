@@ -1558,7 +1558,7 @@ def installer( args ):
         
         def magic_check_and_uncompress(self, archive_file=None, filename=None):
                 
-            #self.magicMIME.load()
+            self.magicMIME.load()
             retval = False
             if self.magicMIME.file( archive_file ) == "application/x-bzip2" or self.magicMIME.file( archive_file ) == "application/gzip" or self.magicMIME.file(archive_file) == "application/x-xz":
                     temp_filename = os.path.join(self.apt_update_target_path, filename + app_name)
