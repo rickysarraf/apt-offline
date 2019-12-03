@@ -1637,7 +1637,7 @@ def installer( args ):
                 for eachItem in os.listdir(dataType):
                     eachItem = os.path.join(dataType, eachItem)
                     if eachItem.endswith(".changelog"):
-                        eachFile = open(eachItem, 'r')
+                        eachFile = open(eachItem, 'rb')
                         chlogFile.write(eachFile.read())
                         chlogPresent = True
             elif os.path.isfile(dataType):
