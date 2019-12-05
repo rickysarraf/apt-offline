@@ -1824,7 +1824,6 @@ def installer( args ):
             for localFile in self.lFileList:
                 for checksumItem in self.checksumList:
                     if os.path.basename(localFile) == checksumItem[2]:
-                        #localFile = os.path.join(installPath, localFile)
                         if InstallerInstance.verifyPayloadIntegrity(localFile, checksumItem[0], "sha256"):
                             log.verbose("localFile %s Integrity with checksum %s matches\n" % (localFile, checksumItem[0]))
                             self.lVerifiedWhitelist.append(localFile)
@@ -1844,7 +1843,6 @@ def installer( args ):
                 for final_item in masterList:
                     if whitelist_item == final_item:
                         self.magic_check_and_uncompress(final_item, os.path.basename(final_item))
-                        #shutil.copy2(final_item, InstallerInstance.apt_update_final_path)
                         log.msg("%s synced.\n" % (final_item) )
             return True
 
@@ -1903,7 +1901,6 @@ def installer( args ):
         else:
             InstallerInstance.displayChangelog(InstallerInstance.Str_InstallArg)
                                 
-        #if bug_parse_required is True:
         bugs_number = {}
         if InstallerInstance.Bool_SkipBugReports:
             log.verbose("Skipping bug report check as requested")
@@ -1928,10 +1925,7 @@ def installer( args ):
             InstallerInstance.displayBugs(dataType="file")
         else:
             log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
-            #response = raw_input( "Continue with Installation. Y/N ?" )
-            #response = response.rstrip( "\r" )
-            #if response.endswith( 'y' ) or response.endswith( 'Y' ):
-            #        log.verbose( "Continuing with syncing the files.\n" )
+
             FileList = []
             tempDir = tempfile.mkdtemp()
             InstallerInstance.magicMIME.load()
@@ -1945,7 +1939,6 @@ def installer( args ):
                 
                 tempZipFile = os.path.join(tempDir, filename)
                 data = open(tempZipFile, 'wb')
-                #data = tempfile.NamedTemporaryFile(delete=False)
                 data.write( zipBugFile.read( filename ) )
                 data.flush()
                 archive_file = tempZipFile
@@ -2052,8 +2045,7 @@ def installer( args ):
             InstallerInstance.displayBugs(dataType="dir")
         else:
             log.verbose( "Great!!! No bugs found for all the packages that were downloaded.\n\n" )
-            #INFO: Check how delegating this step to installVerifiedList() impacats source package installation
-            #DirInstallPackages(installPath)
+
         if InstallerInstance.Bool_Untrusted:
             log.err("Disabling apt gpg check can risk your machine to compromise.\n")
             for x in os.listdir(InstallerInstance.apt_update_target_path):
@@ -2062,12 +2054,6 @@ def installer( args ):
                 log.verbose("%s %s\n" % (x, InstallerInstance.apt_update_final_path) )
                 log.msg("%s synced.\n" % (x) )
         else:
-            #FileList = os.listdir(installPath)
-            #verifiedList = InstallerInstance.verifyAptFileIntegrity(FileList)
-            #if not InstallerInstance.installVerifiedList(verifiedList, FileList):
-            #    log.err("Failed to verify File Checksum integrity of APT files\n")
-            #    sys.exit(1)
-
             lFileList = InstallerInstance.listdir_fullpath(installPath)
             verifiedList = InstallerInstance.verifyAptFileIntegrity(lFileList)
             if not InstallerInstance.installVerifiedList(verifiedList, lFileList):
