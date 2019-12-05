@@ -1314,11 +1314,19 @@ def fetcher( args ):
                         PackageFile = url.split("/")[-1]
                         PackageFormat = PackageFile.split(".")[-1]
                         if pkgFile.endswith(".gpg") or pkgFile.endswith("Release"):
+                            # Don't touch APT signature files and download them as is
+                            pkgFileWithType = pkgFile
+                        elif pkgFile.endswith(".dsc") or "orig.tar" in pkgFile or "debian.tar" in pkgFile:
+                            # Same as above.
+                            # Don't touch Source Package's metadata files and download them as is
                             pkgFileWithType = pkgFile
                         else:
+                            #INFO: This whole circus needs to be fixed with something better
+                            # We do this because apt update's metadata can support different compression types on the remote repository
                             pkgFileWithType = pkgFile + "." + url.split("/")[-1].split(".")[-1]
                         if PackageFormat in SupportedFormats:
                                 SupportedFormats.remove(PackageFormat) #Remove the already tried format
+                        
                         log.msg("Downloading %s %s\n" % (PackageName, LINE_OVERWRITE_FULL) ) 
                         if DownloadPackages(PackageName, pkgFileWithType) is False and guiTerminateSignal is False:
                                 # dont proceed retry if Ctrl+C in cli
