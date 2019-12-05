@@ -1868,7 +1868,6 @@ def installer( args ):
         #INFO: Handle source packages with care.
         # Build a dict and populate its files based on details in .dsc
         SrcPkgDict = {}
-        
         #TODO: Refactor this loop
         for filename in zipBugFile.namelist():
             if filename.endswith(".dsc"):
@@ -1974,9 +1973,34 @@ def installer( args ):
                 sys.exit(1)
             
     elif os.path.isdir(installPath):
-        SrcPkgDict = {}
+
+        def DirInstallPackages(InstallDirPath):
+            for eachfile in os.listdir( InstallDirPath ):
+                filename = eachfile
+                FullFileName = os.path.abspath(os.path.join(InstallDirPath, eachfile) )
+            
+                if os.path.isdir(FullFileName):
+                    log.verbose("Skipping!! %s is a directory\n" % (FullFileName))
+                    continue
+                
+                #INFO: Take care of Src Pkgs
+                found = False
+                for item in list(SrcPkgDict.keys()):
+                    if filename in SrcPkgDict[item]:
+                        found = True
+                        break
+                if found is True:
+                    shutil.copy2(FullFileName, InstallerInstance.Str_InstallSrcPath)
+                    log.msg("Installing src package file %s to %s.\n" % (filename, InstallerInstance.Str_InstallSrcPath) )
+                    continue
+                
+                #INFO: Take care of all remaining deb packages
+                if eachfile.endswith(".deb"):
+                    InstallerInstance.magic_check_and_uncompress( FullFileName, filename )
+            return True
         
         #TODO: Needs refactoring with the previous common code
+        SrcPkgDict = {}
         for filename in os.listdir( installPath ):
             if filename.endswith(".dsc"):
                 SrcPkgName = filename.split('_')[0]
@@ -2001,29 +2025,6 @@ def installer( args ):
                             SrcPkgDict[SrcPkgName].append(SrcPkgData)
                 SrcPkgDict[SrcPkgName].append(filename)
                 temp.close()
-
-        def DirInstallPackages(InstallDirPath):
-                for eachfile in os.listdir( InstallDirPath ):
-                        
-                        filename = eachfile
-                        FullFileName = os.path.abspath(os.path.join(InstallDirPath, eachfile) )
-                
-                        if os.path.isdir(FullFileName):
-                                log.verbose("Skipping!! %s is a directory\n" % (FullFileName))
-                                continue
-                        #INFO: Take care of Src Pkgs
-                        found = False
-                        for item in list(SrcPkgDict.keys()):
-                                if filename in SrcPkgDict[item]:
-                                        found = True
-                                        break
-                        if found is True:
-                                shutil.copy2(FullFileName, InstallerInstance.Str_InstallSrcPath)
-                                log.msg("Installing src package file %s to %s.\n" % (filename, InstallerInstance.Str_InstallSrcPath) )
-                                continue
-                        
-                        InstallerInstance.magic_check_and_uncompress( FullFileName, filename )
-                return True
 
         # Let's display changelog
         if InstallerInstance.Bool_SkipChangelog:
@@ -2072,7 +2073,9 @@ def installer( args ):
             if not InstallerInstance.installVerifiedList(verifiedList, lFileList):
                 log.err("Failed to verify File Checksum integrity of APT files\n")
                 sys.exit(1)
-
+        
+        # Call for processing the debs and source package metadata
+        DirInstallPackages(installPath)
     else:
         log.err("Invalid path argument specified: %s\n" % (installPath))
         sys.exit(1)
