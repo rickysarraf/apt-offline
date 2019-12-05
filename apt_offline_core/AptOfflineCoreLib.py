@@ -1331,6 +1331,7 @@ def fetcher( args ):
                         if DownloadPackages(PackageName, pkgFileWithType) is False and guiTerminateSignal is False:
                                 # dont proceed retry if Ctrl+C in cli
                                 log.verbose("%s failed. Retry with the remaining possible formats\n" % (url) )
+                                FetcherInstance.completed()
                                 
                                 # We could fail with the Packages format of what apt gave us. We can try the rest of the formats that apt or the archive could support
                                 reallyFailed = True
@@ -1352,9 +1353,9 @@ def fetcher( args ):
                                                 break
                                         else:
                                                 log.verbose("Failed with URL %s %s\n" % (NewUrl, LINE_OVERWRITE_FULL) )
+                                                FetcherInstance.completed()
                                 if reallyFailed is True:
                                         errlist.append(NewUrl)
-                        FetcherInstance.completed()
 
         # Create two Queues for the requests and responses
         requestQueue = queue.Queue()
