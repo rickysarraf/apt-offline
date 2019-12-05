@@ -543,7 +543,7 @@ class AptManip(ExecCmd):
                 
                 self.ReleaseType = ReleaseType
                 
-                log.msg("Gathering installation details for source package %s\n" % (PackageList) )
+                log.msg("Gathering installation details for source package %s\n" % (SrcPackageList) )
                 
                 if self.ReleaseType is not None:
                         cmd = ["/usr/bin/apt-get", "-qq", "--print-uris", "source", "-t"]
