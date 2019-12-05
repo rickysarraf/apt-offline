@@ -43,8 +43,16 @@ _apt_offline()
                         _filedir
                         return 0
                         ;;
+                    --http-basicauth)
+                        _http_auth_url
+                        return 0
+                        ;;
                     --proxy-host)
                         _ip_addresses
+                        return 0
+                        ;;
+                    --proxy-port)
+                        _port
                         return 0
                         ;;
                     --socket-timeout)
@@ -61,7 +69,8 @@ _apt_offline()
                         --simulate --socket-timeout -d --download-dir -s
                         --cache-dir --no-checksum -t --threads --bundle
                         --bug-reports --proxy-host --proxy-port
-                        --https-key-file --https-cert-file --disable-cert-check' -- "$cur" ) )
+                        --https-key-file --https-cert-file --disable-cert-check
+                        --http-basicauth' -- "$cur" ) )
                 else
                     _filedir
                 fi
@@ -77,7 +86,8 @@ _apt_offline()
                 if [[ "$cur" == -* || -e $prev ]]; then
                     COMPREPLY=( $( compgen -W '-h --help -v --verbose --version
                         --simulate --install-src-path --skip-bug-reports
-                        --allow-unauthenticated --skip-changelog' -- "$cur" ) )
+                        --allow-unauthenticated --skip-changelog
+                        --strict-deb-check' -- "$cur" ) )
                 else
                     _filedir
                 fi
