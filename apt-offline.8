@@ -150,6 +150,16 @@ Skip display of changelog, if any.
 .IP "\fB\-\-allow\-unauthenticated\fP" 10
 Don't verify GPG signatures for the data to be installed to APT. Usage of this option is highly discouraged.
 
+.IP "\fB\-\-strict\-deb\-check\fP" 10
+With this option enabled, apt-offline delegate's .deb package checksum validation to apt. While the .debs are
+already available, they are stored in the temporary apt cache, where apt validates its checksum, before considering
+it for further processing.
+Note: This does have the caveat that apt may need network availability even though it doesn't download anything over the network. But it does invoke the download routines and realizes that the payload is already available. It then further proceeds with checksum validation
+
+The default behavior is to 
+.B not 
+do strict checksum validation for .deb files. Instead, apt-offline copies the .deb files to apt's download location. apt still does size validation of the available .deb files and discards them in case there is a mismatch.
+
 .IP "\fB\-\-install\-src\-path PATH\fP" 10
 Path to filesystem where we want the source packages to be installed to. Default will be a folder in your TEMPDIR.
 

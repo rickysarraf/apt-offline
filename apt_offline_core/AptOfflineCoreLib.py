@@ -111,7 +111,7 @@ errlist = []
 supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
 apt_update_target_path = '/var/lib/apt/lists/partial'
 apt_update_final_path = '/var/lib/apt/lists/'
-apt_package_target_path = '/var/cache/apt/archives/'
+apt_package_target_path = '/var/cache/apt/archives/partial/'
 apt_package_final_path = '/var/cache/apt/archives/'
 
 # Locks
@@ -1459,6 +1459,8 @@ def installer( args ):
             self.Str_InstallSrcPath = args.install_src_path
             self.Bool_SkipChangelog = args.skip_changelog
             self.tempdir = tempfile.gettempdir()
+            self.Bool_StrictDebCheck = args.strict_deb_check
+            
             if not os.access(self.tempdir, os.W_OK):
                 log.err("Temporary path %s in not writable. Some functionality may fail\n")
                 return False
@@ -1487,13 +1489,19 @@ def installer( args ):
             if os.access(self.Str_InstallSrcPath, os.W_OK) is not True:
                 log.err("%s is not writable.\n" % (self.Str_InstallSrcPath))
                 return False
+            
+            if self.Bool_StrictDebCheck:
+                # Force copying of debs to apt_package_target_path, which should be the 'partial/' folder
+                self.apt_package_path = apt_package_target_path
+            else:
+                self.apt_package_path = apt_package_final_path
                 
             if self.Bool_TestWindows:
                 pidname = os.getpid()
                 tempdir = os.path.join(self.tempdir , "apt-package-target-path-" + str(pidname) )
                 log.verbose("apt-package-target-path is %s\n" % (tempdir) )
                 os.mkdir(tempdir)
-                self.apt_package_target_path = os.path.abspath(tempdir)
+                self.apt_package_path = os.path.abspath(tempdir)
                 
                 tempdir = os.path.join(self.tempdir , "apt-update-target-path-" + str(pidname) )
                 log.verbose("apt-update-target-path is %s\n" % (tempdir) )
@@ -1505,7 +1513,6 @@ def installer( args ):
                 os.mkdir(tempdir)
                 self.apt_update_final_path = os.path.abspath(tempdir)
             else:
-                self.apt_package_target_path = apt_package_target_path
                 self.apt_update_target_path = apt_update_target_path
                 self.apt_update_final_path = apt_update_final_path
                 
@@ -1604,14 +1611,14 @@ def installer( args ):
                 retval = True
             elif self.magicMIME.file( archive_file ) == "application/vnd.debian.binary-package" or \
                 self.magicMIME.file(archive_file) == "application/x-debian-package":
-                debFile = os.path.join(self.apt_package_target_path, filename)
-                if os.access( self.apt_package_target_path, os.W_OK ):
+                debFile = os.path.join(self.apt_package_path, filename)
+                if os.access( self.apt_package_path, os.W_OK ):
                     shutil.copy2( archive_file, debFile )
                     os.chmod(debFile, 0o644)
                     log.msg("%s file synced.\n" % (filename) )
                     retval = True
                 else:
-                    log.err( "Cannot write to target path %s\n" % ( self.apt_package_target_path ) )
+                    log.err( "Cannot write to target path %s\n" % ( self.apt_package_path ) )
                     sys.exit( 1 )
             elif filename.endswith( apt_bug_file_format ):
                 pass
@@ -1962,8 +1969,8 @@ def installer( args ):
                 # We just copy the files to partial/ and apt will only use it if it meets all integrity checks
                 if filename.endswith(".deb"):
                     if InstallerInstance.magicMIME.file( archive_file ) == "application/vnd.debian.binary-package" or InstallerInstance.magicMIME.file(archive_file) == "application/x-debian-package":
-                        debFile = os.path.join(InstallerInstance.apt_package_target_path, filename)
-                        if os.access( InstallerInstance.apt_package_target_path, os.W_OK ):
+                        debFile = os.path.join(InstallerInstance.apt_package_path, filename)
+                        if os.access( InstallerInstance.apt_package_path, os.W_OK ):
                             shutil.copy2( archive_file, debFile )
                             os.chmod(debFile, 0o644)
                             log.msg("%s file synced.\n" % (debFile) )
@@ -2339,6 +2346,9 @@ def main():
         
         parser_install.add_argument("--allow-unauthenticated", dest="allow_unauthenticated",
                                     help="Ignore apt gpg signatures mismatch", action="store_true")
+        
+        parser_install.add_argument("--strict-deb-check", dest="strict_deb_check",
+                                    help="Perform strict checksum validaton for downloaded .deb files", action="store_true")
         if len(sys.argv) <= 1:
                 sys.argv.append('--help')
         
