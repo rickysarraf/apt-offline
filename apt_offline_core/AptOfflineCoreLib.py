@@ -1666,13 +1666,14 @@ def installer( args ):
                 return False
             
             if chlogPresent is False:
-                    log.msg("No changelog available\n")
+                log.verbose("No changelog available\n")
+                response = 'y'
             else:    
-                    chlogFile.seek(0)
-                    pydoc.pager(chlogFile.read().decode('utf-8'))
+                chlogFile.seek(0)
+                pydoc.pager(chlogFile.read().decode('utf-8'))
             
-            self.display_options("Chlog")
-            response = self.get_response()
+                self.display_options("Chlog")
+                response = self.get_response()
             
             while True:
                 if response == "?":
