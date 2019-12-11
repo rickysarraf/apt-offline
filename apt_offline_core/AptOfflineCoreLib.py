@@ -1595,7 +1595,7 @@ def installer( args ):
                     filename = os.path.join(self.apt_update_final_path, filename)
                     if retval is True:
                         os.rename(temp_filename, filename)
-                        log.success("Synchronized file to %s\n" % (filename))
+                        log.verbose("Synchronized file to %s\n" % (filename))
                     else:
                         log.err("Failed to sync file %s\n" % (filename))
                         try:
@@ -1860,7 +1860,7 @@ def installer( args ):
                 for final_item in masterList:
                     if whitelist_item == final_item:
                         self.magic_check_and_uncompress(final_item, os.path.basename(final_item))
-                        log.msg("%s synced.\n" % (final_item) )
+                        log.success("%s synced.\n" % (os.path.basename(final_item)) )
             return True
 
         def listdir_fullpath(self, d):
