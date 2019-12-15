@@ -868,10 +868,10 @@ def errfunc(errno, errormsg, filename):
     # and better document them the next time you find it out.
     # 13 is for "Permission Denied" when you don't have privileges to access the destination 
     if errno in retriable_error_codes:
-        log.verbose("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL))
+        log.err("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL))
         log.verbose("Will still try with other package uris\n")
     elif errno == 10054:
-        log.verbose("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL) )
+        log.err("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL) )
     elif errno == 407 or errno == 2:
         # These, I believe are from OSError/IOError exception.
         # I'll document it as soon as I confirm it.
