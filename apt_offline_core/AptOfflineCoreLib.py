@@ -1431,18 +1431,23 @@ def fetcher( args ):
                                 log.err("\nInterrupted by user. Exiting!\n")
                                 sys.exit(0)
             
+        if args.bundle_file:
+            log.msg("\nDownloaded data to %s\n" % (Str_BundleFile) )
+        else:
+            log.msg("\nDownloaded data to %s\n" % (Str_DownloadDir) )
+
         # Print the failed files
         if len(errlist) > 0:
-                log.msg("\n\n")
-                log.verbose("The following files failed to be downloaded.\n")
-                log.verbose("Not all errors are fatal. For eg. Translation files are not present on all mirrors.\n")
-                for error in errlist:
-                        log.verbose("%s failed.\n" % (error))
-        if args.bundle_file:
-                log.msg("\nDownloaded data to %s\n" % (Str_BundleFile) )
+            log.err("Some items failed to download. Downloaded data may be incomplete\n")
+            log.err("Please run in verbose mode to see details about failed items\n")
+            log.msg("\n\n")
+            log.verbose("The following files failed to be downloaded.\n")
+            log.verbose("Not all errors are fatal. For eg. Translation files are not present on all mirrors.\n")
+            for error in errlist:
+                log.verbose("%s failed.\n" % (error))
+            sys.exit(100)
         else:
-                log.msg("\nDownloaded data to %s\n" % (Str_DownloadDir) )
-        
+            sys.exit(0)
 
 
 def installer( args ):
