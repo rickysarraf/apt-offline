@@ -868,7 +868,7 @@ def errfunc(errno, errormsg, filename):
     # and better document them the next time you find it out.
     # 13 is for "Permission Denied" when you don't have privileges to access the destination 
     if errno in retriable_error_codes:
-        log.err("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL))
+        log.verbose("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL))
         log.verbose("Will still try with other package uris\n")
     elif errno == 10054:
         log.err("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL) )
@@ -1355,7 +1355,8 @@ def fetcher( args ):
                                                 log.verbose("Failed with URL %s %s\n" % (NewUrl, LINE_OVERWRITE_FULL) )
                                                 FetcherInstance.completed()
                                 if reallyFailed is True:
-                                        errlist.append(NewUrl)
+                                    log.err("Failed URL %s %s\n" % (url, LINE_OVERWRITE_FULL))
+                                    errlist.append(NewUrl)
 
         # Create two Queues for the requests and responses
         requestQueue = queue.Queue()
