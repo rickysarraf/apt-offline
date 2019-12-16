@@ -1337,8 +1337,7 @@ def fetcher( args ):
                                 reallyFailed = True
                                 for Format in SupportedFormats:
                                         NewPackageFile = pkgFileWithType.rstrip(pkgFileWithType.split(".")[-1]).rstrip(".") + "." + Format
-                                        #NewPackageFile = pkgFileWithType.split(".")[0] + "." + Format
-                                        NewUrl = url.strip(url.split("/")[-1]) + NewPackageFile
+                                        NewUrl = url.replace(PackageFormat, Format)
                                         log.verbose("Retry download %s %s\n" % (NewUrl, LINE_OVERWRITE_FULL) )
                                         
                                         #INFO: Why are we doing this?
@@ -1355,7 +1354,7 @@ def fetcher( args ):
                                                 log.verbose("Failed with URL %s %s\n" % (NewUrl, LINE_OVERWRITE_FULL) )
                                                 FetcherInstance.completed()
                                 if reallyFailed is True:
-                                    log.err("Failed URL %s %s\n" % (url, LINE_OVERWRITE_FULL))
+                                    log.err("Giving up on URL %s %s\n" % (NewUrl, LINE_OVERWRITE_FULL))
                                     errlist.append(NewUrl)
 
         # Create two Queues for the requests and responses
