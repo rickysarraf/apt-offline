@@ -294,6 +294,8 @@ class ProgressBar( object ):
                 self.min = minValue
                 self.max = maxValue
                 self.span = float( self.max - self.min )
+                if self.span == 0:
+                    self.span = 1
                 self.fd = fd
                 self.signal_set = False
         
