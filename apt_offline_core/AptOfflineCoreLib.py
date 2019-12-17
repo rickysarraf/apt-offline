@@ -1620,7 +1620,8 @@ def installer( args ):
                 if os.access( self.apt_package_path, os.W_OK ):
                     shutil.copy2( archive_file, debFile )
                     os.chmod(debFile, 0o644)
-                    log.msg("%s file synced.\n" % (filename) )
+                    log.success("%s file synced.\n" % (filename) )
+                    log.verbose("%s file synced.\n" % (debFile) )
                     retval = True
                 else:
                     log.err( "Cannot write to target path %s\n" % ( self.apt_package_path ) )
@@ -1979,7 +1980,8 @@ def installer( args ):
                         if os.access( InstallerInstance.apt_package_path, os.W_OK ):
                             shutil.copy2( archive_file, debFile )
                             os.chmod(debFile, 0o644)
-                            log.msg("%s file synced.\n" % (debFile) )
+                            log.success("%s file synced.\n" % (filename) )
+                            log.verbose("%s file synced.\n" % (debFile) )
             #InstallerInstance.magicMIME.close()
 
             verifiedList = InstallerInstance.verifyAptFileIntegrity(FileList)
@@ -2074,7 +2076,7 @@ def installer( args ):
                 x = os.path.join(InstallerInstance.apt_update_target_path, x)
                 shutil.copy2(x, InstallerInstance.apt_update_final_path) # Do we do a move ??
                 log.verbose("%s %s\n" % (x, InstallerInstance.apt_update_final_path) )
-                log.msg("%s synced.\n" % (x) )
+                log.success("%s synced.\n" % (x) )
         else:
             lFileList = InstallerInstance.listdir_fullpath(installPath)
             verifiedList = InstallerInstance.verifyAptFileIntegrity(lFileList)
