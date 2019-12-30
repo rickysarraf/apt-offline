@@ -1,0 +1,11 @@
+#!/bin/sh
+
+PKEXEC=`which pkexec`;
+
+if [ -x $PKEXEC ]; then
+    echo "Exec with pkexec"
+    $PKEXEC /usr/bin/apt-offline-gui
+else
+    echo "No pkexec found"
+    exit 1
+fi

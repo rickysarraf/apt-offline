@@ -59,5 +59,5 @@ distutils.core.setup(
 	    'apt_offline_gui.Ui_AptOfflineQtMain',
 	    'apt_offline_gui.Ui_AptOfflineQtSaveZip',
 	    'apt_offline_gui.UiDataStructs',],
-    scripts=['apt-offline', 'apt-offline-gui'],
+    scripts=['apt-offline', 'apt-offline-gui', 'apt-offline-gui-pkexec'],
 )
