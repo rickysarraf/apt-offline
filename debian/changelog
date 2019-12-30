@@ -1,3 +1,37 @@
+apt-offline (1.8.2) unstable; urgency=medium
+
+  [ Matthias Blümel ]
+  * support https client-authentication
+  * extend manpage and bash-completion parameters for https
+    client-authentication
+  * implement option to disable https server certificate checks
+
+  [ Paul Wise ]
+  * Remove generated files from git and create them at build time.
+
+  [ Ritesh Raj Sarraf ]
+  * New Release version 1.8.2 (Closes: #871656)
+  * Add warning for missing lzma module (Closes: #880985)
+  * Fix new testing-security repository name.
+    Thanks to Paul Wise (Closes: #931517)
+  * Drop some python2 based recommends.
+    Thanks to Sandro Tosi (Closes: #945628)
+  * Update Vcs Entry and also update Build Dependencies
+  * Call make for actual build
+  * Update debhelper compatibility to 12
+  * Drop obsolete X-Python3-Version field
+  * Update Standards Version to 4.4.1
+  * Add field Rules-Requires-Root: no
+
+  [ Patryk Wychowaniec ]
+  * Properly parse the command and its output.
+    Thanks to Patryk Wychowaniec
+
+  [ Rafael Leira Osuna ]
+  * added http-basic support
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Mon, 30 Dec 2019 21:44:18 +0530
+
 apt-offline (1.8.1) unstable; urgency=medium
 
   * Switch setuptools to invoke py3
@@ -198,8 +232,8 @@ apt-offline (1.1.1) unstable; urgency=low
 
 apt-offline (1.1) unstable; urgency=low
 
-  * New Bugfix Release (Closes: #593690, #615976) 
-    + Adds new feature for basic proxy support 
+  * New Bugfix Release (Closes: #593690, #615976)
+    + Adds new feature for basic proxy support
 
  -- Ritesh Raj Sarraf <rrs@debian.org>  Fri, 08 Apr 2011 16:47:12 +0530
 
@@ -212,7 +246,7 @@ apt-offline (1.0.2) unstable; urgency=low
 
 apt-offline (1.0.1) unstable; urgency=low
 
-  * Reupload to sid 
+  * Reupload to sid
 
  -- Ritesh Raj Sarraf <rrs@debian.org>  Thu, 10 Feb 2011 12:14:56 +0530
 
@@ -222,13 +256,13 @@ apt-offline (1.0) experimental; urgency=low
     + This release bring a new GUI tool for apt-offline. Kudos to
       Abhishek Mishra and Manish Sinha
   * Introduce the new apt-offline-gui package
-  * Bump Standards Version to 3.9.1 (No changes required) 
+  * Bump Standards Version to 3.9.1 (No changes required)
 
  -- Ritesh Raj Sarraf <rrs@debian.org>  Sun, 07 Nov 2010 22:08:54 +0530
 
 apt-offline (0.9.9squeeze3) unstable; urgency=low
 
-  * Fix checksum error for MD5 checksums 
+  * Fix checksum error for MD5 checksums
 
  -- Ritesh Raj Sarraf <rrs@debian.org>  Tue, 19 Oct 2010 19:16:13 +0530
 
@@ -242,7 +276,7 @@ apt-offline (0.9.9squeeze1) unstable; urgency=low
 
   * Add less to Depends because we depend on `less` to display the
     bug reports
-  * Check if argument is a directory. (Closes: #588908) 
+  * Check if argument is a directory. (Closes: #588908)
 
  -- Ritesh Raj Sarraf <rrs@debian.org>  Fri, 20 Aug 2010 17:27:02 +0530
 
@@ -251,7 +285,7 @@ apt-offline (0.9.9) unstable; urgency=low
   * New Feature Release
     + Add support to cycle through all supported Packages.extension types
       (Closes: #583502)
-    + Fix exception which downloading bug reports (Closes: #584427) 
+    + Fix exception which downloading bug reports (Closes: #584427)
 
  -- Ritesh Raj Sarraf <rrs@debian.org>  Sat, 19 Jun 2010 12:18:20 +0530
 
@@ -259,7 +293,7 @@ apt-offline (0.9.8) unstable; urgency=low
 
   * New Bug Fix Release
   * Change address to my official Debian address and remove the DMUA flag
-  * Switch to 3.0 (native) source format 
+  * Switch to 3.0 (native) source format
 
  -- Ritesh Raj Sarraf <rrs@debian.org>  Mon, 10 May 2010 21:49:35 +0530
 
@@ -267,14 +301,14 @@ apt-offline (0.9.7) unstable; urgency=low
 
   * New Bug Fix Release
     + Allow release type to be specified when in the set operation, for
-      an upgrade. (This is the equivalent of `apt-get -t unstable upgrade`) 
+      an upgrade. (This is the equivalent of `apt-get -t unstable upgrade`)
     + Add new option --simulate (which replaces the old --test-windows option)
     + Do a check to ensure that the argument to the 'get' operation is a file
     + Fix APT/GPG security issues. When just running the 'set' operation, the
       apt gpg database gets invalid. Currently, fixed with a workaround. For
       more details, see DBTS: 565918
       Many thanks to Paul Nijjar for reporting the bug
-  * Update Standards Version to 3.8.4 (No changes required) 
+  * Update Standards Version to 3.8.4 (No changes required)
 
  -- Ritesh Raj Sarraf <rrs@researchut.com>  Wed, 17 Mar 2010 17:10:41 +0530
 
@@ -282,7 +316,7 @@ apt-offline (0.9.6.1) unstable; urgency=low
 
   [ Ritesh Raj Sarraf ]
   * New Bug Fix Release
-    + Show bug numbers correctly 
+    + Show bug numbers correctly
     + Don't hardcode checksum type during checks
     + Check for APT's partial directory
     + Carefully update APT's Package cache data
@@ -290,7 +324,7 @@ apt-offline (0.9.6.1) unstable; urgency=low
     + Fix ZipFile.read()
     + Don't report download failure for Release.gpg files
     + Add html doc for the man page
-  * Add DM-Upload field 
+  * Add DM-Upload field
 
   [ Y Giridhar Appaji Nag ]
   * Change Debian package version to 0.9.6.1 for Dm-Upload-Allowed: yes
