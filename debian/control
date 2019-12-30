@@ -3,7 +3,7 @@ Section: admin
 Priority: optional
 Maintainer: Ritesh Raj Sarraf <rrs@debian.org>
 Build-Depends: debhelper-compat (= 12), python3-setuptools, python3-all, dh-python, pyqt5-dev-tools, man2html-base
-Standards-Version: 3.9.8
+Standards-Version: 4.4.1
 Homepage: https://github.com/rickysarraf/apt-offline
 Vcs-Git: https://github.com/rickysarraf/apt-offline.git
 Vcs-Browser: https://github.com/rickysarraf/apt-offline
