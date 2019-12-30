@@ -28,28 +28,6 @@
 'http://mirrors.kernel.org/debian/dists/experimental/main/i18n/Translation-en.bz2' mirrors.kernel.org_debian_dists_experimental_main_i18n_Translation-en 0 :
 'http://mirrors.kernel.org/debian/dists/experimental/non-free/i18n/Translation-en.bz2' mirrors.kernel.org_debian_dists_experimental_non-free_i18n_Translation-en 0 :
 'http://mirrors.kernel.org/debian/dists/experimental/InRelease' mirrors.kernel.org_debian_dists_experimental_InRelease 0 
-'http://dl.google.com/linux/talkplugin/deb/dists/stable/main/binary-amd64/Packages.bz2' dl.google.com_linux_talkplugin_deb_dists_stable_main_binary-amd64_Packages 0 :
-'http://dl.google.com/linux/talkplugin/deb/dists/stable/main/binary-i386/Packages.bz2' dl.google.com_linux_talkplugin_deb_dists_stable_main_binary-i386_Packages 0 :
-'http://dl.google.com/linux/talkplugin/deb/dists/stable/main/i18n/Translation-en.bz2' dl.google.com_linux_talkplugin_deb_dists_stable_main_i18n_Translation-en 0 :
-'http://dl.google.com/linux/talkplugin/deb/dists/stable/InRelease' dl.google.com_linux_talkplugin_deb_dists_stable_InRelease 0 
-'http://www.deb-multimedia.org/dists/sid/main/source/Sources.bz2' www.deb-multimedia.org_dists_sid_main_source_Sources 0 :
-'http://www.deb-multimedia.org/dists/sid/non-free/source/Sources.bz2' www.deb-multimedia.org_dists_sid_non-free_source_Sources 0 :
-'http://www.deb-multimedia.org/dists/sid/main/binary-amd64/Packages.bz2' www.deb-multimedia.org_dists_sid_main_binary-amd64_Packages 0 :
-'http://www.deb-multimedia.org/dists/sid/non-free/binary-amd64/Packages.bz2' www.deb-multimedia.org_dists_sid_non-free_binary-amd64_Packages 0 :
-'http://www.deb-multimedia.org/dists/sid/main/binary-i386/Packages.bz2' www.deb-multimedia.org_dists_sid_main_binary-i386_Packages 0 :
-'http://www.deb-multimedia.org/dists/sid/non-free/binary-i386/Packages.bz2' www.deb-multimedia.org_dists_sid_non-free_binary-i386_Packages 0 :
-'http://www.deb-multimedia.org/dists/sid/main/i18n/Translation-en.bz2' www.deb-multimedia.org_dists_sid_main_i18n_Translation-en 0 :
-'http://www.deb-multimedia.org/dists/sid/non-free/i18n/Translation-en.bz2' www.deb-multimedia.org_dists_sid_non-free_i18n_Translation-en 0 :
-'http://www.deb-multimedia.org/dists/sid/InRelease' www.deb-multimedia.org_dists_sid_InRelease 0 
-'http://www.deb-multimedia.org/dists/testing/main/source/Sources.bz2' www.deb-multimedia.org_dists_testing_main_source_Sources 0 :
-'http://www.deb-multimedia.org/dists/testing/non-free/source/Sources.bz2' www.deb-multimedia.org_dists_testing_non-free_source_Sources 0 :
-'http://www.deb-multimedia.org/dists/testing/main/binary-amd64/Packages.bz2' www.deb-multimedia.org_dists_testing_main_binary-amd64_Packages 0 :
-'http://www.deb-multimedia.org/dists/testing/non-free/binary-amd64/Packages.bz2' www.deb-multimedia.org_dists_testing_non-free_binary-amd64_Packages 0 :
-'http://www.deb-multimedia.org/dists/testing/main/binary-i386/Packages.bz2' www.deb-multimedia.org_dists_testing_main_binary-i386_Packages 0 :
-'http://www.deb-multimedia.org/dists/testing/non-free/binary-i386/Packages.bz2' www.deb-multimedia.org_dists_testing_non-free_binary-i386_Packages 0 :
-'http://www.deb-multimedia.org/dists/testing/main/i18n/Translation-en.bz2' www.deb-multimedia.org_dists_testing_main_i18n_Translation-en 0 :
-'http://www.deb-multimedia.org/dists/testing/non-free/i18n/Translation-en.bz2' www.deb-multimedia.org_dists_testing_non-free_i18n_Translation-en 0 :
-'http://www.deb-multimedia.org/dists/testing/InRelease' www.deb-multimedia.org_dists_testing_InRelease 0 
 'http://ftp.debian.org/debian/dists/testing/main/source/Sources.bz2' ftp.debian.org_debian_dists_testing_main_source_Sources 0 :
 'http://ftp.debian.org/debian/dists/testing/contrib/source/Sources.bz2' ftp.debian.org_debian_dists_testing_contrib_source_Sources 0 :
 'http://ftp.debian.org/debian/dists/testing/non-free/source/Sources.bz2' ftp.debian.org_debian_dists_testing_non-free_source_Sources 0 :
@@ -89,16 +67,3 @@
 'http://ftp.debian.org/debian/dists/experimental/main/i18n/Translation-en.bz2' ftp.debian.org_debian_dists_experimental_main_i18n_Translation-en 0 :
 'http://ftp.debian.org/debian/dists/experimental/non-free/i18n/Translation-en.bz2' ftp.debian.org_debian_dists_experimental_non-free_i18n_Translation-en 0 :
 'http://ftp.debian.org/debian/dists/experimental/InRelease' ftp.debian.org_debian_dists_experimental_InRelease 0 
-'http://security.debian.org/dists/testing/updates/main/source/Sources.bz2' security.debian.org_dists_testing_updates_main_source_Sources 0 :
-'http://security.debian.org/dists/testing/updates/contrib/source/Sources.bz2' security.debian.org_dists_testing_updates_contrib_source_Sources 0 :
-'http://security.debian.org/dists/testing/updates/non-free/source/Sources.bz2' security.debian.org_dists_testing_updates_non-free_source_Sources 0 :
-'http://security.debian.org/dists/testing/updates/main/binary-amd64/Packages.bz2' security.debian.org_dists_testing_updates_main_binary-amd64_Packages 0 :
-'http://security.debian.org/dists/testing/updates/contrib/binary-amd64/Packages.bz2' security.debian.org_dists_testing_updates_contrib_binary-amd64_Packages 0 :
-'http://security.debian.org/dists/testing/updates/non-free/binary-amd64/Packages.bz2' security.debian.org_dists_testing_updates_non-free_binary-amd64_Packages 0 :
-'http://security.debian.org/dists/testing/updates/main/binary-i386/Packages.bz2' security.debian.org_dists_testing_updates_main_binary-i386_Packages 0 :
-'http://security.debian.org/dists/testing/updates/contrib/binary-i386/Packages.bz2' security.debian.org_dists_testing_updates_contrib_binary-i386_Packages 0 :
-'http://security.debian.org/dists/testing/updates/non-free/binary-i386/Packages.bz2' security.debian.org_dists_testing_updates_non-free_binary-i386_Packages 0 :
-'http://security.debian.org/dists/testing/updates/contrib/i18n/Translation-en.bz2' security.debian.org_dists_testing_updates_contrib_i18n_Translation-en 0 :
-'http://security.debian.org/dists/testing/updates/main/i18n/Translation-en.bz2' security.debian.org_dists_testing_updates_main_i18n_Translation-en 0 :
-'http://security.debian.org/dists/testing/updates/non-free/i18n/Translation-en.bz2' security.debian.org_dists_testing_updates_non-free_i18n_Translation-en 0 :
-'http://security.debian.org/dists/testing/updates/InRelease' security.debian.org_dists_testing_updates_InRelease 0 

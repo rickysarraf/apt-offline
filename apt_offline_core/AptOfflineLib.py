@@ -40,6 +40,8 @@ try:
         import lzma
 except ImportError:
         modLZMA = False
+        sys.stderr.write("WARN: lzma module unavailable\n")
+        sys.stderr.write("WARN: Please install python lzma module for APT lzma backend\n")
                 
 WindowColor = True
 try:
@@ -292,6 +294,8 @@ class ProgressBar( object ):
                 self.min = minValue
                 self.max = maxValue
                 self.span = float( self.max - self.min )
+                if self.span == 0:
+                    self.span = 1
                 self.fd = fd
                 self.signal_set = False
         
@@ -564,18 +568,19 @@ class FileMgmt( object ):
                 #INFO: If src and dest are the same, it is effectively opening the same file
                 # in read and write modes, which leads to NULL data corruption
                 destFile = os.path.join(dest, os.path.basename(src))
-                #print src, destFile
-                if src == destFile:
+                srcFile = os.path.abspath(src)
+                #print(srcFile, destFile)
+                if srcFile == destFile:
                     return True
-                srcFile = open(src, 'rb')
-                FP = open(destFile, 'wb')
+                SFH = open(srcFile, 'rb')
+                DFH = open(destFile, 'wb')
                 
-                FP.write(srcFile.read())
-                FP.flush()
-                FP.close()
-                srcFile.close()
+                DFH.write(SFH.read())
+                DFH.flush()
+                DFH.close()
+                SFH.close()
             except IOError:
-                srcFile.close()
+                SFH.close()
                 return False
             
         def move_folder( self, src, dest ):
@@ -671,7 +676,7 @@ class MyThread( threading.Thread ):
                         else:
                                 # let threads also lookout for gui signals of cancellation
                                 thread.join(timeout)
-                                if not thread.isAlive():
+                                if not thread.is_alive():
                                         self.threads_finished += 1
                         
         def run( self, item=None):

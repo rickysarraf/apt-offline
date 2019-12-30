@@ -1,4 +1,4 @@
-.TH apt-offline 8 "May, 2017" "version 1.8.0" "USER COMMANDS"
+.TH apt-offline 8 "Dec, 2020" "version 1.8.2" "USER COMMANDS"
 .SH NAME
 apt-offline \- Offline APT Package manager
 .SH SYNOPSIS
@@ -71,7 +71,7 @@ option is explicitly mentioned, the
 .B set
 command will generate signature for both the \-\-update and \-\-upgrade options.
 
-.SS get FILENAME [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] [--proxy-host] [--proxy-port]
+.SS get FILENAME [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] [--proxy-host] [--proxy-port] [--https-cert-file --https-key-file] [--http-basicauth] [--disable-cert-check]
 
 .PP
 
@@ -112,6 +112,18 @@ Specify the Proxy Host to be used.
 .IP "\fB\-\-proxy\-port\fP" 10
 Specify the Proxy port number to be used.
 
+.IP "\fB\-\-https\-cert\-file FILENAME\fP" 10
+The Certificate-file to use if https-client-authentication is required on one or multiple hosts.
+
+.IP "\fB\-\-https\-key\-file FILENAME\fP" 10
+The Certificate-key-file to use if https-client-authentication is required on one or multiple hosts.
+
+.IP "\fB\-\-disable-cert-check\fP" 10
+Disable the check of https certificates on servers
+
+.IP "\fB\-\-http\-basicauth URL\fP" 10
+A username/password encoded in the URL. Note\: Passwords with special characters should be percent encoded as per RFC-3986 section 2.1
+
 .SS install FILE/FOLDER [-h] [--skip-bug-reports ] [--install-src-path PATH] [--allow-unauthenticated]
 
 .PP
@@ -137,6 +149,16 @@ Skip display of changelog, if any.
 
 .IP "\fB\-\-allow\-unauthenticated\fP" 10
 Don't verify GPG signatures for the data to be installed to APT. Usage of this option is highly discouraged.
+
+.IP "\fB\-\-strict\-deb\-check\fP" 10
+With this option enabled, apt-offline delegate's .deb package checksum validation to apt. While the .debs are
+already available, they are stored in the temporary apt cache, where apt validates its checksum, before considering
+it for further processing.
+Note: This does have the caveat that apt may need network availability even though it doesn't download anything over the network. But it does invoke the download routines and realizes that the payload is already available. It then further proceeds with checksum validation
+
+The default behavior is to 
+.B not 
+do strict checksum validation for .deb files. Instead, apt-offline copies the .deb files to apt's download location. apt still does size validation of the available .deb files and discards them in case there is a mismatch.
 
 .IP "\fB\-\-install\-src\-path PATH\fP" 10
 Path to filesystem where we want the source packages to be installed to. Default will be a folder in your TEMPDIR.
@@ -232,7 +254,7 @@ deb http://security.debian.org stable/updates main contrib
 
 .B (Security Updates for Debian Stable)
 
-deb http://security.debian.org testing/updates main contrib
+deb http://security.debian.org testing-security/updates main contrib
 
 .B (Security Updates for Debian Testing)
 
