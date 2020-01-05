@@ -87,7 +87,7 @@ class AptOfflineQtInstallBugList(QtWidgets.QDialog):
                         print("Invalid Path")
                         return False
 
-                if len(list(self.bugList.keys())) is 0:
+                if len(list(self.bugList.keys())) == 0:
                         self.noBugPopulateBugListPlainTextEdit()
                 else:
                         for eachItem in list(self.bugList.keys()):
