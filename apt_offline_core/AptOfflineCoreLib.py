@@ -1549,10 +1549,10 @@ def installer( args ):
         def display_options(self,dispType):
             log.msg( "(Y) Yes. Proceed with installation\n" )
             log.msg( "(N) No, Abort.\n" )
-            if dispType is "BugReports":
+            if dispType == "BugReports":
                     log.msg( "(R) Redisplay the list of bugs.\n" )
                     log.msg( "(Bug Number) Display the bug report from the Offline Bug Reports.\n" )
-            elif dispType is "Chlog":
+            elif dispType == "Chlog":
                     log.msg( "(C) Display changelog\n")
             log.msg( "(?) Display this help message.\n" )
         
@@ -1713,7 +1713,7 @@ def installer( args ):
                     self.display_options("BugReports")
                     response = self.get_response()
                 elif response.startswith( 'y' ) or response.startswith( 'Y' ):
-                    if dataType is "file":
+                    if dataType == "file":
                         for filename in zipBugFile.namelist():
                             
                             #INFO: Take care of Src Pkgs
@@ -1758,7 +1758,7 @@ def installer( args ):
                                 self.unlockLists()
                             data.file.close()
                         sys.exit( 0 )
-                    if dataType is "dir":
+                    if dataType == "dir":
                         if DirInstallPackages(self.Str_InstallArg) is True:
                             sys.exit(0)
                         else:
@@ -1779,12 +1779,12 @@ def installer( args ):
                         log.err( "Incorrect bug number %s provided.\n" % ( response ) )
                         response = self.get_response()
                     if found:
-                        if dataType is "file":
+                        if dataType == "file":
                             pydoc.pager(zipBugFile.read(bug_file_to_display).decode('utf-8') )
                             # Redisplay the menu
                             # FIXME: See a pythonic possibility of cleaning the screen at this stage
                             response = self.get_response()
-                        if dataType is "dir":
+                        if dataType == "dir":
                             tempFile = open(bug_file_to_display, 'r')
                             pydoc.pager(tempFile.read() )
                             # Redisplay the menu
