@@ -281,6 +281,7 @@ class AptManip(ExecCmd):
                 ExecCmd.__init__(self, Simulate)
                 self.WriteTo = OutputFile
                 self.AptReinstall = AptReinstall
+                self.ShouldSimulate = Simulate
                 
                 if AptType == "apt":
                         self.apt = "apt"
@@ -351,6 +352,9 @@ class AptManip(ExecCmd):
                 
                 
         def __FixAptSigs(self):
+            if self.ShouldSimulate is True:
+                log.msg("In simulation mode, no changes applied\n")
+            else:
                 for localFile in os.listdir(apt_update_target_path):
                         if localFile.endswith(".gpg.reverify"):
                                 sig_file = localFile.rstrip(".reverify")
