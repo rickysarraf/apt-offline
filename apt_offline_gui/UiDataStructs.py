@@ -21,7 +21,7 @@ class SetterArgs():
         self.set_install_src_packages = install_src_packages
         self.set_install_release = release
         self.apt_backend = apt_backend
-        self.simulate=simulate
+        self.set_simulate=simulate
         
         self.generate_changelog = changelog
     
@@ -31,7 +31,7 @@ class SetterArgs():
         print("self.set_upgrade=",self.set_upgrade)
         print("self.upgrade_type=",self.upgrade_type)
         print("self.set_install_packages=",self.set_install_packages)
-        print("self.simulate=", self.simulate)
+        print("self.set_simulate=", self.set_simulate)
         
         return ""
     
@@ -75,7 +75,7 @@ class GetterArgs():
 '''
 # install opts
         Str_InstallArg = args.install
-        Bool_TestWindows = args.simulate
+        Bool_TestWindows = args.install_simulate
         Bool_SkipBugReports = args.skip_bug_reports
         Bool_Untrusted = args.allow_unauthenticated
         Str_InstallSrcPath = args.install_src_path
@@ -88,7 +88,7 @@ class InstallerArgs():
         self.install = filename
 
         # TODO: to be implemented in next revision
-        self.simulate = simulate 
+        self.install_simulate = simulate 
         self.skip_bug_reports = skip_bug_reports
         self.skip_changelog = skip_changelog
         self.allow_unauthenticated = allow_unauthenticated

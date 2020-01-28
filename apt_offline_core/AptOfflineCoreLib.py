@@ -1458,7 +1458,7 @@ def installer( args ):
                                       
             # install opts
             self.Str_InstallArg = args.install
-            self.Bool_TestWindows = args.simulate
+            self.Bool_TestWindows = args.install_simulate
             self.Bool_SkipBugReports = args.skip_bug_reports
             self.Bool_Untrusted = args.allow_unauthenticated
             self.Str_InstallSrcPath = args.install_src_path
@@ -2102,7 +2102,7 @@ def setter(args):
         Bool_SetUpgrade = args.set_upgrade
         Str_SetUpgradeType = args.upgrade_type
         Bool_SrcBuildDep = args.src_build_dep
-        Bool_TestWindows = args.simulate
+        Bool_TestWindows = args.set_simulate
         Bool_Changelog = args.generate_changelog
         
         if Bool_SetUpdate is False and Bool_SetUpgrade is False and List_SetInstallPackages is None \
@@ -2228,8 +2228,6 @@ def main():
         # Global options
         global_options = argparse.ArgumentParser(add_help=False)
         global_options.add_argument("--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
-        global_options.add_argument("--simulate", dest="simulate", help="Just simulate. Very helpful when debugging",
-                            action="store_true" )
         
         if float(argparse.__version__) >= 1.1:
                 parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
@@ -2253,6 +2251,9 @@ def main():
                           action="store", type=str, metavar="apt-offline.sig",
                           default="apt-offline.sig")
         
+        parser_set.add_argument("--simulate", dest="set_simulate", help="Just simulate. Very helpful when debugging",
+                            action="store_true" )
+
         #TODO: Handle nargs here.
         parser_set.add_argument("--install-packages", dest="set_install_packages", help="Packages that need to be installed",
                           action="store", type=str, nargs='*', metavar="PKG")
@@ -2343,6 +2344,9 @@ def main():
                           help="Install apt-offline data, a bundle file or a directory",
                           action="store", type=str, metavar="apt-offline-download.zip | apt-offline-download/")
 
+        parser_install.add_argument("--simulate", dest="install_simulate", help="Just simulate. Very helpful when debugging",
+                            action="store_true" )
+
         parser_install.add_argument("--install-src-path", dest="install_src_path",
                                     help="Install src packages to specified path.", default=None)
         
@@ -2365,7 +2369,6 @@ def main():
         try:
                 # Global opts
                 Bool_Verbose = args.verbose
-                Bool_TestWindows = args.simulate
                 
                 global log
                 log = AptOfflineLib.Log( Bool_Verbose, lock=True )
