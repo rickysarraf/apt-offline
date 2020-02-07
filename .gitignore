@@ -1,6 +1,4 @@
 *.pyc
-.project
-.pydevproject
 .settings/
 /apt-offline.html
 /apt_offline_gui/Ui_*.py
