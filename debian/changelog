@@ -1,4 +1,4 @@
-apt-offline (1.8.2) unstable; urgency=medium
+apt-offline (1.8.2-1) unstable; urgency=medium
 
   [ Matthias Blümel ]
   * support https client-authentication
@@ -22,6 +22,14 @@ apt-offline (1.8.2) unstable; urgency=medium
   * Drop obsolete X-Python3-Version field
   * Update Standards Version to 4.4.1
   * Add field Rules-Requires-Root: no
+  * Enhance policykit integration
+  * Install the apt-offline-gui-pkexec script to usr/bin/
+  * Demote --simulate from global option to sub-option for install and set commands
+    (Closes: #871664)
+  * Do not touch apt system files in simulate mode
+  * Also update the manpage about demotion of the simulate option
+  * Switch to 3.0 (quilt) source format
+  * Update debian/gbp.conf about switch to 3.0 (quilt) source format
 
   [ Patryk Wychowaniec ]
   * Properly parse the command and its output.
@@ -30,7 +38,7 @@ apt-offline (1.8.2) unstable; urgency=medium
   [ Rafael Leira Osuna ]
   * added http-basic support
 
- -- Ritesh Raj Sarraf <rrs@debian.org>  Mon, 30 Dec 2019 21:44:18 +0530
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Fri, 07 Feb 2020 18:46:29 +0530
 
 apt-offline (1.8.1) unstable; urgency=medium
 
