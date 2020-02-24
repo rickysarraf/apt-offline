@@ -1641,7 +1641,7 @@ def installer( args ):
                     log.err( "Cannot write to target path %s\n" % ( self.apt_update_final_path ) )
                     sys.exit( 1 )
             else:
-                log.err( "I couldn't understand file type %s.\n" % ( filename ) )
+                log.err( "I couldn't understand file %s of type %s.\n" % ( filename, magicMIME.file( archive_file ) ) )
             
             #INFO: Close the handle and conserve precious memory
             #self.magicMIME.close()
