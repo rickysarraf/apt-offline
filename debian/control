@@ -12,7 +12,7 @@ Vcs-Browser: https://github.com/rickysarraf/apt-offline
 Package: apt-offline
 Architecture: all
 Depends: ${misc:Depends}, ${python3:Depends}, apt, less, python3-magic
-Recommends: debian-archive-keyring, python3-debianbts
+Recommends: debian-archive-keyring, python3-debianbts, python3-apt
 Description: offline APT package manager
  apt-offline is an Offline APT Package Manager.
  .
