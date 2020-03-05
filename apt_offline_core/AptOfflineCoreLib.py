@@ -42,7 +42,6 @@ from ssl import SSLError, SSLEOFError
 import zlib
 
 from apt_offline_core.AptOfflineLib import AptOfflineErrors, AptOfflineLibShutilError
-import apt
 
 FCNTL_LOCK = True
 try:
