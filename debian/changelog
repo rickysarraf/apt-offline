@@ -1,3 +1,9 @@
+apt-offline (1.8.2-2) UNRELEASED; urgency=medium
+
+  * Wrap long lines in changelog entries: 1.8.2-1.
+
+ -- Debian Janitor <janitor@jelmer.uk>  Sun, 29 Mar 2020 02:10:30 +0000
+
 apt-offline (1.8.2-1) unstable; urgency=medium
 
   [ Matthias Blümel ]
@@ -24,8 +30,8 @@ apt-offline (1.8.2-1) unstable; urgency=medium
   * Add field Rules-Requires-Root: no
   * Enhance policykit integration
   * Install the apt-offline-gui-pkexec script to usr/bin/
-  * Demote --simulate from global option to sub-option for install and set commands
-    (Closes: #871664)
+  * Demote --simulate from global option to sub-option for install and set
+    commands (Closes: #871664)
   * Do not touch apt system files in simulate mode
   * Also update the manpage about demotion of the simulate option
   * Switch to 3.0 (quilt) source format
