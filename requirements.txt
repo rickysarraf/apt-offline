@@ -1,4 +1,4 @@
-# Incase users use it directly from source, please ensure following modules
+# In case users use it directly from source, please ensure following modules
 # are installed
 argparse
 magic

@@ -11,7 +11,7 @@ make install
 
 ## Under Microsoft Windows
 
-# Execute the file using the python interpreter
+# Execute the file using the Python interpreter
 # Assuming python.exe is in your path
 
 #TODO: Find a windows native way to update/generate the Ui files

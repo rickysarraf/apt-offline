@@ -114,7 +114,7 @@ class AptOfflineQtCreateProfile(QtWidgets.QDialog):
                     guicommon.style("Could not access  %s" % self.filepath,'red'))
             return
         
-        # If atleast one is requested
+        # If at least one is requested
         if self.updateChecked or self.upgradeChecked or self.installChecked or self.installSrcChecked:
             if self.installChecked:
                 self.packageList = str(self.ui.packageList.text()).split(",")

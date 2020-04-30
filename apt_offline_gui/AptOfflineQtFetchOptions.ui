@@ -119,7 +119,7 @@
     </font>
    </property>
    <property name="toolTip">
-    <string>Nework timeout in seconds</string>
+    <string>Network timeout in seconds</string>
    </property>
    <property name="text">
     <string>Network Timeout</string>
@@ -141,7 +141,7 @@
     </sizepolicy>
    </property>
    <property name="toolTip">
-    <string>Nework timeout in seconds</string>
+    <string>Network timeout in seconds</string>
    </property>
    <property name="minimum">
     <number>10</number>
