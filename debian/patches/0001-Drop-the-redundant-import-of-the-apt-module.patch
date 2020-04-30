@@ -1,0 +1,24 @@
+From: Ritesh Raj Sarraf <rrs@debian.org>
+Date: Thu, 5 Mar 2020 22:01:41 +0530
+Subject: Drop the redundant import of the apt module
+
+This module is used through the Recommends and isn't expected to be
+available on the running system all the time. Thus the Recommends
+
+Thanks: github/dandelionred
+---
+ apt_offline_core/AptOfflineCoreLib.py | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/apt_offline_core/AptOfflineCoreLib.py b/apt_offline_core/AptOfflineCoreLib.py
+index 0933389..554acde 100644
+--- a/apt_offline_core/AptOfflineCoreLib.py
++++ b/apt_offline_core/AptOfflineCoreLib.py
+@@ -42,7 +42,6 @@ from ssl import SSLError, SSLEOFError
+ import zlib
+ 
+ from apt_offline_core.AptOfflineLib import AptOfflineErrors, AptOfflineLibShutilError
+-import apt
+ 
+ FCNTL_LOCK = True
+ try:
