@@ -174,7 +174,7 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
                                         os.unlink(self.zipfilepath)
                                 except:
                                         guicommon.updateInto (self.ui.rawLogHolder, 
-                                                              guicommon.style("Could'nt write to %s!" % self.zipfilepath,'red'))
+                                                              guicommon.style("Couldn't write to %s!" % self.zipfilepath,'red'))
                         else:
                                 return
                 else:

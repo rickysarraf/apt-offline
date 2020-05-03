@@ -47,7 +47,7 @@ class Worker(QtCore.QThread):
             self.output.emit(text)
         elif ('apt/lists' in text):
             try:
-                # this part is always done on a linux system so we can hardcode / for a while
+                # this part is always done on a Linux system so we can hardcode / for a while
                 text = guicommon.style("Update : ",'orange') + guicommon.style(text.split("/")[-1],'green')
             except:
                 # let the text be original otherwise

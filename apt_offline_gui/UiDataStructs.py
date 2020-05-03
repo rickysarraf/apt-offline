@@ -16,7 +16,7 @@ class SetterArgs():
         # Should be set to None for disabling or Tuple for activating
         self.set_install_packages = install_packages
         
-        # To be implmented later
+        # To be implemented later
         self.src_build_dep = src_build_dep
         self.set_install_src_packages = install_src_packages
         self.set_install_release = release

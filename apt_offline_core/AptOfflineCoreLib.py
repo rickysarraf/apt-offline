@@ -388,7 +388,7 @@ class AptManip(ExecCmd):
                     sys.exit(1)
                 
                 log.msg("Gathering details needed for 'update' operation\n")
-                log.verbose("\nUsing python apt interface\n")
+                log.verbose("\nUsing Python apt interface\n")
                 
                 apt_pkg.init_config()
                 apt_pkg.init_system()
@@ -431,7 +431,7 @@ class AptManip(ExecCmd):
                 
                 log.msg("Gathering details needed for 'upgrade' operation\n")
                 log.warn("Option --upgrade-type not supported with this backend\n")
-                log.verbose("\nUsing python apt interface\n")
+                log.verbose("\nUsing Python apt interface\n")
                 
                 cache = apt.Cache()
                 cache.open(None)
@@ -573,7 +573,7 @@ class APTVerifySigs(ExecCmd):
         
         def __init__(self, gpgv=None, keyring=None, Simulate=False):
                 '''
-                Initalize keyring based on environment
+                Initialize keyring based on environment
                 Uses python-apt or apt-config
                 '''
                 
@@ -727,7 +727,7 @@ class GenericDownloadFunction():
                     errfunc(errstring.errno, errstring.reason, url)
                 return False
             except http.client.HTTPException as e:
-                log.err("Type HTTPException occured")
+                log.err("Type HTTPException occurred")
                 log.err(e)
                 return False
             except http.client.BadStatusLine as e:
@@ -976,7 +976,7 @@ def fetcher( args ):
         # If we don't have Python 2.5, disable MD5/SHA256 checksum
         if AptOfflineLib.Python_2_5 is False:
                 Bool_DisableMD5Check = True
-                log.verbose( "\nMD5/SHA256 Checksum is being disabled. You need atleast Python 2.5 to do checksum verification.\n" )
+                log.verbose( "\nMD5/SHA256 Checksum is being disabled. You need at least Python 2.5 to do checksum verification.\n" )
         
         if Str_GetArg:
                 if os.path.isfile(Str_GetArg):
@@ -1000,7 +1000,7 @@ def fetcher( args ):
                     if os.access( Str_DownloadDir, os.W_OK ) is True:
                         Str_DownloadDir = os.path.abspath( Str_DownloadDir )
                     else:
-                        log.err("Cannot write to direcotry %s\n" % (Str_DownloadDir))
+                        log.err("Cannot write to directory %s\n" % (Str_DownloadDir))
                         sys.exit(1)
                 else:
                     log.err("%s is not a directory\n" % (Str_DownloadDir))
@@ -1332,7 +1332,7 @@ def fetcher( args ):
                         
                         log.msg("Downloading %s %s\n" % (PackageName, LINE_OVERWRITE_FULL) ) 
                         if DownloadPackages(PackageName, pkgFileWithType) is False and guiTerminateSignal is False:
-                                # dont proceed retry if Ctrl+C in cli
+                                # don't proceed retry if Ctrl+C in cli
                                 log.verbose("%s failed. Retry with the remaining possible formats\n" % (url) )
                                 FetcherInstance.completed()
                                 
@@ -1609,7 +1609,7 @@ def installer( args ):
                         try:
                             os.unlink(temp_filename)
                         except OSError:
-                            log.warn("Failed to unlink temproary file %s. Check respective decompressor library support\n" % (temp_filename) )
+                            log.warn("Failed to unlink temporary file %s. Check respective decompressor library support\n" % (temp_filename) )
 
             elif self.magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or self.magicMIME.file( archive_file ) == "application/pgp-signature":
                 gpgFile = os.path.join(self.apt_update_final_path, filename)
@@ -1736,7 +1736,7 @@ def installer( args ):
                                 continue
                                 #INFO: We can't ranosm the entire payload for a bad CRC for individual files.
                                 # The same zip archive, if unarchived with plain unix unizp, works file.
-                                # On the internet, there are many bug reports of python's zipfile having certain bugs.
+                                # On the internet, there are many bug reports of Python's zipfile having certain bugs.
                                 # Hence we continue hoping to milk the possible payloads from the archive
                             
                             archive_file = data.name
@@ -2213,7 +2213,7 @@ def setter(args):
                             log.err(traceback.format_exc())
                             raise
                     
-                    #INFO: '/' will be the delimeter
+                    #INFO: '/' will be the delimiter
                     log.verbose("Writing to Changelog, pkgName: %s, pkgInstalledVersion %s\n" % (pkgName, pkgInstalledVersion))
                     sigFile.writelines("Changelog/%s/%s\n" % (pkgName, pkgInstalledVersion))
 

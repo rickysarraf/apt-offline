@@ -1,5 +1,5 @@
 #!/bin/sh
-# Todo : after adding a new UI file to dialig, also add
+# Todo : after adding a new UI file to dialog, also add
 #        its corresponding Ui_ script generator here
 #
 

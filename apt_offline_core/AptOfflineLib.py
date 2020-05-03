@@ -41,7 +41,7 @@ try:
 except ImportError:
         modLZMA = False
         sys.stderr.write("WARN: lzma module unavailable\n")
-        sys.stderr.write("WARN: Please install python lzma module for APT lzma backend\n")
+        sys.stderr.write("WARN: Please install Python lzma module for APT lzma backend\n")
                 
 WindowColor = True
 try:
@@ -395,7 +395,7 @@ class Archiver:
                         
                         # Answer:
                         # A BZ2 file corruption is seen during file creation only.
-                        # Perhaps it has to do with the bad netowrk, loss of packets et cetera
+                        # Perhaps it has to do with the bad network, loss of packets et cetera
                         # The safest bet at the moment is to simply discard such files, which were
                         # downloaded in damaged form.
                         return False
@@ -592,7 +592,7 @@ class FileMgmt( object ):
                                 return False
 
         def find_dup( self, dir ):
-                '''"dir" will be the directory withing which duplicate files are searched
+                '''"dir" will be the directory within which duplicate files are searched
                 Returns a list with the duplicates'''
         
                 #TODO: This is buggy currently
