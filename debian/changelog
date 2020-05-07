@@ -1,3 +1,9 @@
+apt-offline (1.8.2-3) UNRELEASED; urgency=medium
+
+  * Update standards version to 4.5.0, no changes needed.
+
+ -- Debian Janitor <janitor@jelmer.uk>  Thu, 07 May 2020 03:14:10 +0000
+
 apt-offline (1.8.2-2) unstable; urgency=medium
 
   [ Debian Janitor ]
