@@ -1603,6 +1603,7 @@ def installer( args ):
                     filename = os.path.join(self.apt_update_final_path, filename)
                     if retval is True:
                         os.rename(temp_filename, filename)
+                        os.chmod(filename, 0o644)
                         log.verbose("Synchronized file to %s\n" % (filename))
                     else:
                         log.err("Failed to sync file %s\n" % (filename))
@@ -1614,6 +1615,7 @@ def installer( args ):
             elif self.magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or self.magicMIME.file( archive_file ) == "application/pgp-signature":
                 gpgFile = os.path.join(self.apt_update_final_path, filename)
                 shutil.copy2(archive_file, gpgFile)
+                os.chmod(gpgFile, 0o644)
                 # PGP armored data should be bypassed
                 log.verbose("File is %s, hence 'True'.\n" % (filename) )
                 retval = True
@@ -1635,6 +1637,7 @@ def installer( args ):
                 txtFile = os.path.join(self.apt_update_final_path, filename)
                 if os.access( self.apt_update_final_path, os.W_OK ):
                     shutil.copy( archive_file, txtFile )
+                    os.chmod(txtFile, 0o644)
                     retval = True
                 else:
                     log.err( "Cannot write to target path %s\n" % ( self.apt_update_final_path ) )
