@@ -78,7 +78,7 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
             if target.objectName() == 'createProfileButton':
                 self.ui.descriptionField.setText("Click here to generate a signature of this machine.")
             if target.objectName() == 'downloadButton':
-                self.ui.descriptionField.setText("Once you are on a internet connected machine, use this to download packages as per your signature file.")
+                self.ui.descriptionField.setText("Once you are on an internet connected machine, use this to download packages as per your signature file.")
             if target.objectName() == 'restoreButton':
                 self.ui.descriptionField.setText("Once you've downloaded all the packages, click here to install them on the offline machine.")
                 
