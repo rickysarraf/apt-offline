@@ -229,7 +229,7 @@ class Log:
                         self.DispLock.release()
 
         def warn( self, msg ):
-                '''Print messages with a warningr. If locking is available use them.'''
+                '''Print messages with a warning. If locking is available use them.'''
                 if self.lock:
                         self.DispLock.acquire()
 
