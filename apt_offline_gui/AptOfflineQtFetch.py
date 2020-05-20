@@ -129,7 +129,7 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
     def popupZipFileDialog(self):
 
         if self.ui.saveDatacheckBox.isChecked() is True:
-                filename, _ = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select the folder to save downlaods to')
+                filename, _ = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select the folder to save downloads to')
         else:
                 # Popup a Zip File selection box
                 filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Select the zip file to save downloads')
