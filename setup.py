@@ -14,7 +14,7 @@ distutils.core.setup(
     version='1.8.2',
     author='Ritesh Raj Sarraf',
     author_email='rrs@researchut.com',
-    url='http://apt-offline.alioth.debian.org',
+    url='https://github.com/rickysarraf/apt-offline',
     #packages = [ 'apt_offline_core' ],
     description='Offline APT Package Manager',
     long_description = textwrap.dedent("""\
