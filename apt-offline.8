@@ -164,8 +164,8 @@ already available, they are stored in the temporary apt cache, where apt validat
 it for further processing.
 Note: This does have the caveat that apt may need network availability even though it doesn't download anything over the network. But it does invoke the download routines and realizes that the payload is already available. It then further proceeds with checksum validation
 
-The default behavior is to 
-.B not 
+The default behavior is to
+.B not
 do strict checksum validation for .deb files. Instead, apt-offline copies the .deb files to apt's download location. apt still does size validation of the available .deb files and discards them in case there is a mismatch.
 
 .IP "\fB\-\-install\-src\-path PATH\fP" 10
@@ -194,8 +194,8 @@ apt\-offline relies on argparse for argument/option parsing. To explicitly instr
 
 By specifying the
 .B \-\-
-delimiter, we instruct apt\-offline that foo.sig is an argument to the 
-.B apt\-offline 
+delimiter, we instruct apt\-offline that foo.sig is an argument to the
+.B apt\-offline
 command and not to the
 .B \-\-install\-packages
 option.
@@ -229,10 +229,10 @@ Depending on where the data was downloaded to or packed into, either the
 absolute FOLDER path or the archive FILE path can be specified.
 
 .B NOTE1:
-On a freshly installed box, that was installed without the network, the package database is null. In that case, you first need to run 
-.B apt-offline 
-with just the 
-.B \-\-update 
+On a freshly installed box, that was installed without the network, the package database is null. In that case, you first need to run
+.B apt-offline
+with just the
+.B \-\-update
 option to ensure you have a meaningful package database
 
 .B Example: apt-offline set set.uris \-\-update
@@ -292,7 +292,7 @@ Sequence 2: With successful completion of Sequence 1, the APT database on the di
 
 (Installs the data needed to upgrade the upgradable packages. Should be run on the disconnected machine)
 
-.TP 
+.TP
 After successful completion of
 .B Sequence 1
 and
@@ -304,9 +304,9 @@ will result in 0 bytes of additional download.
 .SH AUTHOR
 .B apt-offline is written by Ritesh Raj Sarraf (rrs@researchut.com)
 
-If you wish to report a bug in apt-offline, please see 
+If you wish to report a bug in apt-offline, please see
 .B http://apt-offline.alioth.debian.org
-or 
+or
 .B http://github.com/rickysarraf/apt-offline
 or else, send an email to me at
 .B rrs@researchut.com

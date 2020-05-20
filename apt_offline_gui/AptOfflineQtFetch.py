@@ -16,19 +16,19 @@ class Worker(QtCore.QThread):
     status = QtCore.pyqtSignal(str)
     finished = QtCore.pyqtSignal()
     terminated = QtCore.pyqtSignal()
-    
+
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
         self.parent = parent
         self.exiting = False
-        
+
         #INFO: Qt5 Signal and Slots
         self.output.emit('')
         self.progress.emit('','')
         self.status.emit('')
         self.finished.emit()
         self.terminated.emit()
-        
+
     def __del__(self):
         self.exiting = True
         self.wait()
@@ -36,7 +36,7 @@ class Worker(QtCore.QThread):
     def run(self):
         # setup i/o redirects before call
         sys.stdout = self
-        sys.stderr = self 
+        sys.stderr = self
         apt_offline_core.AptOfflineCoreLib.fetcher(self.args)
 
     def setArgs (self,args):
@@ -48,7 +48,7 @@ class Worker(QtCore.QThread):
         if apt_offline_core.AptOfflineCoreLib.guiTerminateSignal:
             # ^ so artificial, the threads still remain frozen in time I suppose
             return
-            
+
         if ("MSG_START" in text):
             self.status.emit("Fetching missing meta data...")
         elif ("MSG_END" in text):
@@ -78,25 +78,25 @@ class Worker(QtCore.QThread):
 
 
 class AptOfflineQtFetch(QtWidgets.QDialog):
-    
+
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_AptOfflineQtFetch()
         self.ui.setupUi(self)
         self.advancedOptionsDialog = AptOfflineQtFetchOptions()
-        
+
         # Connect the clicked signal of the Signature File Browse button to it's slot
         self.ui.browseFilePathButton.clicked.connect(self.popupDirectoryDialog)
-        
+
         # Connect the clicked signal of the Zip File Browse button to it's slot
         self.ui.browseZipFileButton.clicked.connect(self.popupZipFileDialog)
-                                                
+
         # Connect the clicked signal of the Save to it's Slot - accept
         self.ui.startDownloadButton.clicked.connect(self.StartDownload)
-                        
+
         # Connect the clicked signal of the Cancel to it's Slot - reject
         self.ui.cancelButton.clicked.connect(self.handleCancel)
-                        
+
         self.ui.profileFilePath.textChanged.connect(self.controlStartDownloadBox)
         self.ui.zipFilePath.textChanged.connect(self.controlStartDownloadBox)
         self.ui.advancedOptionsButton.clicked.connect(self.showAdvancedOptions)
@@ -117,34 +117,34 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
 
     def showAdvancedOptions(self):
             self.advancedOptionsDialog.show()
-    
+
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
         directory, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Select the signature file')
         # Show the selected file path in the field marked for showing directory path
         self.ui.profileFilePath.setText(directory)
-        
+
         self.controlStartDownloadBox()
-    
+
     def popupZipFileDialog(self):
-        
+
         if self.ui.saveDatacheckBox.isChecked() is True:
                 filename, _ = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select the folder to save downlaods to')
         else:
                 # Popup a Zip File selection box
                 filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Select the zip file to save downloads')
-        
+
         # Show the selected file path in the field marked for showing directory path
         self.ui.zipFilePath.setText(filename)
-        
+
         self.controlStartDownloadBox()
-        
+
     def StartDownload(self):
         # Do all the download related work here and then close
 
         # Clear the consoleOutputHolder
         self.ui.rawLogHolder.setText("")
-        
+
         self.filepath = str(self.ui.profileFilePath.text())
 
         if os.path.isfile(self.filepath) == False:
@@ -155,16 +155,16 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
                 self.ui.rawLogHolder.setText ( \
                     guicommon.style("%s does not exist." % self.filepath,'red'))
             return
-        
+
         self.zipfilepath = str(self.ui.zipFilePath.text())
-        
+
         # First we need to determine if the input is a file path or a directory path
-        if self.ui.saveDatacheckBox.isChecked() is not True: 
+        if self.ui.saveDatacheckBox.isChecked() is not True:
                 #Input is a file path
 
                 # if file already exists
                 if os.path.exists(self.zipfilepath):
-                        ret = QMessageBox.warning(self, "Replace archive file?", "The file %s already exists.\n" 
+                        ret = QMessageBox.warning(self, "Replace archive file?", "The file %s already exists.\n"
                                                   "Do you want to overwrite it?" % self.zipfilepath,
                                                   QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
                         if ret == QMessageBox.Yes:
@@ -173,7 +173,7 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
                                         #TODO: If "/" is the path, then os.unlink quietly fails crashing the GUI
                                         os.unlink(self.zipfilepath)
                                 except:
-                                        guicommon.updateInto (self.ui.rawLogHolder, 
+                                        guicommon.updateInto (self.ui.rawLogHolder,
                                                               guicommon.style("Couldn't write to %s!" % self.zipfilepath,'red'))
                         else:
                                 return
@@ -199,7 +199,7 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
                                 try:
                                         os.mkdir(self.zipfilepath)
                                 except:
-                                        guicommon.updateInto (self.ui.rawLogHolder, 
+                                        guicommon.updateInto (self.ui.rawLogHolder,
                                                               guicommon.style("Couldn't create directory %s!" % self.zipfilepath,'red'))
                                         return
                         else:
@@ -207,26 +207,26 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
                 targetFilePath = None
                 targetDirPath = self.zipfilepath
 
-        
-        args = GetterArgs(filename=self.filepath, bundle_file=targetFilePath, progress_bar=self.ui.statusProgressBar, 
+
+        args = GetterArgs(filename=self.filepath, bundle_file=targetFilePath, progress_bar=self.ui.statusProgressBar,
                         progress_label=self.ui.progressStatusDescription, proxy_host=self.advancedOptionsDialog.proxy_host,
                         proxy_port=self.advancedOptionsDialog.proxy_port, num_of_threads=self.advancedOptionsDialog.num_of_threads,
                         socket_timeout=self.advancedOptionsDialog.socket_timeout, cache_dir=self.advancedOptionsDialog.cache_dir,
                         download_dir=targetDirPath, disable_md5check=self.advancedOptionsDialog.disable_md5check,
                         deb_bugs=self.advancedOptionsDialog.deb_bugs)
-        
+
         #returnStatus = apt_offline_core.AptOfflineCoreLib.fetcher(args)
         # TODO: deal with return status laters
-        
+
         self.ui.cancelButton.setText("Cancel")
         self.disableAction()
         self.disableAtDownload()
         self.worker.setArgs (args)
         self.worker.start()
-        
+
         #if (returnStatus):
         ''' TODO: do something with self.zipfilepath '''
-            
+
         # TODO to be implemented later
         # self.accept()
 
@@ -292,7 +292,7 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
 
     def disableAction(self):
         self.ui.startDownloadButton.setEnabled(False)
-    
+
     def disableAtDownload(self):
         self.ui.advancedOptionsButton.setEnabled(False)
         self.ui.browseZipFileButton.setEnabled(False)
@@ -300,7 +300,7 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
         self.ui.zipFilePath.setEnabled(False)
         self.ui.profileFilePath.setEnabled(False)
         self.ui.saveDatacheckBox.setEnabled(False)
-            
+
     def enableAction(self):
         self.ui.startDownloadButton.setEnabled(True)
 

@@ -23,5 +23,5 @@ def updateInto(myobject,text):
 
     if ("Completed" in text):
         text = style(text,'green_fin')
-        
+
     myobject.append (text)
