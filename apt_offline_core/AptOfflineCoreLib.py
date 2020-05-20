@@ -612,19 +612,16 @@ class APTVerifySigs(ExecCmd):
                         self.opts.append("--ignore-time-conflict")
                         for eachPath in self.defaultPaths:
                                 if os.path.isfile(eachPath):
-                                        eachKeyring = "--keyring %s" % (eachPath)
-                                        self.opts.extend(eachKeyring.split())
+                                        self.opts.extend(["--keyring", eachPath])
                                 elif os.path.isdir(eachPath):
                                         for eachGPG in os.listdir(eachPath):
                                                 eachGPG = os.path.join(eachPath, eachGPG)
                                                 log.verbose("Adding %s to the apt-offline keyring\n" % (eachGPG) )
-                                                eachKeyring = "--keyring %s" % (eachGPG)
-                                                self.opts.extend(eachKeyring.split())
+                                                self.opts.extend(["--keyring", eachGPG])
                         if len(self.opts) == 1:
                                 log.err("No valid keyring paths found in: %s\n" % (", ".join(self.defaultPaths)))
                 else:
-                        finalKeyring = "--keyring %s --ignore-time-conflict" % (keyring)
-                        self.opts.extend(finalKeyring.split())
+                        self.opts.extend(["--keyring", keyring, "--ignore-time-conflict"])
 
         def VerifySig(self, signature_file, signed_file):
 
