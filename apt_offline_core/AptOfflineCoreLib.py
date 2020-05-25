@@ -151,7 +151,7 @@ class FetchBugReports:
                 
                 try:
                         #( num_of_bugs, header, self.bugs_list ) = debianbts.get_bugs( 'package', PackageName )
-                        self.bugs_list = debianbts.get_bugs( 'package', PackageName )
+                        self.bugs_list = debianbts.get_bugs( package = PackageName )
                         num_of_bugs = len(self.bugs_list)
                 except Exception:
                         log.verbose(traceback.format_exc())
