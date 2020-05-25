@@ -118,8 +118,6 @@ apt_lists_lock = '/var/lib/apt/lists/lock'
 apt_packages_lock = '/var/cache/apt/archives/lock'
 
 apt_bug_file_format = "__apt__bug__report"
-IgnoredBugTypes = ["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"]
-
 
 #These are spaces which will overwrite the progressbar left mess
 LINE_OVERWRITE_SMALL = " " * 10
@@ -133,9 +131,8 @@ log = AptOfflineLib.Log( Bool_Verbose, lock=True )
 
        
 class FetchBugReports:
-        def __init__( self, apt_bug_file_format, IgnoredBugTypes, ArchiveFile=None, lock=False, DownloadDir=None ):
+        def __init__( self, apt_bug_file_format, ArchiveFile=None, lock=False, DownloadDir=None ):
                 self.bugsList = []
-                self.IgnoredBugTypes = IgnoredBugTypes
                 self.lock = lock
                 self.apt_bug = apt_bug_file_format
                 self.DownloadDir = DownloadDir
@@ -150,8 +147,7 @@ class FetchBugReports:
                 2 => True'''
                 
                 try:
-                        #( num_of_bugs, header, self.bugs_list ) = debianbts.get_bugs( 'package', PackageName )
-                        self.bugs_list = debianbts.get_bugs( package = PackageName )
+                        self.bugs_list = debianbts.get_bugs(package=PackageName)
                         num_of_bugs = len(self.bugs_list)
                 except Exception:
                         log.verbose(traceback.format_exc())
@@ -1057,7 +1053,7 @@ def fetcher( args ):
                         #self.lock = lock
                         AptOfflineLib.FileMgmt.__init__(self)
                         
-                        FetchBugReports.__init__(self, apt_bug_file_format, IgnoredBugTypes, Str_BundleFile, lock=kwargs.get('lock'))
+                        FetchBugReports.__init__(self, apt_bug_file_format, Str_BundleFile, lock=kwargs.get('lock'))
                         
                         #INFO: Bunch of important attributes
                         self.CheckSum = Bool_DisableMD5Check
