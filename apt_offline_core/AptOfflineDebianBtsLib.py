@@ -492,7 +492,7 @@ def _build_int_array_el(el_name, parent, list_):
 
 
 def _parse_bool(el):
-    """parse a boolean value from a xml element"""
+    """parse a boolean value from an xml element"""
     value = str(el)
     return not value.strip() in ('', '0')
 
