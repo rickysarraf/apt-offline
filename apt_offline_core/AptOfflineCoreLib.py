@@ -1135,8 +1135,17 @@ def fetcher( args ):
                                 #Seek to beginning
                                 chlogFile.seek(0)
 
+                                if 'Source' in pkgHandle:
+                                    srcname = pkgHandle['Source']
+                                else:
+                                    srcname = pkgHandle.pkgname
+                                if ' ' in srcname:
+                                    srcname = srcname.split(' ', 1)[0]
+                                installedVersion_changelog_line = "%s (%s) " % (srcname, installedVersion)
+
+                                # FIXME: replace this with parsing the changelog using the Python debian module
                                 for eachLine in chlogFile.readlines():
-                                    if installedVersion in eachLine:
+                                    if eachLine.startswith(installedVersion_changelog_line):
                                         break
                                     else:
                                         pkgLogFile.writelines(eachLine)
