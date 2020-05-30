@@ -620,8 +620,8 @@ class APTVerifySigs(ExecCmd):
                                                 log.verbose("Adding %s to the apt-offline keyring\n" % (eachGPG) )
                                                 eachKeyring = "--keyring %s" % (eachGPG)
                                                 self.opts.extend(eachKeyring.split())
-                                else:
-                                        log.err("Path for keyring is invalid: %s\n" % (eachPath) )
+                        if len(self.opts) == 1:
+                                log.err("No valid keyring paths found in: %s\n" % (", ".join(self.defaultPaths)))
                 else:
                         finalKeyring = "--keyring %s --ignore-time-conflict" % (keyring)
                         self.opts.extend(finalKeyring.split())
