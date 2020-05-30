@@ -4,4 +4,4 @@ Name=APT Offline
 GenericName=APT Offline
 Comment=Offline APT Package Management
 Exec=apt-offline-gui-pkexec
-Categories=Utility;System;
+Categories=System;
