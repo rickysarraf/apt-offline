@@ -20,7 +20,7 @@ set_features () {
 	$APT_OFFLINE set $URI
 
 	echo "Executing command 'set $URI --simulate '"
-	$APT_OFFLINE set $URI --simulate 
+	$APT_OFFLINE set $URI --simulate
 
 	echo "Executing command 'set $URI --update'"
 	$APT_OFFLINE set $URI --update
@@ -35,7 +35,7 @@ set_features () {
 	$APT_OFFLINE set $URI --update --upgrade --upgrade-type upgrade
 
 	echo "Executing command 'set $URI --update --upgrade --upgrade-type upgrade --release $RELEASE'"
-	$APT_OFFLINE set $URI --update --upgrade --upgrade-type upgrade --release $RELEASE 
+	$APT_OFFLINE set $URI --update --upgrade --upgrade-type upgrade --release $RELEASE
 
 	echo "Executing command 'set $URI --install-packages $DISLIKED_PACKAGES'"
 	$APT_OFFLINE set $URI --install-packages $DISLIKED_PACKAGES
@@ -62,7 +62,7 @@ get_features () {
 		URI=$1
 	fi
 	echo "Executing command 'get $URI '"
-	$APT_OFFLINE get $URI 
+	$APT_OFFLINE get $URI
 
 	echo "Executing command 'get $URI --threads $THREADS'"
 	$APT_OFFLINE get $URI --threads $THREADS
@@ -123,7 +123,7 @@ install_features_prompt () {
 		BUNDLE_FILE=$1
 	fi
 	echo "Executing command 'install $DOWNLOAD_DIR '"
-	$APT_OFFLINE install $DOWNLOAD_DIR 
+	$APT_OFFLINE install $DOWNLOAD_DIR
 
 	echo "Executing command 'install $DOWNLOAD_DIR --simulate'"
 	$APT_OFFLINE install $DOWNLOAD_DIR --simulate
@@ -135,7 +135,7 @@ install_features_prompt () {
 	$APT_OFFLINE install $DOWNLOAD_DIR --simulate --allow-unauthenticated
 
 	echo "Executing command 'install $BUNDLE_FILE '"
-	$APT_OFFLINE install $BUNDLE_FILE 
+	$APT_OFFLINE install $BUNDLE_FILE
 
 	echo "Executing command 'install $BUNDLE_FILE --simulate'"
 	$APT_OFFLINE install $BUNDLE_FILE --simulate

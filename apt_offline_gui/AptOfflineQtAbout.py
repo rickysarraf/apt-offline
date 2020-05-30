@@ -11,13 +11,13 @@ class AptOfflineQtAbout(QtWidgets.QDialog):
         self.ui = Ui_AboutAptOffline()
         self.ui.setupUi(self)
         self.setupLicense()
-        
+
     def setupLicense(self):
-        ''' LICENSE is looked for in - 
+        ''' LICENSE is looked for in -
                 1. Current directory (dev / possibly windows)
                 2. /usr/local/share/doc/apt-offline (source install)
                 3. /usr/share/doc/apt-offline (package install)
-                
+
             TODO: to resolve location on window
         '''
         filename = 'LICENSE'

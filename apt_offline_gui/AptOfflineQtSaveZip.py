@@ -9,19 +9,19 @@ class AptOfflineQtSaveZip(QtGui.QDialog):
         QtGui.QWidget.__init__(self, parent)
         self.ui = Ui_SaveZipFile()
         self.ui.setupUi(self)
-        
+
         # Connect the clicked signal of the Browse button to it's slot
         QtCore.QObject.connect(self.ui.browseFilePathButton, QtCore.SIGNAL("clicked()"),
                         self.popupDirectoryDialog )
-                        
+
         # Connect the clicked signal of the Save to it's Slot - accept
         QtCore.QObject.connect(self.ui.saveButton, QtCore.SIGNAL("clicked()"),
                         self.accept )
-                        
+
         # Connect the clicked signal of the Cancel to it's Slot - reject
         QtCore.QObject.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
                         self.reject )
-        
+
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
         directory = QtGui.QFileDialog.getExistingDirectory(self, 'Open Directory')

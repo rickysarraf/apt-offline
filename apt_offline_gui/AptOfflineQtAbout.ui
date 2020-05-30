@@ -100,7 +100,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>apt-offline can fully update/upgrade your disconnected Debian box without the need of connecting it to the network.  
+      <string>apt-offline can fully update/upgrade your disconnected Debian box without the need of connecting it to the network.
 
 This is a Graphical User Interface which exposes the functionality of apt-offline.</string>
      </property>
