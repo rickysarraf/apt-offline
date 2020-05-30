@@ -38,7 +38,7 @@ class Worker(QtCore.QThread):
 
     def write(self, text):
         # redirects console output to our consoleOutputHolder
-        # extract chinese whisper from text
+        # extract details from text
         if ('.deb' in text and 'synced' in text):
             try:
                 text = guicommon.style("Package : ",'orange') + guicommon.style(text.split("/")[-1],'green')
