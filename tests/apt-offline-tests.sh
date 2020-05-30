@@ -2,10 +2,13 @@
 
 DISLIKED_PACKAGES="lxde icewm eclipse"
 RELEASE=`lsb_release -c -s`
-URI="/tmp/set-$PPID.uris"
+DIR="$(mktemp --tmpdir --directory apt-offline-tests-XXXXXXXX)"
+cleanup () { rm --recursive --force "$DIR"; }
+trap cleanup EXIT
+URI="$DIR/set.uris"
 CACHE_DIR="/var/cache/apt/archives"
-DOWNLOAD_DIR="/tmp/apt-offline-tests-$PPID"
-BUNDLE_FILE="/tmp/apt-offline-tests-$PPID.zip"
+DOWNLOAD_DIR="$DIR/download-dir"
+BUNDLE_FILE="$DIR/bundle-file.zip"
 THREADS=5
 APT_OFFLINE="./apt-offline "
 

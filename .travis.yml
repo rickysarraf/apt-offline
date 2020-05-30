@@ -1,9 +1,11 @@
+---
 language: python
 branches:
         - master
 before_install:
         - sudo apt-get update -qq
-        - sudo apt-get install -y python-magic python-soappy debian-archive-keyring
+        - sudo apt-get install -y python-magic python-soappy
+          debian-archive-keyring
 script:
         - ./apt-offline get tests/set-update.uris --threads 5 1>/dev/null
         - sudo ./tests/apt-offline-tests.sh 1>/dev/null

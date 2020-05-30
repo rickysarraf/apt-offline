@@ -44,7 +44,7 @@ class Worker(QtCore.QThread):
 
     def write(self, text):
         # redirects console output to our consoleOutputHolder
-        # extract chinese whisper from text
+        # extract details from text
         if apt_offline_core.AptOfflineCoreLib.guiTerminateSignal:
             # ^ so artificial, the threads still remain frozen in time I suppose
             return

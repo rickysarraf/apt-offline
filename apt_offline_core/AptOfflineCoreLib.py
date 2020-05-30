@@ -118,8 +118,6 @@ apt_lists_lock = '/var/lib/apt/lists/lock'
 apt_packages_lock = '/var/cache/apt/archives/lock'
 
 apt_bug_file_format = "__apt__bug__report"
-IgnoredBugTypes = ["Resolved bugs", "Normal bugs", "Minor bugs", "Wishlist items", "FIXED"]
-
 
 #These are spaces which will overwrite the progressbar left mess
 LINE_OVERWRITE_SMALL = " " * 10
@@ -133,9 +131,8 @@ log = AptOfflineLib.Log( Bool_Verbose, lock=True )
 
 
 class FetchBugReports:
-        def __init__( self, apt_bug_file_format, IgnoredBugTypes, ArchiveFile=None, lock=False, DownloadDir=None ):
+        def __init__( self, apt_bug_file_format, ArchiveFile=None, lock=False, DownloadDir=None ):
                 self.bugsList = []
-                self.IgnoredBugTypes = IgnoredBugTypes
                 self.lock = lock
                 self.apt_bug = apt_bug_file_format
                 self.DownloadDir = DownloadDir
@@ -150,8 +147,7 @@ class FetchBugReports:
                 2 => True'''
 
                 try:
-                        #( num_of_bugs, header, self.bugs_list ) = debianbts.get_bugs( 'package', PackageName )
-                        self.bugs_list = debianbts.get_bugs( 'package', PackageName )
+                        self.bugs_list = debianbts.get_bugs(package=PackageName)
                         num_of_bugs = len(self.bugs_list)
                 except Exception:
                         log.verbose(traceback.format_exc())
@@ -624,8 +620,8 @@ class APTVerifySigs(ExecCmd):
                                                 log.verbose("Adding %s to the apt-offline keyring\n" % (eachGPG) )
                                                 eachKeyring = "--keyring %s" % (eachGPG)
                                                 self.opts.extend(eachKeyring.split())
-                                else:
-                                        log.err("Path for keyring is invalid: %s\n" % (eachPath) )
+                        if len(self.opts) == 1:
+                                log.err("No valid keyring paths found in: %s\n" % (", ".join(self.defaultPaths)))
                 else:
                         finalKeyring = "--keyring %s --ignore-time-conflict" % (keyring)
                         self.opts.extend(finalKeyring.split())
@@ -1056,9 +1052,9 @@ def fetcher( args ):
                         AptOfflineLib.Archiver.__init__( self, lock=kwargs.get('lock') )
                         #self.lock = lock
                         AptOfflineLib.FileMgmt.__init__(self)
-
-                        FetchBugReports.__init__(self, apt_bug_file_format, IgnoredBugTypes, Str_BundleFile, lock=kwargs.get('lock'))
-
+                        
+                        FetchBugReports.__init__(self, apt_bug_file_format, Str_BundleFile, lock=kwargs.get('lock'))
+                        
                         #INFO: Bunch of important attributes
                         self.CheckSum = Bool_DisableMD5Check
                         self.BundleFile = Str_BundleFile
@@ -1233,7 +1229,7 @@ def fetcher( args ):
                 # On many boxes, the cdrom apt repository will be enabled.
                 # For now, let's skip the cdrom repository items.
                 if item.startswith("\'cdrom"):
-                    log.error("cdrom apt repository not supported. Skipping %s\n" % (item))
+                    log.err("cdrom apt repository not supported. Skipping %s\n" % (item))
                     return True
 
 
@@ -1603,6 +1599,7 @@ def installer( args ):
                     filename = os.path.join(self.apt_update_final_path, filename)
                     if retval is True:
                         os.rename(temp_filename, filename)
+                        os.chmod(filename, 0o644)
                         log.verbose("Synchronized file to %s\n" % (filename))
                     else:
                         log.err("Failed to sync file %s\n" % (filename))
@@ -1614,6 +1611,7 @@ def installer( args ):
             elif self.magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or self.magicMIME.file( archive_file ) == "application/pgp-signature":
                 gpgFile = os.path.join(self.apt_update_final_path, filename)
                 shutil.copy2(archive_file, gpgFile)
+                os.chmod(gpgFile, 0o644)
                 # PGP armored data should be bypassed
                 log.verbose("File is %s, hence 'True'.\n" % (filename) )
                 retval = True
@@ -1635,6 +1633,7 @@ def installer( args ):
                 txtFile = os.path.join(self.apt_update_final_path, filename)
                 if os.access( self.apt_update_final_path, os.W_OK ):
                     shutil.copy( archive_file, txtFile )
+                    os.chmod(txtFile, 0o644)
                     retval = True
                 else:
                     log.err( "Cannot write to target path %s\n" % ( self.apt_update_final_path ) )
