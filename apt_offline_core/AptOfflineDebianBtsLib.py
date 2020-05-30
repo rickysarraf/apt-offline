@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # debianbts.py - Methods to query Debian's BTS.
 # Copyright (C) 2007-2015  Bastian Venthur <venthur@debian.org>
