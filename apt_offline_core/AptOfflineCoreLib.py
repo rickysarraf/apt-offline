@@ -176,7 +176,7 @@ class FetchBugReports:
                                 bugReportLength = bugReport.__len__()
                                 writeBugReport = 0
                                 self.fileName = os.path.join(tempfile.gettempdir(), PackageName + "{}" + str(eachBug) + "{}" + self.apt_bug)
-                                file_handle = open( self.fileName, 'w' )
+                                file_handle = open( self.fileName, 'w', encoding='utf-8')
 
                                 #TODO: Can we manipulate these headers in a more efficient way???
                                 for line in bugReport[writeBugReport]['header'].split("\n"):
@@ -1116,8 +1116,8 @@ def fetcher( args ):
                         pkgHandle = DebPackage(pkgPath)
                         for pkgFile in pkgHandle.filelist:
                             if constChangelog in pkgFile:
-                                chlogFile = tempfile.NamedTemporaryFile('r+', buffering=-1, dir=None, delete=True)
-                                pkgLogFile = open(os.path.join(tempfile.gettempdir(), pkgHandle.pkgname + ".changelog"), 'w')
+                                chlogFile = tempfile.NamedTemporaryFile('r+', buffering=-1, encoding='utf-8', dir=None, delete=True)
+                                pkgLogFile = open(os.path.join(tempfile.gettempdir(), pkgHandle.pkgname + ".changelog"), 'w', encoding='utf-8')
 
                                 #INFO: python-apt is able to read the data from the gzipped changelog dynamically
                                 try:
