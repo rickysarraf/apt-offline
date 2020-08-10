@@ -915,7 +915,7 @@ def fetcher( args ):
                         proxy_support = urllib.request.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
                         opener = urllib.request.build_opener(proxy_support)
                         urllib.request.install_opener(opener)
-                        log.verbose("Proxy successfully set up with Host %s and port %d\n" % (Str_ProxyHost, Str_ProxyPort))
+                        log.verbose("Proxy successfully set up with Host %s and port %s\n" % (Str_ProxyHost, str(Str_ProxyPort)))
                 else:
                         proxy_support = urllib.request.ProxyHandler({'http': Str_ProxyHost})
                         opener = urllib.request.build_opener(proxy_support)
