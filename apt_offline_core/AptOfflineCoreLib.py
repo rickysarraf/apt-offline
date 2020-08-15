@@ -720,13 +720,18 @@ class GenericDownloadFunction():
                     errfunc(errstring.errno, errstring.reason, url)
                 return False
             except http.client.HTTPException as e:
-                log.err("Type HTTPException occurred")
-                log.err(e)
+                log.err("Type HTTPException occurred while processing url: %s\n" % (url))
+                log.err("Failed to download %s\n" % (localFile))
+                if type(e) is str:
+                    log.err(e)
                 return False
             except http.client.BadStatusLine as e:
                 #INFO: See Python Bug: https://bugs.python.org/issue8823
-                log.err("BadStatusLine exception: Python Bug 8823")
-                log.err(e)
+                log.err("BadStatusLine exception: Python Bug 8823\n")
+                log.err("Type BadStatusLine occurred while processing url: %s\n" % (url))
+                log.err("Failed to download %s\n" % (localFile))
+                if type(e) is str:
+                    log.err(e)
                 return False
             except socket.timeout:
                 log.err("Socket timeout. Skipping URL: %s\n" % (url))
