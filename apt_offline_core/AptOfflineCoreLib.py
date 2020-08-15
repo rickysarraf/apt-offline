@@ -308,15 +308,15 @@ class AptManip(ExecCmd):
         def Upgrade(self, UpgradeType="upgrade", ReleaseType=None):
                 log.verbose("APT Upgrade Method is of type: %s\n" % self.apt)
                 if self.apt == "apt-get":
-                        self.__AptGetUpgrade(UpgradeType, ReleaseType)
+                        return self.__AptGetUpgrade(UpgradeType, ReleaseType)
                 elif self.apt == "apt":
-                        self.__AptUpgrade(UpgradeType, ReleaseType)
+                        return self.__AptUpgrade(UpgradeType, ReleaseType)
                 elif self.apt == "aptitude":
                         pass
                 elif self.apt == "python-apt":
                         # Upgrade is broken in python-apt
                         # Hence for now, redirect to apt-get
-                        self.__PythonAptUpgrade(UpgradeType, ReleaseType)
+                        return self.__PythonAptUpgrade(UpgradeType, ReleaseType)
                 else:
                         log.err("Method not supported")
                         sys.exit(1)
@@ -324,11 +324,11 @@ class AptManip(ExecCmd):
         def InstallPackages(self, PackageList, ReleaseType):
                 log.verbose("APT Install Method is of type: %s\n" % self.apt)
                 if self.apt == "apt-get":
-                        self.__AptGetInstallPackage(PackageList, ReleaseType)
+                        return self.__AptGetInstallPackage(PackageList, ReleaseType)
                 elif self.apt == "apt":
-                        self.__AptInstallPackage(PackageList, ReleaseType)
+                        return self.__AptInstallPackage(PackageList, ReleaseType)
                 elif self.apt == "python-apt":
-                        self.__AptInstallPackage(PackageList, ReleaseType)
+                        return self.__AptInstallPackage(PackageList, ReleaseType)
                 else:
                         log.err("Method not supported")
                         sys.exit(1)
@@ -336,11 +336,11 @@ class AptManip(ExecCmd):
         def InstallSrcPackages(self, SrcPackageList, ReleaseType, BuildDependency):
                 log.verbose("APT Install Source Method is of type: %s\n" % self.apt)
                 if self.apt == "apt-get":
-                        self.__AptGetInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
+                        return self.__AptGetInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
                 elif self.apt == "apt":
-                        self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
+                        return self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
                 elif self.apt == "python-apt":
-                        self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
+                        return self.__AptInstallSrcPackages(SrcPackageList, ReleaseType, BuildDependency)
                 else:
                         log.err("Method not supported")
                         sys.exit(1)
@@ -360,14 +360,16 @@ class AptManip(ExecCmd):
         def __AptUpdate(self):
                 log.msg("Gathering details needed for 'update' operation\n")
                 if self.ExecSystemCmd(["/usr/bin/apt", "-qq", "--print-uris", "update"], self.WriteTo) is False:
-                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        log.verbose( "FATAL: Something is wrong with the apt system.\n" )
+                        return False
                 log.verbose("Calling __FixAptSigs to fix the apt sig problem")
                 self.__FixAptSigs()
 
         def __AptGetUpdate(self):
                 log.msg("Gathering details needed for 'update' operation\n")
                 if self.ExecSystemCmd(["/usr/bin/apt-get", "-q", "--print-uris", "update"], self.WriteTo) is False:
-                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        log.verbose( "FATAL: Something is wrong with the apt system.\n" )
+                        return False
                 log.verbose("Calling __FixAptSigs to fix the apt sig problem")
                 self.__FixAptSigs()
 
@@ -457,7 +459,8 @@ class AptManip(ExecCmd):
 
                 log.msg("Gathering details needed for '%s' operation\n" % (UpgradeType) )
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
-                        log.err("FATAL: Something is wrong with the APT system\n")
+                        log.verbose("FATAL: Something is wrong with the APT system\n")
+                        return False
 
         def __AptGetUpgrade(self, UpgradeType="upgrade", ReleaseType=None):
                 self.ReleaseType = ReleaseType
@@ -472,7 +475,8 @@ class AptManip(ExecCmd):
 
                 log.msg("Gathering details needed for '%s' operation\n" % (UpgradeType) )
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
-                        log.err("FATAL: Something is wrong with the APT system\n")
+                        log.verbose("FATAL: Something is wrong with the APT system\n")
+                        return False
 
 
         def __AptInstallPackage(self, PackageList=None, ReleaseType=None):
@@ -491,7 +495,8 @@ class AptManip(ExecCmd):
                         cmd.append(pkg)
 
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
-                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        log.verbose( "FATAL: Something is wrong with the apt system.\n" )
+                        return False
 
         def __AptInstallSrcPackages(self, SrcPackageList=None, ReleaseType=None, BuildDependency=False):
 
@@ -513,11 +518,13 @@ class AptManip(ExecCmd):
                         cmdBuildDep.append(pkg)
 
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
-                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        log.verbose( "FATAL: Something is wrong with the apt system.\n" )
+                        return False
                 if BuildDependency:
                         log.msg("Generating Build-Dependency for source packages %s.\n" % (SrcPackageList) )
                         if self.ExecSystemCmd(cmdBuildDep, self.WriteTo) is False:
-                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                log.verbose( "FATAL: Something is wrong with the apt system.\n" )
+                                return False
 
 
         def __AptGetInstallPackage(self, PackageList=None, ReleaseType=None):
@@ -536,7 +543,8 @@ class AptManip(ExecCmd):
                         cmd.append(pkg)
 
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
-                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        log.verbose( "FATAL: Something is wrong with the apt system.\n" )
+                        return False
 
         def __AptGetInstallSrcPackages(self, SrcPackageList=None, ReleaseType=None, BuildDependency=False):
 
@@ -558,11 +566,13 @@ class AptManip(ExecCmd):
                         cmdBuildDep.append(pkg)
 
                 if self.ExecSystemCmd(cmd, self.WriteTo) is False:
-                        log.err( "FATAL: Something is wrong with the apt system.\n" )
+                        log.verbose( "FATAL: Something is wrong with the apt system.\n" )
+                        return False
                 if BuildDependency:
                         log.msg("Generating Build-Dependency for source packages %s.\n" % (SrcPackageList) )
                         if self.ExecSystemCmd(cmdBuildDep, self.WriteTo) is False:
-                                log.err( "FATAL: Something is wrong with the apt system.\n" )
+                                log.verbose( "FATAL: Something is wrong with the apt system.\n" )
+                                return False
 
 
 class APTVerifySigs(ExecCmd):
@@ -2149,7 +2159,8 @@ def setter(args):
                                 log.err("This option requires super-user privileges. Execute as root or use sudo/su\n")
                                 sys.exit(1)
                         else:
-                                AptInst.Update()
+                            if AptInst.Update() is False:
+                                sys.exit(1)
                 else:
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
@@ -2161,11 +2172,14 @@ def setter(args):
                                 sys.exit(1)
                         #TODO: Use a more Pythonic way for it
                         if Str_SetUpgradeType == "upgrade":
-                                AptInst.Upgrade("upgrade", ReleaseType=Str_SetInstallRelease)
+                            if AptInst.Upgrade("upgrade", ReleaseType=Str_SetInstallRelease) is False:
+                                sys.exit(1)
                         elif Str_SetUpgradeType == "dist-upgrade":
-                                AptInst.Upgrade("dist-upgrade", ReleaseType=Str_SetInstallRelease)
+                            if AptInst.Upgrade("dist-upgrade", ReleaseType=Str_SetInstallRelease) is False:
+                                sys.exit(1)
                         elif Str_SetUpgradeType == "dselect-upgrade":
-                                AptInst.Upgrade("dselect-upgrade", ReleaseType=Str_SetInstallRelease)
+                            if AptInst.Upgrade("dselect-upgrade", ReleaseType=Str_SetInstallRelease) is False:
+                                sys.exit(1)
                         else:
                                 log.err( "Invalid upgrade argument type selected\nPlease use one of, upgrade/dist-upgrade/dselect-upgrade\n" )
                 else:
@@ -2178,14 +2192,16 @@ def setter(args):
                                 log.err( "This option requires super-user privileges. Execute as root or use sudo/su\n" )
                                 sys.exit(1)
 
-                        AptInst.InstallPackages(List_SetInstallPackages, Str_SetInstallRelease)
+                        if AptInst.InstallPackages(List_SetInstallPackages, Str_SetInstallRelease) is False:
+                            sys.exit(1)
                 else:
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
 
         if List_SetInstallSrcPackages != None and List_SetInstallSrcPackages != []:
                 if platform.system() in supported_platforms:
-                        AptInst.InstallSrcPackages(List_SetInstallSrcPackages, Str_SetInstallRelease, Bool_SrcBuildDep)
+                    if AptInst.InstallSrcPackages(List_SetInstallSrcPackages, Str_SetInstallRelease, Bool_SrcBuildDep) is False:
+                        sys.exit(1)
                 else:
                         log.err( "This argument is supported only on Unix like systems with apt installed\n" )
                         sys.exit( 1 )
