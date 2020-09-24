@@ -1917,12 +1917,13 @@ def installer( args ):
             if filename.endswith(".dsc"):
                 SrcPkgName = filename.split('_')[0]
                 temp = tempfile.NamedTemporaryFile()
-                temp.file.write( zipBugFile.read( filename ) )
+                temp.file.write(zipBugFile.read(filename))
                 temp.file.flush()
                 temp.file.seek( 0 ) #Let's go back to the start of the file
                 SrcPkgDict[SrcPkgName] = []
                 marker = None
                 for SrcPkgIdentifier in temp.file.readlines():
+                    SrcPkgIdentifier = SrcPkgIdentifier.decode('utf-8')
                     if SrcPkgIdentifier.startswith('Files:'):
                         marker = True
                         continue
