@@ -15,6 +15,14 @@ class AptOfflineQtInstallBugList(QtWidgets.QDialog):
         terminated = QtCore.pyqtSignal()
 
         def __init__(self, filepath, parent=None):
+            """
+            Initializes the tooltip.
+
+            Args:
+                self: (todo): write your description
+                filepath: (str): write your description
+                parent: (todo): write your description
+            """
             QtWidgets.QWidget.__init__(self, parent)
             self.ui = Ui_AptOfflineQtInstallBugList()
 
@@ -32,6 +40,12 @@ class AptOfflineQtInstallBugList(QtWidgets.QDialog):
             self.ui.closeButton.clicked.connect(self.reject)
 
         def populateBugListPlainTextEdit(self):
+            """
+            Populate the currently selected text.
+
+            Args:
+                self: (todo): write your description
+            """
                 self.ui.bugListplainTextEdit.clear()
                 textItem = str(self.ui.bugListViewWindow.currentItem().text() )
 
@@ -43,10 +57,23 @@ class AptOfflineQtInstallBugList(QtWidgets.QDialog):
                 self.ui.bugListplainTextEdit.setTextCursor(myCursor)
 
         def noBugPopulateBugListPlainTextEdit(self):
+            """
+            Updates the text for the current text.
+
+            Args:
+                self: (todo): write your description
+            """
                 self.ui.bugListplainTextEdit.clear()
                 self.ui.bugListplainTextEdit.appendPlainText("No Bug Reports Found")
 
         def populateBugList(self, path):
+            """
+            Populate a list of files.
+
+            Args:
+                self: (todo): write your description
+                path: (str): write your description
+            """
 
                 if os.path.isfile(path):
                         zipFile = zipfile.ZipFile(path, "r")

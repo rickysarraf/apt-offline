@@ -104,6 +104,13 @@ _errno.argtypes = [magic_t]
 
 class Magic(object):
     def __init__(self, ms):
+        """
+        Initialize a toc.
+
+        Args:
+            self: (todo): write your description
+            ms: (str): write your description
+        """
         self._magic_t = ms
 
     def close(self):

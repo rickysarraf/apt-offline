@@ -14,6 +14,14 @@ class AptOfflineQtInstallChangelog(QtWidgets.QDialog):
         terminated = QtCore.pyqtSignal()
 
         def __init__(self, filepath, parent=None):
+            """
+            Create the interface
+
+            Args:
+                self: (todo): write your description
+                filepath: (str): write your description
+                parent: (todo): write your description
+            """
             QtWidgets.QWidget.__init__(self, parent)
             self.ui = Ui_AptOfflineQtInstallChangelog()
 
@@ -28,6 +36,13 @@ class AptOfflineQtInstallChangelog(QtWidgets.QDialog):
             self.ui.closeButton.clicked.connect(self.reject)
 
         def populateChangelog(self, path):
+            """
+            Parses a changelog.
+
+            Args:
+                self: (todo): write your description
+                path: (str): write your description
+            """
 
             self.chlogFile = tempfile.NamedTemporaryFile()
             self.chlogPresent = False

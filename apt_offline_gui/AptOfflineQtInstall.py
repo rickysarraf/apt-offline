@@ -19,21 +19,46 @@ class Worker(QtCore.QThread):
     terminated = QtCore.pyqtSignal()
 
     def __init__(self, parent = None):
+        """
+        Initialize the parent.
+
+        Args:
+            self: (todo): write your description
+            parent: (todo): write your description
+        """
         QtCore.QThread.__init__(self, parent)
         self.parent = parent
         self.exiting = False
 
     def __del__(self):
+        """
+        Deliver the queue.
+
+        Args:
+            self: (todo): write your description
+        """
         self.exiting = True
         self.wait()
 
     def run(self):
+        """
+        Run the install command.
+
+        Args:
+            self: (todo): write your description
+        """
         # setup i/o redirects before call
         sys.stdout = self
         sys.stderr = self
         apt_offline_core.AptOfflineCoreLib.installer(self.args)
 
     def setArgs (self,args):
+        """
+        Set command line arguments.
+
+        Args:
+            self: (todo): write your description
+        """
         self.args = args
 
     def write(self, text):
@@ -67,12 +92,25 @@ class Worker(QtCore.QThread):
         ''' nothing to do :D '''
 
     def quit(self):
+        """
+        Emits the connection.
+
+        Args:
+            self: (todo): write your description
+        """
         self.finished.emit()
 
 
 class AptOfflineQtInstall(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
+        """
+        Initialize the interface
+
+        Args:
+            self: (todo): write your description
+            parent: (todo): write your description
+        """
         QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_AptOfflineQtInstall()
         self.ui.setupUi(self)
@@ -99,6 +137,12 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
         self.worker.terminated.connect(self.finishedWork)
 
     def StartInstall(self):
+        """
+        Starts the interface.
+
+        Args:
+            self: (todo): write your description
+        """
         # gui validation
         # Clear the consoleOutputHolder
         self.ui.rawLogHolder.setText("")
@@ -113,18 +157,36 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
         self.worker.start()
 
     def showBugReports(self):
+        """
+        Shows the list of the list.
+
+        Args:
+            self: (todo): write your description
+        """
         self.filepath = str(self.ui.zipFilePath.text())
         self.bugReportsDialog = AptOfflineQtInstallBugList(self.filepath)
         self.bugReportsDialog.filepath= self.filepath
         self.bugReportsDialog.show()
 
     def showChangelog(self):
+        """
+        Show a file dialog.
+
+        Args:
+            self: (todo): write your description
+        """
         self.filepath = str(self.ui.zipFilePath.text())
         self.changelogDialog = AptOfflineQtInstallChangelog(self.filepath)
         self.changelogDialog.filepath = self.filepath
         self.changelogDialog.show()
 
     def popupDirectoryDialog(self):
+        """
+        Prompts the user to choose a directory.
+
+        Args:
+            self: (todo): write your description
+        """
 
         # Popup a Directory selection box
         if self.ui.browseFileFoldercheckBox.isChecked() is True:
@@ -137,6 +199,12 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
         self.ui.zipFilePath.setFocus()
 
     def ControlStartInstallBox(self):
+        """
+        Displays the buttons.
+
+        Args:
+            self: (todo): write your description
+        """
         if os.path.isdir(self.ui.zipFilePath.text()) or os.path.isfile(self.ui.zipFilePath.text() ):
             self.ui.startInstallButton.setEnabled(True)
             self.ui.bugReportsButton.setEnabled(True)
@@ -147,9 +215,23 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
             self.ui.changelogButton.setEnabled(False)
 
     def updateLog(self,text):
+        """
+        Updates the raw log text.
+
+        Args:
+            self: (todo): write your description
+            text: (str): write your description
+        """
         guicommon.updateInto (self.ui.rawLogHolder,text)
 
     def updateStatus(self,text):
+        """
+        Updates the progress bar.
+
+        Args:
+            self: (todo): write your description
+            text: (str): write your description
+        """
         # status handler
         self.ui.progressStatusDescription.setText(text)
 
@@ -162,6 +244,12 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
             ''' nothing to do '''
 
     def finishedWork(self):
+        """
+        Called when the text has finished.
+
+        Args:
+            self: (todo): write your description
+        """
         self.enableActions()
         guicommon.updateInto (self.ui.rawLogHolder,
             guicommon.style("Finished syncing updates/packages","green_fin"))
@@ -169,6 +257,12 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
         self.ui.cancelButton.setText("Close")
 
     def disableActions(self):
+        """
+        Sets the widget.
+
+        Args:
+            self: (todo): write your description
+        """
         self.ui.browseFileFoldercheckBox.setEnabled(False)
         self.ui.cancelButton.setEnabled(False)
         self.ui.startInstallButton.setEnabled(False)
@@ -178,6 +272,12 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
         self.ui.changelogButton.setEnabled(False)
 
     def enableActions(self):
+        """
+        Enable the widget ui.
+
+        Args:
+            self: (todo): write your description
+        """
         self.ui.browseFileFoldercheckBox.setEnabled(True)
         self.ui.cancelButton.setEnabled(True)
         self.ui.startInstallButton.setEnabled(True)

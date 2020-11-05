@@ -18,6 +18,13 @@ class Worker(QtCore.QThread):
     terminated = QtCore.pyqtSignal()
 
     def __init__(self, parent = None):
+        """
+        Initialize the progress bar.
+
+        Args:
+            self: (todo): write your description
+            parent: (todo): write your description
+        """
         QtCore.QThread.__init__(self, parent)
         self.parent = parent
         self.exiting = False
@@ -30,16 +37,34 @@ class Worker(QtCore.QThread):
         self.terminated.emit()
 
     def __del__(self):
+        """
+        Deliver the queue.
+
+        Args:
+            self: (todo): write your description
+        """
         self.exiting = True
         self.wait()
 
     def run(self):
+        """
+        Run the command.
+
+        Args:
+            self: (todo): write your description
+        """
         # setup i/o redirects before call
         sys.stdout = self
         sys.stderr = self
         apt_offline_core.AptOfflineCoreLib.fetcher(self.args)
 
     def setArgs (self,args):
+        """
+        Set command line arguments.
+
+        Args:
+            self: (todo): write your description
+        """
         self.args = args
 
     def write(self, text):
@@ -74,12 +99,25 @@ class Worker(QtCore.QThread):
         ''' nothing to do :D '''
 
     def quit(self):
+        """
+        Emits the connection.
+
+        Args:
+            self: (todo): write your description
+        """
         self.finished.emit()
 
 
 class AptOfflineQtFetch(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
+        """
+        Initialize the main window.
+
+        Args:
+            self: (todo): write your description
+            parent: (todo): write your description
+        """
         QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_AptOfflineQtFetch()
         self.ui.setupUi(self)
@@ -116,9 +154,21 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
         apt_offline_core.AptOfflineCoreLib.LINE_OVERWRITE_FULL=""
 
     def showAdvancedOptions(self):
+        """
+        Shows the current dialog.
+
+        Args:
+            self: (todo): write your description
+        """
             self.advancedOptionsDialog.show()
 
     def popupDirectoryDialog(self):
+        """
+        Prompts the user to choose a directory.
+
+        Args:
+            self: (todo): write your description
+        """
         # Popup a Directory selection box
         directory, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Select the signature file')
         # Show the selected file path in the field marked for showing directory path
@@ -127,6 +177,12 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
         self.controlStartDownloadBox()
 
     def popupZipFileDialog(self):
+        """
+        Prompts the user to choose a file.
+
+        Args:
+            self: (todo): write your description
+        """
 
         if self.ui.saveDatacheckBox.isChecked() is True:
                 filename, _ = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select the folder to save downlaods to')
@@ -140,6 +196,12 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
         self.controlStartDownloadBox()
 
     def StartDownload(self):
+        """
+        Creates a new zip file for this widget.
+
+        Args:
+            self: (todo): write your description
+        """
         # Do all the download related work here and then close
 
         # Clear the consoleOutputHolder
@@ -231,6 +293,13 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
         # self.accept()
 
     def updateLog(self,text):
+        """
+        Updates text
+
+        Args:
+            self: (todo): write your description
+            text: (str): write your description
+        """
         if not ('[' in text and ']' in text):
             if ('Downloaded data ' in text):
                 guicommon.updateInto (self.ui.rawLogHolder,
@@ -241,6 +310,13 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
                 guicommon.updateInto (self.ui.rawLogHolder,text)
 
     def updateStatus(self,text):
+        """
+        Updates the progress bar.
+
+        Args:
+            self: (todo): write your description
+            text: (str): write your description
+        """
         self.ui.progressStatusDescription.setText(text)
 
     def updateProgress(self,progress,total):
@@ -252,6 +328,12 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
             ''' nothing to do '''
 
     def controlStartDownloadBox(self):
+        """
+        Starts the behaviour for this widget.
+
+        Args:
+            self: (todo): write your description
+        """
         if not self.ui.profileFilePath.text():
             self.disableAction()
         if not self.ui.zipFilePath.text():
@@ -260,6 +342,12 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
             self.enableAction()
 
     def handleCancel(self):
+        """
+        Handle the cancel the text.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.ui.cancelButton.text() == "Cancel":
             if self.worker.isRunning():
                 # Download is still in progress
@@ -278,6 +366,12 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
             self.reject()
 
     def resetUI(self):
+        """
+        Reset the widgets.
+
+        Args:
+            self: (todo): write your description
+        """
         apt_offline_core.AptOfflineCoreLib.guiTerminateSignal=False
         apt_offline_core.AptOfflineCoreLib.guiMetaCompleted=False
         apt_offline_core.AptOfflineCoreLib.errlist = []
@@ -291,9 +385,21 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
         self.enableAtStop()
 
     def disableAction(self):
+        """
+        Disables the tool for this widget. : param tool | <int ]. qwidget >
+
+        Args:
+            self: (todo): write your description
+        """
         self.ui.startDownloadButton.setEnabled(False)
 
     def disableAtDownload(self):
+        """
+        Displays the current ui.
+
+        Args:
+            self: (todo): write your description
+        """
         self.ui.advancedOptionsButton.setEnabled(False)
         self.ui.browseZipFileButton.setEnabled(False)
         self.ui.browseFilePathButton.setEnabled(False)
@@ -302,9 +408,21 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
         self.ui.saveDatacheckBox.setEnabled(False)
 
     def enableAction(self):
+        """
+        Enable / disable the ui for this widget.
+
+        Args:
+            self: (todo): write your description
+        """
         self.ui.startDownloadButton.setEnabled(True)
 
     def enableAtStop(self):
+        """
+        Enables the widget.
+
+        Args:
+            self: (todo): write your description
+        """
         self.ui.advancedOptionsButton.setEnabled(True)
         self.ui.browseZipFileButton.setEnabled(True)
         self.ui.browseFilePathButton.setEnabled(True)

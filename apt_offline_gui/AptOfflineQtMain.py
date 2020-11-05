@@ -10,6 +10,13 @@ from apt_offline_gui.AptOfflineQtAbout import AptOfflineQtAbout
 
 class AptOfflineQtMain(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
+        """
+        Initializes the main window.
+
+        Args:
+            self: (todo): write your description
+            parent: (todo): write your description
+        """
         QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_AptOfflineMain()
         self.ui.setupUi(self)
@@ -25,6 +32,12 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
         self.CreateButtonHoverHelp()
 
     def ConfigureCreateProfile(self):
+        """
+        Create the widget dialog.
+
+        Args:
+            self: (todo): write your description
+        """
         #QtCore.QObject.connect(self.ui.menuCreateProfile, QtCore.SIGNAL("triggered()"), self.CreateProfile)
         #QtCore.QObject.connect(self.ui.createProfileButton,QtCore.SIGNAL("clicked()"), self.CreateProfile)
 
@@ -36,6 +49,12 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
         self.ui.createProfileButton.installEventFilter(self)
 
     def ConfigureDownload(self):
+        """
+        Connects the user interface
+
+        Args:
+            self: (todo): write your description
+        """
         #QtCore.QObject.connect(self.ui.menuDownload, QtCore.SIGNAL("triggered()"), self.DownloadPackagesUpgrades)
         #QtCore.QObject.connect(self.ui.downloadButton, QtCore.SIGNAL("clicked()"), self.DownloadPackagesUpgrades)
 
@@ -47,6 +66,12 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
         self.ui.downloadButton.installEventFilter(self)
 
     def ConfigureInstall(self):
+        """
+        Connects the configuration
+
+        Args:
+            self: (todo): write your description
+        """
         #QtCore.QObject.connect(self.ui.menuInstall, QtCore.SIGNAL("triggered()"), self.InstallPackagesUpgrades)
         #QtCore.QObject.connect(self.ui.restoreButton, QtCore.SIGNAL("clicked()"), self.InstallPackagesUpgrades)
 
@@ -58,6 +83,12 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
         self.ui.restoreButton.installEventFilter(self)
 
     def ConfigureAbout(self):
+        """
+        Connects the context menu
+
+        Args:
+            self: (todo): write your description
+        """
         #QtCore.QObject.connect(self.ui.menuAbout, QtCore.SIGNAL("triggered()"), self.ShowAbout)
         #QtCore.QObject.connect(self.ui.menuHelp_2, QtCore.SIGNAL("triggered()"), self.ShowHelp)
 
@@ -67,12 +98,26 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
         self.createAboutDialog = AptOfflineQtAbout()
 
     def ConfigureMenuExit(self):
+        """
+        Connect to the interface.
+
+        Args:
+            self: (todo): write your description
+        """
         #QtCore.QObject.connect(self.ui.menuExit, QtCore.SIGNAL("triggered()"), self.ExitApp)
         #QtCore.QObject.connect(self.ui.exitButton, QtCore.SIGNAL("clicked()"), self.ExitApp)
         self.ui.menuExit.triggered.connect(self.ExitApp)
         self.ui.exitButton.clicked.connect(self.ExitApp)
 
     def eventFilter(self,target,event):
+        """
+        Filters the filter for : meth meth : qwidget. event. eventfilter. : param target | <qevent >
+
+        Args:
+            self: (todo): write your description
+            target: (todo): write your description
+            event: (array): write your description
+        """
         # hover hack for 3 buttons
         if event.type() == QtCore.QEvent.HoverEnter:
             if target.objectName() == 'createProfileButton':
@@ -88,6 +133,12 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
 
 
     def CreateProfile(self):
+        """
+        Creates a new dialog.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
                 if os.geteuid() != 0:
                         QtWidgets.QMessageBox.critical(self, "Error", "You need to run with root privileges!")
@@ -100,11 +151,23 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
         self.createProfileDialog.show()
 
     def DownloadPackagesUpgrades(self):
+        """
+        Shows the list of the application
+
+        Args:
+            self: (todo): write your description
+        """
         # Code for creating Modal Dialog for Downloading Packages/Upgrades
         self.createDownloadDialog.resetUI()
         self.createDownloadDialog.show()
 
     def InstallPackagesUpgrades(self):
+        """
+        Shows all available dialog dialog.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
                 if os.geteuid() != 0:
                         QtWidgets.QMessageBox.critical(self, "Error", "You need to run with root privileges!")
@@ -116,15 +179,39 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
         self.createInstallDialog.show()
 
     def ShowAbout(self):
+        """
+        Show the current dialog.
+
+        Args:
+            self: (todo): write your description
+        """
         # Code for showing Model Dialog for About Application
         self.createAboutDialog.show()
 
     def ShowHelp(self):
+        """
+        Shows the dialog.
+
+        Args:
+            self: (todo): write your description
+        """
         QtWidgets.QMessageBox.information(self, "Info", "Please refer to the apt-offline(8) man page")
 
     def CreateButtonHoverHelp(self):
+        """
+        Creates a new callable that will be used for this command.
+
+        Args:
+            self: (todo): write your description
+        """
         pass
 
     def ExitApp(self):
+        """
+        Called when the connection is closed.
+
+        Args:
+            self: (todo): write your description
+        """
         self.close()
 

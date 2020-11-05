@@ -124,6 +124,12 @@ class Bugreport(object):
     """
 
     def __init__(self):
+        """
+        Initialize summary data.
+
+        Args:
+            self: (todo): write your description
+        """
         self.originator = None
         self.date = None
         self.subject = None
@@ -157,12 +163,24 @@ class Bugreport(object):
         # self.id = None
 
     def __unicode__(self):
+        """
+        Return a unicode string representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         s = '\n'.join('{}: {}'.format(key, value)
                        for key, value in list(self.__dict__.items()))
         return s + '\n'
 
     if PY2:
         def __str__(self):
+            """
+            Returns the string representation of the string.
+
+            Args:
+                self: (todo): write your description
+            """
             return self.__unicode__().encode('utf-8')
     else:
         __str__ = __unicode__
@@ -186,21 +204,62 @@ class Bugreport(object):
         return self._get_value() < other._get_value()
 
     def __le__(self, other):
+        """
+        Return a > b. computed by
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         return not self.__gt__(other)
 
     def __gt__(self, other):
+        """
+        Return a < b.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         return self._get_value() > other._get_value()
 
     def __ge__(self, other):
+        """
+        Determine if other ) tuples of self and other.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         return not self.__lt__(other)
 
     def __eq__(self, other):
+        """
+        Determine if two values are equal.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         return self._get_value() == other._get_value()
 
     def __ne__(self, other):
+        """
+        Determine if self and false otherwise.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         return not self.__eq__(other)
 
     def _get_value(self):
+        """
+        Get the value for this task.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.archived:
             # archived and done
             val = 0
@@ -516,7 +575,19 @@ This method only exists to unify the unicode conversion in this module.
 """
 if PY2:
     def _uc(string):
+        """
+        Returns a string.
+
+        Args:
+            string: (str): write your description
+        """
         return string.decode('utf-8', 'replace')
 else:
     def _uc(string):
+        """
+        Returns a string to be printed string.
+
+        Args:
+            string: (str): write your description
+        """
         return string

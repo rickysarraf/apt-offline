@@ -74,6 +74,15 @@ except ImportError:
 class Checksum:
 
     def HashMessageDigestAlgorithms( self, checksum, HashType, checksumFile ):
+        """
+        Calculate checksum of the file.
+
+        Args:
+            self: (todo): write your description
+            checksum: (bool): write your description
+            HashType: (str): write your description
+            checksumFile: (str): write your description
+        """
 
         try:
             data = open( checksumFile, 'rb' )
@@ -91,11 +100,25 @@ class Checksum:
         return False
 
     def sha256( self, data ):
+        """
+        Return sha256 hash of the given data.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         sha256 = hashlib.sha256()
         sha256.update( data.read() )
         return sha256.hexdigest()
 
     def md5( self, data ):
+        """
+        Calculate md5 hash.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         md5hash = hashlib.md5()
         md5hash.update( data.read() )
         return md5hash.hexdigest()
@@ -169,6 +192,14 @@ class Log:
         '''
 
         def __init__( self, verbose, lock=None ):
+            """
+            Initialize the console.
+
+            Args:
+                self: (todo): write your description
+                verbose: (bool): write your description
+                lock: (todo): write your description
+            """
                 self.VERBOSE = bool( verbose )
                 self.color_syntax = '\033[1;'
 
@@ -290,6 +321,19 @@ class Log:
 class ProgressBar( object ):
 
         def __init__( self, minValue=0, maxValue=0, width=None, total_items=None, fd=sys.stderr ):
+            """
+            Initialize progress bar.
+
+            Args:
+                self: (todo): write your description
+                minValue: (todo): write your description
+                maxValue: (float): write your description
+                width: (int): write your description
+                total_items: (todo): write your description
+                fd: (int): write your description
+                sys: (todo): write your description
+                stderr: (todo): write your description
+            """
                 #width does NOT include the two places for [] markers
                 self.min = minValue
                 self.max = maxValue
@@ -322,15 +366,36 @@ class ProgressBar( object ):
                 self.complete = 0
 
         def handle_resize( self, signum, frame ):
+            """
+            Resize signals.
+
+            Args:
+                self: (todo): write your description
+                signum: (int): write your description
+                frame: (todo): write your description
+            """
                 h, w = array( 'h', ioctl( self.fd, termios.TIOCGWINSZ, '\0' * 8 ) )[:2]
                 self.width = w
 
         def updateValue( self, newValue ):
+            """
+            Updates the minimum value.
+
+            Args:
+                self: (todo): write your description
+                newValue: (todo): write your description
+            """
                 #require caller to supply a value! newValue is the increment from last call
                 self.value = max( self.min, min( self.max, self.value + newValue ) )
                 self.display()
 
         def completed( self ):
+            """
+            Called when the signal
+
+            Args:
+                self: (todo): write your description
+            """
                 self.complete = self.complete + 1
 
                 if self.signal_set:
@@ -338,6 +403,13 @@ class ProgressBar( object ):
                 self.display()
 
         def addItem( self, maxValue ):
+            """
+            Add a new item.
+
+            Args:
+                self: (todo): write your description
+                maxValue: (int): write your description
+            """
                 self.max = self.max + maxValue
                 self.span = float( self.max - self.min )
                 if self.items_update is True:
@@ -345,15 +417,34 @@ class ProgressBar( object ):
                 self.display()
 
         def display( self ):
+            """
+            Prints the output of the display.
+
+            Args:
+                self: (todo): write your description
+            """
                 sys.stdout.write("\r%3s / %3s items: %s\r" % ( self.complete, self.items, str( self ) ))
 
         def __str__( self ):
+            """
+            Return a human - readable string representation of the progress bar.
+
+            Args:
+                self: (todo): write your description
+            """
                 #compute display fraction
                 percentFilled = ( ( self.value - self.min ) / self.span )
                 widthFilled = int( self.width * percentFilled + 0.5 )
                 return ( "[" + "#"*widthFilled + " " * ( self.width - widthFilled ) + "]" + " %5.1f%% of %s" % ( percentFilled * 100.0, self.__numStr__( self.max / 1024 ) ) )
 
         def __numStr__( self, size ):
+            """
+            Return the number of bytes in a human - readable string.
+
+            Args:
+                self: (todo): write your description
+                size: (int): write your description
+            """
                 if size > 1024:
                         size = size / 1024
                         if size > 1024:
@@ -365,14 +456,35 @@ class ProgressBar( object ):
 
 class AptOfflineErrors(Exception):
     def __init__(self, message):
+        """
+        Initialize the message
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+        """
         Exception.__init__(self, message)
 
 class AptOfflineLibShutilError(Exception):
     def __init__(self, message):
+        """
+        Initialize the message
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+        """
         Exception.__init__(self, message)
 
 class Archiver:
         def __init__( self, lock=None ):
+            """
+            Initialize the lock.
+
+            Args:
+                self: (todo): write your description
+                lock: (todo): write your description
+            """
                 if lock is None or lock != 1:
                         self.ZipLock = False
                 else:
@@ -385,6 +497,14 @@ class Archiver:
                 self.file_possibly_deleted = False
 
         def TarGzipBZ2_Uncompress( self, SourceFileHandle, TargetFileHandle ):
+            """
+            Reads a compressed compressed file is a compressed.
+
+            Args:
+                self: (todo): write your description
+                SourceFileHandle: (todo): write your description
+                TargetFileHandle: (todo): write your description
+            """
                 try:
                         TargetFileHandle.write( SourceFileHandle.read() )
                 except EOFError:
@@ -510,9 +630,22 @@ class Archiver:
 class FileMgmt( object ):
 
         def __init__( self ):
+            """
+            Duplicate the file.
+
+            Args:
+                self: (todo): write your description
+            """
                 self.duplicate_files = []
 
         def files( self, root ):
+            """
+            Yields all files recursively.
+
+            Args:
+                self: (todo): write your description
+                root: (str): write your description
+            """
                 for path, folders, files in os.walk( root ):
                         for f in files:
                                 yield path, f
@@ -631,6 +764,16 @@ class FileMgmt( object ):
 class MyThread( threading.Thread ):
         """My thread class"""
         def __init__( self, WorkerFunction, requestQueue=None, responseQueue=None, NumOfThreads=1 ):
+            """
+            Initializes threads and threads.
+
+            Args:
+                self: (todo): write your description
+                WorkerFunction: (todo): write your description
+                requestQueue: (todo): write your description
+                responseQueue: (list): write your description
+                NumOfThreads: (int): write your description
+            """
                 # Pool of NUMTHREADS Threads that run run().
                 self.requestQueue = requestQueue
                 self.responseQueue = responseQueue
@@ -649,6 +792,12 @@ class MyThread( threading.Thread ):
                         thread.guiTerminateSignal=False
 
         def startThreads( self ):
+            """
+            Start all threads.
+
+            Args:
+                self: (todo): write your description
+            """
                 for thread in self.thread_pool:
                         thread.start()
 
@@ -659,6 +808,13 @@ class MyThread( threading.Thread ):
                         self.requestQueue.put( None )
 
         def populateQueue( self, item ):
+            """
+            Populate the given item.
+
+            Args:
+                self: (todo): write your description
+                item: (todo): write your description
+            """
                 self.requestQueue.put( item )
 
         def stopQueue( self, timeout=0 ):
@@ -680,6 +836,13 @@ class MyThread( threading.Thread ):
                                         self.threads_finished += 1
 
         def run( self, item=None):
+            """
+            Run the queue.
+
+            Args:
+                self: (todo): write your description
+                item: (todo): write your description
+            """
                 while True:
                         if threading.currentThread().guiTerminateSignal:
                                 #print threading.currentThread().getName(), "has been stopped :D"

@@ -4,6 +4,22 @@ class SetterArgs():
 
     def __init__(self, filename, update, upgrade, install_packages, install_src_packages, \
                  src_build_dep, changelog, release, apt_backend, simulate=False):
+        """
+        Create a new package.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            update: (todo): write your description
+            upgrade: (str): write your description
+            install_packages: (str): write your description
+            install_src_packages: (str): write your description
+            src_build_dep: (todo): write your description
+            changelog: (todo): write your description
+            release: (str): write your description
+            apt_backend: (todo): write your description
+            simulate: (todo): write your description
+        """
         self.set = filename
 
         # self.set_update is of type boolean
@@ -26,6 +42,12 @@ class SetterArgs():
         self.generate_changelog = changelog
 
     def __str__(self):
+        """
+        Print upgrade upgrade.
+
+        Args:
+            self: (todo): write your description
+        """
         print("self.set=",self.set)
         print("self.set_update=",self.set_update)
         print("self.set_upgrade=",self.set_upgrade)
@@ -40,6 +62,24 @@ class GetterArgs():
     def __init__(self, filename=None, bundle_file=None, socket_timeout=30, \
                     num_of_threads=1, disable_md5check=True, deb_bugs=False,
                         download_dir=None, cache_dir=None, proxy_host=None, proxy_port=None, progress_bar=None, progress_label=None):
+        """
+        Initialize a connection pool.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            bundle_file: (str): write your description
+            socket_timeout: (float): write your description
+            num_of_threads: (int): write your description
+            disable_md5check: (bool): write your description
+            deb_bugs: (bool): write your description
+            download_dir: (str): write your description
+            cache_dir: (str): write your description
+            proxy_host: (str): write your description
+            proxy_port: (int): write your description
+            progress_bar: (bool): write your description
+            progress_label: (bool): write your description
+        """
 
         self.get = filename
 
@@ -60,6 +100,12 @@ class GetterArgs():
         self.progress_label = progress_label
 
     def __str__(self):
+        """
+        Prints the string
+
+        Args:
+            self: (todo): write your description
+        """
         print("self.get=",self.get)
         print("self.filename=",self.filename)
         print("self.bundle_file=",self.bundle_file)
@@ -84,6 +130,20 @@ class GetterArgs():
 class InstallerArgs():
 
     def __init__(self, filename=None, skip_bug_reports=True, skip_changelog=True, allow_unauthenticated=False, install_src_path=None, progress_bar=None, progress_label=None, simulate = False):
+        """
+        Initialize bugzilla.
+
+        Args:
+            self: (todo): write your description
+            filename: (str): write your description
+            skip_bug_reports: (int): write your description
+            skip_changelog: (todo): write your description
+            allow_unauthenticated: (bool): write your description
+            install_src_path: (str): write your description
+            progress_bar: (bool): write your description
+            progress_label: (bool): write your description
+            simulate: (todo): write your description
+        """
 
         self.install = filename
 

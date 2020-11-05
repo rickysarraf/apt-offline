@@ -5,6 +5,13 @@ from apt_offline_gui.Ui_AptOfflineQtFetchOptions import Ui_downloadOptionsDialog
 
 class AptOfflineQtFetchOptions(QtWidgets.QDialog):
     def __init__(self, parent=None):
+        """
+        Initializes the ui
+
+        Args:
+            self: (todo): write your description
+            parent: (todo): write your description
+        """
         QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_downloadOptionsDialog()
         self.ui.setupUi(self)
@@ -32,6 +39,12 @@ class AptOfflineQtFetchOptions(QtWidgets.QDialog):
         self.proxy_port = None
 
     def storeOptions(self):
+        """
+        Store ui options.
+
+        Args:
+            self: (todo): write your description
+        """
 
             self._num_of_threads = self.ui.spinThreads.value()
             self._socket_timeout = self.ui.spinTimeout.value()
@@ -49,6 +62,12 @@ class AptOfflineQtFetchOptions(QtWidgets.QDialog):
                     self._proxy_port = None
 
     def validateOptions(self):
+        """
+        Validate access options.
+
+        Args:
+            self: (todo): write your description
+        """
             self.storeOptions()
 
             if len(self._cache_dir) > 0 and not (os.access(self._cache_dir, os.W_OK) or os.access(self._cache_dir, os.R_OK) ):
@@ -65,6 +84,12 @@ class AptOfflineQtFetchOptions(QtWidgets.QDialog):
             self.hide()
 
     def applyOptionValues(self):
+        """
+        Sets the configuration values.
+
+        Args:
+            self: (todo): write your description
+        """
             self.num_of_threads = self._num_of_threads
             self.socket_timeout = self._socket_timeout
 
@@ -77,6 +102,12 @@ class AptOfflineQtFetchOptions(QtWidgets.QDialog):
             self.proxy_port = self._proxy_port
 
     def toggleProxyControls(self):
+        """
+        Updates the ui state for this widget.
+
+        Args:
+            self: (todo): write your description
+        """
             if self.ui.useProxyCheckBox.isChecked():
                     self.ui.proxyHostLineEdit.setEnabled(True)
                     self.ui.proxyPortLineEdit.setEnabled(True)
@@ -86,6 +117,12 @@ class AptOfflineQtFetchOptions(QtWidgets.QDialog):
 
 
     def populateCacheDir(self):
+        """
+        Prompts the user to choose a directory.
+
+        Args:
+            self: (todo): write your description
+        """
             directory = QtWidgets.QFileDialog.getExistingDirectory(None, 'Provide path to APT\'s Cache Dir')
             self.ui.cacheDirLineEdit.setText(directory)
             self._cache_dir = directory

@@ -8,12 +8,26 @@ styles = {
         }
 
 def style(text, style_type):
+    """
+    Replace the style with the given style string.
+
+    Args:
+        text: (str): write your description
+        style_type: (str): write your description
+    """
     try:
         return styles[style_type].replace("#",text)
     except:
         return text
 
 def updateInto(myobject,text):
+    """
+    Update the style
+
+    Args:
+        myobject: (array): write your description
+        text: (str): write your description
+    """
     # sanitize coloring
     if ('[1;' in text):
         return

@@ -10,6 +10,13 @@ import apt_offline_core.AptOfflineCoreLib
 
 class AptOfflineQtCreateProfile(QtWidgets.QDialog):
     def __init__(self, parent=None):
+        """
+        Initializes the interface
+
+        Args:
+            self: (todo): write your description
+            parent: (todo): write your description
+        """
         QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_CreateProfile()
         self.ui.setupUi(self)
@@ -55,6 +62,12 @@ class AptOfflineQtCreateProfile(QtWidgets.QDialog):
         self.ui.upgradePackagesCheckBox.toggled.connect(self.UpgradeCheckStatus)
 
     def UpgradeCheckStatus(self):
+        """
+        Sets the checked state
+
+        Args:
+            self: (todo): write your description
+        """
         self.isFieldChecked = self.ui.upgradePackagesCheckBox.isChecked()
 
         self.ui.targetReleaseCheckBox.setEnabled(self.isFieldChecked)
@@ -62,11 +75,23 @@ class AptOfflineQtCreateProfile(QtWidgets.QDialog):
         self.ui.upgradeTaskComboBox.setEnabled(self.isFieldChecked)
 
     def TargetReleaseFieldStatus(self):
+        """
+        Sets the current state
+
+        Args:
+            self: (todo): write your description
+        """
         # If Install Packages Box is selected
         self.isFieldChecked = self.ui.targetReleaseCheckBox.isChecked()
         self.ui.targetReleaseTextInput.setEnabled(self.isFieldChecked)
 
     def SrcPackageListFieldStatus(self):
+        """
+        List all the plugins
+
+        Args:
+            self: (todo): write your description
+        """
         # If Install Packages Box is selected
         self.isFieldChecked = self.ui.installSrcPackagesCheckBox.isChecked()
         self.ui.srcPackageList.setEnabled(self.isFieldChecked)
@@ -77,6 +102,12 @@ class AptOfflineQtCreateProfile(QtWidgets.QDialog):
 
 
     def PackageListFieldStatus(self):
+        """
+        List all the checked on the user interface.
+
+        Args:
+            self: (todo): write your description
+        """
         # If Install Packages Box is selected
         self.isFieldChecked = self.ui.installPackagesCheckBox.isChecked()
         self.ui.packageList.setEnabled(self.isFieldChecked)
@@ -86,6 +117,12 @@ class AptOfflineQtCreateProfile(QtWidgets.QDialog):
         self.ui.upgradeTaskComboBox.setEnabled(self.isFieldChecked)
 
     def CreateProfile(self):
+        """
+        Create the current settings.
+
+        Args:
+            self: (todo): write your description
+        """
         # Is the Update requested
         self.updateChecked = self.ui.updateCheckBox.isChecked()
         # Is Upgrade requested
@@ -153,6 +190,12 @@ class AptOfflineQtCreateProfile(QtWidgets.QDialog):
 
 
     def popupDirectoryDialog(self):
+        """
+        Prompts the user to choose a directory.
+
+        Args:
+            self: (todo): write your description
+        """
         # Popup a Directory selection box
         signatureFilePath = os.path.join (os.path.expanduser("~"), "/Desktop/"+"apt-offline.sig")
         directory, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Select a filename to save the signature', signatureFilePath, "apt-offline Signatures (*.sig)")
@@ -160,6 +203,13 @@ class AptOfflineQtCreateProfile(QtWidgets.QDialog):
         self.ui.profileFilePath.setText(directory)
 
     def write(self, text):
+        """
+        Write text to the console.
+
+        Args:
+            self: (todo): write your description
+            text: (str): write your description
+        """
         # redirects console output to our consoleOutputHolder
         text=text.strip()
         if (len(text)>2):
@@ -169,6 +219,12 @@ class AptOfflineQtCreateProfile(QtWidgets.QDialog):
         ''' nothing to do :D '''
 
     def resetUI(self):
+        """
+        Reset the user interface.
+
+        Args:
+            self: (todo): write your description
+        """
         self.ui.updateCheckBox.setChecked(False)
         self.ui.upgradePackagesCheckBox.setChecked(False)
         self.ui.installPackagesCheckBox.setChecked(False)

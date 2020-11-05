@@ -6,6 +6,13 @@ from apt_offline_gui.Ui_AptOfflineQtSaveZip import Ui_SaveZipFile
 
 class AptOfflineQtSaveZip(QtGui.QDialog):
     def __init__(self, parent=None):
+        """
+        Create a widget
+
+        Args:
+            self: (todo): write your description
+            parent: (todo): write your description
+        """
         QtGui.QWidget.__init__(self, parent)
         self.ui = Ui_SaveZipFile()
         self.ui.setupUi(self)
@@ -23,6 +30,12 @@ class AptOfflineQtSaveZip(QtGui.QDialog):
                         self.reject )
 
     def popupDirectoryDialog(self):
+        """
+        Prompts the user to choose a directory.
+
+        Args:
+            self: (todo): write your description
+        """
         # Popup a Directory selection box
         directory = QtGui.QFileDialog.getExistingDirectory(self, 'Open Directory')
         # Show the selected file path in the field marked for showing directory path
