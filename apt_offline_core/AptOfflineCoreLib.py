@@ -2244,6 +2244,10 @@ def setter(args):
                     log.verbose("Writing to Changelog, pkgName: %s, pkgInstalledVersion %s\n" % (pkgName, pkgInstalledVersion))
                     sigFile.writelines("Changelog/%s/%s\n" % (pkgName, pkgInstalledVersion))
 
+        if os.path.getsize(Str_SetArg) == 0:
+            log.err("Generated signature file %s is of 0 bytes\n" % (Str_SetArg))
+            log.err("This is usually the case when the underneath apt system has no payload to download\n")
+            sys.exit(1)
 
 def main():
         '''Here we basically do the sanity checks, some validations
