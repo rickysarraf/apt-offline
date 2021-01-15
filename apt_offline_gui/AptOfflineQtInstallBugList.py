@@ -36,7 +36,7 @@ class AptOfflineQtInstallBugList(QtWidgets.QDialog):
                 textItem = str(self.ui.bugListViewWindow.currentItem().text() )
 
                 extractedText = self.bugList[textItem]
-                self.ui.bugListplainTextEdit.appendPlainText(" ".join(extractedText))
+                self.ui.bugListplainTextEdit.appendPlainText((b" ".join(extractedText)).decode('utf-8'))
 
                 myCursor = self.ui.bugListplainTextEdit.textCursor()
                 myCursor.movePosition(myCursor.Start)
