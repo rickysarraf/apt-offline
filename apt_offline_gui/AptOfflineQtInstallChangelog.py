@@ -29,7 +29,7 @@ class AptOfflineQtInstallChangelog(QtWidgets.QDialog):
 
         def populateChangelog(self, path):
 
-            self.chlogFile = tempfile.NamedTemporaryFile()
+            self.chlogFile = tempfile.NamedTemporaryFile('r+', buffering=-1, encoding='utf-8', dir=None, delete=True)
             self.chlogPresent = False
 
             if os.path.isdir(path):
@@ -54,7 +54,7 @@ class AptOfflineQtInstallChangelog(QtWidgets.QDialog):
             else:
                 self.ui.changelogPlainTextEdit.clear()
                 self.chlogFile.seek(0)
-                self.ui.changelogPlainTextEdit.appendPlainText(self.chlogFile.read().decode('utf-8'))
+                self.ui.changelogPlainTextEdit.appendPlainText(self.chlogFile.read())
 
                 myCursor = self.ui.changelogPlainTextEdit.textCursor()
                 myCursor.movePosition(myCursor.Start)
