@@ -61,7 +61,7 @@ class AptOfflineQtInstallBugList(QtWidgets.QDialog):
                                         temp.file.flush()
                                         temp.file.seek( 0 ) #Let's go back to the start of the file
                                         for bug_subject_identifier in temp.file.readlines():
-                                                bug_subject_identifier = bug_subject_identifier.decode("utf-8")
+                                                bug_subject_identifier = bug_subject_identifier.decode('utf-8')
                                                 print(bug_subject_identifier)
                                                 if bug_subject_identifier.startswith( 'Subject:' ):
                                                         bug_subject_identifier = str(bugNumber) + ": " + bug_subject_identifier.lstrip("Subject:")
@@ -78,7 +78,7 @@ class AptOfflineQtInstallBugList(QtWidgets.QDialog):
                                         filename = os.path.join(path, filename)
                                         temp = open(filename, 'r')
                                         for bug_subject_identifier in temp.readlines():
-                                                bug_subject_identifier = bug_subject_identifier.decode("utf-8")
+                                                bug_subject_identifier = bug_subject_identifier.decode('utf-8')
                                                 if bug_subject_identifier.startswith( 'Subject:' ):
                                                         bug_subject_identifier = str(bugNumber) + ": " + bug_subject_identifier.lstrip("Subject:")
                                                         bug_subject_identifier = bug_subject_identifier.rstrip("\n")
