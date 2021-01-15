@@ -94,7 +94,7 @@ class AptOfflineQtInstallBugList(QtWidgets.QDialog):
                         self.noBugPopulateBugListPlainTextEdit()
                 else:
                         for eachItem in list(self.bugList.keys()):
-                                item = QtGui.QListWidgetItem(eachItem)
+                                item = QtWidgets.QListWidgetItem(eachItem)
                                 self.ui.bugListViewWindow.addItem(item)
 
 
