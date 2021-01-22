@@ -2131,16 +2131,8 @@ def setter(args):
 
         if Bool_SetUpdate is False and Bool_SetUpgrade is False and List_SetInstallPackages is None \
         and List_SetInstallSrcPackages is None:
-                Default_Operation = True
-        else:
-                Default_Operation = False
-
-        #INFO: Don't run the default behavior, of SetUpdate and SetUpgrade, if the
-        # user requests only for Package Installs
-        if Default_Operation:
-                Bool_SetUpdate = True
-                Bool_SetUpgrade = True
-
+            log.err("No option specified to set command\n")
+            sys.exit(1)
 
         #FIXME: We'll use python-apt library to make it cleaner.
         # For now, we need to set markers using shell variables.
