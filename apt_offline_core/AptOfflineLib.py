@@ -76,29 +76,52 @@ class Checksum:
     def HashMessageDigestAlgorithms( self, checksum, HashType, checksumFile ):
 
         try:
-            data = open( checksumFile, 'rb' )
-            if HashType == "sha256":
-                Hash = self.sha256( data )
-            elif HashType == "md5" or HashType == "md5sum":
-                Hash = self.md5( data )
-            else: Hash = None
-        except IOError:
+            data = open(checksumFile, 'rb')
+            data_bytes = data.read()
+            Hash = self.find_hash(data_bytes, HashType)
+        except IOError as e:
+            print(e)
             return False
         data.close()
-
+        
         if Hash == checksum:
             return True
+        
+        # Hash doesn't match; try decompressing archives
+        print("Trying to decompress with lzma...")
+        try:
+            decompressor = lzma.LZMADecompressor()
+            data_decomp = decompressor.decompress(data_bytes)
+            hash_decomp = self.find_hash(data_decomp, HashType)
+            
+            if hash_decomp == checksum:
+                return True
+        except Exception as e:
+            pass
+        
+        print("Trying to decompress with bz2...")
+        try:
+            decompressor = bz2.BZ2Decompressor()
+            data_decomp = decompressor.decompress(data_bytes)
+            hash_decomp = self.find_hash(data_decomp, HashType)
+            
+            if hash_decomp == checksum:
+                return True
+        except Exception as e:
+            pass
+        
         return False
-
-    def sha256( self, data ):
-        sha256 = hashlib.sha256()
-        sha256.update( data.read() )
-        return sha256.hexdigest()
-
-    def md5( self, data ):
-        md5hash = hashlib.md5()
-        md5hash.update( data.read() )
-        return md5hash.hexdigest()
+    
+    def find_hash(self, data_bytes, hash_type):
+        if hash_type == "sha256":
+            ht = "sha256"
+        elif hash_type in {"md5", "md5sum"}:
+            ht = "md5"
+        else:
+            return None
+        h = hashlib.new(ht)
+        h.update(data_bytes)
+        return h.hexdigest()
 
     def CheckHashDigest( self, checksumFile, checksum ):
         '''Return Bool against file and its checksum'''
