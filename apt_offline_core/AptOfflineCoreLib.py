@@ -651,6 +651,19 @@ class APTVerifySigs(ExecCmd):
                 gpgvCmd.append(signed_file)
                 return self.ExecSystemCmd(gpgvCmd, None)
 
+        def VerifyFile(self, signed_file):
+                # Verify a self signed file
+                if not os.access(signed_file, os.F_OK):
+                        log.err("%s is bad. Can't proceed.\n" % (signed_file) )
+                        return False
+
+                gpgvCmd = []
+                gpgvCmd.append(self.gpgv)
+                gpgvCmd.extend(self.opts)
+                gpgvCmd.append(signed_file)
+                return self.ExecSystemCmd(gpgvCmd, None)
+
+
 
 class LockAPT:
         '''Manipulate locks on the APT Database'''
@@ -1201,6 +1214,8 @@ def fetcher( args ):
                                 log.verbose("Added package %s with version %s to dict\n" % (pkgName, pkgVersion))
                         else:
                                 # Interim fix for Debian bug #664654
+                                # FIXME is this needed still with explicit install handling?
+                                # Will cause double syncing of files on install
                                 (ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
                                 if ItemURL.endswith("InRelease"):
                                         log.verbose("APT uses new InRelease auth mechanism\n")
@@ -1829,6 +1844,8 @@ def installer( args ):
             self.lVerifiedWhitelist = []
             self.checksumList = []
             self.checksumHeader = "SHA256:"
+            # Dictionary of header lines mapped to supported checksum types
+            self.releaseHeaders = {"SHA256:": "sha256", "SHA512:": "sha512"}
 
             for localFile in self.lFileList:
                 if localFile.endswith('.gpg'):
@@ -1853,7 +1870,7 @@ def installer( args ):
                                 try:
                                     (checksum, size, files) = line.split()
                                 except:
-                                    log.verbose("This error should be ignored")
+                                    log.verbose("This error should be ignored\n")
                                     continue
 
                                 aptPkgFile = gpgFile.rstrip("Release.gpg")
@@ -1861,16 +1878,57 @@ def installer( args ):
                                 aptPkgFile = aptPkgFile.split("/")[-1]
                                 aptPkgFile = aptPkgFile + "_" + files.replace("/", "_")
 
-                                self.checksumList.append([checksum, size, aptPkgFile])
+                                self.checksumList.append([checksum, size, aptPkgFile, "sha256"])
                     else:
                         # Bad sig.
                         log.err("%s bad signature. Not syncing because in strict mode.\n" % (localFile) )
+
+                elif localFile.endswith('InRelease'):
+                    # TODO any value in parsing multiple header sections?
+                    absFile = os.path.abspath(localFile)
+                    # File should be self signed, check
+                    if self.AptSecure.VerifyFile(absFile):
+                        log.verbose("%s is gpg clean\n" % (absFile))
+                        self.lVerifiedWhitelist.append(absFile)
+                        # Parse list of packages and their checksum
+                        releaseFile = open(absFile, 'r')
+                        for line in releaseFile.readlines():
+
+                            # Check if the line starts with a supported header
+                            foundHeader = False    
+                            for header in self.releaseHeaders.keys():
+                                if line.startswith(header):
+                                    checksumType = self.releaseHeaders[header]
+                                    startTrack=True
+                                    foundHeader=True
+                                    break
+                            if not foundHeader and not line.startswith(' '):
+                                startTrack=False
+                            
+                            if startTrack:
+                                try:
+                                    (checksum, size, files) = line.split()
+                                except:
+                                    log.verbose("This error should be ignored\n")
+                                    continue
+
+                                # And add the package file to list to checksum
+                                aptPkgFile = absFile.rstrip("InRelease")
+                                aptPkgFile = aptPkgFile[:-1] # Remove the trailing _ underscore
+                                aptPkgFile = aptPkgFile.split("/")[-1]
+                                aptPkgFile = aptPkgFile + "_" + files.replace("/", "_")
+                                self.checksumList.append([checksum, size, aptPkgFile, checksumType])
+                    else:
+                        # Bad sig.
+                        log.err("%s bad signature.  Not syncing because in strict mode.\n" % (localFile))
+
+
             #INFO: It is inefficient and being run twice, but we need to do so to do a match
             # for the proper checksummed files
             for localFile in self.lFileList:
                 for checksumItem in self.checksumList:
                     if os.path.basename(localFile) == checksumItem[2]:
-                        if InstallerInstance.verifyPayloadIntegrity(localFile, checksumItem[0], "sha256"):
+                        if InstallerInstance.verifyPayloadIntegrity(localFile, checksumItem[0], checksumItem[3]):
                             log.verbose("localFile %s Integrity with checksum %s matches\n" % (localFile, checksumItem[0]))
                             self.lVerifiedWhitelist.append(localFile)
                         else:
