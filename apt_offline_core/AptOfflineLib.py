@@ -274,7 +274,7 @@ class Log:
                         self.DispLock.acquire()
 
                 if self.VERBOSE is True:
-                        self.set_color( 'Cyan' )
+                        self.set_color( 'Magenta' )
                         sys.stdout.write( "VERBOSE: " + msg )
                         sys.stdout.flush()
                         self.set_color( 'SwitchOffAttributes' )
