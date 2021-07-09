@@ -1317,6 +1317,7 @@ def fetcher( args ):
                                     if PackageName in list(PackageInstalledVersion.keys()):
                                         FetcherInstance.buildChangelog(pkgFile, PackageInstalledVersion[PackageName])
                                 else:
+                                    log.err("Failed to download %s\n" % (PackageName))
                                     errlist.append(PackageName)
                         else:
                             log.msg("Downloading %s - %s %s\n" % (PackageName, log.calcSize(download_size/1024), LINE_OVERWRITE_FULL) )
@@ -1329,6 +1330,7 @@ def fetcher( args ):
                                 if PackageName in list(PackageInstalledVersion.keys()):
                                     FetcherInstance.buildChangelog(pkgFile, PackageInstalledVersion[PackageName])
                             else:
+                                log.err("Failed to download %s\n" % (PackageName))
                                 errlist.append(PackageName)
                 else:
                         def DownloadPackages(PackageName, PackageFile):
