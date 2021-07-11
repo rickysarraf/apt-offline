@@ -1066,7 +1066,6 @@ def fetcher( args ):
                 log.err( "Couldn't find debianbts module. Cannot fetch Bug Reports.\n" )
                 Bool_BugReports = False
 
-
         class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum, AptOfflineLib.FileMgmt, FetchBugReports):
                 #def __init__( self, width, lock, total_items, BoolCheckSum=False, BoolBundleFile=False, BoolBugReports=False, BoolDownloadDir=False, BoolCacheDir=False):
                 def __init__( self, *args, **kwargs):
@@ -2314,6 +2313,7 @@ def main():
         # Global options
         global_options = argparse.ArgumentParser(add_help=False)
         global_options.add_argument("--verbose", dest="verbose", help="Enable verbose messages", action="store_true" )
+        global_options.add_argument("--quiet", dest="quiet", help="Enable quiet mode", action="store_true" )
 
         if float(argparse.__version__) >= 1.1:
                 parser = argparse.ArgumentParser( prog=app_name, description="Offline APT Package Manager" + ' - ' + version,
@@ -2453,11 +2453,18 @@ def main():
         args = parser.parse_args()
 
         try:
-                # Global opts
-                Bool_Verbose = args.verbose
-
                 global log
-                log = AptOfflineLib.Log( Bool_Verbose, lock=True )
+                if args.quiet:
+                    class Log(AptOfflineLib.Log):
+                        def msg(self, msg):
+                            return
+                        def success(self, msg):
+                            return
+
+                    log = Log(args.verbose, lock=True )
+                else:
+                    log = AptOfflineLib.Log(args.verbose, lock=True )
+
                 log.verbose(str(args) + "\n")
                 args.func(args)
 
