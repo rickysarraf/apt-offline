@@ -821,6 +821,17 @@ class DownloadFromWeb(AptOfflineLib.ProgressBar, GenericDownloadFunction):
                 '''width = Progress Bar width'''
                 AptOfflineLib.ProgressBar.__init__(self, width=width, total_items=total_items)
 
+class DownloadFromWebQuiet(AptOfflineLib.ProgressBar, GenericDownloadFunction):
+        '''Class for DownloadFromWeb
+        This class also inherits progressbar functionalities from
+        parent class, ProgressBar'''
+
+        def __init__(self, width, total_items):
+                '''width = Progress Bar width'''
+                AptOfflineLib.ProgressBar.__init__(self, width=width, total_items=total_items)
+
+        def display(self):
+            return
 
 def stripper(item):
         '''Strips extra characters from "item".
@@ -1066,8 +1077,12 @@ def fetcher( args ):
                 log.err( "Couldn't find debianbts module. Cannot fetch Bug Reports.\n" )
                 Bool_BugReports = False
 
+        if args.quiet:
+            DownloadFromWeb = DownloadFromWebQuiet
+        else:
+            DownloadFromWeb = DownloadFromWeb
+
         class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum, AptOfflineLib.FileMgmt, FetchBugReports):
-                #def __init__( self, width, lock, total_items, BoolCheckSum=False, BoolBundleFile=False, BoolBugReports=False, BoolDownloadDir=False, BoolCacheDir=False):
                 def __init__( self, *args, **kwargs):
 
                         DownloadFromWeb.__init__( self, width=kwargs.pop('width'), total_items=kwargs.pop('total_items') )
