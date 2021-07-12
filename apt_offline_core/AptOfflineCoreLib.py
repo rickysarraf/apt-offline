@@ -812,7 +812,7 @@ class GenericDownloadFunction():
 #                 except socket.timeout:
 #                     errfunc(10054, "Socket timeout.\n", url)
 
-class DownloadFromWeb(AptOfflineLib.ProgressBar, GenericDownloadFunction):
+class DownloadFromWebDisplay(AptOfflineLib.ProgressBar, GenericDownloadFunction):
         '''Class for DownloadFromWeb
         This class also inherits progressbar functionalities from
         parent class, ProgressBar'''
@@ -1080,9 +1080,9 @@ def fetcher( args ):
         if args.quiet:
             DownloadFromWeb = DownloadFromWebQuiet
         else:
-            DownloadFromWeb = DownloadFromWeb
+            DownloadFromWeb = DownloadFromWebDisplay
 
-        class FetcherClass( DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum, AptOfflineLib.FileMgmt, FetchBugReports):
+        class FetcherClass(DownloadFromWeb, AptOfflineLib.Archiver, AptOfflineLib.Checksum, AptOfflineLib.FileMgmt, FetchBugReports):
                 def __init__( self, *args, **kwargs):
 
                         DownloadFromWeb.__init__( self, width=kwargs.pop('width'), total_items=kwargs.pop('total_items') )
