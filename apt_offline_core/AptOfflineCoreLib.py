@@ -1231,7 +1231,10 @@ def fetcher( args ):
                                 # FIXME is this needed still with explicit install handling?
                                 # Will cause double syncing of files on install
                                 (ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
-                                if ItemURL.endswith("InRelease"):
+                                if not ItemURL.startswith(('http', 'https', 'ftp')):
+                                        log.verbose("This is a broken url: %s\n" % (ItemURL))
+                                        continue
+                                elif ItemURL.endswith("InRelease"):
                                         log.verbose("APT uses new InRelease auth mechanism\n")
                                         ExtraItemURL = ItemURL.rstrip(ItemURL.split("/")[-1])
                                         GPGItemURL = "'" + ExtraItemURL + "Release.gpg"
