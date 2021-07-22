@@ -68,13 +68,6 @@ Type of upgrade you would like to perform. Default is
 Other valid types are
 .B "dist-upgrade" and "dselect-upgrade"
 
-.IP Note:
-If neither of the
-.B \-\-update or \-\-upgrade
-option is explicitly mentioned, the
-.B set
-command will generate signature for both the \-\-update and \-\-upgrade options.
-
 .SS get FILENAME [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] [--proxy-host] [--proxy-port] [--https-cert-file --https-key-file] [--http-basicauth] [--disable-cert-check]
 
 .PP
@@ -207,8 +200,6 @@ Otherwise, you could also use it positionally next to the set command
 This command will generate a signature file FILENAME for APT Package Database.
 To generate only the signature for updates, use the \-\-update option.  To
 generate only the signature for package upgrades, use the \-\-upgrade option.
-Default behavior when no options are specified is to generate a signature for
-both the operations.
 
 .TP
 .B apt-offline get FILENAME
