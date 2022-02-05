@@ -618,13 +618,19 @@ class APTVerifySigs(ExecCmd):
 
                 self.opts = []
                 if keyring is None:
-
                         self.opts.append("--ignore-time-conflict")
                         for eachPath in self.defaultPaths:
                                 if os.path.isfile(eachPath):
+                                    if eachPath.endswith(".asc"):
+                                        self.DearmorSig(eachPath)
+                                    elif eachPath.endswith(".gpg"):
                                         self.opts.extend(["--keyring", eachPath])
                                 elif os.path.isdir(eachPath):
                                         for eachGPG in os.listdir(eachPath):
+                                            if eachGPG.endswith(".asc"):
+                                                eachGPG = os.path.join(eachPath, eachGPG)
+                                                self.DearmorSig(eachGPG)
+                                            elif eachGPG.endswith(".gpg"):
                                                 eachGPG = os.path.join(eachPath, eachGPG)
                                                 log.verbose("Adding %s to the apt-offline keyring\n" % (eachGPG) )
                                                 self.opts.extend(["--keyring", eachGPG])
@@ -632,6 +638,17 @@ class APTVerifySigs(ExecCmd):
                                 log.err("No valid keyring paths found in: %s\n" % (", ".join(self.defaultPaths)))
                 else:
                         self.opts.extend(["--keyring", keyring, "--ignore-time-conflict"])
+
+        def DearmorSig(self, asciiSig):
+            gpgCmd = []
+            gpgKeyringFile = tempfile.mktemp()
+            gpgCmd.append("/usr/bin/gpg")
+            gpgCmd.extend(["--output", gpgKeyringFile])
+            gpgCmd.extend(["--dearmor", asciiSig])
+            if self.ExecSystemCmd(gpgCmd, None):
+                self.opts.extend(["--keyring", gpgKeyringFile])
+            else:
+                log.error("Failed to dearmor gpg signature file %s\n", (asciiSig))
 
         def VerifySig(self, signature_file, signed_file):
 
