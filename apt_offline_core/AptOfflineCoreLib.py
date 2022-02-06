@@ -1673,7 +1673,7 @@ def installer( args ):
                         except OSError:
                             log.warn("Failed to unlink temporary file %s. Check respective decompressor library support\n" % (temp_filename) )
 
-            elif self.magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or self.magicMIME.file( archive_file ) == "application/pgp-signature":
+            elif self.magicMIME.file( archive_file ) == "application/x-gnupg-keyring" or self.magicMIME.file( archive_file ) == "application/pgp-signature"  or self.magicMIME.file( archive_file ) == "text/PGP":
                 gpgFile = os.path.join(self.apt_update_final_path, filename)
                 shutil.copy2(archive_file, gpgFile)
                 os.chmod(gpgFile, 0o644)
