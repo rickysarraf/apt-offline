@@ -13,17 +13,17 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
         QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_AptOfflineMain()
         self.ui.setupUi(self)
-        
+
         # Configure the various actions
         self.ConfigureCreateProfile()
         self.ConfigureDownload()
         self.ConfigureInstall()
         self.ConfigureAbout()
         self.ConfigureMenuExit()
-        
+
         # Configure Hover over Buttons for Help
         self.CreateButtonHoverHelp()
-        
+
     def ConfigureCreateProfile(self):
         #QtCore.QObject.connect(self.ui.menuCreateProfile, QtCore.SIGNAL("triggered()"), self.CreateProfile)
         #QtCore.QObject.connect(self.ui.createProfileButton,QtCore.SIGNAL("clicked()"), self.CreateProfile)
@@ -34,7 +34,7 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
         self.createProfileDialog = AptOfflineQtCreateProfile()
         # setup hover hack
         self.ui.createProfileButton.installEventFilter(self)
-        
+
     def ConfigureDownload(self):
         #QtCore.QObject.connect(self.ui.menuDownload, QtCore.SIGNAL("triggered()"), self.DownloadPackagesUpgrades)
         #QtCore.QObject.connect(self.ui.downloadButton, QtCore.SIGNAL("clicked()"), self.DownloadPackagesUpgrades)
@@ -45,7 +45,7 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
         self.createDownloadDialog = AptOfflineQtFetch()
         # setup hover hack
         self.ui.downloadButton.installEventFilter(self)
-    
+
     def ConfigureInstall(self):
         #QtCore.QObject.connect(self.ui.menuInstall, QtCore.SIGNAL("triggered()"), self.InstallPackagesUpgrades)
         #QtCore.QObject.connect(self.ui.restoreButton, QtCore.SIGNAL("clicked()"), self.InstallPackagesUpgrades)
@@ -65,7 +65,7 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
         self.ui.menuAbout.triggered.connect(self.ShowAbout)
         # Create an object for About Dialog
         self.createAboutDialog = AptOfflineQtAbout()
-        
+
     def ConfigureMenuExit(self):
         #QtCore.QObject.connect(self.ui.menuExit, QtCore.SIGNAL("triggered()"), self.ExitApp)
         #QtCore.QObject.connect(self.ui.exitButton, QtCore.SIGNAL("clicked()"), self.ExitApp)
@@ -78,15 +78,15 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
             if target.objectName() == 'createProfileButton':
                 self.ui.descriptionField.setText("Click here to generate a signature of this machine.")
             if target.objectName() == 'downloadButton':
-                self.ui.descriptionField.setText("Once you are on a internet connected machine, use this to download packages as per your signature file.")
+                self.ui.descriptionField.setText("Once you are on an internet connected machine, use this to download packages as per your signature file.")
             if target.objectName() == 'restoreButton':
                 self.ui.descriptionField.setText("Once you've downloaded all the packages, click here to install them on the offline machine.")
-                
+
         if event.type() == QtCore.QEvent.HoverLeave:
             self.ui.descriptionField.setText("Hover your mouse over the buttons to get the description.")
         return False
-        
-    
+
+
     def CreateProfile(self):
         try:
                 if os.geteuid() != 0:
@@ -114,11 +114,11 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
                 return
         # Code for creating Modal Dialog for Installing Packages/Upgrades
         self.createInstallDialog.show()
-    
+
     def ShowAbout(self):
         # Code for showing Model Dialog for About Application
         self.createAboutDialog.show()
-        
+
     def ShowHelp(self):
         QtWidgets.QMessageBox.information(self, "Info", "Please refer to the apt-offline(8) man page")
 

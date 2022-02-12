@@ -5,5 +5,5 @@
 
 
 
-git archive --format=zip --prefix=apt-offline/ v1.6  > /tmp/apt-offline-1.6.zip
-git archive --format=tar.gz --prefix=apt-offline/ v1.6  > /tmp/apt-offline-1.6.tar.gz
+git archive --format=zip --prefix=apt-offline/ v1.6  > apt-offline-1.6.zip
+git archive --format=tar.gz --prefix=apt-offline/ v1.6  > apt-offline-1.6.tar.gz

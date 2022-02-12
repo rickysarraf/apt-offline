@@ -11,7 +11,7 @@ from apt_offline_gui.AptOfflineQtInstallBugList import AptOfflineQtInstallBugLis
 from apt_offline_gui.AptOfflineQtInstallChangelog import AptOfflineQtInstallChangelog
 
 class Worker(QtCore.QThread):
-    
+
     output = QtCore.pyqtSignal(str)
     progress = QtCore.pyqtSignal(str, str)
     status = QtCore.pyqtSignal(str)
@@ -22,7 +22,7 @@ class Worker(QtCore.QThread):
         QtCore.QThread.__init__(self, parent)
         self.parent = parent
         self.exiting = False
-        
+
     def __del__(self):
         self.exiting = True
         self.wait()
@@ -38,7 +38,7 @@ class Worker(QtCore.QThread):
 
     def write(self, text):
         # redirects console output to our consoleOutputHolder
-        # extract chinese whisper from text
+        # extract details from text
         if ('.deb' in text and 'synced' in text):
             try:
                 text = guicommon.style("Package : ",'orange') + guicommon.style(text.split("/")[-1],'green')
@@ -47,7 +47,7 @@ class Worker(QtCore.QThread):
             self.output.emit(text)
         elif ('apt/lists' in text):
             try:
-                # this part is always done on a linux system so we can hardcode / for a while
+                # this part is always done on a Linux system so we can hardcode / for a while
                 text = guicommon.style("Update : ",'orange') + guicommon.style(text.split("/")[-1],'green')
             except:
                 # let the text be original otherwise
@@ -62,42 +62,42 @@ class Worker(QtCore.QThread):
                 ''' nothing to do '''
         else:
             self.output.emit(text)
-                            
+
     def flush(self):
         ''' nothing to do :D '''
-        
+
     def quit(self):
         self.finished.emit()
-        
-        
+
+
 class AptOfflineQtInstall(QtWidgets.QDialog):
-    
+
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_AptOfflineQtInstall()
         self.ui.setupUi(self)
-        
+
         # Connect the clicked signal of the Browse button to it's slot
         self.ui.browseFilePathButton.clicked.connect(self.popupDirectoryDialog)
-                        
+
         # Connect the clicked signal of the Save to it's Slot - accept
         self.ui.startInstallButton.clicked.connect(self.StartInstall)
-                        
+
         # Connect the clicked signal of the Cancel to it's Slot - reject
         self.ui.cancelButton.clicked.connect(self.reject)
-        
+
         self.ui.bugReportsButton.clicked.connect(self.showBugReports)
         self.ui.changelogButton.clicked.connect(self.showChangelog)
         self.ui.zipFilePath.editingFinished.connect(self.ControlStartInstallBox)
         self.ui.zipFilePath.textChanged.connect(self.ControlStartInstallBox)
-        
+
         self.worker = Worker(parent=self)
         self.worker.output.connect(self.updateLog)
         self.worker.progress.connect(self.updateProgress)
         self.worker.status.connect(self.updateStatus)
         self.worker.finished.connect(self.finishedWork)
         self.worker.terminated.connect(self.finishedWork)
-        
+
     def StartInstall(self):
         # gui validation
         # Clear the consoleOutputHolder
@@ -117,7 +117,7 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
         self.bugReportsDialog = AptOfflineQtInstallBugList(self.filepath)
         self.bugReportsDialog.filepath= self.filepath
         self.bugReportsDialog.show()
-    
+
     def showChangelog(self):
         self.filepath = str(self.ui.zipFilePath.text())
         self.changelogDialog = AptOfflineQtInstallChangelog(self.filepath)
@@ -131,11 +131,11 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
                 directory  = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select the folder')
         else:
                 directory = QtWidgets.QFileDialog.getOpenFileName(self, 'Select the Zip File')
-        
+
         # Show the selected file path in the field marked for showing directory path
         self.ui.zipFilePath.setText(directory)
         self.ui.zipFilePath.setFocus()
-    
+
     def ControlStartInstallBox(self):
         if os.path.isdir(self.ui.zipFilePath.text()) or os.path.isfile(self.ui.zipFilePath.text() ):
             self.ui.startInstallButton.setEnabled(True)
@@ -145,7 +145,7 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
             self.ui.startInstallButton.setEnabled(False)
             self.ui.bugReportsButton.setEnabled(False)
             self.ui.changelogButton.setEnabled(False)
-            
+
     def updateLog(self,text):
         guicommon.updateInto (self.ui.rawLogHolder,text)
 
@@ -167,7 +167,7 @@ class AptOfflineQtInstall(QtWidgets.QDialog):
             guicommon.style("Finished syncing updates/packages","green_fin"))
         self.ui.progressStatusDescription.setText("Finished Syncing")
         self.ui.cancelButton.setText("Close")
-        
+
     def disableActions(self):
         self.ui.browseFileFoldercheckBox.setEnabled(False)
         self.ui.cancelButton.setEnabled(False)

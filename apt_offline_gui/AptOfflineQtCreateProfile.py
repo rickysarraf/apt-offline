@@ -13,25 +13,25 @@ class AptOfflineQtCreateProfile(QtWidgets.QDialog):
         QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_CreateProfile()
         self.ui.setupUi(self)
-        
+
         # Connect the clicked signal of the Browse button to it's slot
         #QtCore.QObject.connect(self.ui.browseFilePathButton, QtCore.SIGNAL("clicked()"),
         #                self.popupDirectoryDialog )
 
         self.ui.browseFilePathButton.clicked.connect(self.popupDirectoryDialog)
-                        
+
         # Connect the clicked signal of the Save to it's Slot - accept
         #QtCore.QObject.connect(self.ui.createProfileButton, QtCore.SIGNAL("clicked()"),
         #                self.CreateProfile )
 
         self.ui.createProfileButton.clicked.connect(self.CreateProfile)
-                        
+
         # Connect the clicked signal of the Cancel to it's Slot - reject
         #QtCore.QObject.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
         #                self.reject )
 
         self.ui.cancelButton.clicked.connect(self.reject)
-        
+
         # Disable or Enable the Package List field
         #QtCore.QObject.connect(self.ui.installPackagesCheckBox, QtCore.SIGNAL("toggled(bool)"),
         #                self.PackageListFieldStatus )
@@ -75,16 +75,16 @@ class AptOfflineQtCreateProfile(QtWidgets.QDialog):
         self.ui.targetReleaseCheckBox.setEnabled(self.isFieldChecked)
         self.ui.upgradeTaskComboBox.setEnabled(self.isFieldChecked)
 
-        
+
     def PackageListFieldStatus(self):
         # If Install Packages Box is selected
         self.isFieldChecked = self.ui.installPackagesCheckBox.isChecked()
         self.ui.packageList.setEnabled(self.isFieldChecked)
-        
+
         self.ui.targetReleaseCheckBox.setEnabled(self.isFieldChecked)
         self.ui.generateChangelog.setEnabled(self.isFieldChecked)
         self.ui.upgradeTaskComboBox.setEnabled(self.isFieldChecked)
-    
+
     def CreateProfile(self):
         # Is the Update requested
         self.updateChecked = self.ui.updateCheckBox.isChecked()
@@ -92,19 +92,19 @@ class AptOfflineQtCreateProfile(QtWidgets.QDialog):
         self.upgradeChecked = self.ui.upgradePackagesCheckBox.isChecked()
         # Is Install Requested
         self.installChecked = self.ui.installPackagesCheckBox.isChecked()
-        
+
         self.installSrcChecked = self.ui.installSrcPackagesCheckBox.isChecked()
-        
+
         self.chlogChecked = self.ui.generateChangelog.isChecked()
         self.aptBackend = self.ui.aptBackendComboBox.currentText()
         self.upgradeType = self.ui.upgradeTaskComboBox.currentText()
         self.releaseBtnChecked = self.ui.targetReleaseCheckBox.isChecked()
-        
+
         # Clear the consoleOutputHolder
         self.ui.consoleOutputHolder.setText("")
-        
+
         self.filepath = str(self.ui.profileFilePath.text())
-        
+
         if os.path.exists(os.path.dirname(self.filepath)) == False:
             if (len(self.filepath) == 0):
                 self.ui.consoleOutputHolder.setText ( \
@@ -113,30 +113,30 @@ class AptOfflineQtCreateProfile(QtWidgets.QDialog):
                 self.ui.consoleOutputHolder.setText ( \
                     guicommon.style("Could not access  %s" % self.filepath,'red'))
             return
-        
-        # If atleast one is requested
+
+        # If at least one is requested
         if self.updateChecked or self.upgradeChecked or self.installChecked or self.installSrcChecked:
             if self.installChecked:
                 self.packageList = str(self.ui.packageList.text()).split(",")
             else:
                 self.packageList = None
-                
+
             if self.installSrcChecked:
                 self.srcPackageList = str(self.ui.srcPackageList.text()).split(",")
                 self.srcBuildDeps = self.ui.srcBuildDeps
             else:
                 self.srcPackageList = None
                 self.srcBuildDeps = False
-                
+
             if self.releaseBtnChecked:
                 self.release = str(self.ui.targetReleaseTextInput.text())
             else:
                 self.release = None
-            
+
             # setup i/o redirects before call
             sys.stdout = self
             sys.stderr = self
-            
+
             args = SetterArgs(filename=self.filepath, update=self.updateChecked, upgrade=self.upgradeChecked, install_packages=self.packageList, \
                               install_src_packages=self.srcPackageList, src_build_dep=self.srcBuildDeps, changelog=self.chlogChecked, \
                               release=self.release, apt_backend=self.aptBackend, simulate=False)
@@ -150,8 +150,8 @@ class AptOfflineQtCreateProfile(QtWidgets.QDialog):
                 self.ui.cancelButton.setIcon(QtGui.QIcon())
         else:
             pass
-        
-    
+
+
     def popupDirectoryDialog(self):
         # Popup a Directory selection box
         signatureFilePath = os.path.join (os.path.expanduser("~"), "/Desktop/"+"apt-offline.sig")

@@ -16,22 +16,22 @@ class AptOfflineQtInstallChangelog(QtWidgets.QDialog):
         def __init__(self, filepath, parent=None):
             QtWidgets.QWidget.__init__(self, parent)
             self.ui = Ui_AptOfflineQtInstallChangelog()
-            
+
             self.filepath = filepath
-            
+
             self.ui.setupUi(self)
-            self.populateChangelog(self.filepath)            
-            
+            self.populateChangelog(self.filepath)
+
             # Connect the clicked signal of the Browse button to it's slot
             #QtCore.QObject.connect(self.ui.closeButton, QtCore.SIGNAL("clicked()"),
             #                self.reject )
             self.ui.closeButton.clicked.connect(self.reject)
 
         def populateChangelog(self, path):
-                
-            self.chlogFile = tempfile.NamedTemporaryFile()
+
+            self.chlogFile = tempfile.NamedTemporaryFile('r+', buffering=-1, encoding='utf-8', dir=None, delete=True)
             self.chlogPresent = False
-            
+
             if os.path.isdir(path):
                 for eachItem in os.listdir(path):
                     eachItem = os.path.join(path, eachItem)
@@ -47,19 +47,19 @@ class AptOfflineQtInstallChangelog(QtWidgets.QDialog):
                         self.chlogPresent = True
             else:
                 return False
-            
+
             if self.chlogPresent is False:
                 self.ui.changelogPlainTextEdit.clear()
                 self.ui.changelogPlainTextEdit.appendPlainText('No changelog present')
-            else:    
+            else:
                 self.ui.changelogPlainTextEdit.clear()
                 self.chlogFile.seek(0)
-                self.ui.changelogPlainTextEdit.appendPlainText(self.chlogFile.read().decode('utf-8'))
+                self.ui.changelogPlainTextEdit.appendPlainText(self.chlogFile.read())
 
                 myCursor = self.ui.changelogPlainTextEdit.textCursor()
                 myCursor.movePosition(myCursor.Start)
                 self.ui.changelogPlainTextEdit.setTextCursor(myCursor)
-                        
+
 
 if __name__ == "__main__":
         app = QtGui.QApplication(sys.argv)

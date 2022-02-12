@@ -1,6 +1,14 @@
-# Incase users use it directly from source, please ensure following modules
+# In case users use it directly from source, please ensure following modules
 # are installed
 argparse
 magic
 soappy
 lzma
+
+
+# There's also a bunch of packages that need to installed
+# On Debian systems, please ensure following packages, or their equivalent
+# are installed
+
+pyqt5-dev-tools
+man2html-base

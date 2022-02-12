@@ -1,4 +1,4 @@
-all: gui html
+all: build html
 
 gui:
 	cd apt_offline_gui ; ./genui.sh || exit 1
