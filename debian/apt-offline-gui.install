@@ -1,4 +1,6 @@
-apt-offline-gui		/usr/bin/
+usr/bin/apt-offline-gui
+usr/bin/apt-offline-gui-pkexec
+usr/lib/python3*/dist-packages/apt_offline_gui/
 apt_offline_gui/icons/*	/usr/share/pixmaps/apt-offline-gui/
 apt_offline_gui/*.py	/usr/lib/python3/dist-packages/apt_offline_gui/
 apt-offline-gui.desktop	/usr/share/applications/

@@ -1,3 +1,4 @@
-apt-offline	/usr/bin/
-apt_offline_core/*	/usr/lib/python3/dist-packages/apt_offline_core/
+/usr/bin/apt-offline
+/usr/lib/python3*/dist-packages/apt_offline-*.egg-info
+/usr/lib/python3*/dist-packages/apt_offline_core/
 bash_completion/apt-offline	/usr/share/bash-completion/completions/
