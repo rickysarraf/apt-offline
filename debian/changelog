@@ -1,8 +1,53 @@
-apt-offline (1.8.2-3) UNRELEASED; urgency=medium
+apt-offline (1.8.4-1) unstable; urgency=medium
 
+  [ Debian Janitor ]
   * Update standards version to 4.5.0, no changes needed.
 
- -- Debian Janitor <janitor@jelmer.uk>  Thu, 07 May 2020 03:14:10 +0000
+  [ Paul Wise ]
+  * Clarify file type in unknown file message
+  * Fix typos
+  * Remove trailing whitespace
+  * Update LICENSE file to match official GNU version
+  * Complain when there are no valid keyrings instead of missing keyrings
+  * Make all syncrhronised files world readable
+  * Fix usage of indefinite articles
+  * Only show the APT Offline GUI once in the menu
+  * Update out of date URLs
+  * Fix date and whitespace issues in the manual page
+  * Replace stereotyping with an appropriate word
+  * Switch more Python shebangs to Python 3
+  * Correct usage of the /tmp/ directory
+  * Fix YAML files
+  * Fix usage of the log API
+  * Make the copying of changelog lines less brittle
+  * Do not split keyring paths on whitespace
+
+  [ Ritesh Raj Sarraf ]
+  * Drop the redundant import of the apt module.
+    Thanks to github/dandelionred
+  * Fix deprecation of get_bugs() in debianbts
+  * Drop the unused IgnoredBugTypes
+  * Set encoding for files when opening
+  * Better error logging when apt fails
+  * Don't mandate a default option
+  * Demote metadata errors to verbose
+  * Also log an error message for every failed .deb url
+  * Check hard for the url type
+  * Check for ascii armored signature files.
+    Thanks to David Klnischkies
+  * Add MIME type for InRelease files
+  * Drop patch 0001-Drop-the-redundant-import-of-the-apt-module.patch.
+    Now part of the 1.8.4 release
+  * Prepare release 1.8.3
+  * Prepare release 1.8.4
+  * debian packaging
+    + Bump debhelper compatibility to 13
+    + Update install files
+
+  [ Dean Anderson ]
+  * [#143] Added support for verifying InRelease files
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Sat, 12 Feb 2022 18:52:58 +0530
 
 apt-offline (1.8.2-2) unstable; urgency=medium
 
