@@ -19,6 +19,9 @@ set_features () {
 
 	sudo apt-get update
 
+	cat /etc/apt/sources.list
+	cat /etc/apt/sources.list.d/*
+
 	# Needs root
 	APT_OFFLINE="sudo $APT_OFFLINE"
 
