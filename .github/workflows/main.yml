@@ -26,11 +26,9 @@ jobs:
       - uses: actions/checkout@v2
 
       # Enable additonal repositories
-      - name: Enable repositories
+      - name: Enable source repositories
         run: |
-          sudo apt-add-repository -s -y main
-          sudo apt-add-repository -s -y universe
-          sudo apt-add-repository -s -y multiverse
+          sudo sed -i  's/^#.deb/deb/g' /etc/apt/sources.list
 
       # Install pre-requisites
       - name: Install pre-reqs
