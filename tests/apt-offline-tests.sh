@@ -3,8 +3,8 @@
 DISLIKED_PACKAGES="lxde icewm gnome-terminal"
 RELEASE=`lsb_release -c -s`
 DIR="$(mktemp --tmpdir --directory apt-offline-tests-XXXXXXXX)"
-cleanup () { rm --recursive --force "$DIR"; }
-trap cleanup EXIT
+#cleanup () { rm --recursive --force "$DIR"; }
+#trap cleanup EXIT
 URI="$DIR/set.uris"
 CACHE_DIR="/var/cache/apt/archives"
 DOWNLOAD_DIR="$DIR/download-dir"
