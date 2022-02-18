@@ -27,7 +27,7 @@ jobs:
 
       # Install pre-requisites
       - name: Install pre-reqs
-        run: apt-get install apt-offline pyqt5-dev-tools man2html-base
+        run: sudo apt-get update; sudo apt-get -y install apt-offline pyqt5-dev-tools man2html-base
         
       # Runs a single command using the runners shell
       - name: Run make
