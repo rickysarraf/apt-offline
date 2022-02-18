@@ -17,6 +17,10 @@ set_features () {
 		URI=$1
 	fi
 
+	sudo apt-add-repository -s main
+	sudo apt-add-repository -s universe
+	sudo apt-add-repository -s multiverse
+
 	sudo apt-get update
 
 	cat /etc/apt/sources.list
