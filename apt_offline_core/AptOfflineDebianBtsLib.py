@@ -1,22 +1,4 @@
-#!/usr/bin/env python3
-
-# debianbts.py - Methods to query Debian's BTS.
-# Copyright (C) 2007-2015  Bastian Venthur <venthur@debian.org>
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
+#!/usr/bin/env python
 
 """
 Query Debian's Bug Tracking System (BTS).
@@ -27,16 +9,22 @@ Bugreport class which represents a bugreport from the BTS.
 """
 
 
-
-
 import base64
+from distutils.version import LooseVersion
 import email.feedparser
+import email.policy
 from datetime import datetime
 import os
 import sys
+import logging
 
+import pysimplesoap
 from pysimplesoap.client import SoapClient
 from pysimplesoap.simplexml import SimpleXMLElement
+
+
+logger = logging.getLogger(__name__)
+
 
 # Support running from Debian infrastructure
 ca_path = '/etc/ssl/ca-debian'
@@ -44,14 +32,8 @@ if os.path.isdir(ca_path):
     os.environ['SSL_CERT_DIR'] = ca_path
 
 
-# please follow the semver semantics, i.e. MAJOR.MINOR.PATCH where
-# MAJOR: incompatible API changes
-# MINOR: add backwards-comptible functionality
-# PATCH: backwards-compatible bug fixes.
-__version__ = '2.6.0'
-
-
-PY2 = sys.version_info.major == 2
+PYSIMPLESOAP_1_16_2 = (LooseVersion(pysimplesoap.__version__) >=
+                       LooseVersion('1.16.2'))
 
 # Setup the soap server
 # Default values
@@ -61,6 +43,15 @@ BTS_URL = 'https://bugs.debian.org/'
 # Max number of bugs to send in a single get_status request
 BATCH_SIZE = 500
 
+SEVERITIES = {
+    'critical': 7,
+    'grave': 6,
+    'serious': 5,
+    'important': 4,
+    'normal': 3,
+    'minor': 2,
+    'wishlist': 1,
+}
 
 
 class Bugreport(object):
@@ -95,6 +86,8 @@ class Bugreport(object):
         Date of update of the bugreport
     done : boolean
         Is the bug fixed or not
+    done_by : str or None
+        Name and Email or None
     archived : bool
         Is the bug archived or not
     unarchived : bool
@@ -156,16 +149,10 @@ class Bugreport(object):
         # self.keywords = None
         # self.id = None
 
-    def __unicode__(self):
+    def __str__(self):
         s = '\n'.join('{}: {}'.format(key, value)
-                       for key, value in list(self.__dict__.items()))
+                      for key, value in self.__dict__.items())
         return s + '\n'
-
-    if PY2:
-        def __str__(self):
-            return self.__unicode__().encode('utf-8')
-    else:
-        __str__ = __unicode__
 
     def __lt__(self, other):
         """Compare a bugreport with another.
@@ -210,17 +197,11 @@ class Bugreport(object):
         else:
             # not done
             val = 20
-        val += {"critical": 7,
-                "grave": 6,
-                "serious": 5,
-                "important": 4,
-                "normal": 3,
-                "minor": 2,
-                "wishlist": 1}[self.severity]
+        val += SEVERITIES[self.severity]
         return val
 
 
-def get_status(*nrs):
+def get_status(nrs, *additional):
     """Returns a list of Bugreport objects.
 
     Given a list of bugnumbers this method returns a list of Bugreport
@@ -229,27 +210,31 @@ def get_status(*nrs):
     Parameters
     ----------
     nrs : int or list of ints
-        the bugnumbers
+        The bugnumbers
+    additional : int
+        Deprecated! The remaining positional arguments are treated as
+        bugnumbers. This is deprecated since 2.10.0, please use the
+        `nrs` parameter instead.
 
     Returns
     -------
     bugs : list of Bugreport objects
 
     """
-    # If we called get_status with one single bug, we get a single bug,
-    # if we called it with a list of bugs, we get a list,
-    # No available bugreports returns an empty list
-    bugs = []
-    list_ = []
-    for nr in nrs:
-        if isinstance(nr, list):
-            list_.extend(nr)
-        else:
-            list_.append(nr)
-    # Process the input in batches to avoid hitting resource limits on the BTS
+    if not isinstance(nrs, (list, tuple)):
+        nrs = [nrs]
+    # backward compatible with <= 2.10.0
+    if additional:
+        logger.warning('Calling get_status with bugnumbers as positional'
+                       ' arguments is deprecated, please use a list instead.')
+        nrs.extend(additional)
+
+    # Process the input in batches to avoid hitting resource limits on
+    # the BTS
     soap_client = _build_soap_client()
-    for i in range(0, len(list_), BATCH_SIZE):
-        slice_ = list_[i:i + BATCH_SIZE]
+    bugs = []
+    for i in range(0, len(nrs), BATCH_SIZE):
+        slice_ = nrs[i:i + BATCH_SIZE]
         # I build body by hand, pysimplesoap doesn't generate soap Arrays
         # without using wsdl
         method_el = SimpleXMLElement('<get_status></get_status>')
@@ -261,22 +246,36 @@ def get_status(*nrs):
     return bugs
 
 
-def get_usertag(email, *tags):
+def get_usertag(email, tags=None, *moretags):
     """Get buglists by usertags.
 
     Parameters
     ----------
     email : str
-    tags : tuple of strings
+    tags : list of strings
         If tags are given the dictionary is limited to the matching
         tags, if no tags are given all available tags are returned.
+    moretags : str
+        Deprecated! The remaining positional arguments are treated as
+        tags. This is deprecated since 2.10.0, please use the `tags`
+        parameter instead.
 
     Returns
     -------
     mapping : dict
-        a mapping of useertag -> buglist
+        a mapping of usertag -> buglist
 
     """
+    if tags is None:
+        tags = []
+    # backward compatible with <= 2.10.0
+    if not isinstance(tags, (list, tuple)):
+        tags = [tags]
+    if moretags:
+        logger.warning('Calling get_getusertag with tags as positional'
+                       ' arguments is deprecated, please use a list instead.')
+        tags.extend(moretags)
+
     reply = _soap_client_call('get_usertag', email, *tags)
     map_el = reply('s-gensym3')
     mapping = {}
@@ -287,12 +286,12 @@ def get_usertag(email, *tags):
     type_attr = map_el.attributes().get('xsi:type')
     if type_attr and type_attr.value == 'apachens:Map':
         for usertag_el in map_el.children() or []:
-            tag = _uc(str(usertag_el('key')))
+            tag = str(usertag_el('key'))
             buglist_el = usertag_el('value')
             mapping[tag] = [int(bug) for bug in buglist_el.children() or []]
     else:
         for usertag_el in map_el.children() or []:
-            tag = _uc(usertag_el.get_name())
+            tag = usertag_el.get_name()
             mapping[tag] = [int(bug) for bug in usertag_el.children() or []]
     return mapping
 
@@ -328,9 +327,12 @@ def get_bug_log(nr):
         # server always returns an empty attachments array ?
         buglog["attachments"] = []
 
-        mail_parser = email.feedparser.FeedParser()
-        mail_parser.feed(buglog["header"])
-        mail_parser.feed(buglog["body"])
+        mail_parser = email.feedparser.BytesFeedParser(
+            policy=email.policy.SMTP
+        )
+        mail_parser.feed(buglog["header"].encode())
+        mail_parser.feed("\n\n".encode())
+        mail_parser.feed(buglog["body"].encode())
         buglog["message"] = mail_parser.close()
 
         buglogs.append(buglog)
@@ -359,28 +361,34 @@ def newest_bugs(amount):
     return [int(item_el) for item_el in items_el.children() or []]
 
 
-def get_bugs(*key_value):
+def get_bugs(*key_value, **kwargs):
     """Get list of bugs matching certain criteria.
 
-    The conditions are defined by key value pairs.
-
-    Possible keys are:
-        * "package": bugs for the given package
-        * "submitter": bugs from the submitter
-        * "maint": bugs belonging to a maintainer
-        * "src": bugs belonging to a source package
-        * "severity": bugs with a certain severity
-        * "status": can be either "done", "forwarded", or "open"
-        * "tag": see http://www.debian.org/Bugs/Developer#tags for
-           available tags
-        * "owner": bugs which are assigned to `owner`
-        * "bugs": takes single int or list of bugnumbers, filters the list
-           according to given criteria
-        * "correspondent": bugs where `correspondent` has sent a mail to
+    The conditions are defined by the keyword arguments.
 
     Arguments
     ---------
     key_value : str
+        Deprecated! The positional arguments are treated as key-values.
+        This is deprecated since 2.10.0, please use the `kwargs`
+        parameters instead.
+    kwargs :
+        Possible keywords are:
+            * "package": bugs for the given package
+            * "submitter": bugs from the submitter
+            * "maint": bugs belonging to a maintainer
+            * "src": bugs belonging to a source package
+            * "severity": bugs with a certain severity
+            * "status": can be either "done", "forwarded", or "open"
+            * "tag": see http://www.debian.org/Bugs/Developer#tags for
+               available tags
+            * "owner": bugs which are assigned to `owner`
+            * "bugs": takes single int or list of bugnumbers, filters the list
+               according to given criteria
+            * "correspondent": bugs where `correspondent` has sent a mail to
+            * "archive": takes a string: "0" (unarchived), "1"
+              (archived) or "both" (un- and archived). if omitted, only
+              returns un-archived bugs.
 
     Returns
     -------
@@ -389,21 +397,33 @@ def get_bugs(*key_value):
 
     Examples
     --------
-    >>> get_bugs('package', 'gtk-qt-engine', 'severity', 'normal')
+    >>> get_bugs(package='gtk-qt-engine', severity='normal')
     [12345, 23456]
 
     """
-    # previous versions also accepted get_bugs(['package', 'gtk-qt-engine', 'severity', 'normal'])
+    # flatten kwargs to list:
+    # {'foo': 'bar', 'baz': 1} -> ['foo', 'bar','baz', 1]
+    args = []
+    for k, v in kwargs.items():
+        args.extend([k, v])
+
+    # previous versions also accepted
+    # get_bugs(['package', 'gtk-qt-engine', 'severity', 'normal'])
     # if key_value is a list in a one elemented tuple, remove the
     # wrapping list
     if len(key_value) == 1 and isinstance(key_value[0], list):
         key_value = tuple(key_value[0])
 
+    if key_value:
+        logger.warning('Calling get_bugs with positional arguments is'
+                       ' deprecated, please use keyword arguments instead.')
+        args.extend(key_value)
+
     # pysimplesoap doesn't generate soap Arrays without using wsdl
     # I build body by hand, converting list to array and using standard
     # pysimplesoap marshalling for other types
     method_el = SimpleXMLElement('<get_bugs></get_bugs>')
-    for arg_n, kv in enumerate(key_value):
+    for arg_n, kv in enumerate(args):
         arg_name = 'arg' + str(arg_n)
         if isinstance(kv, (list, tuple)):
             _build_int_array_el(arg_name, method_el, kv)
@@ -428,8 +448,9 @@ def _parse_status(bug_el):
 
     bug.date = datetime.utcfromtimestamp(float(bug_el('date')))
     bug.log_modified = datetime.utcfromtimestamp(float(bug_el('log_modified')))
-    bug.tags = [_uc(tag) for tag in str(bug_el('tags')).split()]
+    bug.tags = [tag for tag in str(bug_el('tags')).split()]
     bug.done = _parse_bool(bug_el('done'))
+    bug.done_by = _parse_string_el(bug_el('done')) if bug.done else None
     bug.archived = _parse_bool(bug_el('archived'))
     bug.unarchived = _parse_bool(bug_el('unarchived'))
     bug.bug_num = int(bug_el('bug_num'))
@@ -437,20 +458,73 @@ def _parse_status(bug_el):
     bug.blockedby = [int(i) for i in str(bug_el('blockedby')).split()]
     bug.blocks = [int(i) for i in str(bug_el('blocks')).split()]
 
-    bug.found_versions = [_uc(str(el)) for el in
+    bug.found_versions = [str(el) for el in
                           bug_el('found_versions').children() or []]
-    bug.fixed_versions = [_uc(str(el)) for el in
+    bug.fixed_versions = [str(el) for el in
                           bug_el('fixed_versions').children() or []]
     affects = [_f for _f in str(bug_el('affects')).split(',') if _f]
-    bug.affects = [_uc(a).strip() for a in affects]
+    bug.affects = [a.strip() for a in affects]
     # Also available, but unused or broken
-    # bug.keywords = [_uc(keyword) for keyword in
+    # bug.keywords = [keyword for keyword in
     #                 str(bug_el('keywords')).split()]
     # bug.fixed = _parse_crappy_soap(tmp, "fixed")
     # bug.found = _parse_crappy_soap(tmp, "found")
-    # bug.found_date = [datetime.utcfromtimestamp(i) for i in tmp["found_date"]]
-    # bug.fixed_date = [datetime.utcfromtimestamp(i) for i in tmp["fixed_date"]]
+    # bug.found_date = \
+    #     [datetime.utcfromtimestamp(i) for i in tmp["found_date"]]
+    # bug.fixed_date = \
+    #     [datetime.utcfromtimestamp(i) for i in tmp["fixed_date"]]
     return bug
+
+
+# to support python 3.4.3, when using httplib2 as pysimplesoap transport
+# we must work around a bug in httplib2, which uses
+# http.client.HTTPSConnection with check_hostname=True, but with an
+# empty ssl context that prevents the certificate verification. Passing
+# `cacert` to httplib2 through pysimplesoap permits to create a valid
+# ssl context.
+_soap_client_kwargs = {
+    'location': URL,
+    'action': '',
+    'namespace': NS,
+    'soap_ns': 'soap'
+}
+if sys.version_info.major == 3 and sys.version_info < (3, 4, 3):
+    try:
+        from httplib2 import CA_CERTS
+    except ImportError:
+        pass
+    else:
+        _soap_client_kwargs['cacert'] = CA_CERTS
+
+
+def set_soap_proxy(proxy_arg):
+    """Set proxy for SOAP client.
+
+    You must use this method after import to set the proxy.
+
+    Parameters
+    ----------
+    proxy_arg : str
+
+    """
+    _soap_client_kwargs['proxy'] = proxy_arg
+
+
+def set_soap_location(url):
+    """Set location URL for SOAP client
+
+    You may use this method after import to override the default URL.
+
+    Parameters
+    ----------
+    url : str
+
+    """
+    _soap_client_kwargs['location'] = url
+
+
+def get_soap_client_kwargs():
+    return _soap_client_kwargs
 
 
 def _build_soap_client():
@@ -464,17 +538,34 @@ def _build_soap_client():
     sc : SoapClient instance
 
     """
-    return SoapClient(location=URL, namespace=NS, soap_ns='soap')
+    return SoapClient(**_soap_client_kwargs)
 
 
-def _soap_client_call(method_name, *args):
-    """wrapper to work around a pysimplesoap bug
-    https://github.com/pysimplesoap/pysimplesoap/issues/31"""
-    soap_client = _build_soap_client()
+def _convert_soap_method_args(*args):
+    """Convert arguments to be consumed by a SoapClient method
+
+    Soap client required a list of named arguments:
+    >>> _convert_soap_method_args('a', 1)
+    [('arg0', 'a'), ('arg1', 1)]
+
+    """
     soap_args = []
     for arg_n, arg in enumerate(args):
         soap_args.append(('arg' + str(arg_n), arg))
-    return getattr(soap_client, method_name)(soap_client, *soap_args)
+    return soap_args
+
+
+def _soap_client_call(method_name, *args):
+    """Wrapper to call SoapClient method"""
+    # a new client instance is built for threading issues
+    soap_client = _build_soap_client()
+    soap_args = _convert_soap_method_args(*args)
+    # if pysimplesoap version requires it, apply a workaround for
+    # https://github.com/pysimplesoap/pysimplesoap/issues/31
+    if PYSIMPLESOAP_1_16_2:
+        return getattr(soap_client, method_name)(*soap_args)
+    else:
+        return getattr(soap_client, method_name)(soap_client, *soap_args)
 
 
 def _build_int_array_el(el_name, parent, list_):
@@ -492,7 +583,7 @@ def _build_int_array_el(el_name, parent, list_):
 
 
 def _parse_bool(el):
-    """parse a boolean value from an xml element"""
+    """parse a boolean value from a xml element"""
     value = str(el)
     return not value.strip() in ('', '0')
 
@@ -503,20 +594,5 @@ def _parse_string_el(el):
     el_type = el.attributes().get('xsi:type')
     if el_type and el_type.value == 'xsd:base64Binary':
         value = base64.b64decode(value)
-        if not PY2:
-            value = value.decode('utf-8')
-    value = _uc(value)
+        value = value.decode('utf-8', errors='replace')
     return value
-
-
-"""
-Convert string to unicode.
-
-This method only exists to unify the unicode conversion in this module.
-"""
-if PY2:
-    def _uc(string):
-        return string.decode('utf-8', 'replace')
-else:
-    def _uc(string):
-        return string
