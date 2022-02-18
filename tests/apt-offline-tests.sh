@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DISLIKED_PACKAGES="lxde icewm eclipse"
+DISLIKED_PACKAGES="lxde icewm gnome-terminal"
 RELEASE=`lsb_release -c -s`
 DIR="$(mktemp --tmpdir --directory apt-offline-tests-XXXXXXXX)"
 cleanup () { rm --recursive --force "$DIR"; }
@@ -16,11 +16,12 @@ set_features () {
 	if [ ! -z $1 ]; then
 		URI=$1
 	fi
-	echo "Executing command 'set $URI'"
-	$APT_OFFLINE set $URI
+
+	# Needs root
+	APT_OFFLINE="sudo $APT_OFFLINE"
 
 	echo "Executing command 'set $URI --simulate '"
-	$APT_OFFLINE set $URI --simulate
+	$APT_OFFLINE set $URI --simulate --update --upgrade
 
 	echo "Executing command 'set $URI --update'"
 	$APT_OFFLINE set $URI --update
@@ -62,13 +63,13 @@ get_features () {
 		URI=$1
 	fi
 	echo "Executing command 'get $URI '"
-	$APT_OFFLINE get $URI
+	$APT_OFFLINE get $URI --bundle $BUNDLE_FILE
 
 	echo "Executing command 'get $URI --threads $THREADS'"
-	$APT_OFFLINE get $URI --threads $THREADS
+	$APT_OFFLINE get $URI --threads $THREADS --bundle $BUNDLE_FILE
 
 	echo "Executing command 'get $URI --threads $THREADS --socket-timeout 30'"
-	$APT_OFFLINE get $URI --threads $THREADS --socket-timeout 30
+	$APT_OFFLINE get $URI --threads $THREADS --socket-timeout 30 --bundle $BUNDLE_FILE --bug-reports
 
 	echo "Executing command 'get $URI --threads $THREADS -d $DOWNLOAD_DIR'"
 	$APT_OFFLINE get $URI --threads $THREADS -d $DOWNLOAD_DIR
@@ -82,9 +83,6 @@ get_features () {
 	echo "Executing command 'get $URI --bug-reports --threads $THREADS -d $DOWNLOAD_DIR --cache-dir $CACHE_DIR'"
 	$APT_OFFLINE get $URI --threads $THREADS --bug-reports -d $DOWNLOAD_DIR --cache-dir $CACHE_DIR
 
-	echo "Executing command 'get $URI --bug-reports --threads $THREADS --bundle $BUNDLE_FILE -d $DOWNLOAD_DIR --cache-dir $CACHE_DIR'"
-	$APT_OFFLINE get $URI --threads $THREADS --bug-reports -d $DOWNLOAD_DIR --cache-dir $CACHE_DIR --bundle $BUNDLE_FILE
-
 }
 
 install_features () {
@@ -92,29 +90,21 @@ install_features () {
 		DOWNLOAD_DIR=$1
 		BUNDLE_FILE=$1
 	fi
+
+	# Needs root
+	APT_OFFLINE="sudo $APT_OFFLINE"
+
 	echo "Executing command 'install $DOWNLOAD_DIR  --skip-bug-reports'"
 	$APT_OFFLINE install $DOWNLOAD_DIR  --skip-bug-reports
 
-	echo "Executing command 'install $DOWNLOAD_DIR --simulate --skip-bug-reports'"
-	$APT_OFFLINE install $DOWNLOAD_DIR --simulate --skip-bug-reports
-
-	echo "Executing command 'install $DOWNLOAD_DIR --skip-bug-reports'"
-	$APT_OFFLINE install $DOWNLOAD_DIR --simulate --skip-bug-reports
-
 	echo "Executing command 'install $DOWNLOAD_DIR --skip-bug-reports --allow-unauthenticated'"
-	$APT_OFFLINE install $DOWNLOAD_DIR --simulate --skip-bug-reports  --allow-unauthenticated
+	$APT_OFFLINE install $DOWNLOAD_DIR --skip-bug-reports  --allow-unauthenticated
 
 	echo "Executing command 'install $BUNDLE_FILE  --skip-bug-reports'"
 	$APT_OFFLINE install $BUNDLE_FILE  --skip-bug-reports
 
-	echo "Executing command 'install $BUNDLE_FILE --simulate --skip-bug-reports'"
-	$APT_OFFLINE install $BUNDLE_FILE --simulate --skip-bug-reports
-
-	echo "Executing command 'install $BUNDLE_FILE --skip-bug-reports'"
-	$APT_OFFLINE install $BUNDLE_FILE --simulate --skip-bug-reports
-
 	echo "Executing command 'install $BUNDLE_FILE --skip-bug-reports --allow-unauthenticated'"
-	$APT_OFFLINE install $BUNDLE_FILE --simulate --skip-bug-reports  --allow-unauthenticated
+	$APT_OFFLINE install $BUNDLE_FILE --skip-bug-reports  --allow-unauthenticated
 }
 
 install_features_prompt () {
@@ -122,6 +112,10 @@ install_features_prompt () {
 		DOWNLOAD_DIR=$1
 		BUNDLE_FILE=$1
 	fi
+
+	# Needs root
+	APT_OFFLINE="sudo $APT_OFFLINE"
+
 	echo "Executing command 'install $DOWNLOAD_DIR '"
 	$APT_OFFLINE install $DOWNLOAD_DIR
 
