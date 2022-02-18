@@ -42,4 +42,4 @@ jobs:
       - name: Linux runtime tests
         run: |
           echo Running tests from tests/ folder
-          ./tests/apt-offline-tests.sh
+          ./tests/apt-offline-tests-github.sh
