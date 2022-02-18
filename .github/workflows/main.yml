@@ -25,16 +25,23 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
+      # Enable additonal repositories
+      - name: Enable repositories
+        run: |
+          sudo apt-add-repository -s -y main
+          sudo apt-add-repository -s -y universe
+          sudo apt-add-repository -s -y multiverse
+
       # Install pre-requisites
       - name: Install pre-reqs
         run: sudo apt-get update; sudo apt-get -y install apt-offline pyqt5-dev-tools man2html-base
         
       # Runs a single command using the runners shell
-      - name: Run make
+      - name: Build tests
         run: make
 
       # Runs a set of commands using the runners shell
-      - name: Run tests
+      - name: Linux runtime tests
         run: |
           echo Running tests from tests/ folder
           ./tests/apt-offline-tests.sh
