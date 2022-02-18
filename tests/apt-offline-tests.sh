@@ -17,6 +17,8 @@ set_features () {
 		URI=$1
 	fi
 
+	sudo apt-get update
+
 	# Needs root
 	APT_OFFLINE="sudo $APT_OFFLINE"
 
