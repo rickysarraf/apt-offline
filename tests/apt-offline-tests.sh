@@ -16,8 +16,6 @@ set_features () {
 	if [ ! -z $1 ]; then
 		URI=$1
 	fi
-	echo "Executing command 'set $URI'"
-	$APT_OFFLINE set $URI
 
 	echo "Executing command 'set $URI --simulate '"
 	$APT_OFFLINE set $URI --simulate
