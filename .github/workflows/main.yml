@@ -25,6 +25,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
+      # Install pre-requisites
+      - name: Install pre-reqs
+        run: apt-get install apt-offline pyqt5-dev-tools man2html-base
+        
       # Runs a single command using the runners shell
       - name: Run make
         run: make
