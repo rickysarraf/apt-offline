@@ -21,7 +21,7 @@ set_features () {
 	APT_OFFLINE="sudo $APT_OFFLINE"
 
 	echo "Executing command 'set $URI --simulate '"
-	$APT_OFFLINE set $URI --simulate
+	$APT_OFFLINE set $URI --simulate --update --upgrade
 
 	echo "Executing command 'set $URI --update'"
 	$APT_OFFLINE set $URI --update
