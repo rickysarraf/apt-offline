@@ -17,6 +17,9 @@ set_features () {
 		URI=$1
 	fi
 
+	# Needs root
+	APT_OFFLINE="sudo $APT_OFFLINE"
+
 	echo "Executing command 'set $URI --simulate '"
 	$APT_OFFLINE set $URI --simulate
 
@@ -90,6 +93,10 @@ install_features () {
 		DOWNLOAD_DIR=$1
 		BUNDLE_FILE=$1
 	fi
+
+	# Needs root
+	APT_OFFLINE="sudo $APT_OFFLINE"
+
 	echo "Executing command 'install $DOWNLOAD_DIR  --skip-bug-reports'"
 	$APT_OFFLINE install $DOWNLOAD_DIR  --skip-bug-reports
 
@@ -120,6 +127,10 @@ install_features_prompt () {
 		DOWNLOAD_DIR=$1
 		BUNDLE_FILE=$1
 	fi
+
+	# Needs root
+	APT_OFFLINE="sudo $APT_OFFLINE"
+
 	echo "Executing command 'install $DOWNLOAD_DIR '"
 	$APT_OFFLINE install $DOWNLOAD_DIR
 
