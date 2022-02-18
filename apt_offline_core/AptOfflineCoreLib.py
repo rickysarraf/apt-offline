@@ -150,7 +150,7 @@ class FetchBugReports:
                         self.bugs_list = debianbts.get_bugs(package=PackageName)
                         num_of_bugs = len(self.bugs_list)
                 except Exception:
-                        log.verbose(traceback.format_exc())
+                        log.err(traceback.format_exc())
                         log.err("Foreign exception raised in module debianbts\n")
                         log.err("Failed to download bug report for package %s\n" % (PackageName))
                         return 0
@@ -169,7 +169,7 @@ class FetchBugReports:
                                         # And we don't want the entire operation to fail because of this
                                         log.warn("Foreign exception raised in module debianbts\n")
                                         log.warn("Failed to download bug report for %s\nWill continue to download others\n" % (eachBug))
-                                        log.verbose(traceback.format_exc())
+                                        log.err(traceback.format_exc())
                                         continue
 
                                 # This tells us how many follow-ups for the bug report are present.
