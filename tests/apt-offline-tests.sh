@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DISLIKED_PACKAGES="lxde icewm eclipse"
+DISLIKED_PACKAGES="lxde icewm konsole gnome-terminal"
 RELEASE=`lsb_release -c -s`
 DIR="$(mktemp --tmpdir --directory apt-offline-tests-XXXXXXXX)"
 cleanup () { rm --recursive --force "$DIR"; }
