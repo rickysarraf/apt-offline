@@ -2015,7 +2015,7 @@ def installer( args ):
                         marker = True
                         continue
 
-                    if SrcPkgIdentifier.startswith('\n'):
+                    if SrcPkgIdentifier.startswith('\n') or not SrcPkgIdentifier.startswith(' '):
                         marker = False
                         continue
 
@@ -2141,7 +2141,7 @@ def installer( args ):
                         marker = True
                         continue
 
-                    if SrcPkgIdentifier.startswith('\n'):
+                    if SrcPkgIdentifier.startswith('\n') or not SrcPkgIdentifier.startswith(' '):
                         marker = False
                         continue
 
