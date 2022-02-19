@@ -45,30 +45,30 @@ from apt_offline_core.AptOfflineLib import AptOfflineErrors, AptOfflineLibShutil
 
 FCNTL_LOCK = True
 try:
-        import fcntl
+    import fcntl
 except ImportError:
-        # Only available on platform Unix
-        FCNTL_LOCK = False
+    # Only available on platform Unix
+    FCNTL_LOCK = False
 
 # On Debian, python-debianbts package provides this library
 DebianBTS = True
 try:
-        import debianbts
+    import debianbts
 except ImportError:
-        try:
-                from apt_offline_core import AptOfflineDebianBtsLib as debianbts
-        except ImportError:
-                DebianBTS = False
+    try:
+        from apt_offline_core import AptOfflineDebianBtsLib as debianbts
+    except ImportError:
+        DebianBTS = False
 
 try:
-        MagicLib = True
-        from apt_offline_core import AptOfflineMagicLib
+    MagicLib = True
+    from apt_offline_core import AptOfflineMagicLib
 except TypeError:
-        ''' On Windows, the file magic library does not work '''
-        MagicLib = False
+    ''' On Windows, the file magic library does not work '''
+    MagicLib = False
 except AttributeError:
-        # On Linux, make sure libmagic is installed
-        MagicLib = False
+    # On Linux, make sure libmagic is installed
+    MagicLib = False
 
 
 #INFO: added to handle GUI interaction
@@ -80,12 +80,12 @@ totalSize = [0,0]              # total_size, current_total
 #INFO: Check if python-apt is installed
 PythonApt = False
 try:
-        import apt
-        import apt_pkg
-        from apt.debfile import DebPackage
-        PythonApt = True
+    import apt
+    import apt_pkg
+    from apt.debfile import DebPackage
+    PythonApt = True
 except ImportError:
-        PythonApt = False
+    PythonApt = False
 
 from apt_offline_core import AptOfflineLib
 
