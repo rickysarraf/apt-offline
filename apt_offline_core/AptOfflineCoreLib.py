@@ -2184,10 +2184,13 @@ def installer( args ):
         if InstallerInstance.Bool_Untrusted:
             log.err("Disabling apt gpg check can risk your machine to compromise.\n")
             for x in os.listdir(installPath):
-                x = os.path.join(installPath, x)
-                shutil.copy2(x, InstallerInstance.apt_update_final_path) # Do we do a move ??
-                log.verbose("%s synced to %s\n" % (x, InstallerInstance.apt_update_final_path) )
-                log.success("%s synced.\n" % (x) )
+                if x.endswith(apt_bug_file_format) or x.endswith(".deb"):
+                    pass
+                else:
+                    x = os.path.join(installPath, x)
+                    shutil.copy2(x, InstallerInstance.apt_update_final_path) # Do we do a move ??
+                    log.verbose("%s synced to %s\n" % (x, InstallerInstance.apt_update_final_path) )
+                    log.success("%s synced.\n" % (x) )
         else:
             lFileList = InstallerInstance.listdir_fullpath(installPath)
             verifiedList = InstallerInstance.verifyAptFileIntegrity(lFileList)
