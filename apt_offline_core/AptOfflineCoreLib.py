@@ -2020,7 +2020,7 @@ def installer( args ):
                         continue
 
                     if marker is True:
-                        SrcPkgData = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
+                        SrcPkgData = SrcPkgIdentifier.split()[2].rstrip("\n")
                         if SrcPkgData in SrcPkgDict[SrcPkgName]:
                             break
                         else:
@@ -2146,7 +2146,7 @@ def installer( args ):
                         continue
 
                     if marker is True:
-                        SrcPkgData = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
+                        SrcPkgData = SrcPkgIdentifier.split()[2].rstrip("\n")
                         if SrcPkgData in SrcPkgDict[SrcPkgName]:
                             break
                         else:
