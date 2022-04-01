@@ -907,7 +907,7 @@ def errfunc(errno, errormsg, filename):
     be well accessible.
     This function does the job of behaving accordingly
     as per the error codes.'''
-    retriable_error_codes = [-3, 13, 504, 404, 403, 401, 10060, 104, 101010]
+    retriable_error_codes = [-3, 13, 404, 403, 401, 10060, 104, 101010]
     # 104, 'Connection reset by peer'
     # 504 is for gateway timeout
     # 404 is for URL error. Page not found.
@@ -924,6 +924,9 @@ def errfunc(errno, errormsg, filename):
         log.verbose("Will still try with other package uris\n")
     elif errno == 10054:
         log.err("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL) )
+    elif errno == 504:
+        log.err("%s failed with error %s:%s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL))
+        errlist.append(filename)
     elif errno == 407 or errno == 2:
         # These, I believe are from OSError/IOError exception.
         # I'll document it as soon as I confirm it.
