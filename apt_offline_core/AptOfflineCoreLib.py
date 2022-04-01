@@ -1507,7 +1507,7 @@ def fetcher( args ):
             log.verbose("The following files failed to be downloaded.\n")
             log.verbose("Not all errors are fatal. For eg. Translation files are not present on all mirrors.\n")
             for error in errlist:
-                log.verbose("%s failed.\n" % (error))
+                log.err("%s failed.\n" % (error))
             sys.exit(100)
         else:
             sys.exit(0)
