@@ -1419,7 +1419,6 @@ def fetcher( args ):
                                                 FetcherInstance.completed()
                                 if reallyFailed is True:
                                     log.verbose("Giving up on URL %s %s\n" % (NewUrl, LINE_OVERWRITE_FULL))
-                                    #errlist.append(NewUrl)
 
         # Create two Queues for the requests and responses
         requestQueue = queue.Queue()
