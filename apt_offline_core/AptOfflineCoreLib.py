@@ -1301,7 +1301,7 @@ def fetcher( args ):
 
                 #INFO: Everything
                 (url, pkgFile, download_size, checksum) = stripper(item)
-                thread_name = threading.currentThread().getName()
+                thread_name = threading.current_thread().name
                 log.verbose("Thread is %s\n" % (thread_name) )
 
                 if url.endswith(".deb"):
