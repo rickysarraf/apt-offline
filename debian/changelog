@@ -1,3 +1,16 @@
+apt-offline (1.8.5-1) unstable; urgency=medium
+
+  [ Rüdiger Sczuka ]
+  * Use proxy settings to configure https proxy
+
+  [ Ritesh Raj Sarraf ]
+  * check for simulation mode
+  * Report exceptions as errors
+  * Wholesome update of the debianbts library
+  * Bump apt-offline version to 1.8.5
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Thu, 11 Aug 2022 20:55:52 +0530
+
 apt-offline (1.8.4-1) unstable; urgency=medium
 
   [ Debian Janitor ]
