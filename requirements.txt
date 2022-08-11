@@ -4,6 +4,7 @@ argparse
 magic
 soappy
 lzma
+pysimplesoap
 
 
 # There's also a bunch of packages that need to installed
@@ -12,3 +13,4 @@ lzma
 
 pyqt5-dev-tools
 man2html-base
+python3-debianbts

@@ -688,8 +688,7 @@ class MyThread( threading.Thread ):
 
         def run( self, item=None):
                 while True:
-                        if threading.currentThread().guiTerminateSignal:
-                                #print threading.currentThread().getName(), "has been stopped :D"
+                        if threading.current_thread().guiTerminateSignal:
                                 break
                         if self.requestQueue is not None:
                                 item = self.requestQueue.get()
@@ -697,7 +696,7 @@ class MyThread( threading.Thread ):
                         if item is None:
                                 break
 
-                        thread_name = threading.currentThread().getName()
+                        thread_name = threading.current_thread().name
 
                         if self.responseQueue is not None:
                                 self.responseQueue.put( self.WorkerFunction( item, thread_name ) )

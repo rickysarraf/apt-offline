@@ -1,0 +1,45 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Enable additonal repositories
+      - name: Enable source repositories
+        run: |
+          sudo sed -i  's/^#.deb/deb/g' /etc/apt/sources.list
+
+      # Install pre-requisites
+      - name: Install pre-reqs
+        run: sudo apt-get update; sudo apt-get -y install pyqt5-dev-tools man2html-base python3-pysimplesoap
+        
+      # Runs a single command using the runners shell
+      - name: Build tests
+        run: make
+
+      # Runs a set of commands using the runners shell
+      - name: Linux runtime tests
+        run: |
+          echo Running tests from tests/ folder
+          ./tests/apt-offline-tests-github.sh

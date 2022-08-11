@@ -45,30 +45,30 @@ from apt_offline_core.AptOfflineLib import AptOfflineErrors, AptOfflineLibShutil
 
 FCNTL_LOCK = True
 try:
-        import fcntl
+    import fcntl
 except ImportError:
-        # Only available on platform Unix
-        FCNTL_LOCK = False
+    # Only available on platform Unix
+    FCNTL_LOCK = False
 
 # On Debian, python-debianbts package provides this library
 DebianBTS = True
 try:
-        import debianbts
+    import debianbts
 except ImportError:
-        try:
-                from apt_offline_core import AptOfflineDebianBtsLib as debianbts
-        except ImportError:
-                DebianBTS = False
+    try:
+        from apt_offline_core import AptOfflineDebianBtsLib as debianbts
+    except ImportError:
+        DebianBTS = False
 
 try:
-        MagicLib = True
-        from apt_offline_core import AptOfflineMagicLib
+    MagicLib = True
+    from apt_offline_core import AptOfflineMagicLib
 except TypeError:
-        ''' On Windows, the file magic library does not work '''
-        MagicLib = False
+    ''' On Windows, the file magic library does not work '''
+    MagicLib = False
 except AttributeError:
-        # On Linux, make sure libmagic is installed
-        MagicLib = False
+    # On Linux, make sure libmagic is installed
+    MagicLib = False
 
 
 #INFO: added to handle GUI interaction
@@ -80,12 +80,12 @@ totalSize = [0,0]              # total_size, current_total
 #INFO: Check if python-apt is installed
 PythonApt = False
 try:
-        import apt
-        import apt_pkg
-        from apt.debfile import DebPackage
-        PythonApt = True
+    import apt
+    import apt_pkg
+    from apt.debfile import DebPackage
+    PythonApt = True
 except ImportError:
-        PythonApt = False
+    PythonApt = False
 
 from apt_offline_core import AptOfflineLib
 
@@ -100,7 +100,7 @@ figuring out if the packages are in the local cache, handling exceptions and man
 
 
 app_name = "apt-offline"
-version = "1.8.4"
+version = "1.8.5"
 myCopyright = "(C) 2005 - 2022 Ritesh Raj Sarraf"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
@@ -150,7 +150,7 @@ class FetchBugReports:
                         self.bugs_list = debianbts.get_bugs(package=PackageName)
                         num_of_bugs = len(self.bugs_list)
                 except Exception:
-                        log.verbose(traceback.format_exc())
+                        log.err(traceback.format_exc())
                         log.err("Foreign exception raised in module debianbts\n")
                         log.err("Failed to download bug report for package %s\n" % (PackageName))
                         return 0
@@ -169,7 +169,7 @@ class FetchBugReports:
                                         # And we don't want the entire operation to fail because of this
                                         log.warn("Foreign exception raised in module debianbts\n")
                                         log.warn("Failed to download bug report for %s\nWill continue to download others\n" % (eachBug))
-                                        log.verbose(traceback.format_exc())
+                                        log.err(traceback.format_exc())
                                         continue
 
                                 # This tells us how many follow-ups for the bug report are present.
@@ -907,7 +907,7 @@ def errfunc(errno, errormsg, filename):
     be well accessible.
     This function does the job of behaving accordingly
     as per the error codes.'''
-    retriable_error_codes = [-3, 13, 504, 404, 403, 401, 10060, 104, 101010]
+    retriable_error_codes = [-3, 13, 404, 403, 401, 10060, 104, 101010]
     # 104, 'Connection reset by peer'
     # 504 is for gateway timeout
     # 404 is for URL error. Page not found.
@@ -924,6 +924,9 @@ def errfunc(errno, errormsg, filename):
         log.verbose("Will still try with other package uris\n")
     elif errno == 10054:
         log.err("%s - %s - %s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL) )
+    elif errno == 504:
+        log.err("%s failed with error %s:%s %s\n" % (filename, errno, errormsg, LINE_OVERWRITE_FULL))
+        errlist.append(filename)
     elif errno == 407 or errno == 2:
         # These, I believe are from OSError/IOError exception.
         # I'll document it as soon as I confirm it.
@@ -968,12 +971,12 @@ def fetcher( args ):
         if Str_ProxyHost:
                 if Str_ProxyPort:
                         log.verbose(Str_ProxyHost + ":" + str(Str_ProxyPort))
-                        proxy_support = urllib.request.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort) })
+                        proxy_support = urllib.request.ProxyHandler({'http': Str_ProxyHost + ":" + str(Str_ProxyPort), 'https': Str_ProxyHost + ":" + str(Str_ProxyPort)})
                         opener = urllib.request.build_opener(proxy_support)
                         urllib.request.install_opener(opener)
                         log.verbose("Proxy successfully set up with Host %s and port %s\n" % (Str_ProxyHost, str(Str_ProxyPort)))
                 else:
-                        proxy_support = urllib.request.ProxyHandler({'http': Str_ProxyHost})
+                        proxy_support = urllib.request.ProxyHandler({'http': Str_ProxyHost, 'https': Str_ProxyHost})
                         opener = urllib.request.build_opener(proxy_support)
                         urllib.request.install_opener(opener)
                         log.verbose("Proxy successfully set up with Host %s and default port\n" % (Str_ProxyHost) )
@@ -1298,7 +1301,7 @@ def fetcher( args ):
 
                 #INFO: Everything
                 (url, pkgFile, download_size, checksum) = stripper(item)
-                thread_name = threading.currentThread().getName()
+                thread_name = threading.current_thread().name
                 log.verbose("Thread is %s\n" % (thread_name) )
 
                 if url.endswith(".deb"):
@@ -1419,7 +1422,6 @@ def fetcher( args ):
                                                 FetcherInstance.completed()
                                 if reallyFailed is True:
                                     log.verbose("Giving up on URL %s %s\n" % (NewUrl, LINE_OVERWRITE_FULL))
-                                    #errlist.append(NewUrl)
 
         # Create two Queues for the requests and responses
         requestQueue = queue.Queue()
@@ -1508,7 +1510,7 @@ def fetcher( args ):
             log.verbose("The following files failed to be downloaded.\n")
             log.verbose("Not all errors are fatal. For eg. Translation files are not present on all mirrors.\n")
             for error in errlist:
-                log.verbose("%s failed.\n" % (error))
+                log.err("%s failed.\n" % (error))
             sys.exit(100)
         else:
             sys.exit(0)
@@ -2015,12 +2017,12 @@ def installer( args ):
                         marker = True
                         continue
 
-                    if SrcPkgIdentifier.startswith('\n'):
+                    if SrcPkgIdentifier.startswith('\n') or not SrcPkgIdentifier.startswith(' '):
                         marker = False
                         continue
 
                     if marker is True:
-                        SrcPkgData = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
+                        SrcPkgData = SrcPkgIdentifier.split()[2].rstrip("\n")
                         if SrcPkgData in SrcPkgDict[SrcPkgName]:
                             break
                         else:
@@ -2141,12 +2143,12 @@ def installer( args ):
                         marker = True
                         continue
 
-                    if SrcPkgIdentifier.startswith('\n'):
+                    if SrcPkgIdentifier.startswith('\n') or not SrcPkgIdentifier.startswith(' '):
                         marker = False
                         continue
 
                     if marker is True:
-                        SrcPkgData = SrcPkgIdentifier.split(' ')[3].rstrip("\n")
+                        SrcPkgData = SrcPkgIdentifier.split()[2].rstrip("\n")
                         if SrcPkgData in SrcPkgDict[SrcPkgName]:
                             break
                         else:
@@ -2184,10 +2186,13 @@ def installer( args ):
         if InstallerInstance.Bool_Untrusted:
             log.err("Disabling apt gpg check can risk your machine to compromise.\n")
             for x in os.listdir(installPath):
-                x = os.path.join(installPath, x)
-                shutil.copy2(x, InstallerInstance.apt_update_final_path) # Do we do a move ??
-                log.verbose("%s synced to %s\n" % (x, InstallerInstance.apt_update_final_path) )
-                log.success("%s synced.\n" % (x) )
+                if x.endswith(apt_bug_file_format) or x.endswith(".deb"):
+                    pass
+                else:
+                    x = os.path.join(installPath, x)
+                    shutil.copy2(x, InstallerInstance.apt_update_final_path) # Do we do a move ??
+                    log.verbose("%s synced to %s\n" % (x, InstallerInstance.apt_update_final_path) )
+                    log.success("%s synced.\n" % (x) )
         else:
             lFileList = InstallerInstance.listdir_fullpath(installPath)
             verifiedList = InstallerInstance.verifyAptFileIntegrity(lFileList)
@@ -2323,10 +2328,11 @@ def setter(args):
                     log.verbose("Writing to Changelog, pkgName: %s, pkgInstalledVersion %s\n" % (pkgName, pkgInstalledVersion))
                     sigFile.writelines("Changelog/%s/%s\n" % (pkgName, pkgInstalledVersion))
 
-        if os.path.getsize(Str_SetArg) == 0:
-            log.err("Generated signature file %s is of 0 bytes\n" % (Str_SetArg))
-            log.err("This is usually the case when the underneath apt system has no payload to download\n")
-            sys.exit(1)
+        if not Bool_TestWindows:
+            if os.path.getsize(Str_SetArg) == 0:
+                log.err("Generated signature file %s is of 0 bytes\n" % (Str_SetArg))
+                log.err("This is usually the case when the underneath apt system has no payload to download\n")
+                sys.exit(1)
 
 def main():
         '''Here we basically do the sanity checks, some validations
