@@ -693,7 +693,7 @@ class LockAPT:
                 except Exception:
                         log.verbose(traceback.format_exc())
                         log.err("Couldn't open lockfile\n")
-                        return False
+                        sys.exit(1)
 
         def lockLists(self):
                 try:
