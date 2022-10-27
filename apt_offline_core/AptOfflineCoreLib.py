@@ -1250,7 +1250,15 @@ def fetcher( args ):
                                 # Interim fix for Debian bug #664654
                                 # FIXME is this needed still with explicit install handling?
                                 # Will cause double syncing of files on install
-                                (ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
+                                try :
+                                    (ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
+                                except :
+                                    # There is an issue with this line so just ignore it.
+                                    # Note that putting the split in a try block fixes issue 199:
+                                    # https://github.com/rickysarraf/apt-offline/issues/199
+                                    log.verbose("Ignoring unusable item: %s\n" % item)
+                                    continue
+                                
                                 if not ItemURL.startswith(('http', 'https', 'ftp')):
                                         log.verbose("This is a broken url: %s\n" % (ItemURL))
                                         continue
