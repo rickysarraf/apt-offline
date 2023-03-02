@@ -1254,7 +1254,7 @@ def fetcher( args ):
                                         (ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
 
                                         if not ItemURL.startswith(('http', 'https', 'ftp')):
-                                            log.verbose("This is a broken url: %s\n" % (ItemURL))
+                                            log.err("This is a broken url: %s\n" % (ItemURL))
                                             continue
                                         elif ItemURL.endswith("InRelease"):
                                             log.verbose("APT uses new InRelease auth mechanism\n")
@@ -1274,7 +1274,7 @@ def fetcher( args ):
                                             log.verbose("%s %s" % (ReleaseItemURL, ReleaseItemFile) )
                                         FetchData['Item'].append( item )
                                 except ValueError:
-                                        log.error("Cannot parse line %s\n" % (item))
+                                        log.err("Cannot parse line %s\n" % (item))
 
         del raw_data_list
 
