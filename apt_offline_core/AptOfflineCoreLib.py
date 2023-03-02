@@ -1250,27 +1250,32 @@ def fetcher( args ):
                                 # Interim fix for Debian bug #664654
                                 # FIXME is this needed still with explicit install handling?
                                 # Will cause double syncing of files on install
-                                (ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
-                                if not ItemURL.startswith(('http', 'https', 'ftp')):
-                                        log.verbose("This is a broken url: %s\n" % (ItemURL))
-                                        continue
-                                elif ItemURL.endswith("InRelease"):
-                                        log.verbose("APT uses new InRelease auth mechanism\n")
-                                        ExtraItemURL = ItemURL.rstrip(ItemURL.split("/")[-1])
-                                        GPGItemURL = "'" + ExtraItemURL + "Release.gpg"
-                                        ReleaseItemURL = "'" + ExtraItemURL + "Release"
-                                        ExtraItemFile = ItemFile.rstrip(ItemFile.split("_")[-1])
-                                        GPGItemFile = ExtraItemFile + "Release.gpg"
-                                        ReleaseItemFile = ExtraItemFile + "Release"
+                                try:
+                                        (ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
 
-                                        FetchData['Item'].append(GPGItemURL + " " + GPGItemFile + " " + str(ItemSize))
-                                        log.verbose("Printing GPG URL/Files\n")
-                                        log.verbose("%s %s" % (GPGItemURL, GPGItemFile) )
+                                        if not ItemURL.startswith(('http', 'https', 'ftp')):
+                                            log.verbose("This is a broken url: %s\n" % (ItemURL))
+                                            continue
+                                        elif ItemURL.endswith("InRelease"):
+                                            log.verbose("APT uses new InRelease auth mechanism\n")
+                                            ExtraItemURL = ItemURL.rstrip(ItemURL.split("/")[-1])
+                                            GPGItemURL = "'" + ExtraItemURL + "Release.gpg"
+                                            ReleaseItemURL = "'" + ExtraItemURL + "Release"
+                                            ExtraItemFile = ItemFile.rstrip(ItemFile.split("_")[-1])
+                                            GPGItemFile = ExtraItemFile + "Release.gpg"
+                                            ReleaseItemFile = ExtraItemFile + "Release"
 
-                                        FetchData['Item'].append(ReleaseItemURL + " " + ReleaseItemFile + " " + str(ItemSize))
-                                        log.verbose("Printing Release URL/Files\n")
-                                        log.verbose("%s %s" % (ReleaseItemURL, ReleaseItemFile) )
-                                FetchData['Item'].append( item )
+                                            FetchData['Item'].append(GPGItemURL + " " + GPGItemFile + " " + str(ItemSize))
+                                            log.verbose("Printing GPG URL/Files\n")
+                                            log.verbose("%s %s" % (GPGItemURL, GPGItemFile) )
+
+                                            FetchData['Item'].append(ReleaseItemURL + " " + ReleaseItemFile + " " + str(ItemSize))
+                                            log.verbose("Printing Release URL/Files\n")
+                                            log.verbose("%s %s" % (ReleaseItemURL, ReleaseItemFile) )
+                                        FetchData['Item'].append( item )
+                                except ValueError:
+                                        log.error("Cannot parse line %s\n" % (item))
+
         del raw_data_list
 
         # INFO: Let's get the total number of items. This will get the
