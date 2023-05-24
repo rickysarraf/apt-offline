@@ -1251,7 +1251,7 @@ def fetcher( args ):
                                             log.verbose("%s %s" % (ReleaseItemURL, ReleaseItemFile) )
                                         FetchData['Item'].append( item )
                                 except IndexError:
-                                    log.err("Failed splitting line: %s\n" % (item))
+                                    log.err("Failed parisng file: %s, while processing line: %s\n" % (Str_GetArg, item))
                                     log.err(traceback.format_exc())
                                     sys.exit(1)
                                 except ValueError:
