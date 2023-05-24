@@ -860,41 +860,18 @@ def stripper(item):
         and returns them.'''
 
         log.verbose("Item before split is: %s\n" % (item))
-        try:
-            url, localFile, size, checksum = item.split(' ')
-        except ValueError:
-            #INFO: For apt metadata, no checksum is present
-            # For such case, set checksum to None
-            url, localFile, size = item.split(' ')
-            checksum = None
-        log.verbose("Item after split is: %s %s %s %s\n" % (url, localFile, size, checksum))
+        SplitItem = item.split(' ')
+        url = SplitItem[0].strip("'").strip()
+        localFile = SplitItem[1].strip("'").strip()
+        size = SplitItem[2].strip("'").strip()
+        checksum = SplitItem[3].strip("'").strip()
+        log.verbose("Items after split is: %s\n" % (SplitItem))
 
-        url = url.rstrip("'")
-        url = url.lstrip("'")
-        log.verbose("Stripped item URL is: %s\n" % url)
+        # Convert size to integer
+        size = size if size.isdecimal() else 0
+        log.verbose("size of size is: %s\n" % (size))
 
-        localFile = localFile.rstrip("'")
-        localFile = localFile.lstrip("'")
-        log.verbose("Stripped item FILE is: %s\n" % localFile)
-
-        try:
-                size = size.rstrip("'")
-                size = size.lstrip("'")
-                size = int(size)
-        except ValueError:
-                log.verbose("%s is malformed\n" % (" ".join(item) ) )
-                size = 0
-        log.verbose("Stripped item SIZE is: %d\n" % size)
-
-        #INFO: md5 ends up having '\n' with it.
-        # That needs to be stripped too.
-        if checksum:
-            checksum = checksum.rstrip("'")
-            checksum = checksum.lstrip("'")
-            checksum = checksum.rstrip("\n")
-        log.verbose("Stripped item CHECKSUM is: %s\n" % checksum)
-
-        return url, localFile, size, checksum
+        return (url, localFile, size, checksum)
 
 
 def errfunc(errno, errormsg, filename):
@@ -1273,8 +1250,14 @@ def fetcher( args ):
                                             log.verbose("Printing Release URL/Files\n")
                                             log.verbose("%s %s" % (ReleaseItemURL, ReleaseItemFile) )
                                         FetchData['Item'].append( item )
+                                except IndexError:
+                                    log.err("Failed splitting line: %s\n" % (item))
+                                    log.err(traceback.format_exc())
+                                    sys.exit(1)
                                 except ValueError:
-                                        log.err("Cannot parse line %s\n" % (item))
+                                    log.err("Cannot parse line: %s\n" % (item))
+                                    log.err(traceback.format_exc())
+                                    sys.exit(1)
 
         del raw_data_list
 
