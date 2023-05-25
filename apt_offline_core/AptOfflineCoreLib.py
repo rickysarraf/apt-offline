@@ -868,7 +868,7 @@ def stripper(item):
         log.verbose("Items after split is: %s\n" % (SplitItem))
 
         # Convert size to integer
-        size = size if size.isdecimal() else 0
+        size = int(size) if size.isdecimal() else 0
         log.verbose("size of size is: %s\n" % (size))
 
         return (url, localFile, size, checksum)
