@@ -864,7 +864,11 @@ def stripper(item):
         url = SplitItem[0].strip("'").strip()
         localFile = SplitItem[1].strip("'").strip()
         size = SplitItem[2].strip("'").strip()
-        checksum = SplitItem[3].strip("'").strip()
+        try:
+            checksum = SplitItem[3].strip("'").strip()
+        except IndexError:
+            checksum = None
+            log.verbose("line %s is missing checksum entry" % (item))
         log.verbose("Items after split is: %s\n" % (SplitItem))
 
         # Convert size to integer
