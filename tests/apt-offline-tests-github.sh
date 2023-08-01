@@ -63,30 +63,30 @@ get_features () {
 		URI=$1
 	fi
 	echo "Executing command 'get $URI '"
-	$APT_OFFLINE get $URI --bundle $BUNDLE_FILE
+	$APT_OFFLINE get $URI --quiet --bundle $BUNDLE_FILE
 	rm -f $BUNDLE_FILE
 
 	echo "Executing command 'get $URI --threads $THREADS'"
-	$APT_OFFLINE get $URI --threads $THREADS --bundle $BUNDLE_FILE
+	$APT_OFFLINE get $URI --quiet --threads $THREADS --bundle $BUNDLE_FILE
 	rm -f $BUNDLE_FILE
 
 	echo "Executing command 'get $URI --threads $THREADS --socket-timeout 30'"
-	$APT_OFFLINE get $URI --threads $THREADS --socket-timeout 30 --bundle $BUNDLE_FILE --bug-reports
+	$APT_OFFLINE get $URI --quiet --threads $THREADS --socket-timeout 30 --bundle $BUNDLE_FILE --bug-reports
 
 	echo "Executing command 'get $URI --threads $THREADS -d $DOWNLOAD_DIR'"
-	$APT_OFFLINE get $URI --threads $THREADS -d $DOWNLOAD_DIR
+	$APT_OFFLINE get $URI --quiet --threads $THREADS -d $DOWNLOAD_DIR
 	rm -rf $DOWNLOAD_DIR
 
 	echo "Executing command 'get $URI --threads $THREADS -d $DOWNLOAD_DIR --cache-dir $CACHE_DIR'"
-	$APT_OFFLINE get $URI --threads $THREADS -d $DOWNLOAD_DIR --cache-dir $CACHE_DIR
+	$APT_OFFLINE get $URI --quiet --threads $THREADS -d $DOWNLOAD_DIR --cache-dir $CACHE_DIR
 	rm -rf $DOWNLOAD_DIR
 
 	echo "Executing command 'get $URI --no-checksum -d $DOWNLOAD_DIR --cache-dir $CACHE_DIR'"
-	$APT_OFFLINE get $URI --no-checksum -d $DOWNLOAD_DIR --cache-dir $CACHE_DIR
+	$APT_OFFLINE get $URI --quiet --no-checksum -d $DOWNLOAD_DIR --cache-dir $CACHE_DIR
 	rm -rf $DOWNLOAD_DIR
 
 	echo "Executing command 'get $URI --bug-reports --threads $THREADS -d $DOWNLOAD_DIR --cache-dir $CACHE_DIR'"
-	$APT_OFFLINE get $URI --threads $THREADS --bug-reports -d $DOWNLOAD_DIR --cache-dir $CACHE_DIR
+	$APT_OFFLINE get $URI --quiet --threads $THREADS --bug-reports -d $DOWNLOAD_DIR --cache-dir $CACHE_DIR
 
 }
 
