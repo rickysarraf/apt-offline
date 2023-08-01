@@ -2089,10 +2089,16 @@ def installer( args ):
                             log.verbose("%s file synced.\n" % (debFile) )
             #InstallerInstance.magicMIME.close()
 
-            verifiedList = InstallerInstance.verifyAptFileIntegrity(FileList)
-            if not InstallerInstance.installVerifiedList(verifiedList, FileList):
-                log.err("Failed to verify File Checksum integrity of APT files\n")
-                sys.exit(1)
+            if InstallerInstance.Bool_Untrusted:
+                log.err("Disabling apt gpg check can risk your machine to compromise.\n")
+                if not InstallerInstance.installVerifiedList(FileList, FileList):
+                    log.err("Failed to verify File Checksum integrity of APT files\n")
+                    sys.exit(1)
+            else:
+                verifiedList = InstallerInstance.verifyAptFileIntegrity(FileList)
+                if not InstallerInstance.installVerifiedList(verifiedList, FileList):
+                    log.err("Failed to verify File Checksum integrity of APT files\n")
+                    sys.exit(1)
 
     elif os.path.isdir(installPath):
 
