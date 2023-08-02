@@ -2092,12 +2092,12 @@ def installer( args ):
             if InstallerInstance.Bool_Untrusted:
                 log.err("Disabling apt gpg check can risk your machine to compromise.\n")
                 if not InstallerInstance.installVerifiedList(FileList, FileList):
-                    log.err("Failed to verify File Checksum integrity of APT files\n")
+                    log.err("Failed to synchronize the APT payload\n")
                     sys.exit(1)
             else:
                 verifiedList = InstallerInstance.verifyAptFileIntegrity(FileList)
                 if not InstallerInstance.installVerifiedList(verifiedList, FileList):
-                    log.err("Failed to verify File Checksum integrity of APT files\n")
+                    log.err("Failed to synchronize the APT payload\n")
                     sys.exit(1)
 
     elif os.path.isdir(installPath):
@@ -2195,7 +2195,7 @@ def installer( args ):
             lFileList = InstallerInstance.listdir_fullpath(installPath)
             verifiedList = InstallerInstance.verifyAptFileIntegrity(lFileList)
             if not InstallerInstance.installVerifiedList(verifiedList, lFileList):
-                log.err("Failed to verify File Checksum integrity of APT files\n")
+                log.err("Failed to synchronize the APT payload\n")
                 sys.exit(1)
 
         # Call for processing the debs and source package metadata
