@@ -1235,7 +1235,7 @@ def fetcher( args ):
                                 try:
                                         (ItemURL, ItemFile, ItemSize, ItemChecksum) = stripper(item)
 
-                                        if not ItemURL.startswith(('http', 'https', 'ftp')):
+                                        if not ItemURL.startswith(('http', 'https', 'ftp', 'file')):
                                             log.err("This is a broken url: %s\n" % (ItemURL))
                                             continue
                                         elif ItemURL.endswith("InRelease"):
