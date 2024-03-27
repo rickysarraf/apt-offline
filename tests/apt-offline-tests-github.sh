@@ -1,6 +1,7 @@
 #!/bin/sh
 
-DISLIKED_PACKAGES="lxde icewm gnome-terminal"
+DISLIKED_PACKAGES="gcc golang gnome-terminal"
+DISLIKED_SRC_PACKAGES="glibc gcc golang gnome-terminal"
 RELEASE=`lsb_release -c -s`
 DIR="$(mktemp --tmpdir --directory apt-offline-tests-XXXXXXXX)"
 #cleanup () { rm --recursive --force "$DIR"; }
@@ -44,17 +45,17 @@ set_features () {
 	echo "Executing command 'set $URI --install-packages $DISLIKED_PACKAGES --release $RELEASE'"
 	$APT_OFFLINE set $URI --install-packages $DISLIKED_PACKAGES --release $RELEASE
 
-	echo "Executing command 'set $URI --install-src-packages $DISLIKED_PACKAGES'"
-	$APT_OFFLINE set $URI --install-src-packages $DISLIKED_PACKAGES
+	echo "Executing command 'set $URI --install-src-packages $DISLIKED_SRC_PACKAGES'"
+	$APT_OFFLINE set $URI --install-src-packages $DISLIKED_SRC_PACKAGES
 
-	echo "Executing command 'set $URI --install-src-packages $DISLIKED_PACKAGES --release $RELEASE'"
-	$APT_OFFLINE set $URI --install-src-packages $DISLIKED_PACKAGES --release $RELEASE
+	echo "Executing command 'set $URI --install-src-packages $DISLIKED_SRC_PACKAGES --release $RELEASE'"
+	$APT_OFFLINE set $URI --install-src-packages $DISLIKED_SRC_PACKAGES --release $RELEASE
 
-	echo "Executing command 'set $URI --src-build-dep --install-src-packages $DISLIKED_PACKAGES'"
-	$APT_OFFLINE set $URI --src-build-dep --install-src-packages $DISLIKED_PACKAGES
+	echo "Executing command 'set $URI --src-build-dep --install-src-packages $DISLIKED_SRC_PACKAGES'"
+	$APT_OFFLINE set $URI --src-build-dep --install-src-packages $DISLIKED_SRC_PACKAGES
 
-	echo "Executing command 'set $URI --src-build-dep --install-src-packages $DISLIKED_PACKAGES --release $RELEASE'"
-	$APT_OFFLINE set $URI --src-build-dep --install-src-packages $DISLIKED_PACKAGES --release $RELEASE
+	echo "Executing command 'set $URI --src-build-dep --install-src-packages $DISLIKED_SRC_PACKAGES --release $RELEASE'"
+	$APT_OFFLINE set $URI --src-build-dep --install-src-packages $DISLIKED_SRC_PACKAGES --release $RELEASE
 
 }
 
