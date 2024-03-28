@@ -888,9 +888,10 @@ def errfunc(errno, errormsg, filename):
     be well accessible.
     This function does the job of behaving accordingly
     as per the error codes.'''
-    retriable_error_codes = [-3, 13, 404, 403, 401, 10060, 104, 101010]
+    retriable_error_codes = [-3, 13, 404, 403, 401, 429, 10060, 104, 101010]
     # 104, 'Connection reset by peer'
     # 504 is for gateway timeout
+    # 429 Too Many Requests
     # 404 is for URL error. Page not found.
     # 401 is for Restricted pages
     # 10060 is for Operation Time out. There can be multiple reasons for this timeout
