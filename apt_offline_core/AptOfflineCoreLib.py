@@ -702,33 +702,38 @@ class APTVerifySigs(ExecCmd):
             self.gpgv = gpgv
 
         self.opts = []
-        if keyring is None:
-            self.opts.append("--ignore-time-conflict")
-            for eachPath in self.defaultPaths:
-                if os.path.isfile(eachPath):
-                    if eachPath.endswith(".asc"):
-                        self.DearmorSig(eachPath)
-                    elif eachPath.endswith(".gpg"):
-                        self.opts.extend(["--keyring", eachPath])
-                elif os.path.isdir(eachPath):
-                    for eachGPG in os.listdir(eachPath):
-                        if eachGPG.endswith(".asc"):
-                            eachGPG = os.path.join(eachPath, eachGPG)
-                            self.DearmorSig(eachGPG)
-                        elif eachGPG.endswith(".gpg"):
-                            eachGPG = os.path.join(eachPath, eachGPG)
-                            log.verbose(
-                                "Adding %s to the apt-offline keyring\n" % (
-                                    eachGPG)
-                            )
-                            self.opts.extend(["--keyring", eachGPG])
-            if len(self.opts) == 1:
-                log.err(
-                    "No valid keyring paths found in: %s\n"
-                    % (", ".join(self.defaultPaths))
-                )
-        else:
-            self.opts.extend(["--keyring", keyring, "--ignore-time-conflict"])
+        self.opts.append("--ignore-time-conflict")
+
+        for eachPath in self.defaultPaths:
+            if os.path.isfile(eachPath):
+                if eachPath.endswith(".asc"):
+                    self.DearmorSig(eachPath)
+                elif eachPath.endswith(".gpg"):
+                    self.opts.extend(["--keyring", eachPath])
+            elif os.path.isdir(eachPath):
+                for eachGPG in os.listdir(eachPath):
+                    if eachGPG.endswith(".asc"):
+                        eachGPG = os.path.join(eachPath, eachGPG)
+                        self.DearmorSig(eachGPG)
+                    elif eachGPG.endswith(".gpg"):
+                        eachGPG = os.path.join(eachPath, eachGPG)
+                        log.verbose(
+                            "Adding %s to the apt-offline keyring\n" % (
+                                eachGPG)
+                        )
+                        self.opts.extend(["--keyring", eachGPG])
+
+        if len(self.opts) == 1:
+            log.err(
+                "No valid keyring paths found in: %s\n"
+                % (", ".join(self.defaultPaths))
+            )
+
+        if keyring:
+            for eachFile in os.listdir(keyring):
+                extraKeyringFile = os.path.join(keyring, eachFile)
+                log.verbose("extraKeyringFile is %s" % extraKeyringFile)
+                self.opts.extend(["--keyring", extraKeyringFile, "--ignore-time-conflict"])
 
     def DearmorSig(self, asciiSig):
         gpgCmd = []
@@ -1800,6 +1805,7 @@ def installer(args):
             self.Bool_SkipChangelog = args.skip_changelog
             self.tempdir = tempfile.gettempdir()
             self.Bool_StrictDebCheck = args.strict_deb_check
+            self.extra_keyring = args.extra_keyring
 
             if not os.access(self.tempdir, os.W_OK):
                 log.err(
@@ -2210,7 +2216,7 @@ def installer(args):
                     sys.exit(1)
 
         def verifyAptFileIntegrity(self, FileList):
-            self.AptSecure = APTVerifySigs(
+            self.AptSecure = APTVerifySigs(keyring=InstallerInstance.extra_keyring,
                 Simulate=InstallerInstance.Bool_TestWindows)
 
             self.lFileList = FileList
@@ -3100,6 +3106,14 @@ def main():
         "--install-src-path",
         dest="install_src_path",
         help="Install src packages to specified path.",
+        default=None,
+    )
+
+    parser_install.add_argument(
+        "--extra-keyring",
+        dest="extra_keyring",
+        help="Extra Keyring path to include for.",
+        metavar="/etc/apt/keyring/",
         default=None,
     )
 
