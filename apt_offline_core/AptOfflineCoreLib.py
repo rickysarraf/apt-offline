@@ -723,17 +723,19 @@ class APTVerifySigs(ExecCmd):
                         )
                         self.opts.extend(["--keyring", eachGPG])
 
-        if len(self.opts) == 1:
-            log.err(
-                "No valid keyring paths found in: %s\n"
-                % (", ".join(self.defaultPaths))
-            )
-
         if keyring:
             for eachFile in os.listdir(keyring):
                 extraKeyringFile = os.path.join(keyring, eachFile)
                 log.verbose("extraKeyringFile is %s" % extraKeyringFile)
-                self.opts.extend(["--keyring", extraKeyringFile, "--ignore-time-conflict"])
+                self.opts.extend(
+                    ["--keyring", extraKeyringFile, "--ignore-time-conflict"]
+                )
+
+        if len(self.opts) == 1:
+            log.err(
+                "No valid keyring paths found in: %s\n" % (
+                    ", ".join(self.defaultPaths))
+            )
 
     def DearmorSig(self, asciiSig):
         gpgCmd = []
@@ -2216,8 +2218,10 @@ def installer(args):
                     sys.exit(1)
 
         def verifyAptFileIntegrity(self, FileList):
-            self.AptSecure = APTVerifySigs(keyring=InstallerInstance.extra_keyring,
-                Simulate=InstallerInstance.Bool_TestWindows)
+            self.AptSecure = APTVerifySigs(
+                keyring=InstallerInstance.extra_keyring,
+                Simulate=InstallerInstance.Bool_TestWindows,
+            )
 
             self.lFileList = FileList
             self.lFileList.sort()
