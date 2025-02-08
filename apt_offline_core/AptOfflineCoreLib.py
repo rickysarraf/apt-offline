@@ -1,5 +1,5 @@
 ############################################################################
-#    Copyright (C) 2005, 2020 Ritesh Raj Sarraf                            #
+#    Copyright (C) 2005, 2025 Ritesh Raj Sarraf                            #
 #    rrs@researchut.com                                                    #
 #                                                                          #
 #    This program is free software; you can redistribute it and/or modify  #
@@ -100,7 +100,7 @@ figuring out if the packages are in the local cache, handling exceptions and man
 
 app_name = "apt-offline"
 version = "1.8.5"
-myCopyright = "(C) 2005 - 2022 Ritesh Raj Sarraf"
+myCopyright = "(C) 2005 - 2025 Ritesh Raj Sarraf"
 terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
 the GNU GPL Version 3 (or later) License\n"
