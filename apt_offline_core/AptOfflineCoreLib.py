@@ -24,7 +24,6 @@ import urllib.request
 from apt_offline_core import AptOfflineLib
 from apt_offline_core.AptOfflineLib import AptOfflineErrors, AptOfflineLibShutilError
 import zlib
-from ssl import SSLError, SSLEOFError
 import argparse
 import traceback
 import pydoc
@@ -37,7 +36,6 @@ import threading
 import queue
 import http.client
 import ssl
-import string
 import platform
 import shutil
 import sys
