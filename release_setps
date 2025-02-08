@@ -7,3 +7,12 @@
 
 git archive --format=zip --prefix=apt-offline/ v1.6  > apt-offline-1.6.zip
 git archive --format=tar.gz --prefix=apt-offline/ v1.6  > apt-offline-1.6.tar.gz
+
+
+For a Windows platform release
+
+* unzip apt-offline zip archive generated from above git archive command
+* cd to unpacked folder
+* `make`
+* cd ..
+* zip -r apt-offline-VERSION-windows.zip apt-offline
