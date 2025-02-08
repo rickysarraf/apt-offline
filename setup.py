@@ -11,7 +11,7 @@ import distutils.core
 
 distutils.core.setup(
     name='apt-offline',
-    version='1.8.5',
+    version='1.8.6',
     author='Ritesh Raj Sarraf',
     author_email='rrs@researchut.com',
     url='https://github.com/rickysarraf/apt-offline',
