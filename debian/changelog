@@ -1,3 +1,19 @@
+apt-offline (1.8.6-1) unstable; urgency=medium
+
+  * Error out if we cannot initialize the APT lock.
+    Thanks to Matthew Maslak
+  * check for checksum and handle appropriately (#217)
+    Thanks to Dan Whitman (Github:kyp44)
+  * Honor the --allow-unauthenticated option.
+    Thanks to João A (Github: Jonybat)
+  * Retry when server reports 429 Too Many Requests occurs.
+    Thanks to Zoltan Kelemen (Github: misterzed88)
+  * Also support file:/// url types.
+    Thanks to c4bhuf@github
+  * Honor user specified extra gpg keyrings
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Sat, 08 Feb 2025 20:46:24 +0530
+
 apt-offline (1.8.5-1) unstable; urgency=medium
 
   [ Rüdiger Sczuka ]
