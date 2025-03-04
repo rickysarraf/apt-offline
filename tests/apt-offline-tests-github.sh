@@ -41,10 +41,6 @@ set_features () {
 
 	run "$PRIV_APT_OFFLINE set $URI --update --upgrade --upgrade-type upgrade --release $RELEASE"
 
-	run "$PRIV_APT_OFFLINE set $URI --install-packages $DISLIKED_PACKAGES"
-
-	run "$PRIV_APT_OFFLINE set $URI --install-packages $DISLIKED_PACKAGES --release $RELEASE"
-
 	run "$PRIV_APT_OFFLINE set $URI --install-src-packages $DISLIKED_SRC_PACKAGES"
 
 	run "$PRIV_APT_OFFLINE set $URI --install-src-packages $DISLIKED_SRC_PACKAGES --release $RELEASE"
@@ -52,6 +48,10 @@ set_features () {
 	run "$PRIV_APT_OFFLINE set $URI --src-build-dep --install-src-packages $DISLIKED_SRC_PACKAGES"
 
 	run "$PRIV_APT_OFFLINE set $URI --src-build-dep --install-src-packages $DISLIKED_SRC_PACKAGES --release $RELEASE"
+
+	run "$PRIV_APT_OFFLINE set $URI --install-packages $DISLIKED_PACKAGES"
+
+	run "$PRIV_APT_OFFLINE set $URI --install-packages $DISLIKED_PACKAGES --release $RELEASE"
 
 }
 
