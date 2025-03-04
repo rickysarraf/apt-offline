@@ -25,6 +25,7 @@ set_features () {
 		URI=$1
 	fi
 
+  run "sudo add-apt-repository -s"
   run "sudo apt update"
 
 	run "$PRIV_APT_OFFLINE set $URI --simulate --update --upgrade"
