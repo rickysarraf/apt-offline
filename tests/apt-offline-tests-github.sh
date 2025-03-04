@@ -26,6 +26,7 @@ set_features () {
 	fi
 
   run "sudo add-apt-repository -s"
+  run "sed -i '/deb-src/s/^# //' /etc/apt/sources.list"
   run "sudo apt update"
 
 	run "$PRIV_APT_OFFLINE set $URI --simulate --update --upgrade"
