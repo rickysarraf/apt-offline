@@ -29,6 +29,7 @@ jobs:
       - name: Enable source repositories
         run: |
           sudo sed -i  's/^#.deb/deb/g' /etc/apt/sources.list
+          sudo add-apt-repository -s
 
       # Install pre-requisites
       - name: Install pre-reqs
