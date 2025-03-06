@@ -25,7 +25,7 @@ set_features () {
 		URI=$1
 	fi
 
-  run "sudo add-apt-repository -s"
+  run "sudo add-apt-repository -ss"
   run "sed -i '/deb-src/s/^# //' /etc/apt/sources.list"
   run "sudo apt update"
 
