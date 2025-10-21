@@ -1,6 +1,6 @@
 import os
 import sys
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 
 from apt_offline_gui.Ui_AptOfflineQtAbout import Ui_AboutAptOffline
 
@@ -31,7 +31,7 @@ class AptOfflineQtAbout(QtWidgets.QDialog):
                 return
 
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     myapp = AptOfflineQtAbout()
     myapp.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
