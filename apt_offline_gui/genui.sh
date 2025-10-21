@@ -9,9 +9,10 @@ for each_file in *.ui;
 do
 	filename=$(echo $each_file | cut -d "." -f1)
 	echo "Compiling file $each_file into Ui_$filename.py";
-	pyuic5 --from-imports $each_file -o Ui_$filename.py;
+	pyuic6 --from-imports $each_file -o Ui_$filename.py;
 done
 
 echo "Compiling Resources files"
-pyrcc5 -o resources_rc.py resources.qrc
+# PyQt6 no longer includes pyrcc6, using Qt's rcc directly
+rcc -g python -o resources_rc.py resources.qrc || echo "Warning: rcc not available, skipping resources compilation"
 echo "Done"

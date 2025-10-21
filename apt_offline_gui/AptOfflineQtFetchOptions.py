@@ -1,5 +1,5 @@
 import sys, os
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 
 from apt_offline_gui.Ui_AptOfflineQtFetchOptions import Ui_downloadOptionsDialog
 
@@ -92,7 +92,7 @@ class AptOfflineQtFetchOptions(QtWidgets.QDialog):
 
 
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     myapp = AptOfflineQtFetchOptions()
     myapp.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
