@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os,sys
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 
 import zipfile, tempfile
 
@@ -62,7 +62,7 @@ class AptOfflineQtInstallChangelog(QtWidgets.QDialog):
 
 
 if __name__ == "__main__":
-        app = QtGui.QApplication(sys.argv)
+        app = QtWidgets.QApplication(sys.argv)
         myapp = AptOfflineQtInstallChangelog()
         myapp.show()
-        sys.exit(app.exec_())
+        sys.exit(app.exec())

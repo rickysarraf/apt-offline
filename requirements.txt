@@ -11,6 +11,6 @@ pysimplesoap
 # On Debian systems, please ensure following packages, or their equivalent
 # are installed
 
-pyqt5-dev-tools
+pyqt6-tools
 man2html-base
 python3-debianbts

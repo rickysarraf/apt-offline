@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys,os
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 
 from apt_offline_gui.Ui_AptOfflineQtCreateProfile import Ui_CreateProfile
 from apt_offline_gui.UiDataStructs import SetterArgs

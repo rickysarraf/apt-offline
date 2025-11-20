@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QMessageBox
+from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtWidgets import QMessageBox
 
 from apt_offline_gui.Ui_AptOfflineQtFetch import Ui_AptOfflineQtFetch
 from apt_offline_gui.UiDataStructs import GetterArgs

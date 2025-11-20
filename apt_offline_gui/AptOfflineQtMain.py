@@ -1,5 +1,5 @@
 import os
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 
 from apt_offline_gui.Ui_AptOfflineQtMain import Ui_AptOfflineMain
 
@@ -74,7 +74,7 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
 
     def eventFilter(self,target,event):
         # hover hack for 3 buttons
-        if event.type() == QtCore.QEvent.HoverEnter:
+        if event.type() == QtCore.QEvent.Type.HoverEnter:
             if target.objectName() == 'createProfileButton':
                 self.ui.descriptionField.setText("Click here to generate a signature of this machine.")
             if target.objectName() == 'downloadButton':
@@ -82,7 +82,7 @@ class AptOfflineQtMain(QtWidgets.QMainWindow):
             if target.objectName() == 'restoreButton':
                 self.ui.descriptionField.setText("Once you've downloaded all the packages, click here to install them on the offline machine.")
 
-        if event.type() == QtCore.QEvent.HoverLeave:
+        if event.type() == QtCore.QEvent.Type.HoverLeave:
             self.ui.descriptionField.setText("Hover your mouse over the buttons to get the description.")
         return False
 
