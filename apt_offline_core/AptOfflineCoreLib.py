@@ -40,7 +40,7 @@ import platform
 import shutil
 import sys
 import os
-
+import requests
 
 FCNTL_LOCK = True
 try:
@@ -831,15 +831,20 @@ class GenericDownloadFunction:
         block_size = 4096
         i = 0
         counter = 0
+        size = 0
 
         os.chdir(download_dir)
+        chunked_encoding = False
         try:
             temp = urllib.request.urlopen(url)
             headers = temp.info()
-            size = int(headers["Content-Length"])
-
-            # INFO: Add the download thread into the Global ProgressBar Thread
-            self.addItem(size)
+            if headers.get('Transfer-Encoding') == 'chunked':
+                log.verbose("chunked encoding for url: %s" % (url))
+                chunked_encoding = True
+            else:
+                size = int(headers["Content-Length"])
+                # INFO: Add the download thread into the Global ProgressBar Thread
+                self.addItem(size)
         except urllib.error.HTTPError as errstring:
             errfunc(errstring.code, errstring.reason, url)
             return False
@@ -875,45 +880,92 @@ class GenericDownloadFunction:
 
         data = open(localFile, "wb")
         socket_counter = 0
-        while i < size:
-            socket_timeout = None
-            try:
-                data.write(temp.read(block_size))
-            except socket.timeout:
-                socket_timeout = True
-                socket_counter += 1
-            except socket.error:
-                socket_timeout = True
-                socket_counter += 1
+        # TODO: Refactor this conditional code snippet
+        if chunked_encoding:
+            response = requests.get(url, stream=True)
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    size += len(chunk)
+                    socket_timeout = None
+                    try:
+                        data.write(chunk)
+                    except socket.timeout:
+                        socket_timeout = True
+                        socket_counter += 1
+                    except socket.error:
+                        socket_timeout = True
+                        socket_counter += 1
 
-            if socket_counter == SOCKET_TIMEOUT_RETRY:
-                errfunc(
-                    101010,
-                    "Max timeout retry count reached. Discontinuing download.\n",
-                    url,
-                )
+                    if socket_counter == SOCKET_TIMEOUT_RETRY:
+                        errfunc(
+                            101010,
+                            "Max timeout retry count reached. Discontinuing download.\n",
+                            url,
+                        )
 
-                # Clean the half downloaded file.
-                data.close()
-                os.unlink(localFile)
-                return False
+                        # Clean the half downloaded file.
+                        data.close()
+                        os.unlink(localFile)
+                        return False
 
-            if socket_timeout is True:
-                errfunc(10054, "Socket Timeout. Retry - %d\n" %
-                        (socket_counter), url)
-                continue
+                    if socket_timeout is True:
+                        errfunc(10054, "Socket Timeout. Retry - %d\n" %
+                                (socket_counter), url)
+                        continue
 
-            increment = min(block_size, size - i)
-            i += block_size
-            counter += 1
-            self.updateValue(increment)
-            # REAL_PROGRESS: update current total in totalSize
-            if guiBool and not guiTerminateSignal:
-                totalSize[1] += block_size
-            if guiTerminateSignal:
-                data.close()
-                temp.close()
-                return False
+                    increment = min(block_size, size - i)
+                    i += block_size
+                    counter += 1
+                    self.updateValue(increment)
+                    # REAL_PROGRESS: update current total in totalSize
+                    if guiBool and not guiTerminateSignal:
+                        totalSize[1] += block_size
+                    if guiTerminateSignal:
+                        data.close()
+                        temp.close()
+                        return False
+            self.addItem(size)
+
+        else:
+            while i < size:
+                socket_timeout = None
+                try:
+                    data.write(temp.read(block_size))
+                except socket.timeout:
+                    socket_timeout = True
+                    socket_counter += 1
+                except socket.error:
+                    socket_timeout = True
+                    socket_counter += 1
+
+                if socket_counter == SOCKET_TIMEOUT_RETRY:
+                    errfunc(
+                        101010,
+                        "Max timeout retry count reached. Discontinuing download.\n",
+                        url,
+                    )
+
+                    # Clean the half downloaded file.
+                    data.close()
+                    os.unlink(localFile)
+                    return False
+
+                if socket_timeout is True:
+                    errfunc(10054, "Socket Timeout. Retry - %d\n" %
+                            (socket_counter), url)
+                    continue
+
+                increment = min(block_size, size - i)
+                i += block_size
+                counter += 1
+                self.updateValue(increment)
+                # REAL_PROGRESS: update current total in totalSize
+                if guiBool and not guiTerminateSignal:
+                    totalSize[1] += block_size
+                if guiTerminateSignal:
+                    data.close()
+                    temp.close()
+                    return False
         self.completed()
         data.close()
         temp.close()
