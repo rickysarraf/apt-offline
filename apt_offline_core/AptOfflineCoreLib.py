@@ -722,12 +722,13 @@ class APTVerifySigs(ExecCmd):
                         self.opts.extend(["--keyring", eachGPG])
 
         if keyring:
-            for eachFile in os.listdir(keyring):
-                extraKeyringFile = os.path.join(keyring, eachFile)
-                log.verbose("extraKeyringFile is %s" % extraKeyringFile)
-                self.opts.extend(
-                    ["--keyring", extraKeyringFile, "--ignore-time-conflict"]
-                )
+            for eachKeyring in keyring:
+                for eachFile in os.listdir(eachKeyring):
+                    extraKeyringFile = os.path.join(eachKeyring, eachFile)
+                    log.verbose("extraKeyringFile is %s" % extraKeyringFile)
+                    self.opts.extend(
+                        ["--keyring", extraKeyringFile, "--ignore-time-conflict"]
+                    )
 
         if len(self.opts) == 1:
             log.err(
@@ -3166,9 +3167,11 @@ def main():
     parser_install.add_argument(
         "--extra-keyring",
         dest="extra_keyring",
-        help="Extra Keyring path to include for.",
-        metavar="/etc/apt/keyring/",
-        default=None,
+        help="Extra Keyring paths to include. \
+        Can be specificed multiple times",
+        action="append",
+        metavar="/usr/share/keyrings/",
+        default=["/usr/share/keyrings/"],
     )
 
     parser_install.add_argument(
