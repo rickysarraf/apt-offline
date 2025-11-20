@@ -727,7 +727,7 @@ class APTVerifySigs(ExecCmd):
                     extraKeyringFile = os.path.join(eachKeyring, eachFile)
                     log.verbose("extraKeyringFile is %s" % extraKeyringFile)
                     self.opts.extend(
-                        ["--keyring", extraKeyringFile, "--ignore-time-conflict"]
+                        ["--keyring", extraKeyringFile]
                     )
 
         if len(self.opts) == 1:
