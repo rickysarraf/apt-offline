@@ -280,7 +280,7 @@ class Log:
 
     # For the rest, we need to check the options also
     def verbose(self, msg):
-        """Print verbose messages. If locking is available use them."""
+        """Print verbose messages. If locking is available, use it."""
         if self.lock:
             self.DispLock.acquire()
 
