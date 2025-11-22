@@ -1029,7 +1029,7 @@ def stripper(item):
         checksum = SplitItem[3].strip("'").strip()
     except IndexError:
         checksum = None
-        log.verbose("line %s is missing checksum entry" % (item))
+        log.verbose("line %s is missing checksum entry\n" % (item))
     log.verbose("Items after split is: %s\n" % (SplitItem))
 
     # Convert size to integer
