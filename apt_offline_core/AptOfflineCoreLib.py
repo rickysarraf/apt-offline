@@ -1109,6 +1109,7 @@ def fetcher(args):
     Str_HttpBasicAuth = args.http_basicauth
     Bool_DisableCertCheck = args.disable_cert_check
     Bool_BugReports = args.deb_bugs
+    Bool_Simulate = args.get_simulate
     global guiTerminateSignal
 
     if Int_SocketTimeout:
@@ -1616,7 +1617,9 @@ def fetcher(args):
                             LINE_OVERWRITE_FULL,
                         )
                     )
-                    if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
+                    if Bool_Simulate:
+                        log.uris(url, pkgFile)
+                    elif FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
                         log.success("%s done %s\n" %
                                     (PackageName, LINE_OVERWRITE_FULL))
                         FetcherInstance.writeData(pkgFile)
@@ -1639,7 +1642,9 @@ def fetcher(args):
                         LINE_OVERWRITE_FULL,
                     )
                 )
-                if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
+                if Bool_Simulate:
+                    log.uris(url, pkgFile)
+                elif FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
                     log.success("%s done %s\n" %
                                 (PackageName, LINE_OVERWRITE_FULL))
                     FetcherInstance.writeData(pkgFile)
@@ -1656,7 +1661,9 @@ def fetcher(args):
         else:
 
             def DownloadPackages(PackageName, PackageFile):
-                if FetcherInstance.download_from_web(
+                if Bool_Simulate:
+                    log.uris(PackageName, PackageFile)
+                elif FetcherInstance.download_from_web(
                     PackageName, PackageFile, Str_DownloadDir
                 ):
                     log.success("%s done %s\n" %
@@ -1823,7 +1830,9 @@ def fetcher(args):
                 log.err("\nInterrupted by user. Exiting!\n")
                 sys.exit(0)
 
-    if args.bundle_file:
+    if Bool_Simulate:
+        log.msg("\nNo data was downloaded, only printed URIs\n")
+    elif args.bundle_file:
         log.msg("\nDownloaded data to %s\n" % (Str_BundleFile))
     else:
         log.msg("\nDownloaded data to %s\n" % (Str_DownloadDir))
@@ -3086,6 +3095,13 @@ def main():
         "--bug-reports",
         dest="deb_bugs",
         help="Fetch bug reports from the BTS",
+        action="store_true",
+    )
+
+    parser_get.add_argument(
+        "--simulate",
+        dest="get_simulate",
+        help="Print URIs and filenames instead of downloading",
         action="store_true",
     )
 

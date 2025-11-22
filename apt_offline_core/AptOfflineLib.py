@@ -293,6 +293,10 @@ class Log:
         if self.lock:
             self.DispLock.release()
 
+    def uris(self, url, localFile):
+        """Print URIs as they are requested."""
+        print("URIs: %s %s" % (url, localFile))
+
     def calcSize(self, size):
         """Takes number of kB and returns a string
         of proper size. Like if > 1024, return a megabyte"""
