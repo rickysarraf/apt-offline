@@ -31,7 +31,6 @@ class QuietHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     """HTTP handler that suppresses logging and serves from a specific directory."""
     
     def __init__(self, *args, directory=None, **kwargs):
-        # SimpleHTTPRequestHandler supports directory argument in Python 3.7+
         super().__init__(*args, directory=directory, **kwargs)
     
     def log_message(self, format, *args):

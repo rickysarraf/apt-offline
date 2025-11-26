@@ -99,7 +99,7 @@ class BenchmarkDownloader(BenchmarkProgressBar, GenericDownloadFunction):
     """Downloader that inherits from ProgressBar and GenericDownloadFunction for sync benchmarking."""
     
     def __init__(self):
-        BenchmarkProgressBar.__init__(self)
+        super().__init__()
 
 
 def run_sync_benchmark(url_base, file_names, download_dir, concurrency):

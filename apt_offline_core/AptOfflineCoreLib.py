@@ -1108,12 +1108,14 @@ if ASYNC_AVAILABLE:
     async def _download_from_web_async(url, localFile, download_dir, progress_callback=None):
         """Async downloader using aiohttp + aiofiles for non-blocking IO.
         
-        url = url to fetch
-        localFile = file to save to
-        download_dir = download path
-        progress_callback = optional dict with 'addItem', 'updateValue', 'completed' callables
+        Args:
+            url: URL to fetch
+            localFile: File name to save to
+            download_dir: Download directory path
+            progress_callback: Optional dict with 'addItem', 'updateValue', 'completed' callables
         
-        Returns True on success, False on failure.
+        Returns:
+            True on success, False on failure.
         """
         block_size = 4096
         size = 0
@@ -1145,14 +1147,12 @@ if ASYNC_AVAILABLE:
                     
                     # Stream download with aiofiles
                     bytes_downloaded = 0
+                    terminated = False
                     async with aiofiles.open(file_path, 'wb') as f:
                         async for chunk in response.content.iter_chunked(block_size):
                             if guiTerminateSignal:
-                                # Close and remove partial file
-                                await f.close()
-                                if os.path.exists(file_path):
-                                    os.unlink(file_path)
-                                return False
+                                terminated = True
+                                break
                             
                             await f.write(chunk)
                             bytes_downloaded += len(chunk)
@@ -1163,6 +1163,12 @@ if ASYNC_AVAILABLE:
                             # Update GUI progress
                             if guiBool and not guiTerminateSignal:
                                 totalSize[1] += len(chunk)
+                    
+                    # Clean up partial file if terminated
+                    if terminated:
+                        if os.path.exists(file_path):
+                            os.unlink(file_path)
+                        return False
                     
                     # For chunked encoding, add item after we know the size
                     if chunked_encoding and progress_callback and 'addItem' in progress_callback:
