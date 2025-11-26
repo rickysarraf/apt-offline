@@ -7,3 +7,7 @@
 *.egg-info
 # magic environments
 .magic
+# Temporary download files from tests
+*.tmp
+*_download.bin
+*_download.txt
