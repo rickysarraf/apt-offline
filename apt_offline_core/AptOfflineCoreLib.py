@@ -87,6 +87,16 @@ try:
 except ImportError:
     PythonApt = False
 
+# Optional async dependencies for non-blocking downloads
+ASYNC_AVAILABLE = False
+try:
+    import asyncio
+    import aiohttp
+    import aiofiles
+    ASYNC_AVAILABLE = True
+except ImportError:
+    pass
+
 
 # INFO: Set the default timeout to 30 seconds for the packages that are being downloaded.
 socket.setdefaulttimeout(30)
@@ -1091,6 +1101,155 @@ def errfunc(errno, errormsg, filename):
             "I don't understand this error code %s\nPlease file a bug report\n"
             % (errno)
         )
+
+
+# Async download implementation
+if ASYNC_AVAILABLE:
+    async def _download_from_web_async(url, localFile, download_dir, progress_callback=None):
+        """Async downloader using aiohttp + aiofiles for non-blocking IO.
+        
+        url = url to fetch
+        localFile = file to save to
+        download_dir = download path
+        progress_callback = optional dict with 'addItem', 'updateValue', 'completed' callables
+        
+        Returns True on success, False on failure.
+        """
+        block_size = 4096
+        size = 0
+        
+        file_path = os.path.join(download_dir, localFile)
+        
+        try:
+            timeout = aiohttp.ClientTimeout(total=socket.getdefaulttimeout() or 30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(url) as response:
+                    if response.status >= 400:
+                        # Map HTTP errors
+                        errfunc(response.status, response.reason, url)
+                        return False
+                    
+                    # Check for chunked encoding
+                    chunked_encoding = response.headers.get('Transfer-Encoding') == 'chunked'
+                    
+                    if not chunked_encoding and 'Content-Length' in response.headers:
+                        size = int(response.headers['Content-Length'])
+                        if progress_callback and 'addItem' in progress_callback:
+                            progress_callback['addItem'](size)
+                    else:
+                        log.verbose("chunked encoding for url: %s" % (url))
+                    
+                    # Check for GUI termination signal before download
+                    if guiTerminateSignal:
+                        return False
+                    
+                    # Stream download with aiofiles
+                    bytes_downloaded = 0
+                    async with aiofiles.open(file_path, 'wb') as f:
+                        async for chunk in response.content.iter_chunked(block_size):
+                            if guiTerminateSignal:
+                                # Close and remove partial file
+                                await f.close()
+                                if os.path.exists(file_path):
+                                    os.unlink(file_path)
+                                return False
+                            
+                            await f.write(chunk)
+                            bytes_downloaded += len(chunk)
+                            
+                            if progress_callback and 'updateValue' in progress_callback:
+                                progress_callback['updateValue'](len(chunk))
+                            
+                            # Update GUI progress
+                            if guiBool and not guiTerminateSignal:
+                                totalSize[1] += len(chunk)
+                    
+                    # For chunked encoding, add item after we know the size
+                    if chunked_encoding and progress_callback and 'addItem' in progress_callback:
+                        progress_callback['addItem'](bytes_downloaded)
+                    
+                    if progress_callback and 'completed' in progress_callback:
+                        progress_callback['completed']()
+                    
+                    return True
+                    
+        except aiohttp.ClientError as e:
+            log.err("aiohttp ClientError while processing url: %s\n" % (url))
+            log.err("Failed to download %s: %s\n" % (localFile, str(e)))
+            # Clean up partial file
+            if os.path.exists(file_path):
+                os.unlink(file_path)
+            errfunc(504, str(e), url)
+            return False
+        except asyncio.TimeoutError:
+            log.err("Async timeout. Skipping URL: %s\n" % (url))
+            if os.path.exists(file_path):
+                os.unlink(file_path)
+            errfunc(504, "Async timeout", url)
+            return False
+        except Exception as e:
+            log.err("Exception during async download: %s\n" % (str(e)))
+            if os.path.exists(file_path):
+                os.unlink(file_path)
+            return False
+
+
+def _download_from_web_sync(download_instance, url, localFile, download_dir):
+    """Synchronous download using the original download_from_web implementation.
+    This is the fallback when async dependencies are not available.
+    
+    download_instance = instance with addItem, updateValue, completed methods
+    url = url to fetch
+    localFile = file to save to
+    download_dir = download path
+    
+    Returns True on success, False on failure.
+    """
+    return download_instance.download_from_web(url, localFile, download_dir)
+
+
+def download_from_web(download_instance, url, localFile, download_dir, use_async=None):
+    """Compatibility wrapper that attempts async download when available,
+    falling back to sync otherwise.
+    
+    download_instance = instance with addItem, updateValue, completed methods
+    url = url to fetch  
+    localFile = file to save to
+    download_dir = download path
+    use_async = None (auto-detect), True (force async), False (force sync)
+    
+    Returns True on success, False on failure.
+    """
+    # Determine whether to use async
+    if use_async is None:
+        use_async = ASYNC_AVAILABLE
+    elif use_async and not ASYNC_AVAILABLE:
+        log.verbose("Async requested but dependencies not available, falling back to sync\n")
+        use_async = False
+    
+    if use_async:
+        # Create progress callback dict from download_instance
+        progress_callback = {
+            'addItem': download_instance.addItem,
+            'updateValue': download_instance.updateValue,
+            'completed': download_instance.completed,
+        }
+        
+        # Run async download in event loop
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                return loop.run_until_complete(
+                    _download_from_web_async(url, localFile, download_dir, progress_callback)
+                )
+            finally:
+                loop.close()
+        except Exception as e:
+            log.verbose("Async download failed, falling back to sync: %s\n" % (str(e)))
+            return _download_from_web_sync(download_instance, url, localFile, download_dir)
+    else:
+        return _download_from_web_sync(download_instance, url, localFile, download_dir)
 
 
 def fetcher(args):

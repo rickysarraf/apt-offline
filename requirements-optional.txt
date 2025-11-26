@@ -1,0 +1,4 @@
+# Optional dependencies for async download functionality
+# These enable non-blocking network IO for improved performance
+aiohttp>=3.8,<4
+aiofiles>=23.1,<24
