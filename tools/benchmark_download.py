@@ -44,8 +44,6 @@ FILE_SIZES = {
 }
 
 
-
-
 def generate_test_files(directory):
     """Generate test files of various sizes."""
     files = {}
