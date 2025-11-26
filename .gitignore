@@ -7,3 +7,6 @@
 *.egg-info
 # magic environments
 .magic
+# pytest cache
+.pytest_cache/
+__pycache__/

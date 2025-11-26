@@ -1,0 +1,6 @@
+# Optional dependencies for async download support
+# These enable non-blocking network IO for improved performance
+# when downloading multiple files concurrently.
+
+aiohttp>=3.8,<4
+aiofiles>=0.8
