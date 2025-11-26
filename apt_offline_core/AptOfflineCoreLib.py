@@ -1021,7 +1021,7 @@ class GenericDownloadFunction:
                     socket_counter = 0
                     async with aiofiles.open(localFile, "wb") as data:
                         if chunked_encoding:
-                            async for chunk in response.content.iter_chunked(1024):
+                            async for chunk in response.content.iter_chunked(block_size):
                                 if chunk:
                                     size += len(chunk)
                                     socket_timeout = None
@@ -1172,7 +1172,20 @@ def run_async_downloads(fetcher_instance, download_tasks):
             results.append((url, success))
         return results
 
-    return asyncio.run(async_download_batch(fetcher_instance, download_tasks))
+    try:
+        # Check if an event loop is already running
+        loop = asyncio.get_running_loop()
+        # If we're already in an async context, use nest_asyncio or run in a thread
+        log.verbose("Event loop already running, using thread executor\n")
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(
+                asyncio.run, async_download_batch(fetcher_instance, download_tasks)
+            )
+            return future.result()
+    except RuntimeError:
+        # No event loop running, safe to use asyncio.run()
+        return asyncio.run(async_download_batch(fetcher_instance, download_tasks))
 
 
 #                 #FIXME: Find out optimal fix for this exception handling
