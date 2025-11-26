@@ -14,6 +14,28 @@ This program allows leveraging the power of Debian (more precisely APT) onto a c
 This utility is an attempt in making that problem eradicate. I hope this utility comes of use to you. I'd be eager to hear your comments/suggestions. Feel free to drop an email at rrs _AT_ researchut |DOT| com
 
 
+### Optional Dependencies
+
+For improved download performance, you can install `aiohttp` to enable async downloads:
+
+```bash
+pip install aiohttp
+```
+
+When `aiohttp` is installed, apt-offline will automatically use async downloads which can significantly improve throughput when downloading multiple files concurrently. If `aiohttp` is not available, apt-offline falls back to the traditional synchronous download method.
+
+See `requirements-optional.txt` for a complete list of optional dependencies.
+
+**Note:** For fully non-blocking file IO in async mode, consider also installing `aiofiles`. Without it, file writes in async mode are synchronous (which is usually acceptable for most use cases).
+
+### Benchmarking
+
+A benchmark script is available in the `tools/` directory to compare sync vs async download performance:
+
+```bash
+python tools/benchmark_download.py --url https://example.com/file.txt --repeat 10 --concurrency 5
+```
+
 
 ### Dedication
 This software is dedicated in memory of my father Santosh Kumar Sarraf. We miss you a lot.

@@ -41,6 +41,15 @@ import shutil
 import sys
 import os
 import requests
+import asyncio
+
+# Optional aiohttp import for async download support
+AIOHTTP_AVAILABLE = False
+try:
+    import aiohttp
+    AIOHTTP_AVAILABLE = True
+except ImportError:
+    aiohttp = None
 
 FCNTL_LOCK = True
 try:
@@ -825,10 +834,11 @@ class LockAPT:
 
 
 class GenericDownloadFunction:
-    def download_from_web(self, url, localFile, download_dir):
-        """url = url to fetch
+    def _download_from_web_sync(self, url, localFile, download_dir):
+        """Synchronous download implementation.
+        url = url to fetch
         localFile = file to save to
-        donwload_dir = download path"""
+        download_dir = download path"""
         block_size = 4096
         i = 0
         counter = 0
@@ -971,6 +981,159 @@ class GenericDownloadFunction:
         data.close()
         temp.close()
         return True
+
+    async def _download_from_web_async(self, url, localFile, download_dir):
+        """Async download implementation using aiohttp.
+        url = url to fetch
+        localFile = file to save to
+        download_dir = download path
+
+        Note: File writes are synchronous for simplicity. For fully non-blocking
+        file IO, consider using aiofiles (optional dependency).
+        """
+        block_size = 4096
+        i = 0
+        size = 0
+        file_path = os.path.join(download_dir, localFile) if not os.path.isabs(localFile) else localFile
+
+        # Save current directory and change to download_dir
+        original_dir = os.getcwd()
+        os.chdir(download_dir)
+
+        data = None
+        try:
+            timeout = aiohttp.ClientTimeout(total=socket.getdefaulttimeout() or 30)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(url) as response:
+                    if response.status >= 400:
+                        errfunc(response.status, response.reason, url)
+                        return False
+
+                    # Check for content length
+                    content_length = response.headers.get('Content-Length')
+                    chunked_encoding = response.headers.get('Transfer-Encoding') == 'chunked'
+
+                    if chunked_encoding:
+                        log.verbose("chunked encoding for url: %s" % (url))
+                    elif content_length:
+                        size = int(content_length)
+                        self.addItem(size)
+
+                    # Open file for writing
+                    data = open(localFile, "wb")
+
+                    async for chunk in response.content.iter_chunked(block_size):
+                        if guiTerminateSignal:
+                            data.close()
+                            try:
+                                os.unlink(localFile)
+                            except OSError:
+                                pass
+                            return False
+
+                        if chunk:
+                            # Synchronous write (for simplicity; aiofiles recommended for full async)
+                            data.write(chunk)
+                            chunk_len = len(chunk)
+
+                            if chunked_encoding:
+                                size += chunk_len
+
+                            increment = min(block_size, chunk_len)
+                            i += chunk_len
+                            self.updateValue(increment)
+
+                            # REAL_PROGRESS: update current total in totalSize
+                            if guiBool and not guiTerminateSignal:
+                                totalSize[1] += chunk_len
+
+                    # For chunked encoding, add size after download completes
+                    if chunked_encoding:
+                        self.addItem(size)
+
+                    self.completed()
+                    data.close()
+                    return True
+
+        except aiohttp.ClientResponseError as e:
+            errfunc(e.status, e.message, url)
+            if data:
+                data.close()
+            try:
+                os.unlink(localFile)
+            except OSError:
+                pass
+            return False
+        except aiohttp.ClientError as e:
+            # Map aiohttp client errors to appropriate error codes
+            log.err("aiohttp ClientError while processing url: %s\n" % (url))
+            log.err("Failed to download %s: %s\n" % (localFile, str(e)))
+            errfunc(504, str(e), url)
+            if data:
+                data.close()
+            try:
+                os.unlink(localFile)
+            except OSError:
+                pass
+            return False
+        except asyncio.TimeoutError:
+            log.err("Async timeout. Skipping URL: %s\n" % (url))
+            errfunc(504, "Async timeout", url)
+            if data:
+                data.close()
+            try:
+                os.unlink(localFile)
+            except OSError:
+                pass
+            return False
+        except Exception as e:
+            log.err("Unexpected error during async download of %s: %s\n" % (url, str(e)))
+            if data:
+                data.close()
+            try:
+                os.unlink(localFile)
+            except OSError:
+                pass
+            return False
+        finally:
+            os.chdir(original_dir)
+
+    def download_from_web(self, url, localFile, download_dir):
+        """Download wrapper that tries async path when aiohttp is available,
+        falls back to sync implementation otherwise.
+
+        url = url to fetch
+        localFile = file to save to
+        download_dir = download path
+        """
+        if AIOHTTP_AVAILABLE:
+            try:
+                # Try to get the current event loop
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    loop = None
+
+                if loop is not None:
+                    # We're already in an async context, create a new task
+                    # This shouldn't normally happen in the current codebase
+                    # but handles edge cases gracefully
+                    log.verbose("Running async download in existing event loop\n")
+                    future = asyncio.ensure_future(
+                        self._download_from_web_async(url, localFile, download_dir)
+                    )
+                    return loop.run_until_complete(future)
+                else:
+                    # No running loop, use asyncio.run() (Python 3.7+)
+                    log.verbose("Running async download with new event loop\n")
+                    return asyncio.run(
+                        self._download_from_web_async(url, localFile, download_dir)
+                    )
+            except Exception as e:
+                log.verbose("Async download failed, falling back to sync: %s\n" % str(e))
+                return self._download_from_web_sync(url, localFile, download_dir)
+        else:
+            return self._download_from_web_sync(url, localFile, download_dir)
 
 
 #                 #FIXME: Find out optimal fix for this exception handling

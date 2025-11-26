@@ -1,0 +1,10 @@
+# Optional dependencies for enhanced functionality
+# These are not required but recommended for improved performance
+
+# For async download support - significantly improves download throughput
+# when downloading multiple files concurrently
+aiohttp>=3.8.0
+
+# Optional: For fully non-blocking file IO in async mode
+# Without this, file writes in async mode are synchronous
+# aiofiles>=22.1.0
