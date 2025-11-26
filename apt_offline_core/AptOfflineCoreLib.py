@@ -1108,23 +1108,15 @@ class GenericDownloadFunction:
         """
         if AIOHTTP_AVAILABLE:
             try:
-                # Try to get the current event loop
+                # Check if we're already in an async context
                 try:
-                    loop = asyncio.get_running_loop()
+                    asyncio.get_running_loop()
+                    # We're inside an event loop - this shouldn't happen in normal usage
+                    # Fall back to sync to avoid RuntimeError
+                    log.verbose("Already in event loop, using sync download\n")
+                    return self._download_from_web_sync(url, localFile, download_dir)
                 except RuntimeError:
-                    loop = None
-
-                if loop is not None:
-                    # We're already in an async context, create a new task
-                    # This shouldn't normally happen in the current codebase
-                    # but handles edge cases gracefully
-                    log.verbose("Running async download in existing event loop\n")
-                    future = asyncio.ensure_future(
-                        self._download_from_web_async(url, localFile, download_dir)
-                    )
-                    return loop.run_until_complete(future)
-                else:
-                    # No running loop, use asyncio.run() (Python 3.7+)
+                    # No running loop, safe to use asyncio.run() (Python 3.7+)
                     log.verbose("Running async download with new event loop\n")
                     return asyncio.run(
                         self._download_from_web_async(url, localFile, download_dir)

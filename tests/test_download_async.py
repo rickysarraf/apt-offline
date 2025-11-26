@@ -6,6 +6,7 @@ These tests exercise both the async and sync download paths using a local HTTP s
 The async path tests are skipped if aiohttp is not installed.
 """
 
+import asyncio
 import http.server
 import os
 import socketserver
@@ -207,8 +208,6 @@ class TestAsyncDownload(TestDownloadFunctionBase):
 
     def test_async_download_small_file(self):
         """Test async download of a small file."""
-        import asyncio
-
         async def run_test():
             downloader = TestDownloader()
             url = f"{self.server_url}/small.txt"
@@ -228,8 +227,6 @@ class TestAsyncDownload(TestDownloadFunctionBase):
 
     def test_async_download_medium_file(self):
         """Test async download of a medium-sized file."""
-        import asyncio
-
         async def run_test():
             downloader = TestDownloader()
             url = f"{self.server_url}/medium.bin"
@@ -249,8 +246,6 @@ class TestAsyncDownload(TestDownloadFunctionBase):
 
     def test_async_download_large_file(self):
         """Test async download of a large file."""
-        import asyncio
-
         async def run_test():
             downloader = TestDownloader()
             url = f"{self.server_url}/large.bin"
@@ -270,8 +265,6 @@ class TestAsyncDownload(TestDownloadFunctionBase):
 
     def test_async_download_404_error(self):
         """Test async download handles 404 errors gracefully."""
-        import asyncio
-
         async def run_test():
             downloader = TestDownloader()
             url = f"{self.server_url}/nonexistent.txt"
@@ -289,8 +282,6 @@ class TestAsyncDownload(TestDownloadFunctionBase):
 
     def test_async_download_progress_tracking(self):
         """Test that async download tracks progress correctly."""
-        import asyncio
-
         async def run_test():
             downloader = TestDownloader()
             url = f"{self.server_url}/medium.bin"
@@ -310,8 +301,6 @@ class TestAsyncDownload(TestDownloadFunctionBase):
 
     def test_async_concurrent_downloads(self):
         """Test multiple concurrent async downloads."""
-        import asyncio
-
         async def run_test():
             tasks = []
             for i, path in enumerate(["small.txt", "medium.bin", "large.bin"]):
