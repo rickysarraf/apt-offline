@@ -11,3 +11,5 @@
 *.tmp
 *_download.bin
 *_download.txt
+concurrent_*.bin
+concurrent_*.txt
