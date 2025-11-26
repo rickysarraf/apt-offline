@@ -41,6 +41,15 @@ import shutil
 import sys
 import os
 import requests
+import asyncio
+
+# Async HTTP support
+ASYNC_SUPPORT = True
+try:
+    import aiohttp
+    import aiofiles
+except ImportError:
+    ASYNC_SUPPORT = False
 
 FCNTL_LOCK = True
 try:
@@ -971,6 +980,199 @@ class GenericDownloadFunction:
         data.close()
         temp.close()
         return True
+
+    async def async_download_from_web(self, url, localFile, download_dir):
+        """Async version of download_from_web using aiohttp.
+        url = url to fetch
+        localFile = file to save to
+        download_dir = download path"""
+        if not ASYNC_SUPPORT:
+            log.verbose("Async support not available, falling back to sync download\n")
+            return self.download_from_web(url, localFile, download_dir)
+
+        block_size = 4096
+        i = 0
+        counter = 0
+        size = 0
+
+        original_dir = os.getcwd()
+        os.chdir(download_dir)
+        chunked_encoding = False
+
+        timeout = aiohttp.ClientTimeout(total=socket.getdefaulttimeout() or 30)
+        try:
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(url) as response:
+                    if response.status >= 400:
+                        errfunc(response.status, response.reason, url)
+                        os.chdir(original_dir)
+                        return False
+
+                    headers = response.headers
+                    if headers.get('Transfer-Encoding') == 'chunked':
+                        log.verbose("chunked encoding for url: %s" % (url))
+                        chunked_encoding = True
+                    else:
+                        content_length = headers.get("Content-Length")
+                        if content_length:
+                            size = int(content_length)
+                            self.addItem(size)
+
+                    socket_counter = 0
+                    async with aiofiles.open(localFile, "wb") as data:
+                        if chunked_encoding:
+                            async for chunk in response.content.iter_chunked(1024):
+                                if chunk:
+                                    size += len(chunk)
+                                    socket_timeout = None
+                                    try:
+                                        await data.write(chunk)
+                                    except asyncio.TimeoutError:
+                                        socket_timeout = True
+                                        socket_counter += 1
+                                    except OSError:
+                                        socket_timeout = True
+                                        socket_counter += 1
+
+                                    if socket_counter == SOCKET_TIMEOUT_RETRY:
+                                        errfunc(
+                                            101010,
+                                            "Max timeout retry count reached. Discontinuing download.\n",
+                                            url,
+                                        )
+                                        os.chdir(original_dir)
+                                        try:
+                                            os.unlink(localFile)
+                                        except OSError:
+                                            pass
+                                        return False
+
+                                    if socket_timeout is True:
+                                        errfunc(10054, "Socket Timeout. Retry - %d\n" %
+                                                (socket_counter), url)
+                                        continue
+
+                                    increment = min(block_size, size - i)
+                                    i += block_size
+                                    counter += 1
+                                    self.updateValue(increment)
+                                    if guiBool and not guiTerminateSignal:
+                                        totalSize[1] += block_size
+                                    if guiTerminateSignal:
+                                        os.chdir(original_dir)
+                                        return False
+                            self.addItem(size)
+                        else:
+                            while i < size:
+                                socket_timeout = None
+                                try:
+                                    chunk = await response.content.read(block_size)
+                                    if not chunk:
+                                        break
+                                    await data.write(chunk)
+                                except asyncio.TimeoutError:
+                                    socket_timeout = True
+                                    socket_counter += 1
+                                except OSError:
+                                    socket_timeout = True
+                                    socket_counter += 1
+
+                                if socket_counter == SOCKET_TIMEOUT_RETRY:
+                                    errfunc(
+                                        101010,
+                                        "Max timeout retry count reached. Discontinuing download.\n",
+                                        url,
+                                    )
+                                    os.chdir(original_dir)
+                                    try:
+                                        os.unlink(localFile)
+                                    except OSError:
+                                        pass
+                                    return False
+
+                                if socket_timeout is True:
+                                    errfunc(10054, "Socket Timeout. Retry - %d\n" %
+                                            (socket_counter), url)
+                                    continue
+
+                                increment = min(block_size, size - i)
+                                i += block_size
+                                counter += 1
+                                self.updateValue(increment)
+                                if guiBool and not guiTerminateSignal:
+                                    totalSize[1] += block_size
+                                if guiTerminateSignal:
+                                    os.chdir(original_dir)
+                                    return False
+
+        except aiohttp.ClientError as e:
+            log.err("Type ClientError occurred while processing url: %s\n" % (url))
+            log.err("Failed to download %s\n" % (localFile))
+            log.verbose("%s\n" % str(e))
+            os.chdir(original_dir)
+            return False
+        except asyncio.TimeoutError:
+            log.err("Async timeout. Skipping URL: %s\n" % (url))
+            os.chdir(original_dir)
+            return False
+
+        self.completed()
+        os.chdir(original_dir)
+        return True
+
+
+async def async_download_batch(fetcher_instance, download_tasks):
+    """Download multiple files concurrently using async.
+
+    Args:
+        fetcher_instance: The FetcherClass instance with async_download_from_web method
+        download_tasks: List of tuples (url, localFile, download_dir)
+
+    Returns:
+        List of tuples (url, success_bool)
+    """
+    if not ASYNC_SUPPORT:
+        log.verbose("Async support not available\n")
+        return []
+
+    async def download_one(url, localFile, download_dir):
+        success = await fetcher_instance.async_download_from_web(url, localFile, download_dir)
+        return (url, success)
+
+    tasks = [download_one(url, localFile, download_dir)
+             for url, localFile, download_dir in download_tasks]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    processed_results = []
+    for result in results:
+        if isinstance(result, Exception):
+            log.err("Exception during async download: %s\n" % str(result))
+            processed_results.append((None, False))
+        else:
+            processed_results.append(result)
+
+    return processed_results
+
+
+def run_async_downloads(fetcher_instance, download_tasks):
+    """Wrapper to run async downloads from synchronous code.
+
+    Args:
+        fetcher_instance: The FetcherClass instance with async_download_from_web method
+        download_tasks: List of tuples (url, localFile, download_dir)
+
+    Returns:
+        List of tuples (url, success_bool)
+    """
+    if not ASYNC_SUPPORT:
+        log.verbose("Async support not available, using sync downloads\n")
+        results = []
+        for url, localFile, download_dir in download_tasks:
+            success = fetcher_instance.download_from_web(url, localFile, download_dir)
+            results.append((url, success))
+        return results
+
+    return asyncio.run(async_download_batch(fetcher_instance, download_tasks))
 
 
 #                 #FIXME: Find out optimal fix for this exception handling

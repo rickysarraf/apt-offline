@@ -5,6 +5,8 @@ magic
 soappy
 lzma
 pysimplesoap
+aiohttp
+aiofiles
 
 
 # There's also a bunch of packages that need to installed
