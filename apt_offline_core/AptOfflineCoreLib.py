@@ -1711,7 +1711,7 @@ def fetcher(args):
                         )
                     )
                     if Bool_Simulate:
-                        log.uris(url, pkgFile)
+                        log.uris(url, os.path.join(Str_DownloadDir, pkgFile))
                     elif FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
                         log.success("%s done %s\n" %
                                     (PackageName, LINE_OVERWRITE_FULL))
@@ -1736,7 +1736,7 @@ def fetcher(args):
                     )
                 )
                 if Bool_Simulate:
-                    log.uris(url, pkgFile)
+                    log.uris(url, os.path.join(Str_DownloadDir, pkgFile))
                 elif FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
                     log.success("%s done %s\n" %
                                 (PackageName, LINE_OVERWRITE_FULL))
@@ -1755,7 +1755,7 @@ def fetcher(args):
 
             def DownloadPackages(PackageName, PackageFile):
                 if Bool_Simulate:
-                    log.uris(PackageName, PackageFile)
+                    log.uris(PackageName, os.path.join(Str_DownloadDir, PackageFile))
                 elif FetcherInstance.download_from_web(
                     PackageName, PackageFile, Str_DownloadDir
                 ):
