@@ -1,7 +1,25 @@
 ##  Under Linux
 
 # Pre-requisites
-Please refer to requirements.txt for dependencies that need to be pre-installed for apt-offline. Note: If using a package from your distribution, manual installation of dependencies should not be required
+## Use pip to complete dependency management
+pip install -r .\requirements.txt
+
+## Manually managed
+### In case users use it directly from source, please ensure following modules
+### are installed
+argparse
+magic
+soappy
+lzma
+pysimplesoap
+
+### There's also a bunch of packages that need to installed
+### On Debian systems, please ensure following packages, or their equivalent
+### are installed
+
+pyqt5-dev-tools
+man2html-base
+python3-debianbts
 
 # To build
 make build
