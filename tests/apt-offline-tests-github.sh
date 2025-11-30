@@ -12,6 +12,7 @@ DOWNLOAD_DIR="$DIR/download-dir"
 BUNDLE_FILE="$DIR/bundle-file.zip"
 THREADS=5
 APT_OFFLINE="./apt-offline "
+PRIV_APT_OFFLINE="sudo $APT_OFFLINE"
 
 run()
 {
@@ -24,34 +25,33 @@ set_features () {
 		URI=$1
 	fi
 
-	# Needs root
-	APT_OFFLINE="sudo $APT_OFFLINE"
+  run "sudo add-apt-repository -ss"
+  run "sed -i '/deb-src/s/^# //' /etc/apt/sources.list"
+  run "sudo apt update"
 
-        run "sudo apt update"
+	run "$PRIV_APT_OFFLINE set $URI --simulate --update --upgrade"
 
-	run "$APT_OFFLINE set $URI --simulate --update --upgrade"
+	run "$PRIV_APT_OFFLINE set $URI --update"
 
-	run "$APT_OFFLINE set $URI --update"
+	run "$PRIV_APT_OFFLINE set $URI --upgrade"
 
-	run "$APT_OFFLINE set $URI --upgrade"
+	run "$PRIV_APT_OFFLINE set $URI --update --upgrade"
 
-	run "$APT_OFFLINE set $URI --update --upgrade"
+	run "$PRIV_APT_OFFLINE set $URI --update --upgrade --upgrade-type upgrade"
 
-	run "$APT_OFFLINE set $URI --update --upgrade --upgrade-type upgrade"
+	run "$PRIV_APT_OFFLINE set $URI --update --upgrade --upgrade-type upgrade --release $RELEASE"
 
-	run "$APT_OFFLINE set $URI --update --upgrade --upgrade-type upgrade --release $RELEASE"
+	run "$PRIV_APT_OFFLINE set $URI --install-src-packages $DISLIKED_SRC_PACKAGES"
 
-	run "$APT_OFFLINE set $URI --install-packages $DISLIKED_PACKAGES"
+	run "$PRIV_APT_OFFLINE set $URI --install-src-packages $DISLIKED_SRC_PACKAGES --release $RELEASE"
 
-	run "$APT_OFFLINE set $URI --install-packages $DISLIKED_PACKAGES --release $RELEASE"
+	run "$PRIV_APT_OFFLINE set $URI --src-build-dep --install-src-packages $DISLIKED_SRC_PACKAGES"
 
-	run "$APT_OFFLINE set $URI --install-src-packages $DISLIKED_SRC_PACKAGES"
+	run "$PRIV_APT_OFFLINE set $URI --src-build-dep --install-src-packages $DISLIKED_SRC_PACKAGES --release $RELEASE"
 
-	run "$APT_OFFLINE set $URI --install-src-packages $DISLIKED_SRC_PACKAGES --release $RELEASE"
+	run "$PRIV_APT_OFFLINE set $URI --install-packages $DISLIKED_PACKAGES"
 
-	run "$APT_OFFLINE set $URI --src-build-dep --install-src-packages $DISLIKED_SRC_PACKAGES"
-
-	run "$APT_OFFLINE set $URI --src-build-dep --install-src-packages $DISLIKED_SRC_PACKAGES --release $RELEASE"
+	run "$PRIV_APT_OFFLINE set $URI --install-packages $DISLIKED_PACKAGES --release $RELEASE"
 
 }
 
@@ -60,7 +60,7 @@ get_features () {
 		URI=$1
 	fi
 
-        run "sudo apt update"
+  run "sudo apt update"
 
 	run "$APT_OFFLINE get $URI --quiet --bundle $BUNDLE_FILE"
 	rm -f $BUNDLE_FILE
@@ -89,18 +89,15 @@ install_features () {
 		BUNDLE_FILE=$1
 	fi
 
-	# Needs root
-	APT_OFFLINE="sudo $APT_OFFLINE"
+  run "sudo apt update"
 
-        run "sudo apt update"
+	run "$PRIV_APT_OFFLINE install $DOWNLOAD_DIR  --skip-bug-reports"
 
-	run "$APT_OFFLINE install $DOWNLOAD_DIR  --skip-bug-reports"
+	run "$PRIV_APT_OFFLINE install $DOWNLOAD_DIR --skip-bug-reports  --allow-unauthenticated"
 
-	run "$APT_OFFLINE install $DOWNLOAD_DIR --skip-bug-reports  --allow-unauthenticated"
+	run "$PRIV_APT_OFFLINE install $BUNDLE_FILE  --skip-bug-reports"
 
-	run "$APT_OFFLINE install $BUNDLE_FILE  --skip-bug-reports"
-
-	run "$APT_OFFLINE install $BUNDLE_FILE --skip-bug-reports  --allow-unauthenticated"
+	run "$PRIV_APT_OFFLINE install $BUNDLE_FILE --skip-bug-reports  --allow-unauthenticated"
 }
 
 install_features_prompt () {
@@ -109,26 +106,23 @@ install_features_prompt () {
 		BUNDLE_FILE=$1
 	fi
 
-	# Needs root
-	APT_OFFLINE="sudo $APT_OFFLINE"
+  run "sudo apt update"
 
-        run "sudo apt update"
+	run "$PRIV_APT_OFFLINE install $DOWNLOAD_DIR"
 
-	run "$APT_OFFLINE install $DOWNLOAD_DIR"
+	run "$PRIV_APT_OFFLINE install $DOWNLOAD_DIR --simulate"
 
-	run "$APT_OFFLINE install $DOWNLOAD_DIR --simulate"
+	run "$PRIV_APT_OFFLINE install $DOWNLOAD_DIR --simulate"
 
-	run "$APT_OFFLINE install $DOWNLOAD_DIR --simulate"
+	run "$PRIV_APT_OFFLINE install $DOWNLOAD_DIR --simulate --allow-unauthenticated"
 
-	run "$APT_OFFLINE install $DOWNLOAD_DIR --simulate --allow-unauthenticated"
+	run "$PRIV_APT_OFFLINE install $BUNDLE_FILE"
 
-	run "$APT_OFFLINE install $BUNDLE_FILE"
+	run "$PRIV_APT_OFFLINE install $BUNDLE_FILE --simulate"
 
-	run "$APT_OFFLINE install $BUNDLE_FILE --simulate"
+	run "$PRIV_APT_OFFLINE install $BUNDLE_FILE --simulate"
 
-	run "$APT_OFFLINE install $BUNDLE_FILE --simulate"
-
-	run "$APT_OFFLINE install $BUNDLE_FILE --simulate --allow-unauthenticated"
+	run "$PRIV_APT_OFFLINE install $BUNDLE_FILE --simulate --allow-unauthenticated"
 }
 
 all_features () {
