@@ -105,6 +105,10 @@ terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
 the GNU GPL Version 3 (or later) License\n"
 
+USER_AGENT = "%s/%s (+https://github.com/rickysarraf/apt-offline)" % (
+    app_name, version,
+)
+
 errlist = []
 supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
 apt_update_target_path = "/var/lib/apt/lists/partial"
@@ -1207,6 +1211,8 @@ def fetcher(args):
             log.err("Incorrect value set for socket timeout.\n")
             sys.exit(1)
 
+    opening_handlers = []
+
     if Str_ProxyHost:
         if Str_ProxyPort:
             log.verbose(Str_ProxyHost + ":" + str(Str_ProxyPort))
@@ -1216,8 +1222,7 @@ def fetcher(args):
                     "https": Str_ProxyHost + ":" + str(Str_ProxyPort),
                 }
             )
-            opener = urllib.request.build_opener(proxy_support)
-            urllib.request.install_opener(opener)
+            opening_handlers.append(proxy_support)
             log.verbose(
                 "Proxy successfully set up with Host %s and port %s\n"
                 % (Str_ProxyHost, str(Str_ProxyPort))
@@ -1226,8 +1231,7 @@ def fetcher(args):
             proxy_support = urllib.request.ProxyHandler(
                 {"http": Str_ProxyHost, "https": Str_ProxyHost}
             )
-            opener = urllib.request.build_opener(proxy_support)
-            urllib.request.install_opener(opener)
+            opening_handlers.append(proxy_support)
             log.verbose(
                 "Proxy successfully set up with Host %s and default port\n"
                 % (Str_ProxyHost)
@@ -1247,10 +1251,8 @@ def fetcher(args):
             )
             context.load_cert_chain(Str_HttpsCertFile, Str_HttpsKeyFile)
 
-        opener = urllib.request.build_opener(
-            urllib.request.HTTPSHandler(context=context)
-        )
-        urllib.request.install_opener(opener)
+        opening_handlers.append(urllib.request.HTTPSHandler(context=context))
+
         log.verbose(
             "SSL Client Authentication successfully set up with certificate file %s and key file %s\n"
             % (Str_HttpsCertFile, Str_HttpsKeyFile)
@@ -1275,16 +1277,18 @@ def fetcher(args):
                 )
 
             handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
-
-            # create "opener" (OpenerDirector instance)
-            opener = urllib.request.build_opener(handler)
-
-            # Install the opener.
-            # Now all calls to urllib.request.urlopen use our opener.
-            urllib.request.install_opener(opener)
+            opening_handlers.append(handler)
         except:
             log.err("Incorrect value set for HttpBasicAuth.\n")
             sys.exit(1)
+
+    # create "opener" (OpenerDirector instance)
+    opener = urllib.request.build_opener(*opening_handlers)
+
+    # Install the opener.
+    # Now all calls to urllib.request.urlopen use our opener.
+    opener.addheaders = [("User-Agent", USER_AGENT)]
+    urllib.request.install_opener(opener)
 
     # INFO: Python 2.5 has hashlib which supports sha256
     # If we don't have Python 2.5, disable MD5/SHA256 checksum
