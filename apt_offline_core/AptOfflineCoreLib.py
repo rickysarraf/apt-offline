@@ -40,8 +40,7 @@ import platform
 import shutil
 import sys
 import os
-import time
-
+import requests
 
 FCNTL_LOCK = True
 try:
@@ -723,12 +722,13 @@ class APTVerifySigs(ExecCmd):
                         self.opts.extend(["--keyring", eachGPG])
 
         if keyring:
-            for eachFile in os.listdir(keyring):
-                extraKeyringFile = os.path.join(keyring, eachFile)
-                log.verbose("extraKeyringFile is %s" % extraKeyringFile)
-                self.opts.extend(
-                    ["--keyring", extraKeyringFile, "--ignore-time-conflict"]
-                )
+            for eachKeyring in keyring:
+                for eachFile in os.listdir(eachKeyring):
+                    extraKeyringFile = os.path.join(eachKeyring, eachFile)
+                    log.verbose("extraKeyringFile is %s" % extraKeyringFile)
+                    self.opts.extend(
+                        ["--keyring", extraKeyringFile]
+                    )
 
         if len(self.opts) == 1:
             log.err(
@@ -832,19 +832,22 @@ class GenericDownloadFunction:
         block_size = 4096
         i = 0
         counter = 0
+        size = 0
 
         os.chdir(download_dir)
+        chunked_encoding = False
         try:
             headers = {'User-Agent': 'Debian APT/2.0 (Debian) https://www.debian.org/'}
             req = urllib.request.Request(url, headers=headers)
             temp = urllib.request.urlopen(req)
             headers = temp.info()
-            size = headers.get("Content-Length")
-            if size is not None:
-                size = int(size)
-                self.addItem(size)   # Only init progress if size is known
+            if headers.get('Transfer-Encoding') == 'chunked':
+                log.verbose("chunked encoding for url: %s" % (url))
+                chunked_encoding = True
             else:
-                size = None          # Signal unknown size
+                size = int(headers["Content-Length"])
+                # INFO: Add the download thread into the Global ProgressBar Thread
+                self.addItem(size)
         except urllib.error.HTTPError as errstring:
             errfunc(errstring.code, errstring.reason, url)
             return False
@@ -879,31 +882,93 @@ class GenericDownloadFunction:
             return False
 
         data = open(localFile, "wb")
-        retries = 0
-        while True:
-            try:
-                chunk = temp.read(block_size)
-                if not chunk:
-                    break  # EOF
-                data.write(chunk)
-                retries = 0
-                if size:
+        socket_counter = 0
+        # TODO: Refactor this conditional code snippet
+        if chunked_encoding:
+            response = requests.get(url, stream=True)
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    size += len(chunk)
+                    socket_timeout = None
+                    try:
+                        data.write(chunk)
+                    except socket.timeout:
+                        socket_timeout = True
+                        socket_counter += 1
+                    except socket.error:
+                        socket_timeout = True
+                        socket_counter += 1
+
+                    if socket_counter == SOCKET_TIMEOUT_RETRY:
+                        errfunc(
+                            101010,
+                            "Max timeout retry count reached. Discontinuing download.\n",
+                            url,
+                        )
+
+                        # Clean the half downloaded file.
+                        data.close()
+                        os.unlink(localFile)
+                        return False
+
+                    if socket_timeout is True:
+                        errfunc(10054, "Socket Timeout. Retry - %d\n" %
+                                (socket_counter), url)
+                        continue
+
                     increment = min(block_size, size - i)
-                    i += increment
+                    i += block_size
+                    counter += 1
                     self.updateValue(increment)
+                    # REAL_PROGRESS: update current total in totalSize
                     if guiBool and not guiTerminateSignal:
-                        totalSize[1] += increment
-            except socket.timeout as e:
-                retries += 1
-                if retries > 5:
-                    log.err("Max retries reached during download block read.")
+                        totalSize[1] += block_size
+                    if guiTerminateSignal:
+                        data.close()
+                        temp.close()
+                        return False
+            self.addItem(size)
+
+        else:
+            while i < size:
+                socket_timeout = None
+                try:
+                    data.write(temp.read(block_size))
+                except socket.timeout:
+                    socket_timeout = True
+                    socket_counter += 1
+                except socket.error:
+                    socket_timeout = True
+                    socket_counter += 1
+
+                if socket_counter == SOCKET_TIMEOUT_RETRY:
+                    errfunc(
+                        101010,
+                        "Max timeout retry count reached. Discontinuing download.\n",
+                        url,
+                    )
+
+                    # Clean the half downloaded file.
                     data.close()
                     os.unlink(localFile)
                     return False
-                wait_time = 1 * (2 ** (retries - 1))
-                log.info(f"Block read failed ({e}), retry {retries}/{5} in {wait_time}s")
-                time.sleep(wait_time)
-                continue
+
+                if socket_timeout is True:
+                    errfunc(10054, "Socket Timeout. Retry - %d\n" %
+                            (socket_counter), url)
+                    continue
+
+                increment = min(block_size, size - i)
+                i += block_size
+                counter += 1
+                self.updateValue(increment)
+                # REAL_PROGRESS: update current total in totalSize
+                if guiBool and not guiTerminateSignal:
+                    totalSize[1] += block_size
+                if guiTerminateSignal:
+                    data.close()
+                    temp.close()
+                    return False
         self.completed()
         data.close()
         temp.close()
@@ -3104,9 +3169,11 @@ def main():
     parser_install.add_argument(
         "--extra-keyring",
         dest="extra_keyring",
-        help="Extra Keyring path to include for.",
-        metavar="/etc/apt/keyring/",
-        default=None,
+        help="Extra Keyring paths to include. \
+        Can be specificed multiple times",
+        action="append",
+        metavar="/usr/share/keyrings/",
+        default=["/usr/share/keyrings/"],
     )
 
     parser_install.add_argument(
