@@ -13,6 +13,9 @@ do
 	# Fix PyQt6 API changes in generated files
 	# setTabStopWidth was renamed to setTabStopDistance in PyQt6
 	sed -i 's/\.setTabStopWidth(/.setTabStopDistance(/g' Ui_$filename.py
+	if grep -q 'include location="resources.qrc"' "$each_file" && ! grep -q 'import resources_rc' "Ui_$filename.py"; then
+		echo 'from apt_offline_gui import resources_rc' >> "Ui_$filename.py"
+	fi
 done
 
 echo "Compiling Resources files"
