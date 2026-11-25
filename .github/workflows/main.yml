@@ -25,10 +25,16 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Use a direct archive URL and enable source package tests.
+      # Resolve APT's mirror transport to the runner's preferred mirror for urllib.
       - name: Configure Ubuntu repositories
         run: |
-          sudo sed -i 's|mirror+file:/etc/apt/apt-mirrors\.txt|https://archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
+          mirror=$(awk '/^https?:\/\// { print $1; exit }' /etc/apt/apt-mirrors.txt)
+          if [ -z "$mirror" ]; then
+            echo "No HTTP(S) mirror found in the runner's APT mirror list" >&2
+            exit 1
+          fi
+          echo "Using runner APT mirror: $mirror"
+          sudo sed -i "s|mirror+file:/etc/apt/apt-mirrors\.txt|$mirror|g" /etc/apt/sources.list.d/ubuntu.sources
           sudo sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
 
       # Install pre-requisites
