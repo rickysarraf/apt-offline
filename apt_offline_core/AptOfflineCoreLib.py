@@ -973,7 +973,10 @@ class GenericDownloadFunction:
         socket_counter = 0
         # TODO: Refactor this conditional code snippet
         if chunked_encoding:
-            response = requests.get(url, stream=True)
+            # requests does not use the urllib opener.
+            response = requests.get(
+                url, stream=True, headers={"User-Agent": USER_AGENT}
+            )
             for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
                     size += len(chunk)
