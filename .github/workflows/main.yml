@@ -33,6 +33,7 @@ jobs:
             echo "No HTTP(S) mirror found in the runner's APT mirror list" >&2
             exit 1
           fi
+          mirror=${mirror%/}
           echo "Using runner APT mirror: $mirror"
           sudo sed -i "s|mirror+file:/etc/apt/apt-mirrors\.txt|$mirror|g" /etc/apt/sources.list.d/ubuntu.sources
           sudo sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
