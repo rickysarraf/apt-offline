@@ -847,7 +847,12 @@ class GenericDownloadFunction:
                 # INFO: Add the download thread into the Global ProgressBar Thread
                 self.addItem(size)
         except urllib.error.HTTPError as errstring:
-            errfunc(errstring.code, errstring.reason, url)
+            # HTTPError is an addinfourl, and on Python 3.14 that is a
+            # tempfile wrapper. Leaving it unclosed warns from __del__.
+            try:
+                errfunc(errstring.code, errstring.reason, url)
+            finally:
+                errstring.close()
             return False
         except urllib.error.URLError as errstring:
             # INFO: Weird. But in urllib2.URLError, I noticed that for
@@ -1764,12 +1769,18 @@ def fetcher(args):
                     if size == 0:
                         log.msg("MSG_START")
                         temp = urllib.request.urlopen(url)
-                        headers = temp.info()
-                        size = int(headers["Content-Length"])
+                        try:
+                            headers = temp.info()
+                            size = int(headers["Content-Length"])
+                        finally:
+                            temp.close()
                     totalSize[0] += size
                 except urllib.error.HTTPError as errstring:
-                    errfunc(errstring.code, errstring.reason, url)
-                    log.verbose(traceback.format_exc())
+                    try:
+                        errfunc(errstring.code, errstring.reason, url)
+                        log.verbose(traceback.format_exc())
+                    finally:
+                        errstring.close()
                 except urllib.error.URLError as errstring:
                     if errstring.errno is None:
                         errfunc(504, errstring.reason, url)
