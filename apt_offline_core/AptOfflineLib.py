@@ -22,6 +22,7 @@ import signal
 from array import array
 import os
 import sys
+import shlex
 
 import threading
 
@@ -290,7 +291,7 @@ class Log:
 
     # For the rest, we need to check the options also
     def verbose(self, msg):
-        """Print verbose messages. If locking is available use them."""
+        """Print verbose messages. If locking is available, use it."""
         if self.lock:
             self.DispLock.acquire()
 
@@ -301,6 +302,22 @@ class Log:
             sys.stdout.flush()
             self.set_color("SwitchOffAttributes")
 
+        if self.lock:
+            self.DispLock.release()
+
+    def uris(self, url, localFile):
+        """Print one resolved URI and the archive filename.
+
+        stdout line: URI <quoted-url> <quoted-filename>
+        Both fields are shell-quoted so a space in either does not
+        split the record. The display lock keeps one line intact when
+        several threads print.
+        """
+        line = "URI %s %s\n" % (shlex.quote(url), shlex.quote(localFile))
+        if self.lock:
+            self.DispLock.acquire()
+        sys.stdout.write(line)
+        sys.stdout.flush()
         if self.lock:
             self.DispLock.release()
 

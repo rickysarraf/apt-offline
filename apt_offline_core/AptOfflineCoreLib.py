@@ -110,6 +110,10 @@ terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
 the GNU GPL Version 3 (or later) License\n"
 
+USER_AGENT = "%s/%s (+https://github.com/rickysarraf/apt-offline)" % (
+    app_name, version,
+)
+
 errlist = []
 supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
 apt_update_target_path = "/var/lib/apt/lists/partial"
@@ -727,18 +731,39 @@ class APTVerifySigs(ExecCmd):
 
         if keyring:
             for eachKeyring in keyring:
-                for eachFile in os.listdir(eachKeyring):
-                    extraKeyringFile = os.path.join(eachKeyring, eachFile)
-                    log.verbose("extraKeyringFile is %s" % extraKeyringFile)
-                    self.opts.extend(
-                        ["--keyring", extraKeyringFile]
-                    )
+                self._addExtraKeyring(eachKeyring)
 
         if len(self.opts) == 1:
             log.err(
                 "No valid keyring paths found in: %s\n" % (
                     ", ".join(self.defaultPaths))
             )
+
+    def _addExtraKeyring(self, path):
+        """Add a keyring the user named with --extra-keyring.
+
+        A file is used as given. A directory contributes only keyring
+        files, not every entry: gpgv rejects the 41st distinct keyring
+        with "Resources exhausted" and a non-zero exit.
+        """
+        if os.path.isfile(path):
+            self._addOneKeyring(path)
+        elif os.path.isdir(path):
+            for name in sorted(os.listdir(path)):
+                if name.endswith((".gpg", ".pgp", ".asc")):
+                    full = os.path.join(path, name)
+                    if os.path.isfile(full):
+                        self._addOneKeyring(full)
+        else:
+            log.err("Extra keyring path %s not found\n" % (path))
+
+    def _addOneKeyring(self, path):
+        if path.endswith(".asc"):
+            self.DearmorSig(path)
+        else:
+            log.verbose(
+                "Adding %s to the apt-offline keyring\n" % (path))
+            self.opts.extend(["--keyring", path])
 
     def DearmorSig(self, asciiSig):
         gpgCmd = []
@@ -766,7 +791,7 @@ class APTVerifySigs(ExecCmd):
         gpgvCmd.extend(self.opts)
         gpgvCmd.append(signature_file)
         gpgvCmd.append(signed_file)
-        return self.ExecSystemCmd(gpgvCmd, None)
+        return self._gpgvAccepts(gpgvCmd)
 
     def VerifyFile(self, signed_file):
         # Verify a self signed file
@@ -778,7 +803,67 @@ class APTVerifySigs(ExecCmd):
         gpgvCmd.append(self.gpgv)
         gpgvCmd.extend(self.opts)
         gpgvCmd.append(signed_file)
-        return self.ExecSystemCmd(gpgvCmd, None)
+        return self._gpgvAccepts(gpgvCmd)
+
+    def _gpgvAccepts(self, gpgvCmd):
+        """Run gpgv. True when the signature is good.
+
+        Past 40 keyrings gpgv exits non-zero with ERROR
+        add_keyblock_resource even after GOODSIG. That is a full
+        keyring table, not a bad signature. BADSIG, ERRSIG and
+        NO_PUBKEY still fail.
+        """
+        if self.Simulate:
+            return True
+
+        cmd = list(gpgvCmd)
+        cmd[1:1] = ["--status-fd", "1"]
+        log.verbose("Command is: %s\n" % (cmd))
+        proc = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
+        if proc.stderr:
+            sys.stderr.write(proc.stderr)
+            if not proc.stderr.endswith("\n"):
+                sys.stderr.write("\n")
+        if proc.returncode == 0:
+            return True
+
+        good = bad = errsig = nopub = other_error = resource_error = False
+        for line in proc.stdout.splitlines():
+            if not line.startswith("[GNUPG:] "):
+                continue
+            parts = line.split()
+            tag = parts[1] if len(parts) > 1 else ""
+            if tag == "GOODSIG":
+                good = True
+            elif tag == "BADSIG":
+                bad = True
+            elif tag == "ERRSIG":
+                errsig = True
+            elif tag == "NO_PUBKEY":
+                nopub = True
+            elif tag == "ERROR":
+                where = parts[2] if len(parts) > 2 else ""
+                if where == "add_keyblock_resource":
+                    resource_error = True
+                else:
+                    other_error = True
+
+        if (
+            good
+            and resource_error
+            and not (bad or errsig or nopub or other_error)
+        ):
+            log.warn(
+                "gpgv could not load every keyring (Resources exhausted) "
+                "but the signature verified. Continuing.\n"
+            )
+            return True
+        return False
 
 
 class LockAPT:
@@ -851,8 +936,12 @@ class GenericDownloadFunction:
                 # INFO: Add the download thread into the Global ProgressBar Thread
                 self.addItem(size)
         except urllib.error.HTTPError as errstring:
-            errfunc(errstring.code, errstring.reason, url)
-            errstring.close()
+            # HTTPError is an addinfourl, and on Python 3.14 that is a
+            # tempfile wrapper. Leaving it unclosed warns from __del__.
+            try:
+                errfunc(errstring.code, errstring.reason, url)
+            finally:
+                errstring.close()
             return False
         except urllib.error.URLError as errstring:
             # INFO: Weird. But in urllib2.URLError, I noticed that for
@@ -888,7 +977,10 @@ class GenericDownloadFunction:
         socket_counter = 0
         # TODO: Refactor this conditional code snippet
         if chunked_encoding:
-            response = requests.get(url, stream=True)
+            # requests does not use the urllib opener.
+            response = requests.get(
+                url, stream=True, headers={"User-Agent": USER_AGENT}
+            )
             for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
                     size += len(chunk)
@@ -1034,8 +1126,8 @@ def stripper(item):
         checksum = SplitItem[3].strip("'").strip()
     except IndexError:
         checksum = None
-        log.verbose("line %s is missing checksum entry" % (item))
-    log.verbose("Items after split is: %s\n" % (SplitItem))
+        log.verbose("line %s is missing checksum entry\n" % (item))
+    log.verbose("Items after split are: %s\n" % (SplitItem))
 
     # Convert size to integer
     size = int(size) if size.isdecimal() else 0
@@ -1100,6 +1192,27 @@ def errfunc(errno, errormsg, filename):
         )
 
 
+def simulate_archive_name(url, pkgFile):
+    """Archive filename get --simulate should print for one signature item.
+
+    Debs, Release, signature and source-metadata files keep pkgFile.
+    Other index files gain the compression suffix already present on the
+    URL apt named. This matches the name the real download path stores,
+    without joining a download directory.
+    """
+    if url.endswith(".deb"):
+        return pkgFile
+    if (
+        pkgFile.endswith(".gpg")
+        or pkgFile.endswith("Release")
+        or pkgFile.endswith(".dsc")
+        or "orig.tar" in pkgFile
+        or "debian.tar" in pkgFile
+    ):
+        return pkgFile
+    return pkgFile + "." + url.split("/")[-1].split(".")[-1]
+
+
 def fetcher(args):
     # get opts
     Str_GetArg = args.get
@@ -1117,6 +1230,7 @@ def fetcher(args):
     Str_HttpBasicAuth = args.http_basicauth
     Bool_DisableCertCheck = args.disable_cert_check
     Bool_BugReports = args.deb_bugs
+    Bool_Simulate = getattr(args, "get_simulate", False)
     global guiTerminateSignal
 
     if Int_SocketTimeout:
@@ -1129,6 +1243,8 @@ def fetcher(args):
             log.err("Incorrect value set for socket timeout.\n")
             sys.exit(1)
 
+    opening_handlers = []
+
     if Str_ProxyHost:
         if Str_ProxyPort:
             log.verbose(Str_ProxyHost + ":" + str(Str_ProxyPort))
@@ -1138,8 +1254,7 @@ def fetcher(args):
                     "https": Str_ProxyHost + ":" + str(Str_ProxyPort),
                 }
             )
-            opener = urllib.request.build_opener(proxy_support)
-            urllib.request.install_opener(opener)
+            opening_handlers.append(proxy_support)
             log.verbose(
                 "Proxy successfully set up with Host %s and port %s\n"
                 % (Str_ProxyHost, str(Str_ProxyPort))
@@ -1148,8 +1263,7 @@ def fetcher(args):
             proxy_support = urllib.request.ProxyHandler(
                 {"http": Str_ProxyHost, "https": Str_ProxyHost}
             )
-            opener = urllib.request.build_opener(proxy_support)
-            urllib.request.install_opener(opener)
+            opening_handlers.append(proxy_support)
             log.verbose(
                 "Proxy successfully set up with Host %s and default port\n"
                 % (Str_ProxyHost)
@@ -1169,10 +1283,8 @@ def fetcher(args):
             )
             context.load_cert_chain(Str_HttpsCertFile, Str_HttpsKeyFile)
 
-        opener = urllib.request.build_opener(
-            urllib.request.HTTPSHandler(context=context)
-        )
-        urllib.request.install_opener(opener)
+        opening_handlers.append(urllib.request.HTTPSHandler(context=context))
+
         log.verbose(
             "SSL Client Authentication successfully set up with certificate file %s and key file %s\n"
             % (Str_HttpsCertFile, Str_HttpsKeyFile)
@@ -1197,16 +1309,18 @@ def fetcher(args):
                 )
 
             handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
-
-            # create "opener" (OpenerDirector instance)
-            opener = urllib.request.build_opener(handler)
-
-            # Install the opener.
-            # Now all calls to urllib.request.urlopen use our opener.
-            urllib.request.install_opener(opener)
+            opening_handlers.append(handler)
         except:
             log.err("Incorrect value set for HttpBasicAuth.\n")
             sys.exit(1)
+
+    # create "opener" (OpenerDirector instance)
+    opener = urllib.request.build_opener(*opening_handlers)
+
+    # Install the opener.
+    # Now all calls to urllib.request.urlopen use our opener.
+    opener.addheaders = [("User-Agent", USER_AGENT)]
+    urllib.request.install_opener(opener)
 
     # INFO: Python 2.5 has hashlib which supports sha256
     # If we don't have Python 2.5, disable MD5/SHA256 checksum
@@ -1218,7 +1332,10 @@ def fetcher(args):
 
     if Str_GetArg:
         if os.path.isfile(Str_GetArg):
-            log.msg("\nFetching APT Data\n\n")
+            if Bool_Simulate:
+                sys.stderr.write("\nFetching APT Data\n\n")
+            else:
+                log.msg("\nFetching APT Data\n\n")
         else:
             log.err("File %s not present. Check path.\n" % (Str_GetArg))
             sys.exit(1)
@@ -1231,60 +1348,65 @@ def fetcher(args):
             )
             sys.exit(1)
 
-    if not Str_DownloadDir and not Str_BundleFile:
-        log.err("Please provide a target download file/folder location.\n")
-        sys.exit(1)
+    if not Bool_Simulate:
+        if not Str_DownloadDir and not Str_BundleFile:
+            log.err("Please provide a target download file/folder location.\n")
+            sys.exit(1)
 
-    if Str_DownloadDir:
-        if os.path.exists(Str_DownloadDir):
-            if os.path.isdir(Str_DownloadDir):
-                if os.access(Str_DownloadDir, os.W_OK) is True:
-                    Str_DownloadDir = os.path.abspath(Str_DownloadDir)
+        if Str_DownloadDir:
+            if os.path.exists(Str_DownloadDir):
+                if os.path.isdir(Str_DownloadDir):
+                    if os.access(Str_DownloadDir, os.W_OK) is True:
+                        Str_DownloadDir = os.path.abspath(Str_DownloadDir)
+                    else:
+                        log.err("Cannot write to directory %s\n" %
+                                (Str_DownloadDir))
+                        sys.exit(1)
                 else:
-                    log.err("Cannot write to directory %s\n" %
-                            (Str_DownloadDir))
+                    log.err("%s is not a directory\n" % (Str_DownloadDir))
                     sys.exit(1)
             else:
-                log.err("%s is not a directory\n" % (Str_DownloadDir))
-                sys.exit(1)
+                os.mkdir(Str_DownloadDir)
+                # INFO: Because the user may give in a relative path
+                Str_DownloadDir = os.path.abspath(Str_DownloadDir)
+                log.verbose("Creating directory %s\n" % (Str_DownloadDir))
         else:
-            os.mkdir(Str_DownloadDir)
-            # INFO: Because the user may give in a relative path
-            Str_DownloadDir = os.path.abspath(Str_DownloadDir)
-            log.verbose("Creating directory %s\n" % (Str_DownloadDir))
-    else:
-        tempdir = tempfile.gettempdir()
-        if os.access(tempdir, os.W_OK):
-            pidname = os.getpid()
-            randomjunk = (
-                "".join(chr(random.randint(97, 122)) for x in range(5))
-                if guiBool
-                else ""
-            )
-            # 5 byte random junk to make mkdir possible multiple times
-            # use-case -> download many sigs of different machines using one instance
-            tempdir = os.path.join(
-                tempdir, "apt-offline-downloads-" + str(pidname) + randomjunk
-            )
-            os.mkdir(tempdir)
-            Str_DownloadDir = os.path.abspath(tempdir)
-        else:
-            log.err("%s is not writable\n" % (tempdir))
-            errfunc(1, "", tempdir)
+            tempdir = tempfile.gettempdir()
+            if os.access(tempdir, os.W_OK):
+                pidname = os.getpid()
+                randomjunk = (
+                    "".join(chr(random.randint(97, 122)) for x in range(5))
+                    if guiBool
+                    else ""
+                )
+                # 5 byte random junk to make mkdir possible multiple times
+                # use-case -> download many sigs of different machines using one instance
+                tempdir = os.path.join(
+                    tempdir, "apt-offline-downloads-" + str(pidname) + randomjunk
+                )
+                os.mkdir(tempdir)
+                Str_DownloadDir = os.path.abspath(tempdir)
+            else:
+                log.err("%s is not writable\n" % (tempdir))
+                errfunc(1, "", tempdir)
 
-    if Str_BundleFile:
-        Str_BundleFile = os.path.abspath(Str_BundleFile)
-        if os.access(Str_BundleFile, os.F_OK):
-            log.err("%s already present.\nRemove it first.\n" %
-                    (Str_BundleFile))
-            sys.exit(1)
-        else:
-            try:
-                open(Str_BundleFile, "w").close()
-            except IOError:
-                log.err("Cannot write to file %s\n" % (Str_BundleFile))
+        if Str_BundleFile:
+            Str_BundleFile = os.path.abspath(Str_BundleFile)
+            if os.access(Str_BundleFile, os.F_OK):
+                log.err("%s already present.\nRemove it first.\n" %
+                        (Str_BundleFile))
                 sys.exit(1)
+            else:
+                try:
+                    open(Str_BundleFile, "w").close()
+                except IOError:
+                    log.err("Cannot write to file %s\n" % (Str_BundleFile))
+                    sys.exit(1)
+        else:
+            Str_BundleFile = False
     else:
+        # Resolved URI list only. Do not create a download directory or a bundle file.
+        Str_DownloadDir = None
         Str_BundleFile = False
 
     if Bool_BugReports:
@@ -1545,7 +1667,7 @@ def fetcher(args):
     )
 
     # INFO: Thread Support
-    if Int_NumOfThreads > 2:
+    if Int_NumOfThreads > 2 and not Bool_Simulate:
         log.msg("WARNING: If you are on a slow connection, it is good to\n")
         log.msg("WARNING: limit the number of threads to a low number like 2.\n")
         log.msg("WARNING: Else higher number of threads executed could cause\n")
@@ -1568,6 +1690,11 @@ def fetcher(args):
 
         # INFO: Everything
         (url, pkgFile, download_size, checksum) = stripper(item)
+        if Bool_Simulate:
+            # List the item and return. Do not read the cache, copy a
+            # payload, fetch bug reports, or open a connection.
+            log.uris(url, simulate_archive_name(url, pkgFile))
+            return
         thread_name = threading.current_thread().name
         log.verbose("Thread is %s\n" % (thread_name))
 
@@ -1617,8 +1744,11 @@ def fetcher(args):
                         "Downloading %s - %s\n"
                         % (PackageName, log.calcSize(download_size / 1024))
                     )
-                    if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
-                        log.success("%s done\n" % PackageName)
+                    if Bool_Simulate:
+                        log.uris(url, os.path.join(Str_DownloadDir, pkgFile))
+                    elif FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
+                        log.success("%s done %s\n" %
+                                    (PackageName, LINE_OVERWRITE_FULL))
                         FetcherInstance.writeData(pkgFile)
                         FetcherInstance.writeToCache(pkgFile)
                         FetcherInstance.processBugReports(PackageName)
@@ -1635,8 +1765,11 @@ def fetcher(args):
                     "Downloading %s - %s\n"
                     % (PackageName, log.calcSize(download_size / 1024))
                 )
-                if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
-                    log.success("%s done\n" % PackageName)
+                if Bool_Simulate:
+                    log.uris(url, os.path.join(Str_DownloadDir, pkgFile))
+                elif FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
+                    log.success("%s done %s\n" %
+                                (PackageName, LINE_OVERWRITE_FULL))
                     FetcherInstance.writeData(pkgFile)
                     FetcherInstance.writeToCache(pkgFile)
                     FetcherInstance.processBugReports(PackageName)
@@ -1651,7 +1784,9 @@ def fetcher(args):
         else:
 
             def DownloadPackages(PackageName, PackageFile):
-                if FetcherInstance.download_from_web(
+                if Bool_Simulate:
+                    log.uris(PackageName, os.path.join(Str_DownloadDir, PackageFile))
+                elif FetcherInstance.download_from_web(
                     PackageName, PackageFile, Str_DownloadDir
                 ):
                     log.success("%s done\n" % PackageName)
@@ -1794,7 +1929,7 @@ def fetcher(args):
     # create size metadata for progress
     for key in list(FetchData.keys()):
         for item in FetchData.get(key):
-            if guiBool:
+            if guiBool and not Bool_Simulate:
                 # REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
                 if guiTerminateSignal:
                     break
@@ -1804,13 +1939,18 @@ def fetcher(args):
                     if size == 0:
                         log.msg("MSG_START")
                         temp = urllib.request.urlopen(url)
-                        headers = temp.info()
-                        size = int(headers["Content-Length"])
+                        try:
+                            headers = temp.info()
+                            size = int(headers["Content-Length"])
+                        finally:
+                            temp.close()
                     totalSize[0] += size
                 except urllib.error.HTTPError as errstring:
-                    errfunc(errstring.code, errstring.reason, url)
-                    errstring.close()
-                    log.verbose(traceback.format_exc())
+                    try:
+                        errfunc(errstring.code, errstring.reason, url)
+                        log.verbose(traceback.format_exc())
+                    finally:
+                        errstring.close()
                 except urllib.error.URLError as errstring:
                     if errstring.errno is None:
                         errfunc(504, errstring.reason, url)
@@ -1867,8 +2007,12 @@ def fetcher(args):
     if sys.stdout.isatty():
         sys.stdout.write("\r" + " " * 80 + "\r")
         sys.stdout.flush()
-    if args.bundle_file:
-        log.msg("Downloaded data to %s\n" % (Str_BundleFile))
+    if Bool_Simulate:
+        sys.stderr.write(
+            "\nNo data was downloaded. Printed the URI list for the URLs apt already named.\n"
+        )
+    elif args.bundle_file:
+        log.msg("\nDownloaded data to %s\n" % (Str_BundleFile))
     else:
         log.msg("Downloaded data to %s\n" % (Str_DownloadDir))
 
@@ -3147,6 +3291,13 @@ def main():
     )
 
     parser_get.add_argument(
+        "--simulate",
+        dest="get_simulate",
+        help="Print the resolved URI list and do not download",
+        action="store_true",
+    )
+
+    parser_get.add_argument(
         "--proxy-host",
         dest="proxy_host",
         help="Proxy Host to use",
@@ -3224,11 +3375,12 @@ def main():
     parser_install.add_argument(
         "--extra-keyring",
         dest="extra_keyring",
-        help="Extra Keyring paths to include. \
-        Can be specificed multiple times",
+        help="Extra keyring file or directory. A directory adds "
+        "only .gpg, .pgp and .asc files. Repeat to add more. "
+        "trusted.gpg.d is already used; /usr/share/keyrings is not.",
         action="append",
-        metavar="/usr/share/keyrings/",
-        default=["/usr/share/keyrings/"],
+        metavar="PATH",
+        default=None,
     )
 
     parser_install.add_argument(

@@ -68,7 +68,7 @@ Type of upgrade you would like to perform. Default is
 Other valid types are
 .B "dist-upgrade" and "dselect-upgrade"
 
-.SS get FILENAME [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] [--proxy-host] [--proxy-port] [--https-cert-file --https-key-file] [--http-basicauth] [--disable-cert-check]
+.SS get FILENAME [-h] [--socket-timeout ] [-d / --download-dir] [-s / --cache-dir] [--no-checksum] [-t / --threads ] [--bundle] [--bug-reports] [--simulate] [--proxy-host] [--proxy-port] [--https-cert-file --https-key-file] [--http-basicauth] [--disable-cert-check]
 
 .PP
 .B get
@@ -101,6 +101,25 @@ Create an archive file FILENAME. The file is archived in zip format
 .IP "\fB\-\-bug\-reports\fP" 10
 Download bug reports for packages that are being downloaded. Currently only
 the Debian BTS is supported.
+
+.IP "\fB\-\-simulate\fP" 10
+Print the resolved URI list and do not download. Each line on standard
+output is
+.B URI <quoted-url> <filename>
+where both fields are shell-quoted. The filename is the archive name
+.B install
+will look up, not a path on this machine. The URL is the one apt already
+named; compression fallbacks are not probed. Nothing is written: no
+download directory, no bundle file, no cache copy, no bug report.
+.B --download-dir
+and
+.B --bundle
+are not required with this option. A note is written to standard error.
+This is distinct from
+.B set --simulate
+and
+.B install --simulate,
+which are developer dry-runs.
 
 .IP "\fB\-\-proxy\-host\fP" 10
 Specify the Proxy Host to be used.
