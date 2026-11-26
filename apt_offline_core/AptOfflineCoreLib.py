@@ -18,6 +18,7 @@
 #    59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ############################################################################
 
+import hashlib
 import urllib.parse
 import urllib.error
 import urllib.request
@@ -30,8 +31,12 @@ import pydoc
 import zipfile
 import random  # to generate random directory names for installing multiple bundles in on go
 import tempfile
+import time
+import json
+import glob
 import socket
 import subprocess
+import shlex
 import threading
 import queue
 import http.client
@@ -125,7 +130,6 @@ apt_bug_file_format = "__apt__bug__report"
 # These are spaces which will overwrite the progressbar left mess
 LINE_OVERWRITE_SMALL = " " * 10
 LINE_OVERWRITE_MID = " " * 30
-LINE_OVERWRITE_FULL = " " * 60
 
 Bool_Verbose = False
 # Bool_TestWindows = True
@@ -1132,6 +1136,9 @@ def stripper(item):
     return (url, localFile, size, checksum)
 
 
+_errfunc_tls = threading.local()
+
+
 def errfunc(errno, errormsg, filename):
     """We use errfunc to handler errors.
     There are some error codes (-3 and 13 as of now)
@@ -1142,6 +1149,7 @@ def errfunc(errno, errormsg, filename):
     be well accessible.
     This function does the job of behaving accordingly
     as per the error codes."""
+    _errfunc_tls.last_errno = errno
     retriable_error_codes = [-3, 13, 404, 403, 401, 429, 10060, 104, 101010]
     # 104, 'Connection reset by peer'
     # 504 is for gateway timeout
@@ -1157,19 +1165,17 @@ def errfunc(errno, errormsg, filename):
     # 13 is for "Permission Denied" when you don't have privileges to access the destination
     if errno in retriable_error_codes:
         log.verbose(
-            "%s - %s - %s %s\n" % (filename, errno,
-                                   errormsg, LINE_OVERWRITE_FULL)
+            "%s - %s - %s\n" % (filename, errno, errormsg)
         )
         log.verbose("Will still try with other package uris\n")
     elif errno == 10054:
-        log.err("%s - %s - %s %s\n" %
-                (filename, errno, errormsg, LINE_OVERWRITE_FULL))
+        log.err("%s - %s - %s\n" % (filename, errno, errormsg))
     elif errno == 504:
         log.err(
-            "%s failed with error %s:%s %s\n"
-            % (filename, errno, errormsg, LINE_OVERWRITE_FULL)
+            "%s failed with error %s:%s\n"
+            % (filename, errno, errormsg)
         )
-        errlist.append(filename)
+        errlist.append((filename, errno, str(errormsg).strip()))
     elif errno == 407 or errno == 2:
         # These, I believe are from OSError/IOError exception.
         # I'll document it as soon as I confirm it.
@@ -1213,6 +1219,7 @@ def fetcher(args):
     Int_SocketTimeout = args.socket_timeout
     Str_DownloadDir = args.download_dir
     Str_CacheDir = args.cache_dir
+    Str_MetadataCacheDir = getattr(args, 'metadata_cache_dir', None)
     Bool_DisableMD5Check = args.disable_md5check
     Int_NumOfThreads = args.num_of_threads
     Str_BundleFile = args.bundle_file
@@ -1391,7 +1398,7 @@ def fetcher(args):
                 sys.exit(1)
             else:
                 try:
-                    open(Str_BundleFile, "w")
+                    open(Str_BundleFile, "w").close()
                 except IOError:
                     log.err("Cannot write to file %s\n" % (Str_BundleFile))
                     sys.exit(1)
@@ -1483,14 +1490,10 @@ def fetcher(args):
             if not self.BugReports:
                 return False
 
-            log.msg("Fetching bug report for %s%s\n" %
-                    (pkgName, LINE_OVERWRITE_FULL))
+            log.msg("Fetching bug report for %s\n" % pkgName)
             # INFO: Payload is written to destination inside the method
             self.FetchBugsDebian(pkgName)
-            log.success(
-                "Fetched bug report for %s%s\n" % (
-                    pkgName, LINE_OVERWRITE_FULL)
-            )
+            log.success("Fetched bug report for %s\n" % pkgName)
 
         def buildChangelog(self, pkgPath, installedVersion):
             """Return latest changes against installedVersion"""
@@ -1582,7 +1585,8 @@ def fetcher(args):
     # It can be just debs or just package updates or both
     if Str_GetArg is not None:
         try:
-            raw_data_list = open(Str_GetArg, "r").readlines()
+            with open(Str_GetArg, "r") as f:
+                raw_data_list = f.readlines()
         except IOError as e:
             (errno, strerror) = e.args
             log.err("%s %s %s\n" % (errno, strerror, Str_GetArg))
@@ -1669,6 +1673,8 @@ def fetcher(args):
         log.msg("WARNING: Else higher number of threads executed could cause\n")
         log.msg("WARNING: network congestion and timeouts.\n\n")
 
+    unverified_cache_hits = []
+
     def DataFetcher(request, response, func=FetcherInstance.find_first_match):
         """Get items from the request Queue, process them
         with func(), put the results along with the
@@ -1716,10 +1722,9 @@ def fetcher(args):
             # INFO: If we find the file in the local Str_CacheDir, we'll execute this block.
             if full_file_path is not False:
                 if FetcherInstance.verifyPayloadIntegrity(full_file_path, checksum):
-                    log.success(
-                        "%s found in cache%s\n" % (
-                            PackageName, LINE_OVERWRITE_FULL)
-                    )
+                    if not checksum or ":" not in checksum:
+                        unverified_cache_hits.append(pkgFile)
+                    log.success("%s found in cache\n" % PackageName)
                     # INFO: When we copy the payload from the local cache, we need to update the progressbar
                     # Hence we are doing it explicitly for local cache found files
                     FetcherInstance.addItem(download_size)
@@ -1733,16 +1738,11 @@ def fetcher(args):
                         )
                 else:
                     log.verbose(
-                        "%s checksum mismatch. Skipping file %s\n"
-                        % (pkgFile, LINE_OVERWRITE_FULL)
+                        "%s checksum mismatch. Skipping file\n" % pkgFile
                     )
                     log.msg(
-                        "Downloading %s - %s %s\n"
-                        % (
-                            PackageName,
-                            log.calcSize(download_size / 1024),
-                            LINE_OVERWRITE_FULL,
-                        )
+                        "Downloading %s - %s\n"
+                        % (PackageName, log.calcSize(download_size / 1024))
                     )
                     if Bool_Simulate:
                         log.uris(url, os.path.join(Str_DownloadDir, pkgFile))
@@ -1759,15 +1759,11 @@ def fetcher(args):
                             )
                     else:
                         log.err("Failed to download %s\n" % (PackageName))
-                        errlist.append(PackageName)
+                        errlist.append((PackageName, getattr(_errfunc_tls, 'last_errno', None), 'download failed'))
             else:
                 log.msg(
-                    "Downloading %s - %s %s\n"
-                    % (
-                        PackageName,
-                        log.calcSize(download_size / 1024),
-                        LINE_OVERWRITE_FULL,
-                    )
+                    "Downloading %s - %s\n"
+                    % (PackageName, log.calcSize(download_size / 1024))
                 )
                 if Bool_Simulate:
                     log.uris(url, os.path.join(Str_DownloadDir, pkgFile))
@@ -1784,7 +1780,7 @@ def fetcher(args):
                         )
                 else:
                     log.err("Failed to download %s\n" % (PackageName))
-                    errlist.append(PackageName)
+                    errlist.append((PackageName, getattr(_errfunc_tls, 'last_errno', None), 'download failed'))
         else:
 
             def DownloadPackages(PackageName, PackageFile):
@@ -1793,8 +1789,7 @@ def fetcher(args):
                 elif FetcherInstance.download_from_web(
                     PackageName, PackageFile, Str_DownloadDir
                 ):
-                    log.success("%s done %s\n" %
-                                (PackageName, LINE_OVERWRITE_FULL))
+                    log.success("%s done\n" % PackageName)
                     FetcherInstance.writeData(
                         os.path.join(Str_DownloadDir, PackageFile)
                     )
@@ -1831,55 +1826,101 @@ def fetcher(args):
                 # Remove the already tried format
                 SupportedFormats.remove(PackageFormat)
 
-            log.msg("Downloading %s %s\n" % (PackageName, LINE_OVERWRITE_FULL))
-            if (
-                DownloadPackages(PackageName, pkgFileWithType) is False
-                and guiTerminateSignal is False
-            ):
-                # don't proceed retry if Ctrl+C in cli
-                log.verbose(
-                    "%s failed. Retry with the remaining possible formats\n" % (
-                        url)
-                )
-                FetcherInstance.completed()
+            def _metadata_cache_key(url):
+                return hashlib.sha256(url.encode()).hexdigest()
 
-                # We could fail with the Packages format of what apt gave us. We can try the rest of the formats that apt or the archive could support
-                reallyFailed = True
-                for Format in SupportedFormats:
-                    NewPackageFile = (
-                        pkgFileWithType.rstrip(pkgFileWithType.split(".")[-1]).rstrip(
-                            "."
-                        )
-                        + "."
-                        + Format
-                    )
-                    NewUrl = url.replace(PackageFormat, Format)
-                    log.verbose(
-                        "Retry download %s %s\n" % (
-                            NewUrl, LINE_OVERWRITE_FULL)
-                    )
+            def _write_metadata_cache(url, pkg_file, sentinel=False):
+                if not Str_MetadataCacheDir:
+                    return
+                os.makedirs(Str_MetadataCacheDir, exist_ok=True)
+                key = _metadata_cache_key(url)
+                dst = os.path.join(Str_MetadataCacheDir, key)
+                tmp = dst + ".tmp"
+                if sentinel:
+                    open(tmp, "wb").close()
+                    os.rename(tmp, dst)
+                else:
+                    src = os.path.join(Str_DownloadDir, pkg_file)
+                    if not os.path.exists(src):
+                        return
+                    shutil.copy2(src, tmp)
+                    os.rename(tmp, dst)
+                    name_tmp = dst + ".name.tmp"
+                    with open(name_tmp, "w") as f:
+                        f.write(pkg_file)
+                    os.rename(name_tmp, dst + ".name")
 
-                    # INFO: Why are we doing this?
-                    # Because ProgressBar's total_item is fixed
-                    # And download_from_web's addItem() increases the active item upon every
-                    # cycle through apt's backend archive formats
-                    # This ends up resulting in active items being more than total_items
-                    # By increasing the counter, the active/total item list is reflected correctly
-                    FetcherInstance.items += 1
-                    if DownloadPackages(NewUrl, NewPackageFile) is True:
-                        reallyFailed = False
-                        break
+            metadata_cache_hit = False
+            if Str_MetadataCacheDir:
+                cached = os.path.join(Str_MetadataCacheDir, _metadata_cache_key(PackageName))
+                if os.path.exists(cached):
+                    if os.path.getsize(cached) > 0:
+                        name_file = cached + ".name"
+                        actual_name = pkgFileWithType
+                        if os.path.exists(name_file):
+                            with open(name_file) as f:
+                                actual_name = f.read().strip() or pkgFileWithType
+                        dest = os.path.join(Str_DownloadDir, actual_name)
+                        shutil.copy2(cached, dest)
+                        log.success("%s found in metadata cache\n" % PackageName)
+                        FetcherInstance.writeData(dest)
+                        FetcherInstance.updateValue(download_size)
                     else:
-                        log.verbose(
-                            "Failed with URL %s %s\n" % (
-                                NewUrl, LINE_OVERWRITE_FULL)
-                        )
-                        FetcherInstance.completed()
-                if reallyFailed is True:
+                        log.verbose("%s not available (negative cache)\n" % PackageFile)
+                    FetcherInstance.completed()
+                    metadata_cache_hit = True
+
+            if not metadata_cache_hit:
+                log.msg("Downloading %s\n" % PackageName)
+                _errfunc_tls.last_errno = None
+                if (
+                    DownloadPackages(PackageName, pkgFileWithType) is False
+                    and guiTerminateSignal is False
+                ):
+                    # don't proceed retry if Ctrl+C in cli
                     log.verbose(
-                        "Giving up on URL %s %s\n" % (
-                            NewUrl, LINE_OVERWRITE_FULL)
+                        "%s failed. Retry with the remaining possible formats\n" % (
+                            url)
                     )
+                    FetcherInstance.completed()
+
+                    # We could fail with the Packages format of what apt gave us. We can try the rest of the formats that apt or the archive could support
+                    reallyFailed = True
+                    all_not_found = (getattr(_errfunc_tls, 'last_errno', None) == 404)
+                    for Format in SupportedFormats:
+                        NewPackageFile = (
+                            pkgFileWithType.rstrip(pkgFileWithType.split(".")[-1]).rstrip(
+                                "."
+                            )
+                            + "."
+                            + Format
+                        )
+                        NewUrl = url.replace(PackageFormat, Format)
+                        log.verbose("Retry download %s\n" % NewUrl)
+
+                        # INFO: Why are we doing this?
+                        # Because ProgressBar's total_item is fixed
+                        # And download_from_web's addItem() increases the active item upon every
+                        # cycle through apt's backend archive formats
+                        # This ends up resulting in active items being more than total_items
+                        # By increasing the counter, the active/total item list is reflected correctly
+                        FetcherInstance.items += 1
+                        _errfunc_tls.last_errno = None
+                        if DownloadPackages(NewUrl, NewPackageFile) is True:
+                            _write_metadata_cache(PackageName, NewPackageFile)
+                            reallyFailed = False
+                            break
+                        else:
+                            if getattr(_errfunc_tls, 'last_errno', None) != 404:
+                                all_not_found = False
+                            log.verbose("Failed with URL %s\n" % NewUrl)
+                            FetcherInstance.completed()
+                    if reallyFailed is True:
+                        log.verbose("Giving up on URL %s\n" % NewUrl)
+                        if all_not_found:
+                            _write_metadata_cache(PackageName, None, sentinel=True)
+                else:
+                    _write_metadata_cache(PackageName, pkgFileWithType)
 
     # Create two Queues for the requests and responses
     requestQueue = queue.Queue()
@@ -1963,6 +2004,9 @@ def fetcher(args):
                 log.err("\nInterrupted by user. Exiting!\n")
                 sys.exit(0)
 
+    if sys.stdout.isatty():
+        sys.stdout.write("\r" + " " * 80 + "\r")
+        sys.stdout.flush()
     if Bool_Simulate:
         sys.stderr.write(
             "\nNo data was downloaded. Printed the URI list for the URLs apt already named.\n"
@@ -1970,19 +2014,31 @@ def fetcher(args):
     elif args.bundle_file:
         log.msg("\nDownloaded data to %s\n" % (Str_BundleFile))
     else:
-        log.msg("\nDownloaded data to %s\n" % (Str_DownloadDir))
+        log.msg("Downloaded data to %s\n" % (Str_DownloadDir))
+
+    if unverified_cache_hits:
+        log.warn("%d package(s) served from cache without checksum verification\n" % len(unverified_cache_hits))
 
     # Print the failed files
     if len(errlist) > 0:
         log.err("Some items failed to download. Downloaded data may be incomplete\n")
-        log.err("Please run in verbose mode to see details about failed items\n")
-        log.msg("\n\n")
+        log.msg("\n")
         log.verbose("The following files failed to be downloaded.\n")
         log.verbose(
             "Not all errors are fatal. For eg. Translation files are not present on all mirrors.\n"
         )
-        for error in errlist:
-            log.err("%s failed.\n" % (error))
+        transient = []
+        for url, errno, reason in errlist:
+            if errno in (10054, 504, -3, 10060, 104):
+                note = "transient — may succeed on retry"
+                transient.append(url)
+            elif errno == 404:
+                note = "not found on server"
+            else:
+                note = reason if reason else "unknown error"
+            log.err("%s — %s\n" % (url, note))
+        if transient:
+            log.warn("%d item(s) failed due to network errors and may succeed if you re-run\n" % len(transient))
         sys.exit(100)
     else:
         sys.exit(0)
@@ -3014,6 +3070,7 @@ def setter(args):
             sys.exit(1)
 
 
+
 def main():
     """Here we basically do the sanity checks, some validations
     and then accordingly call the corresponding functions.
@@ -3353,6 +3410,12 @@ def main():
         help="Perform strict checksum validaton for downloaded .deb files",
         action="store_true",
     )
+
+    # REMOTE command options
+    #
+    from apt_offline_remote import AptOfflineRemoteLib
+    AptOfflineRemoteLib.register_subparser(subparsers, global_options)
+
     if len(sys.argv) <= 1:
         sys.argv.append("--help")
 

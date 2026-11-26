@@ -7,7 +7,7 @@ _apt_offline()
 
     local special i
     for (( i=0; i < ${#words[@]}-1; i++ )); do
-        if [[ ${words[i]} == @(set|get|install|--install-packages|--install-src-packages) ]]; then
+        if [[ ${words[i]} == @(set|get|install|remote|--install-packages|--install-src-packages) ]]; then
             special=${words[i]}
         fi
     done
@@ -93,6 +93,39 @@ _apt_offline()
                 fi
                 return 0
                 ;;
+            remote)
+                case $prev in
+                    --hosts-list)
+                        _filedir
+                        return 0
+                        ;;
+                    --work-dir)
+                        _filedir -d
+                        return 0
+                        ;;
+                    --keep-latest)
+                        mapfile -t COMPREPLY < <( compgen -W '1 2 3 5 10' -- "$cur" )
+                        return 0
+                        ;;
+                esac
+                if [[ "$cur" == -* ]]; then
+                    mapfile -t COMPREPLY < <( compgen -W '-h --help
+                        --update --upgrade --dist-upgrade --install-packages
+                        --reboot --work-dir --temp --keep-latest --clean-remote
+                        --hosts-list --fetch --download --finish-install' -- "$cur" )
+                else
+                    local -a _ssh_hosts=()
+                    [[ -f ~/.ssh/config ]] && mapfile -t -O "${#_ssh_hosts[@]}" _ssh_hosts < <(
+                        awk '/^[Hh]ost /{for(i=2;i<=NF;i++) if($i !~ /[*?]/) print $i}' ~/.ssh/config
+                    )
+                    [[ -f ~/.ssh/known_hosts ]] && mapfile -t -O "${#_ssh_hosts[@]}" _ssh_hosts < <(
+                        awk '{print $1}' ~/.ssh/known_hosts | tr ',' '\n' \
+                            | grep -v '^\[' | grep -v '^|'
+                    )
+                    mapfile -t COMPREPLY < <( compgen -W "${_ssh_hosts[*]}" -- "$cur" )
+                fi
+                return 0
+                ;;
             set)
                 case $prev in
                     --release)
@@ -128,7 +161,7 @@ _apt_offline()
     if [[ "$cur" == -* ]]; then
         COMPREPLY=( $( compgen -W '-h --help -v --verbose --version --simulate' -- "$cur" ) )
     else
-        COMPREPLY=( $( compgen -W 'get install set' -- "$cur" ) )
+        mapfile -t COMPREPLY < <( compgen -W 'get install set remote' -- "$cur" )
     fi
 
     return 0

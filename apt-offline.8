@@ -16,9 +16,9 @@ different connected machine.
 It can also fetch bug reports for the packages that are downloaded.
 .PP
 Unless the \-h/\-v or \-\-help/\-\-version options are given, one of the
-.B get, set
+.B get, set, install
 or
-.B install
+.B remote
 commands must be provided.
 
 .SS set FILENAME [-h] [--install-packages PKG...PKG_N] [--install-src-packages PKG...PKG_N] --src-build-dep [--release release_name] [--update] [--upgrade] [--upgrade-type upgrade]
@@ -181,6 +181,323 @@ do strict checksum validation for .deb files. Instead, apt-offline copies the .d
 .IP "\fB\-\-install\-src\-path PATH\fP" 10
 Path to filesystem where we want the source packages to be installed to. Default will be a folder in your TEMPDIR.
 
+.SS remote [SSH_HOST ...| --hosts-list FILE] [-h] [--update] [--upgrade] [--dist-upgrade] [--install-packages PKG...] [--reboot] [--work-dir DIR | --temp] [--force] [--cache-metadata] [--no-pkg-cache] [--keep-latest [N]] [--clean-remote] [--clean-cache] [--clean-pkg-cache] [--clean-metadata-cache] [--status] [--fetch | --download | --finish-install]
+
+.PP
+.B remote
+automates the full set/get/install pipeline against a machine reachable over SSH,
+eliminating the need for manual multi-step scripting.
+The local machine must have internet connectivity; the remote machine need only
+have
+.B apt-offline
+installed.
+
+.B SSH_HOST
+is one or more target machines, each specified as an SSH alias from
+.I ~/.ssh/config
+or as
+.I [user@]hostname
+as accepted by
+.BR ssh (1).
+Multiple hosts are separated by whitespace.
+Mutually exclusive with
+.BR \-\-hosts\-list .
+
+.IP "\fB\-\-hosts\-list FILE\fP" 10
+Text file containing one SSH host per line.
+Lines starting with
+.B #
+and blank lines are ignored.
+Inline comments (text following a
+.B #
+on the same line as a host) are also stripped.
+Applies the requested operation to all listed hosts in sequence,
+reporting a per-host summary at the end.
+Mutually exclusive with
+.BR SSH_HOST .
+One of
+.B SSH_HOST
+or
+.B \-\-hosts\-list
+is required.
+Hosts are never taken from a file in the work directory unless
+.B \-\-hosts\-list
+is given.
+
+.IP "\fB\-\-update\fP" 10
+Generate and apply an APT database update on the remote machine.
+
+.IP "\fB\-\-upgrade\fP" 10
+Download and apply upgradable packages on the remote machine.
+
+.IP "\fB\-\-dist\-upgrade\fP" 10
+Perform a full dist-upgrade on the remote machine.
+
+.IP "\fB\-\-install\-packages [PKG...PKG_N]\fP" 10
+Packages to install on the remote machine.
+
+.PP
+Before any operation,
+.B remote
+verifies that
+.B apt-offline
+is installed on the remote host (via
+.BR "which apt-offline" ).
+If it is missing, the command fails immediately with an install hint.
+.PP
+Remote commands that require root privileges are automatically prefixed with
+.B sudo
+unless the connecting user is already root (detected by checking
+.B id -u
+on the remote).
+The remote user must have passwordless sudo configured for the commands
+apt-offline needs (apt-offline, apt-get, mkdir, reboot).
+If sudo requires a password, the command fails early with the required
+sudoers entry.
+No flag is needed.
+
+.IP "\fB\-\-reboot\fP" 10
+Reboot the remote machine after a successful operation.
+Can also be used standalone (without any operation flag) to reboot one
+or more hosts without performing any other operation.
+Cannot be combined with
+.B \-\-fetch
+or
+.BR \-\-download .
+.B Warning:
+when used with
+.B \-\-hosts\-list
+and some hosts act as SSH jumphosts for others in the list, exercise
+caution with ordering.
+The tool processes hosts sequentially and has no knowledge of jump
+topology.
+If a jumphost is rebooted and the very next host in the list routes
+through it, the SSH tunnel may drop mid-operation (mid-transfer or
+mid
+.BR "apt-get upgrade" )
+leaving the remote in an unknown state \(em the remote process may
+continue running unattended while the tool reports an error.
+Place all hosts that route through a jumphost
+.B before
+that jumphost in the list so it is rebooted last; or avoid
+.B \-\-reboot
+with mixed topologies altogether and reboot manually in dependency
+order after the batch completes.
+
+.IP "\fB\-\-work\-dir DIR\fP" 10
+Local directory under which per-host working directories are created to store
+signature and bundle files.
+When omitted, files are kept under
+.B ~/.cache/apt-offline/SSH_HOST/
+and persist across reboots.
+Each run creates a uniquely timestamped operation subdirectory of the form
+.B <timestamp>-<tag>/
+(where tag is one of
+.BR upd ,
+.BR upg ,
+.BR dup ,
+.BR ipk )
+containing
+.BR apt-offline.sig ,
+.B bundle.zip
+and
+.BR state.json ,
+making parallel execution against multiple hosts and bundle reuse both safe.
+The shared package and metadata caches are kept directly under this directory as
+.B pkg-cache/
+and
+.BR metadata-cache/ .
+Mutually exclusive with
+.BR \-\-temp .
+
+.IP "\fB\-\-temp\fP" 10
+Use
+.B /tmp/apt-offline/SSH_HOST/
+as the working directory instead of the default cache location.
+Files placed under
+.I /tmp
+are lost on reboot.
+Mutually exclusive with
+.BR \-\-work\-dir .
+
+.IP "\fB\-\-keep\-latest [N]\fP" 10
+Remove all but the
+.I N
+most recent timestamped operation directories from the
+local per-host working directory.
+.I N
+defaults to 1 when the flag is given without a value.
+Must be used without any phase flag; when also omitting operation flags it
+performs a standalone local cleanup with no SSH connection.
+Cannot be combined with
+.BR \-\-fetch ,
+.B \-\-download
+or
+.BR \-\-finish\-install .
+
+.IP "\fB\-\-clean\-remote\fP" 10
+Remove the
+.B ~/.cache/apt-offline
+directory on the remote host.
+Can be combined with
+.B \-\-keep\-latest
+to clean both sides in one command.
+Cannot be combined with
+.BR \-\-fetch ,
+.B \-\-download
+or
+.BR \-\-finish\-install .
+
+.IP "\fB\-\-force\fP" 10
+Overwrite an existing
+.B bundle.zip
+instead of failing.
+Only valid with
+.B \-\-download
+or the full pipeline; rejected with
+.B \-\-fetch
+or
+.BR \-\-finish\-install .
+
+.IP "\fB\-\-cache\-metadata\fP" 10
+Cache metadata files (Release, Packages, Translation, etc.) under
+.B <work\-dir>/metadata\-cache/
+keyed by a SHA256 of the URL, so identical files are not re-downloaded for
+each host in a batch run.
+Off by default because cached metadata may be stale across separate runs.
+404 responses are also cached (negative cache) to avoid retrying all
+compression formats for every host.
+
+.IP "\fB\-\-no\-pkg\-cache\fP" 10
+Disable the local package cache.
+By default
+.B .deb
+files are cached under
+.B <work\-dir>/pkg\-cache/
+and reused across hosts and runs (verified by checksum where available).
+
+.IP "\fB\-\-clean\-cache\fP" 10
+Remove both
+.B pkg\-cache/
+and
+.B metadata\-cache/
+under the local work directory.
+These caches are shared across all hosts and are removed once regardless
+of how many hosts are specified.
+Cannot be combined with
+.BR \-\-fetch ,
+.B \-\-download
+or
+.BR \-\-finish\-install .
+
+.IP "\fB\-\-clean\-pkg\-cache\fP" 10
+Remove only the
+.B pkg\-cache/
+directory under the local work directory.
+Operates at the work-dir level, not per-host.
+Cannot be combined with
+.BR \-\-fetch ,
+.B \-\-download
+or
+.BR \-\-finish\-install .
+
+.IP "\fB\-\-clean\-metadata\-cache\fP" 10
+Remove only the
+.B metadata\-cache/
+directory under the local work directory.
+Operates at the work-dir level, not per-host.
+Cannot be combined with
+.BR \-\-fetch ,
+.B \-\-download
+or
+.BR \-\-finish\-install .
+
+.IP "\fB\-\-status\fP" 10
+Display the pipeline status of local runs for the given host(s).
+For each timestamped operation directory shows the date, operation type,
+and whether the fetch, download and install phases have completed.
+Download completion is confirmed via a flag in
+.B state.json
+written only when the fetcher exits without errors, not merely by
+the presence of a
+.B bundle.zip
+file.
+Reads only local state; no SSH connection is made.
+
+.PP
+In a batch run, hosts are reported as
+.B OK
+(succeeded),
+.B WARN
+(skipped — already up to date or no local state for the requested phase), or
+.B ERROR
+(failed).
+Only actual errors produce a non-zero exit code; skipped hosts do not.
+
+.PP
+When none of the phase flags below is given,
+.B remote
+runs all three phases back-to-back in a single invocation.
+This is the simplest mode and requires the local machine to have internet
+connectivity throughout the operation.
+Use the individual phase flags only when the local machine must go offline
+between the signature fetch and the package download
+(e.g. to carry files on removable media to an air-gapped network).
+
+.IP "\fB\-\-fetch\fP" 10
+Phase 1: connect to the remote, generate the signature file and fetch it
+locally. Creates a timestamped operation subdirectory containing the
+signature and a state file so subsequent phases know which operation was
+originally requested.
+Operation flags
+.RB ( \-\-update ,
+.BR \-\-upgrade ,
+.BR \-\-dist\-upgrade ,
+.BR \-\-install\-packages )
+are required here and cannot be used with
+.B \-\-download
+or
+.BR \-\-finish\-install ,
+which read the operation from the saved state.
+
+.IP "\fB\-\-download\fP" 10
+Phase 2: run
+.B apt-offline get
+locally to download packages and produce the bundle, using the signature
+from the latest
+.B \-\-fetch
+run. Intended for use on a good internet connection after
+.B \-\-fetch
+has completed.
+If the remote is already up to date the signature will be empty and the
+command exits cleanly with a "nothing to do" message.
+Use
+.B \-\-force
+to overwrite an existing bundle from a previous run.
+If any files fail to download, the failure summary includes the error
+reason and distinguishes transient network failures (which may succeed
+on retry) from permanent ones (404).
+
+.IP "\fB\-\-finish\-install\fP" 10
+Phase 3: push the bundle produced by
+.B \-\-download
+to the remote, install it with
+.B apt-offline install
+and run the corresponding
+.B apt-get
+operation non-interactively, preserving locally modified configuration
+files on conflict.
+The operation type is read from the state file written by
+.BR \-\-fetch .
+Fails immediately if the download phase did not complete successfully
+(i.e. the
+.B downloaded
+flag in
+.B state.json
+is not set), preventing an install attempt with a potentially
+incomplete bundle.
+Cannot be combined with operation flags.
+
 .SH GLOBAL OPTIONS
 .TP
 \-h, \-\-help
@@ -269,6 +586,36 @@ deb http://security.debian.org stable/updates main contrib
 deb http://security.debian.org testing-security/updates main contrib
 
 .B (Security Updates for Debian Testing)
+
+.TP
+.B apt-offline remote SSH_HOST [SSH_HOST ...]
+This command automates the entire set/get/install workflow over SSH.
+The local machine downloads the required data and pushes it to the remote.
+At least one of \-\-update, \-\-upgrade, \-\-dist\-upgrade or \-\-install\-packages must be specified.
+Multiple hosts can be given as whitespace-separated positional arguments,
+or via a file with \-\-hosts\-list.
+
+.B One-shot (local machine stays online throughout):
+
+.B apt\-offline remote myserver \-\-update \-\-upgrade
+
+.B One-shot against multiple hosts with caching enabled:
+
+.B apt\-offline remote host1 host2 host3 \-\-update \-\-upgrade \-\-cache\-metadata
+
+.B Split workflow (local machine goes offline between phases):
+
+.B apt\-offline remote myserver \-\-update \-\-upgrade \-\-fetch
+
+(Phase 1: generate and retrieve the signature. Run while connected to the remote.)
+
+.B apt\-offline remote myserver \-\-download
+
+(Phase 2: download packages locally. Run when internet is available.)
+
+.B apt\-offline remote myserver \-\-finish\-install
+
+(Phase 3: push the bundle to the remote and complete installation.)
 
 .TP
 Sequence 1: The following set of commands, when run in sequence, will update a disconnected machine.

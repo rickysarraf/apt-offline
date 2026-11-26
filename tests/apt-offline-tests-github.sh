@@ -12,6 +12,7 @@ DOWNLOAD_DIR="$DIR/download-dir"
 BUNDLE_FILE="$DIR/bundle-file.zip"
 THREADS=5
 APT_OFFLINE="./apt-offline "
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 
 run()
 {
@@ -172,15 +173,19 @@ case $1 in
 			install_features_prompt
 		fi
 		;;
+	"remote")
+		python3 "$SCRIPT_DIR/test_remote.py"
+		;;
 	"--help")
-		echo "$0 [set || get || install_features_promptless || install]"
+		echo "$0 [set || get || install_features_promptless || install || remote]"
 		exit 0;
 		;;
 	"-h")
-		echo "$0 [set || get || install_features_promptless || install]"
+		echo "$0 [set || get || install_features_promptless || install || remote]"
 		exit 0;
 		;;
 	*)
+		python3 "$SCRIPT_DIR/test_remote.py" || exit 1
 		all_features
 		;;
 esac
