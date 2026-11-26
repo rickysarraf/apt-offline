@@ -42,7 +42,7 @@ jobs:
       - name: Install pre-reqs
         run: |
           sudo apt-get update
-          sudo apt-get -y install pyqt6-dev-tools python3-pyqt6 qt6-base-dev-tools man2html-base python3-debianbts python3-requests python3-setuptools python3-pysimplesoap
+          sudo apt-get -y install pyqt6-dev-tools python3-pyqt6 qt6-base-dev-tools man2html-base python3-debianbts python3-requests python3-setuptools
         
       # Runs a single command using the runners shell
       - name: Build tests
