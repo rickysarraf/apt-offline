@@ -215,15 +215,14 @@ Applies the requested operation to all listed hosts in sequence,
 reporting a per-host summary at the end.
 Mutually exclusive with
 .BR SSH_HOST .
-If neither
+One of
 .B SSH_HOST
-nor
+or
 .B \-\-hosts\-list
-is given and
-.B \-\-work\-dir
-is set, a file named
-.B hosts.list
-in the work directory is used automatically.
+is required.
+Hosts are never taken from a file in the work directory unless
+.B \-\-hosts\-list
+is given.
 
 .IP "\fB\-\-update\fP" 10
 Generate and apply an APT database update on the remote machine.

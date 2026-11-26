@@ -7,5 +7,6 @@
 *.egg-info
 # magic environments
 .magic
-*.list
-updates/**/*
+__pycache__/
+build/
+dist/

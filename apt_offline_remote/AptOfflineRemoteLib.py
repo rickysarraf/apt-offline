@@ -426,6 +426,22 @@ def _read_hosts_file(path):
     return hosts
 
 
+def _validate_host(host):
+    """SSH targets become directory names. Keep them a single path segment."""
+    if (
+        not host
+        or host in (".", "..")
+        or "/" in host
+        or "\\" in host
+        or "\n" in host
+        or "\0" in host
+        or host.startswith("-")
+    ):
+        raise ValueError(
+            "invalid SSH host %r (expected an alias or [user@]hostname)" % host
+        )
+
+
 def remote(args):
     from apt_offline_core import AptOfflineCoreLib
     log = AptOfflineCoreLib.log
@@ -434,26 +450,8 @@ def remote(args):
         log.err("Cannot specify both SSH_HOST and --hosts-list\n")
         sys.exit(1)
     if not args.remote_host and not args.hosts_list:
-        work_dir_base = args.work_dir or os.path.expanduser("~/.cache/apt-offline-remote")
-        fallback_list = os.path.join(work_dir_base, "hosts.list")
-        if os.path.isfile(fallback_list):
-            args.hosts_list = fallback_list
-            log.msg("==> Using hosts list: %s\n" % fallback_list)
-        elif os.path.isdir(work_dir_base):
-            _excluded = {"pkg-cache", "metadata-cache"}
-            discovered = sorted([
-                d for d in os.listdir(work_dir_base)
-                if os.path.isdir(os.path.join(work_dir_base, d)) and d not in _excluded
-            ])
-            if discovered:
-                log.msg("==> Auto-discovered hosts from %s: %s\n" % (work_dir_base, ", ".join(discovered)))
-                args.remote_host = discovered
-            else:
-                log.err("Must specify either SSH_HOST or --hosts-list\n")
-                sys.exit(1)
-        else:
-            log.err("Must specify either SSH_HOST or --hosts-list\n")
-            sys.exit(1)
+        log.err("Must specify either SSH_HOST or --hosts-list\n")
+        sys.exit(1)
     if args.remote_phase is not None and (args.keep_latest is not None or args.clean_remote
                                            or args.clean_cache or args.clean_pkg_cache or args.clean_metadata_cache):
         log.err("--keep-latest, --clean-remote and cache cleanup flags cannot be combined with --fetch, --download or --finish-install\n")
@@ -480,6 +478,13 @@ def remote(args):
             sys.exit(1)
     else:
         hosts = args.remote_host
+
+    for host in hosts:
+        try:
+            _validate_host(host)
+        except ValueError as e:
+            log.err("%s\n" % e)
+            sys.exit(1)
 
     if args.work_dir:
         base_dir = args.work_dir
@@ -532,8 +537,8 @@ def remote(args):
             log.warn("%s\n" % host)
         for host in failed:
             log.err("%s\n" % host)
-        if failed:
-            sys.exit(1)
+    if failed:
+        sys.exit(1)
 
 
 def register_subparser(subparsers, global_options):

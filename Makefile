@@ -10,7 +10,7 @@ install:
 	python3 setup.py install
 
 html:
-	groff -man -Thtml apt-offline.8 > apt-offline.html
+	man2html apt-offline.8 > apt-offline.html
 	
 clean:
 	rm -f apt_offline_gui/Ui_*.py
