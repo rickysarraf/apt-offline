@@ -105,6 +105,10 @@ terminal_license = "This program comes with ABSOLUTELY NO WARRANTY.\n\
 This is free software, and you are welcome to redistribute it under\n\
 the GNU GPL Version 3 (or later) License\n"
 
+USER_AGENT = "%s/%s (+https://github.com/rickysarraf/apt-offline)" % (
+    app_name, version,
+)
+
 errlist = []
 supported_platforms = ["Linux", "GNU/kFreeBSD", "GNU"]
 apt_update_target_path = "/var/lib/apt/lists/partial"
@@ -723,18 +727,39 @@ class APTVerifySigs(ExecCmd):
 
         if keyring:
             for eachKeyring in keyring:
-                for eachFile in os.listdir(eachKeyring):
-                    extraKeyringFile = os.path.join(eachKeyring, eachFile)
-                    log.verbose("extraKeyringFile is %s" % extraKeyringFile)
-                    self.opts.extend(
-                        ["--keyring", extraKeyringFile]
-                    )
+                self._addExtraKeyring(eachKeyring)
 
         if len(self.opts) == 1:
             log.err(
                 "No valid keyring paths found in: %s\n" % (
                     ", ".join(self.defaultPaths))
             )
+
+    def _addExtraKeyring(self, path):
+        """Add a keyring the user named with --extra-keyring.
+
+        A file is used as given. A directory contributes only keyring
+        files, not every entry: gpgv rejects the 41st distinct keyring
+        with "Resources exhausted" and a non-zero exit.
+        """
+        if os.path.isfile(path):
+            self._addOneKeyring(path)
+        elif os.path.isdir(path):
+            for name in sorted(os.listdir(path)):
+                if name.endswith((".gpg", ".pgp", ".asc")):
+                    full = os.path.join(path, name)
+                    if os.path.isfile(full):
+                        self._addOneKeyring(full)
+        else:
+            log.err("Extra keyring path %s not found\n" % (path))
+
+    def _addOneKeyring(self, path):
+        if path.endswith(".asc"):
+            self.DearmorSig(path)
+        else:
+            log.verbose(
+                "Adding %s to the apt-offline keyring\n" % (path))
+            self.opts.extend(["--keyring", path])
 
     def DearmorSig(self, asciiSig):
         gpgCmd = []
@@ -762,7 +787,7 @@ class APTVerifySigs(ExecCmd):
         gpgvCmd.extend(self.opts)
         gpgvCmd.append(signature_file)
         gpgvCmd.append(signed_file)
-        return self.ExecSystemCmd(gpgvCmd, None)
+        return self._gpgvAccepts(gpgvCmd)
 
     def VerifyFile(self, signed_file):
         # Verify a self signed file
@@ -774,7 +799,67 @@ class APTVerifySigs(ExecCmd):
         gpgvCmd.append(self.gpgv)
         gpgvCmd.extend(self.opts)
         gpgvCmd.append(signed_file)
-        return self.ExecSystemCmd(gpgvCmd, None)
+        return self._gpgvAccepts(gpgvCmd)
+
+    def _gpgvAccepts(self, gpgvCmd):
+        """Run gpgv. True when the signature is good.
+
+        Past 40 keyrings gpgv exits non-zero with ERROR
+        add_keyblock_resource even after GOODSIG. That is a full
+        keyring table, not a bad signature. BADSIG, ERRSIG and
+        NO_PUBKEY still fail.
+        """
+        if self.Simulate:
+            return True
+
+        cmd = list(gpgvCmd)
+        cmd[1:1] = ["--status-fd", "1"]
+        log.verbose("Command is: %s\n" % (cmd))
+        proc = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
+        if proc.stderr:
+            sys.stderr.write(proc.stderr)
+            if not proc.stderr.endswith("\n"):
+                sys.stderr.write("\n")
+        if proc.returncode == 0:
+            return True
+
+        good = bad = errsig = nopub = other_error = resource_error = False
+        for line in proc.stdout.splitlines():
+            if not line.startswith("[GNUPG:] "):
+                continue
+            parts = line.split()
+            tag = parts[1] if len(parts) > 1 else ""
+            if tag == "GOODSIG":
+                good = True
+            elif tag == "BADSIG":
+                bad = True
+            elif tag == "ERRSIG":
+                errsig = True
+            elif tag == "NO_PUBKEY":
+                nopub = True
+            elif tag == "ERROR":
+                where = parts[2] if len(parts) > 2 else ""
+                if where == "add_keyblock_resource":
+                    resource_error = True
+                else:
+                    other_error = True
+
+        if (
+            good
+            and resource_error
+            and not (bad or errsig or nopub or other_error)
+        ):
+            log.warn(
+                "gpgv could not load every keyring (Resources exhausted) "
+                "but the signature verified. Continuing.\n"
+            )
+            return True
+        return False
 
 
 class LockAPT:
@@ -847,7 +932,12 @@ class GenericDownloadFunction:
                 # INFO: Add the download thread into the Global ProgressBar Thread
                 self.addItem(size)
         except urllib.error.HTTPError as errstring:
-            errfunc(errstring.code, errstring.reason, url)
+            # HTTPError is an addinfourl, and on Python 3.14 that is a
+            # tempfile wrapper. Leaving it unclosed warns from __del__.
+            try:
+                errfunc(errstring.code, errstring.reason, url)
+            finally:
+                errstring.close()
             return False
         except urllib.error.URLError as errstring:
             # INFO: Weird. But in urllib2.URLError, I noticed that for
@@ -883,7 +973,10 @@ class GenericDownloadFunction:
         socket_counter = 0
         # TODO: Refactor this conditional code snippet
         if chunked_encoding:
-            response = requests.get(url, stream=True)
+            # requests does not use the urllib opener.
+            response = requests.get(
+                url, stream=True, headers={"User-Agent": USER_AGENT}
+            )
             for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
                     size += len(chunk)
@@ -1143,6 +1236,8 @@ def fetcher(args):
             log.err("Incorrect value set for socket timeout.\n")
             sys.exit(1)
 
+    opening_handlers = []
+
     if Str_ProxyHost:
         if Str_ProxyPort:
             log.verbose(Str_ProxyHost + ":" + str(Str_ProxyPort))
@@ -1152,8 +1247,7 @@ def fetcher(args):
                     "https": Str_ProxyHost + ":" + str(Str_ProxyPort),
                 }
             )
-            opener = urllib.request.build_opener(proxy_support)
-            urllib.request.install_opener(opener)
+            opening_handlers.append(proxy_support)
             log.verbose(
                 "Proxy successfully set up with Host %s and port %s\n"
                 % (Str_ProxyHost, str(Str_ProxyPort))
@@ -1162,8 +1256,7 @@ def fetcher(args):
             proxy_support = urllib.request.ProxyHandler(
                 {"http": Str_ProxyHost, "https": Str_ProxyHost}
             )
-            opener = urllib.request.build_opener(proxy_support)
-            urllib.request.install_opener(opener)
+            opening_handlers.append(proxy_support)
             log.verbose(
                 "Proxy successfully set up with Host %s and default port\n"
                 % (Str_ProxyHost)
@@ -1183,10 +1276,8 @@ def fetcher(args):
             )
             context.load_cert_chain(Str_HttpsCertFile, Str_HttpsKeyFile)
 
-        opener = urllib.request.build_opener(
-            urllib.request.HTTPSHandler(context=context)
-        )
-        urllib.request.install_opener(opener)
+        opening_handlers.append(urllib.request.HTTPSHandler(context=context))
+
         log.verbose(
             "SSL Client Authentication successfully set up with certificate file %s and key file %s\n"
             % (Str_HttpsCertFile, Str_HttpsKeyFile)
@@ -1211,16 +1302,18 @@ def fetcher(args):
                 )
 
             handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
-
-            # create "opener" (OpenerDirector instance)
-            opener = urllib.request.build_opener(handler)
-
-            # Install the opener.
-            # Now all calls to urllib.request.urlopen use our opener.
-            urllib.request.install_opener(opener)
+            opening_handlers.append(handler)
         except:
             log.err("Incorrect value set for HttpBasicAuth.\n")
             sys.exit(1)
+
+    # create "opener" (OpenerDirector instance)
+    opener = urllib.request.build_opener(*opening_handlers)
+
+    # Install the opener.
+    # Now all calls to urllib.request.urlopen use our opener.
+    opener.addheaders = [("User-Agent", USER_AGENT)]
+    urllib.request.install_opener(opener)
 
     # INFO: Python 2.5 has hashlib which supports sha256
     # If we don't have Python 2.5, disable MD5/SHA256 checksum
@@ -1651,7 +1744,9 @@ def fetcher(args):
                             LINE_OVERWRITE_FULL,
                         )
                     )
-                    if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
+                    if Bool_Simulate:
+                        log.uris(url, os.path.join(Str_DownloadDir, pkgFile))
+                    elif FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
                         log.success("%s done %s\n" %
                                     (PackageName, LINE_OVERWRITE_FULL))
                         FetcherInstance.writeData(pkgFile)
@@ -1674,7 +1769,9 @@ def fetcher(args):
                         LINE_OVERWRITE_FULL,
                     )
                 )
-                if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
+                if Bool_Simulate:
+                    log.uris(url, os.path.join(Str_DownloadDir, pkgFile))
+                elif FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
                     log.success("%s done %s\n" %
                                 (PackageName, LINE_OVERWRITE_FULL))
                     FetcherInstance.writeData(pkgFile)
@@ -1691,7 +1788,9 @@ def fetcher(args):
         else:
 
             def DownloadPackages(PackageName, PackageFile):
-                if FetcherInstance.download_from_web(
+                if Bool_Simulate:
+                    log.uris(PackageName, os.path.join(Str_DownloadDir, PackageFile))
+                elif FetcherInstance.download_from_web(
                     PackageName, PackageFile, Str_DownloadDir
                 ):
                     log.success("%s done %s\n" %
@@ -1799,12 +1898,18 @@ def fetcher(args):
                     if size == 0:
                         log.msg("MSG_START")
                         temp = urllib.request.urlopen(url)
-                        headers = temp.info()
-                        size = int(headers["Content-Length"])
+                        try:
+                            headers = temp.info()
+                            size = int(headers["Content-Length"])
+                        finally:
+                            temp.close()
                     totalSize[0] += size
                 except urllib.error.HTTPError as errstring:
-                    errfunc(errstring.code, errstring.reason, url)
-                    log.verbose(traceback.format_exc())
+                    try:
+                        errfunc(errstring.code, errstring.reason, url)
+                        log.verbose(traceback.format_exc())
+                    finally:
+                        errstring.close()
                 except urllib.error.URLError as errstring:
                     if errstring.errno is None:
                         errfunc(504, errstring.reason, url)
@@ -3213,11 +3318,12 @@ def main():
     parser_install.add_argument(
         "--extra-keyring",
         dest="extra_keyring",
-        help="Extra Keyring paths to include. \
-        Can be specificed multiple times",
+        help="Extra keyring file or directory. A directory adds "
+        "only .gpg, .pgp and .asc files. Repeat to add more. "
+        "trusted.gpg.d is already used; /usr/share/keyrings is not.",
         action="append",
-        metavar="/usr/share/keyrings/",
-        default=["/usr/share/keyrings/"],
+        metavar="PATH",
+        default=None,
     )
 
     parser_install.add_argument(
