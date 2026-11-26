@@ -39,7 +39,7 @@ class GetterArgs():
 
     def __init__(self, filename=None, bundle_file=None, socket_timeout=30, \
                     num_of_threads=1, disable_md5check=True, deb_bugs=False,
-                        download_dir=None, cache_dir=None, proxy_host=None, proxy_port=None, progress_bar=None, progress_label=None):
+                        download_dir=None, cache_dir=None, proxy_host=None, proxy_port=None, progress_bar=None, progress_label=None, get_simulate=False):
 
         self.get = filename
 
@@ -58,6 +58,7 @@ class GetterArgs():
 
         self.progress_bar = progress_bar
         self.progress_label = progress_label
+        self.get_simulate = get_simulate
 
     def __str__(self):
         print("self.get=",self.get)
