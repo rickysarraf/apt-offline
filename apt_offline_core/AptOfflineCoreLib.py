@@ -1093,6 +1093,27 @@ def errfunc(errno, errormsg, filename):
         )
 
 
+def simulate_archive_name(url, pkgFile):
+    """Archive filename get --simulate should print for one signature item.
+
+    Debs, Release, signature and source-metadata files keep pkgFile.
+    Other index files gain the compression suffix already present on the
+    URL apt named. This matches the name the real download path stores,
+    without joining a download directory.
+    """
+    if url.endswith(".deb"):
+        return pkgFile
+    if (
+        pkgFile.endswith(".gpg")
+        or pkgFile.endswith("Release")
+        or pkgFile.endswith(".dsc")
+        or "orig.tar" in pkgFile
+        or "debian.tar" in pkgFile
+    ):
+        return pkgFile
+    return pkgFile + "." + url.split("/")[-1].split(".")[-1]
+
+
 def fetcher(args):
     # get opts
     Str_GetArg = args.get
@@ -1109,7 +1130,7 @@ def fetcher(args):
     Str_HttpBasicAuth = args.http_basicauth
     Bool_DisableCertCheck = args.disable_cert_check
     Bool_BugReports = args.deb_bugs
-    Bool_Simulate = args.get_simulate
+    Bool_Simulate = getattr(args, "get_simulate", False)
     global guiTerminateSignal
 
     if Int_SocketTimeout:
@@ -1211,7 +1232,10 @@ def fetcher(args):
 
     if Str_GetArg:
         if os.path.isfile(Str_GetArg):
-            log.msg("\nFetching APT Data\n\n")
+            if Bool_Simulate:
+                sys.stderr.write("\nFetching APT Data\n\n")
+            else:
+                log.msg("\nFetching APT Data\n\n")
         else:
             log.err("File %s not present. Check path.\n" % (Str_GetArg))
             sys.exit(1)
@@ -1224,60 +1248,65 @@ def fetcher(args):
             )
             sys.exit(1)
 
-    if not Str_DownloadDir and not Str_BundleFile:
-        log.err("Please provide a target download file/folder location.\n")
-        sys.exit(1)
+    if not Bool_Simulate:
+        if not Str_DownloadDir and not Str_BundleFile:
+            log.err("Please provide a target download file/folder location.\n")
+            sys.exit(1)
 
-    if Str_DownloadDir:
-        if os.path.exists(Str_DownloadDir):
-            if os.path.isdir(Str_DownloadDir):
-                if os.access(Str_DownloadDir, os.W_OK) is True:
-                    Str_DownloadDir = os.path.abspath(Str_DownloadDir)
+        if Str_DownloadDir:
+            if os.path.exists(Str_DownloadDir):
+                if os.path.isdir(Str_DownloadDir):
+                    if os.access(Str_DownloadDir, os.W_OK) is True:
+                        Str_DownloadDir = os.path.abspath(Str_DownloadDir)
+                    else:
+                        log.err("Cannot write to directory %s\n" %
+                                (Str_DownloadDir))
+                        sys.exit(1)
                 else:
-                    log.err("Cannot write to directory %s\n" %
-                            (Str_DownloadDir))
+                    log.err("%s is not a directory\n" % (Str_DownloadDir))
                     sys.exit(1)
             else:
-                log.err("%s is not a directory\n" % (Str_DownloadDir))
-                sys.exit(1)
+                os.mkdir(Str_DownloadDir)
+                # INFO: Because the user may give in a relative path
+                Str_DownloadDir = os.path.abspath(Str_DownloadDir)
+                log.verbose("Creating directory %s\n" % (Str_DownloadDir))
         else:
-            os.mkdir(Str_DownloadDir)
-            # INFO: Because the user may give in a relative path
-            Str_DownloadDir = os.path.abspath(Str_DownloadDir)
-            log.verbose("Creating directory %s\n" % (Str_DownloadDir))
-    else:
-        tempdir = tempfile.gettempdir()
-        if os.access(tempdir, os.W_OK):
-            pidname = os.getpid()
-            randomjunk = (
-                "".join(chr(random.randint(97, 122)) for x in range(5))
-                if guiBool
-                else ""
-            )
-            # 5 byte random junk to make mkdir possible multiple times
-            # use-case -> download many sigs of different machines using one instance
-            tempdir = os.path.join(
-                tempdir, "apt-offline-downloads-" + str(pidname) + randomjunk
-            )
-            os.mkdir(tempdir)
-            Str_DownloadDir = os.path.abspath(tempdir)
-        else:
-            log.err("%s is not writable\n" % (tempdir))
-            errfunc(1, "", tempdir)
+            tempdir = tempfile.gettempdir()
+            if os.access(tempdir, os.W_OK):
+                pidname = os.getpid()
+                randomjunk = (
+                    "".join(chr(random.randint(97, 122)) for x in range(5))
+                    if guiBool
+                    else ""
+                )
+                # 5 byte random junk to make mkdir possible multiple times
+                # use-case -> download many sigs of different machines using one instance
+                tempdir = os.path.join(
+                    tempdir, "apt-offline-downloads-" + str(pidname) + randomjunk
+                )
+                os.mkdir(tempdir)
+                Str_DownloadDir = os.path.abspath(tempdir)
+            else:
+                log.err("%s is not writable\n" % (tempdir))
+                errfunc(1, "", tempdir)
 
-    if Str_BundleFile:
-        Str_BundleFile = os.path.abspath(Str_BundleFile)
-        if os.access(Str_BundleFile, os.F_OK):
-            log.err("%s already present.\nRemove it first.\n" %
-                    (Str_BundleFile))
-            sys.exit(1)
-        else:
-            try:
-                open(Str_BundleFile, "w")
-            except IOError:
-                log.err("Cannot write to file %s\n" % (Str_BundleFile))
+        if Str_BundleFile:
+            Str_BundleFile = os.path.abspath(Str_BundleFile)
+            if os.access(Str_BundleFile, os.F_OK):
+                log.err("%s already present.\nRemove it first.\n" %
+                        (Str_BundleFile))
                 sys.exit(1)
+            else:
+                try:
+                    open(Str_BundleFile, "w")
+                except IOError:
+                    log.err("Cannot write to file %s\n" % (Str_BundleFile))
+                    sys.exit(1)
+        else:
+            Str_BundleFile = False
     else:
+        # Resolved URI list only. Do not create a download directory or a bundle file.
+        Str_DownloadDir = None
         Str_BundleFile = False
 
     if Bool_BugReports:
@@ -1541,7 +1570,7 @@ def fetcher(args):
     )
 
     # INFO: Thread Support
-    if Int_NumOfThreads > 2:
+    if Int_NumOfThreads > 2 and not Bool_Simulate:
         log.msg("WARNING: If you are on a slow connection, it is good to\n")
         log.msg("WARNING: limit the number of threads to a low number like 2.\n")
         log.msg("WARNING: Else higher number of threads executed could cause\n")
@@ -1562,6 +1591,11 @@ def fetcher(args):
 
         # INFO: Everything
         (url, pkgFile, download_size, checksum) = stripper(item)
+        if Bool_Simulate:
+            # List the item and return. Do not read the cache, copy a
+            # payload, fetch bug reports, or open a connection.
+            log.uris(url, simulate_archive_name(url, pkgFile))
+            return
         thread_name = threading.current_thread().name
         log.verbose("Thread is %s\n" % (thread_name))
 
@@ -1617,9 +1651,7 @@ def fetcher(args):
                             LINE_OVERWRITE_FULL,
                         )
                     )
-                    if Bool_Simulate:
-                        log.uris(url, os.path.join(Str_DownloadDir, pkgFile))
-                    elif FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
+                    if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
                         log.success("%s done %s\n" %
                                     (PackageName, LINE_OVERWRITE_FULL))
                         FetcherInstance.writeData(pkgFile)
@@ -1642,9 +1674,7 @@ def fetcher(args):
                         LINE_OVERWRITE_FULL,
                     )
                 )
-                if Bool_Simulate:
-                    log.uris(url, os.path.join(Str_DownloadDir, pkgFile))
-                elif FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
+                if FetcherInstance.download_from_web(url, pkgFile, Str_DownloadDir):
                     log.success("%s done %s\n" %
                                 (PackageName, LINE_OVERWRITE_FULL))
                     FetcherInstance.writeData(pkgFile)
@@ -1661,9 +1691,7 @@ def fetcher(args):
         else:
 
             def DownloadPackages(PackageName, PackageFile):
-                if Bool_Simulate:
-                    log.uris(PackageName, os.path.join(Str_DownloadDir, PackageFile))
-                elif FetcherInstance.download_from_web(
+                if FetcherInstance.download_from_web(
                     PackageName, PackageFile, Str_DownloadDir
                 ):
                     log.success("%s done %s\n" %
@@ -1761,7 +1789,7 @@ def fetcher(args):
     # create size metadata for progress
     for key in list(FetchData.keys()):
         for item in FetchData.get(key):
-            if guiBool:
+            if guiBool and not Bool_Simulate:
                 # REAL_PROGRESS: to calculate the total download size, NOTE: initially this was under the loop that Queued the items
                 if guiTerminateSignal:
                     break
@@ -1831,7 +1859,9 @@ def fetcher(args):
                 sys.exit(0)
 
     if Bool_Simulate:
-        log.msg("\nNo data was downloaded, only printed URIs\n")
+        sys.stderr.write(
+            "\nNo data was downloaded. Printed the URI list for the URLs apt already named.\n"
+        )
     elif args.bundle_file:
         log.msg("\nDownloaded data to %s\n" % (Str_BundleFile))
     else:
@@ -3101,7 +3131,7 @@ def main():
     parser_get.add_argument(
         "--simulate",
         dest="get_simulate",
-        help="Print URIs and filenames instead of downloading",
+        help="Print the resolved URI list and do not download",
         action="store_true",
     )
 

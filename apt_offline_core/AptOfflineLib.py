@@ -22,6 +22,7 @@ import signal
 from array import array
 import os
 import sys
+import shlex
 
 import threading
 
@@ -294,8 +295,20 @@ class Log:
             self.DispLock.release()
 
     def uris(self, url, localFile):
-        """Print URIs as they are requested."""
-        print("URIs: %s %s" % (url, localFile))
+        """Print one resolved URI and the archive filename.
+
+        stdout line: URI <quoted-url> <quoted-filename>
+        Both fields are shell-quoted so a space in either does not
+        split the record. The display lock keeps one line intact when
+        several threads print.
+        """
+        line = "URI %s %s\n" % (shlex.quote(url), shlex.quote(localFile))
+        if self.lock:
+            self.DispLock.acquire()
+        sys.stdout.write(line)
+        sys.stdout.flush()
+        if self.lock:
+            self.DispLock.release()
 
     def calcSize(self, size):
         """Takes number of kB and returns a string
