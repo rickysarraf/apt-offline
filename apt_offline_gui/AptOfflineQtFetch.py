@@ -113,7 +113,6 @@ class AptOfflineQtFetch(QtWidgets.QDialog):
         # Reduce extra line gaps in CLI o/p
         apt_offline_core.AptOfflineCoreLib.LINE_OVERWRITE_SMALL=""
         apt_offline_core.AptOfflineCoreLib.LINE_OVERWRITE_MID=""
-        apt_offline_core.AptOfflineCoreLib.LINE_OVERWRITE_FULL=""
 
     def showAdvancedOptions(self):
             self.advancedOptionsDialog.show()

@@ -145,5 +145,17 @@ class RemoteCommandTests(unittest.TestCase):
         self.assertFalse(os.path.isdir(os.path.join(self.directory, "..", "outside")))
 
 
+class FetchProgressTests(unittest.TestCase):
+    def test_deb_download_success_does_not_name_line_overwrite_full(self):
+        # The progress-bar cleanup deleted LINE_OVERWRITE_FULL. Two deb
+        # success lines still used it, so get raised NameError in the
+        # worker and left an invalid zip.
+        path = os.path.join(ROOT, "apt_offline_core", "AptOfflineCoreLib.py")
+        with open(path, encoding="utf-8") as handle:
+            source = handle.read()
+        self.assertNotIn("LINE_OVERWRITE_FULL", source)
+        self.assertEqual(source.count('log.success("%s done\n" % PackageName)'), 3)
+
+
 if __name__ == "__main__":
     unittest.main()
