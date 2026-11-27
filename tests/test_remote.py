@@ -154,7 +154,7 @@ class FetchProgressTests(unittest.TestCase):
         with open(path, encoding="utf-8") as handle:
             source = handle.read()
         self.assertNotIn("LINE_OVERWRITE_FULL", source)
-        self.assertEqual(source.count('log.success("%s done\n" % PackageName)'), 3)
+        self.assertEqual(source.count(r'log.success("%s done\n" % PackageName)'), 3)
 
 
 if __name__ == "__main__":
